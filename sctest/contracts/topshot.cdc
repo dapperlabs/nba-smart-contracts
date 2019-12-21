@@ -31,39 +31,88 @@
 // collectionRef.moments[2].name
 // and have it use the reference internally to get the name from the mold
 
-pub struct Mold {
-    pub let id: Int  // the unique ID that the mold has
-
-    pub let name: String   // the name of the moment
-
-    pub let rarityCounts: {String: Int}  // the number of moments that can be minted from each rarity for this mold
-
-    pub var numLeft: {String: Int}      // the number of moments that have been minted from each rarity mold
-                                          // cannot be greater than the corresponding rarityCounts
-
-    init(id: Int, name: String, rarityCounts: {String: Int}) {
-        self.id = id
-        self.name = name
-        self.rarityCounts = rarityCounts
-        self.numLeft = rarityCounts
-        // and then subtract from it when a new one is minted
-        // and not let any more be minted when it gets to zero
-        // when someone wants to get how many have been minted, just  
-        // subtract numMinted from rarityCounts
-        // this way, the dictionary keys would always match for the two
+pub contract interface TopShotPublic {
+    pub struct Mold {}
+    pub var molds: {Int: Mold}
+    pub var moldID: Int
+    pub var momentID: Int
+    pub fun getMoldMetadataField(moldID: Int, field: String): String?
+    pub fun getNumMomentsLeftInQuality(id: Int, quality: Int): Int {
+        pre {
+            quality > 0 && quality <= 5: "Quality needs to be 1-5"
+            id > 0: "ID needs to be positive!"
+        }
     }
-
-    // called when a moment is minted
-    pub fun updateNumLeft(rarity: String) {
-        var numLeft = self.numLeft[rarity] ?? panic("missing rarity count!")
-        
-        numLeft = numLeft - 1
-        
-        self.numLeft[rarity] = numLeft
+    pub fun getNumMintedInQuality(id: Int, quality: Int): Int {
+        pre {
+            quality > 0 && quality <= 5: "Quality needs to be 1-5"
+            id > 0: "ID needs to be positive!"
+        }
     }
 }
 
-pub resource MoldCollection {
+pub contract TopShot: TopShotPublic {
+    pub struct Mold {
+        pub let id: Int  // the unique ID that the mold has
+
+        // Stores all the metadata about the mold as a string mapping
+        pub let metadata: {String: String}
+
+        pub let qualityCounts: {Int: Int}  // the number of moments that can be minted from each quality for this mold
+
+        pub var numLeft: {Int: Int}      // the number of moments that have been minted from each quality mold
+                                            // cannot be greater than the corresponding qualityCounts
+
+        init(id: Int, metadata: {String: String} , qualityCounts: {Int: Int}) {
+            self.id = id
+            self.metadata = metadata
+            self.qualityCounts = qualityCounts
+            self.numLeft = qualityCounts
+        }
+
+        // called when a moment is minted
+        pub fun updateNumLeft(quality: Int) {
+            var numLeft = self.numLeft[quality] ?? panic("missing quality count!")
+            
+            numLeft = numLeft - 1
+            
+            self.numLeft[quality] = numLeft
+        }
+    }
+
+    pub resource Moment {
+        // global unique moment ID
+        pub let id: Int
+
+        // quality identifier. Will soon be an enum
+        pub var quality: Int
+
+        // Tells which number of the Quality this moment is
+        pub let placeInQuality: Int
+
+        // the ID of the mold that the moment references
+        pub var moldID: Int
+
+        init(newID: Int, moldID: Int, quality: Int, place: Int) { //, reference: &TopShotPublic) {
+            pre {
+                newID > 0: "MomentID must be a positive integer!"
+                moldID > 0: "MoldID must be a positive integer!"
+                quality > 0 && quality <= 5: "Quality identifier must be 1-5!"
+            }
+            self.id = newID
+            self.moldID = moldID
+            self.quality = quality
+            self.placeInQuality = place
+        }
+
+        pub fun getMomentMetadataField(field: String): String? {
+            return TopShot.getMoldMetadataField(moldID: self.moldID, field: field)
+        }
+
+        pub fun getMomentMetadata(): {String:String}? {
+            return TopShot.getMoldMetadata(moldID: self.id)
+        }
+    }
 
     // variable size dictionary of Mold conforming tokens
     // Mold is a struct type with an `Int` ID field
@@ -72,193 +121,241 @@ pub resource MoldCollection {
     // the ID that is used to cast molds
     pub var moldID: Int
 
+    // the ID that is used to mint unique moments
+    pub var momentID: Int
+
+    // getMoldMetadata gets a specific metadata field of a mold that is stored in this collection
+    pub fun getMoldMetadataField(moldID: Int, field: String): String? {
+        let moldOpt = self.molds[moldID]
+
+        if let mold = moldOpt {
+            return mold.metadata[field]
+        } else {
+            return nil
+        }
+    }
+
+    pub fun getMoldMetadata(moldID: Int): {String:String}? {
+        let moldOpt = self.molds[moldID]
+
+        if let mold = moldOpt {
+            return mold.metadata
+        } else {
+            return nil
+        }
+    }
+
+    // getNumMomentsLeftInQuality get the number of moments left of a certain quality
+    // for the specified mold ID
+    pub fun getNumMomentsLeftInQuality(id: Int, quality: Int): Int {
+        if let mold = self.molds[id] {
+            let numLeft = mold.numLeft[quality] ?? panic("missing numLeft!")
+            return numLeft
+        } else {
+            return 0
+        }
+    }
+
+    // getNumMintedInQuality returns the number of moments that have been minted of 
+    // a certain mold ID and quality
+    pub fun getNumMintedInQuality(id: Int, quality: Int): Int {
+        if let mold = self.molds[id] {
+            let numLeft = mold.numLeft[quality] ?? panic("missing numLeft!")
+            let qualityCount = mold.qualityCounts[quality] ?? panic("missing quality count!")
+            return qualityCount - numLeft
+        } else {
+            return -1
+        }
+    }
+
+    // getQualityTotal returns the total number of moments of a certain quality
+    // that are allowed to be minted
+    pub fun getQualityTotal(id: Int, quality: Int): Int {
+        if let mold = self.molds[id] {
+            let qualityCount = mold.qualityCounts[quality] ?? panic("missing quality count!")
+            return qualityCount
+        } else {
+            return -1
+        }
+    }
+
+    pub resource interface MomentReceiver {
+        pub var moments: @{Int: Moment}
+        // deposit deposits a token into the collection
+        pub fun deposit(token: @Moment)
+        // idExists checks to see if a Moment with the given ID exists in the collection
+        pub fun idExists(tokenID: Int): Bool
+        // getIDs returns an array of the IDs that are in the collection
+        pub fun getIDs(): [Int]
+
+        pub fun getMomentMetadataField(id: Int, field: String): String?
+
+        pub fun getMomentMetadata(id: Int): {String:String}?
+    }
+
+    pub resource MomentCollection: MomentReceiver { 
+        // dictionary of Moment conforming tokens
+        // Moment is a resource type with an `Int` ID field
+        pub var moments: @{Int: Moment}
+
+        init() {
+            self.moments <- {}
+        }
+
+        // withdraw removes an Moment from the collection and moves it to the caller
+        pub fun withdraw(tokenID: Int): @Moment {
+            pre {
+                tokenID > 0: "Token ID must be positive!"
+            }
+            let token <- self.moments.remove(key: tokenID) ?? panic("missing Moment")
+            
+            return <-token
+        }
+
+        // deposit takes a Moment and adds it to the collections dictionary
+        // and adds the ID to the id array
+        pub fun deposit(token: @Moment) {
+            // add the new token to the dictionary
+            let oldToken <- self.moments[token.id] <- token
+            destroy oldToken
+        }
+
+        // transfer takes a reference to another user's Moment collection,
+        // takes the Moment out of this collection, and deposits it
+        // in the reference's collection
+        pub fun transfer(recipient: &MomentReceiver, tokenID: Int) {
+            // remove the token from the dictionary get the token from the optional
+            let token <- self.withdraw(tokenID: tokenID)
+
+            // deposit it in the recipient's account
+            recipient.deposit(token: <-token)
+        }
+
+        // idExists checks to see if a Moment with the given ID exists in the collection
+        pub fun idExists(tokenID: Int): Bool {
+            if self.moments[tokenID] != nil {
+                return true
+            }
+
+            return false
+        }
+
+        // getIDs returns an array of the IDs that are in the collection
+        pub fun getIDs(): [Int] {
+            return self.moments.keys
+        }
+
+        // getMomentMetadataField gets a specific metadata field of a certain moment in the collection
+        //
+        pub fun getMomentMetadataField(id: Int, field: String): String? {
+            let moment <- self.moments[id] <- nil
+
+            let field = moment?.getMomentMetadataField(field: field) ?? panic("moment doesn't exist!")
+
+            let oldMoment <- self.moments[id] <- moment
+            destroy oldMoment
+
+            return field
+        }
+
+        // getMomentMetadata gets all the metadata of a certain moment in the collection
+        pub fun getMomentMetadata(id: Int): {String:String}? {
+            let moment <- self.moments[id] <- nil
+
+            let metadata = moment?.getMomentMetadata() ?? panic("moment doesn't exist!")
+
+            let oldMoment <- self.moments[id] <- moment
+            destroy oldMoment
+            
+            return metadata
+        }
+
+        destroy() {
+            destroy self.moments
+        }
+    }
+
+    // MoldCaster is a resource that the user who has admin access to the Topshot 
+    // contract will store in their account 
+    // this ensures that they are the only ones who can cast molds
+    pub resource MoldCaster {
+        // castMold casts a mold struct and stores it in the dictionary
+        // for the molds
+        // the mold ID must be unused
+        // returns the ID the new mold
+        pub fun castMold(metadata: {String: String}, qualityCounts: {Int: Int}): Int {
+            pre {
+                qualityCounts.length == 5: "Wrong number of qualities!"
+                metadata.length != 0: "Wrong amount of metadata!"
+            }
+            var newMold = Mold(id: TopShot.moldID, metadata: metadata, qualityCounts: qualityCounts)
+
+            TopShot.molds[TopShot.moldID] = newMold
+
+            // increment the ID so that it isn't used again
+            TopShot.moldID = TopShot.moldID + 1
+
+            return TopShot.moldID - 1
+        }
+
+        pub fun createCaster(): @MoldCaster {
+            return <-create MoldCaster()
+        }
+    }
+
+    // MomentMinter is a resource that the admin user will store in their account
+    // so that they are the only one who can mint Moments
+    pub resource MomentMinter {
+
+        // mintMoment mints a new moment and returns the ID of the minted moment
+        pub fun mintMoment(moldID: Int, quality: Int, recipient: &MomentReceiver): Int {
+            pre {
+                // check to see if any more moments of this quality are allowed to be minted
+                TopShot.getNumMomentsLeftInQuality(id: moldID, quality: quality) > 0: "All the moments of this quality have been minted!"
+            }
+
+            // update the number left in the quality that are allowed to be minted
+            TopShot.molds[moldID]?.updateNumLeft(quality: quality)
+
+            // gets this moment's place in the moments for this quality
+            let placeInQuality = TopShot.getNumMintedInQuality(id: moldID, quality: quality)
+
+            // mint the new moment
+            let newMoment: @Moment <- create Moment(newID: TopShot.momentID, 
+                                                    moldID: moldID, 
+                                                    quality: quality, 
+                                                    place: placeInQuality)
+            
+            // deposit the moment in the owner's account
+            recipient.deposit(token: <-newMoment)
+
+            // update the moment IDs so they can't be reused
+            TopShot.momentID = TopShot.momentID + 1
+
+            return TopShot.momentID - 1
+        }
+
+        pub fun createMinter(): @MomentMinter {
+            return <-create MomentMinter()
+        }
+    }
+
     init() {
         self.molds = {}
         self.moldID = 1
+        self.momentID = 1
+
+        let oldMomentCollection <- self.account.storage[MomentCollection] <- create MomentCollection()
+        destroy oldMomentCollection
+
+        self.account.storage[&MomentCollection] = &self.account.storage[MomentCollection] as MomentCollection
+        self.account.published[&MomentReceiver] = &self.account.storage[MomentCollection] as MomentReceiver
+
+        let oldCaster <- self.account.storage[MoldCaster] <- create MoldCaster()
+        destroy oldCaster
+
+        let oldMinter <- self.account.storage[MomentMinter] <- create MomentMinter()
+        destroy oldMinter
     }
 
-    // castMold casts a mold struct and stores it in the dictionary
-    // for the molds
-    // the mold ID must be unused
-    pub fun castMold(name: String, rarityCounts: {String: Int}) {
-        var newMold: Mold = Mold(id: self.moldID, name: name, rarityCounts: rarityCounts)
-
-        self.molds[self.moldID] = newMold
-
-        // increment the ID so that it isn't used again
-        self.moldID = self.moldID + 1
-
-    }
-
-    // getMoldName gets the name of a mold that is stored in this collection
-    pub fun getMoldName(moldID: Int): String {
-        return self.molds[moldID]?.name ?? panic("missing mold name!")
-    }
-
-    // getNumMomentsLeftInRarity get the number of moments left of a certain rarity
-    // for the specified mold ID
-    pub fun getNumMomentsLeftInRarity(id: Int, rarity: String): Int {
-        let mold = self.molds[id] ?? panic("missing mold!")
-
-        let numLeft = mold.numLeft[rarity] ?? panic("missing numLeft!")
-
-        return numLeft
-    }
-
-    // getNumMintedInRarity returns the number of moments that have been minted of 
-    // a certain mold ID and rarity
-    pub fun getNumMintedInRarity(id: Int, rarity: String): Int {
-        let mold = self.molds[id] ?? panic("missing mold!")
-
-        let numLeft = mold.numLeft[rarity] ?? panic("missing numLeft!")
-        let rarityCount = mold.rarityCounts[rarity] ?? panic("missing rarity count!")
-
-        return rarityCount - numLeft
-    }
-
-}
-
-
-pub resource Moment {
-    pub let id: Int
-
-    pub var strength: Int
-
-    pub var rarity: String
-
-    // Tells which number of the Rarity this moment is
-    pub let placeInRarity: Int
-
-    // the ID of the mold that the moment references
-    pub var moldID: Int
-
-    // reference to the NBA Mold Collection that holds the mold
-    pub let moldReference: &MoldCollection
-
-    init(newID: Int, str: Int, moldID: Int, rarity: String, place: Int, reference: &MoldCollection) {
-        self.id = newID
-        self.strength = str
-        self.moldID = moldID
-        self.rarity = rarity
-        self.placeInRarity = place
-        self.moldReference = reference
-    }
-
-}
-
-pub resource MomentCollection { 
-    // dictionary of Moment conforming tokens
-    // Moment is a resource type with an `Int` ID field
-    pub var moments: <-{Int: Moment}
-
-    init() {
-        self.moments = {}
-    }
-
-    // withdraw removes an Moment from the collection and moves it to the caller
-    pub fun withdraw(tokenID: Int): <-Moment {
-        let token <- self.moments.remove(key: tokenID) ?? panic("missing Moment")
-            
-        return <-token
-    }
-
-    // deposit takes a Moment and adds it to the collections dictionary
-    // and adds the ID to the id array
-    pub fun deposit(token: <-Moment): Void {
-        let id: Int = token.id
-        
-        var newToken: <-Moment? <- token
-
-        // add the new token to the dictionary
-        let oldToken <- self.moments[id] <- newToken
-
-        destroy oldToken
-    }
-
-    // transfer takes a reference to another user's Moment collection,
-    // takes the Moment out of this collection, and deposits it
-    // in the reference's collection
-    pub fun transfer(recipient: &MomentCollection, tokenID: Int): Void {
-
-        // remove the token from the dictionary get the token from the optional
-        let token <- self.withdraw(tokenID: tokenID)
-
-        // deposit it in the recipient's account
-        recipient.deposit(token: <-token)
-    }
-
-    // idExists checks to see if a Moment with the given ID exists in the collection
-    pub fun idExists(tokenID: Int): Bool {
-        if (self.moments[tokenID] != nil) {
-            return true
-        }
-
-        return false
-    }
-
-    destroy() {
-        destroy self.moments
-    }
-
-    // getIDs returns an array of the IDs that are in the collection
-    pub fun getIDs(): [Int] {
-        return self.moments.keys
-    }
-}
-
-
-pub resource MomentFactory {
-
-    // the ID that is used to mint moments
-    pub var MomentID: Int
-
-    // reference to this mold collection that can be used
-    // to initialize the moments 
-    pub var moldReference: &MoldCollection
-
-    init(moldRef: &MoldCollection) {
-        self.MomentID = 1
-        self.moldReference = moldRef
-    }
-
-    // mintMoment mints a moment NFT based off of a mold that is stored in the collection
-    // the moment ID must be unused
-    pub fun mintMoment(moldID: Int, rarity: String, recipient: &MomentCollection) {
-
-        // check to see if any more moments are allowed to be minted in this rarity
-        let numLeft = self.moldReference.getNumMomentsLeftInRarity(id: moldID, rarity: rarity)
-        if numLeft <= 0 { panic("All the moments of this rarity have been minted!") }
-
-        // update the number left in the rarity that are allowed to be minted
-        self.moldReference.molds[moldID]?.updateNumLeft(rarity: rarity)
-
-        // gets this moment's place in the moments for this rarity
-        let placeInRarity = self.moldReference.getNumMintedInRarity(id: moldID, rarity: rarity)
-
-        // mint the new moment
-        var newMoment: <-Moment <- create Moment(newID: self.MomentID, 
-                                                str: 1, 
-                                                moldID: moldID, 
-                                                rarity: rarity, 
-                                                place: placeInRarity, 
-                                                reference: self.moldReference)
-        
-        // deposit the moment in the owner's account
-        recipient.deposit(token: <-newMoment)
-
-        // update the moment IDs so they can't be reused
-        self.MomentID = self.MomentID + 1
-    }
-
-    pub fun createMomentCollection(): <-MomentCollection {
-        return <-create MomentCollection()
-    }
-}
-
-pub fun createMoldCollection(): <-MoldCollection {
-    return <-create MoldCollection()
-}
-
-pub fun createMomentFactory(ref: &MoldCollection): <-MomentFactory {
-    return <-create MomentFactory(moldRef: ref)
 }
