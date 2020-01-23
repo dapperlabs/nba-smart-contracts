@@ -8,7 +8,7 @@ pub fun main() {
 
     log(receiver.getIDs())
 
-    if let field = receiver.getMomentMetadataField(id: 1, field: "Name") {
-        log(field)
-    }
+    // if let field = receiver.getMomentMetadataField(id: 1, field: "Name") {
+    //     log(field)
+    // }
 }
