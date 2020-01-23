@@ -1,69 +1,38 @@
 // first draft for how NBA might mint and manage molds and collections
 // for the top shot NFTs
 
-// The NBA top shot account has a top level collection that holds all the molds
-// the molds are structs that contain moment metadata
-
-// The mold collection is where all casting of molds happens.  It is also
-// where all the molds are stored.
-// The Mold Collection will not store moments
-
-// the top shot account also has a resource that is used for minting moments, MomentFactory
-// when it mints a moment, it gives the moment a reference to the mold collection
-// that holds the molds so a moment can always be able to fetch its metadata 
-// by making calls to the mold collection
+// The Topshot contract is where all the molds are stored.  All the moments
+// that are minted will be able to access data for the molds they reference
+// that are stored in the topshot contract
 
 // The molds have their own mold IDs that are separate from the moment IDs
 // All Moment IDs share an ID space so that none can have the same ID
 
-// When moments are minted, they are 
-// sent directly to the account that will own the Moment
-// this account could be the top shot moment collection or a user's collection
+// When moments are minted, they are returned by the minter.  The transaction
+// has to handle the moment after that
 
 // The top shot account will also have its own moment collection it can use to 
 // hold its own moments
 
-// TODO: Want to make some generic way of reading a field from a moment that 
-// is inherited from a mold. so we don't have to make a getter for each field in the 
-// MoldCollection.  Could also store all the fields as a dictionary keyed by the name
-// of each field.
-// Eventually want to be able to do something like:
-// collectionRef.moments[2].name
-// and have it use the reference internally to get the name from the mold
+import NonFungibleToken from 0x01
 
-pub contract interface TopShotPublic {
-    pub struct Mold {}
-    pub var molds: {Int: Mold}
-    pub var moldID: Int
-    pub var momentID: Int
-    pub fun getMoldMetadataField(moldID: Int, field: String): String?
-    pub fun getNumMomentsLeftInQuality(id: Int, quality: Int): Int {
-        pre {
-            quality > 0 && quality <= 5: "Quality needs to be 1-5"
-            id > 0: "ID needs to be positive!"
-        }
-    }
-    pub fun getNumMintedInQuality(id: Int, quality: Int): Int {
-        pre {
-            quality > 0 && quality <= 5: "Quality needs to be 1-5"
-            id > 0: "ID needs to be positive!"
-        }
-    }
-}
+pub contract TopShot: NonFungibleToken {
 
-pub contract TopShot: TopShotPublic {
     pub struct Mold {
-        pub let id: Int  // the unique ID that the mold has
+        // the unique ID that the mold has
+        pub let id: UInt32
 
         // Stores all the metadata about the mold as a string mapping
         pub let metadata: {String: String}
 
-        pub let qualityCounts: {Int: Int}  // the number of moments that can be minted from each quality for this mold
+        // the number of moments that can be minted from each quality for this mold
+        pub let qualityCounts: {Int: UInt32}
 
-        pub var numLeft: {Int: Int}      // the number of moments that have been minted from each quality mold
-                                            // cannot be greater than the corresponding qualityCounts
+        // the number of moments that have been minted from each quality mold
+        // cannot be greater than the corresponding qualityCounts entry
+        pub var numLeft: {Int: UInt32}
 
-        init(id: Int, metadata: {String: String} , qualityCounts: {Int: Int}) {
+        init(id: UInt32, metadata: {String: String}, qualityCounts: {Int: UInt32}) {
             self.id = id
             self.metadata = metadata
             self.qualityCounts = qualityCounts
@@ -74,35 +43,37 @@ pub contract TopShot: TopShotPublic {
         pub fun updateNumLeft(quality: Int) {
             var numLeft = self.numLeft[quality] ?? panic("missing quality count!")
             
-            numLeft = numLeft - 1
+            numLeft = numLeft - UInt32(1)
             
             self.numLeft[quality] = numLeft
         }
     }
 
-    pub resource Moment {
+    pub resource NFT: NonFungibleToken.INFT {
         // global unique moment ID
-        pub let id: Int
+        pub let id: UInt64
+
+        // shows metadata that is only associated with a specific NFT, and not a mold
+        pub var metadata: {String:String}
 
         // quality identifier. Will soon be an enum
         pub var quality: Int
 
         // Tells which number of the Quality this moment is
-        pub let placeInQuality: Int
+        pub let placeInQuality: UInt32
 
         // the ID of the mold that the moment references
-        pub var moldID: Int
+        pub var moldID: UInt32
 
-        init(newID: Int, moldID: Int, quality: Int, place: Int) { //, reference: &TopShotPublic) {
+        init(newID: UInt64, moldID: UInt32, quality: Int, place: UInt32) {
             pre {
-                newID > 0: "MomentID must be a positive integer!"
-                moldID > 0: "MoldID must be a positive integer!"
                 quality > 0 && quality <= 5: "Quality identifier must be 1-5!"
             }
             self.id = newID
             self.moldID = moldID
             self.quality = quality
             self.placeInQuality = place
+            self.metadata = {}
         }
 
         pub fun getMomentMetadataField(field: String): String? {
@@ -110,22 +81,24 @@ pub contract TopShot: TopShotPublic {
         }
 
         pub fun getMomentMetadata(): {String:String}? {
-            return TopShot.getMoldMetadata(moldID: self.id)
+            return TopShot.getMoldMetadata(moldID: self.moldID)
         }
     }
 
     // variable size dictionary of Mold conforming tokens
-    // Mold is a struct type with an `Int` ID field
-    pub var molds: {Int: Mold}
+    // Mold is a struct type with an `UInt64` ID field
+    pub var molds: {UInt32: Mold}
 
-    // the ID that is used to cast molds
-    pub var moldID: Int
+    // the ID that is used to cast molds. Every time a mold is cast,
+    // moldID is assigned to the new mold's ID and then is incremented by 1.
+    pub var moldID: UInt32
 
-    // the ID that is used to mint unique moments
-    pub var momentID: Int
+    // the total number of Top shot moment NFTs in existence
+    // Is also used as moment IDs just like moldID
+    pub var totalSupply: UInt64
 
     // getMoldMetadata gets a specific metadata field of a mold that is stored in this collection
-    pub fun getMoldMetadataField(moldID: Int, field: String): String? {
+    pub fun getMoldMetadataField(moldID: UInt32, field: String): String? {
         let moldOpt = self.molds[moldID]
 
         if let mold = moldOpt {
@@ -135,7 +108,7 @@ pub contract TopShot: TopShotPublic {
         }
     }
 
-    pub fun getMoldMetadata(moldID: Int): {String:String}? {
+    pub fun getMoldMetadata(moldID: UInt32): {String:String}? {
         let moldOpt = self.molds[moldID]
 
         if let mold = moldOpt {
@@ -147,7 +120,7 @@ pub contract TopShot: TopShotPublic {
 
     // getNumMomentsLeftInQuality get the number of moments left of a certain quality
     // for the specified mold ID
-    pub fun getNumMomentsLeftInQuality(id: Int, quality: Int): Int {
+    pub fun getNumMomentsLeftInQuality(id: UInt32, quality: Int): UInt32 {
         if let mold = self.molds[id] {
             let numLeft = mold.numLeft[quality] ?? panic("missing numLeft!")
             return numLeft
@@ -158,82 +131,99 @@ pub contract TopShot: TopShotPublic {
 
     // getNumMintedInQuality returns the number of moments that have been minted of 
     // a certain mold ID and quality
-    pub fun getNumMintedInQuality(id: Int, quality: Int): Int {
+    pub fun getNumMintedInQuality(id: UInt32, quality: Int): UInt32 {
         if let mold = self.molds[id] {
             let numLeft = mold.numLeft[quality] ?? panic("missing numLeft!")
             let qualityCount = mold.qualityCounts[quality] ?? panic("missing quality count!")
             return qualityCount - numLeft
         } else {
-            return -1
+            return 0
         }
     }
 
     // getQualityTotal returns the total number of moments of a certain quality
     // that are allowed to be minted
-    pub fun getQualityTotal(id: Int, quality: Int): Int {
+    pub fun getQualityTotal(id: UInt32, quality: Int): UInt32 {
         if let mold = self.molds[id] {
             let qualityCount = mold.qualityCounts[quality] ?? panic("missing quality count!")
             return qualityCount
         } else {
-            return -1
+            return 0
         }
     }
 
-    pub resource interface MomentReceiver {
-        pub var moments: @{Int: Moment}
+    // This is the interface that users can cast their moment Collection as
+    // to allow others to deposit moments into their collection
+    pub resource interface MomentCollectionPublic {
+        pub var ownedNFTs: @{UInt64: NFT}
         // deposit deposits a token into the collection
-        pub fun deposit(token: @Moment)
+        pub fun deposit(token: @NFT)
         // idExists checks to see if a Moment with the given ID exists in the collection
-        pub fun idExists(tokenID: Int): Bool
+        pub fun idExists(id: UInt64): Bool
         // getIDs returns an array of the IDs that are in the collection
-        pub fun getIDs(): [Int]
-
-        pub fun getMomentMetadataField(id: Int, field: String): String?
-
-        pub fun getMomentMetadata(id: Int): {String:String}?
+        pub fun getIDs(): [UInt64]
+        // getMetaData returns the metadata associated with a specific moment
+        pub fun getMetaData(id: UInt64, field: String): String 
+        // getMoldMetaDataField returns a field associated with a mold
+        pub fun getMoldMetadataField(id: UInt64, field: String): String?
+        // getMoldMetadata returns all the metadata associated with a mold
+        pub fun getMoldMetadata(id: UInt64): {String:String}?
     }
 
-    pub resource MomentCollection: MomentReceiver { 
+    pub resource Collection: NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.Metadata, MomentCollectionPublic { 
         // dictionary of Moment conforming tokens
         // Moment is a resource type with an `Int` ID field
-        pub var moments: @{Int: Moment}
+        pub var ownedNFTs: @{UInt64: NFT}
 
         init() {
-            self.moments <- {}
+            self.ownedNFTs <- {}
         }
 
         // withdraw removes an Moment from the collection and moves it to the caller
-        pub fun withdraw(tokenID: Int): @Moment {
-            pre {
-                tokenID > 0: "Token ID must be positive!"
-            }
-            let token <- self.moments.remove(key: tokenID) ?? panic("missing Moment")
+        pub fun withdraw(withdrawID: UInt64): @NFT {
+            let token <- self.ownedNFTs.remove(key: withdrawID) ?? panic("missing Moment")
             
             return <-token
         }
 
+        // withdraws a multiple tokens and returns them as a Collection
+        pub fun batchWithdraw(ids: [UInt64]): @Collection {
+            var i = 0
+            var batchCollection: @Collection <- create Collection()
+
+            while i < ids.length {
+                batchCollection.deposit(token: <-self.withdraw(withdrawID: ids[i]))
+
+                i = i + 1
+            }
+            return <-batchCollection
+        }
+
         // deposit takes a Moment and adds it to the collections dictionary
         // and adds the ID to the id array
-        pub fun deposit(token: @Moment) {
+        pub fun deposit(token: @NFT) {
             // add the new token to the dictionary
-            let oldToken <- self.moments[token.id] <- token
+            let oldToken <- self.ownedNFTs[token.id] <- token
             destroy oldToken
         }
 
-        // transfer takes a reference to another user's Moment collection,
-        // takes the Moment out of this collection, and deposits it
-        // in the reference's collection
-        pub fun transfer(recipient: &MomentReceiver, tokenID: Int) {
-            // remove the token from the dictionary get the token from the optional
-            let token <- self.withdraw(tokenID: tokenID)
+        // takes a Collection object as an argument
+        // and deposits each contained NFT into this collection
+        pub fun batchDeposit(tokens: @Collection) {
+            var i = 0
+            let keys = tokens.getIDs()
 
-            // deposit it in the recipient's account
-            recipient.deposit(token: <-token)
+            while i < keys.length {
+                self.deposit(token: <-tokens.withdraw(withdrawID: keys[i]))
+
+                i = i + 1
+            }
+            destroy tokens
         }
 
         // idExists checks to see if a Moment with the given ID exists in the collection
-        pub fun idExists(tokenID: Int): Bool {
-            if self.moments[tokenID] != nil {
+        pub fun idExists(id: UInt64): Bool {
+            if self.ownedNFTs[id] != nil {
                 return true
             }
 
@@ -241,37 +231,54 @@ pub contract TopShot: TopShotPublic {
         }
 
         // getIDs returns an array of the IDs that are in the collection
-        pub fun getIDs(): [Int] {
-            return self.moments.keys
+        pub fun getIDs(): [UInt64] {
+            return self.ownedNFTs.keys
         }
 
-        // getMomentMetadataField gets a specific metadata field of a certain moment in the collection
+        // Gets metadata associated with the specific Moment NFT
         //
-        pub fun getMomentMetadataField(id: Int, field: String): String? {
-            let moment <- self.moments[id] <- nil
+        pub fun getMetaData(id: UInt64, field: String): String {
+            let token <- self.ownedNFTs.remove(key: id) ?? panic("No NFT!")
+            
+            let dataOpt = token.metadata[field]
+
+            let oldToken <- self.ownedNFTs[id] <- token
+            destroy oldToken
+
+            if let data = dataOpt {
+                return data
+            } else {
+                return "None"
+            }
+        }
+
+        // getMomentMetadataField gets a specific mold metadata field of a moment in the collection
+        //
+        pub fun getMoldMetadataField(id: UInt64, field: String): String? {
+            let moment <- self.ownedNFTs[id] <- nil
 
             let field = moment?.getMomentMetadataField(field: field) ?? panic("moment doesn't exist!")
 
-            let oldMoment <- self.moments[id] <- moment
+            let oldMoment <- self.ownedNFTs[id] <- moment
             destroy oldMoment
 
             return field
         }
 
         // getMomentMetadata gets all the metadata of a certain moment in the collection
-        pub fun getMomentMetadata(id: Int): {String:String}? {
-            let moment <- self.moments[id] <- nil
+        pub fun getMoldMetadata(id: UInt64): {String:String}? {
+            let moment <- self.ownedNFTs[id] <- nil
 
             let metadata = moment?.getMomentMetadata() ?? panic("moment doesn't exist!")
 
-            let oldMoment <- self.moments[id] <- moment
+            let oldMoment <- self.ownedNFTs[id] <- moment
             destroy oldMoment
             
             return metadata
         }
 
         destroy() {
-            destroy self.moments
+            destroy self.ownedNFTs
         }
     }
 
@@ -283,7 +290,7 @@ pub contract TopShot: TopShotPublic {
         // for the molds
         // the mold ID must be unused
         // returns the ID the new mold
-        pub fun castMold(metadata: {String: String}, qualityCounts: {Int: Int}): Int {
+        pub fun castMold(metadata: {String: String}, qualityCounts: {Int: UInt32}): UInt32 {
             pre {
                 qualityCounts.length == 5: "Wrong number of qualities!"
                 metadata.length != 0: "Wrong amount of metadata!"
@@ -293,9 +300,9 @@ pub contract TopShot: TopShotPublic {
             TopShot.molds[TopShot.moldID] = newMold
 
             // increment the ID so that it isn't used again
-            TopShot.moldID = TopShot.moldID + 1
+            TopShot.moldID = TopShot.moldID + UInt32(1)
 
-            return TopShot.moldID - 1
+            return TopShot.moldID - UInt32(1)
         }
 
         pub fun createCaster(): @MoldCaster {
@@ -307,11 +314,11 @@ pub contract TopShot: TopShotPublic {
     // so that they are the only one who can mint Moments
     pub resource MomentMinter {
 
-        // mintMoment mints a new moment and returns the ID of the minted moment
-        pub fun mintMoment(moldID: Int, quality: Int, recipient: &MomentReceiver): Int {
+        // mintMoment mints a new moment and returns the newly minted moment
+        pub fun mintMoment(moldID: UInt32, quality: Int): @NFT {
             pre {
                 // check to see if any more moments of this quality are allowed to be minted
-                TopShot.getNumMomentsLeftInQuality(id: moldID, quality: quality) > 0: "All the moments of this quality have been minted!"
+                TopShot.getNumMomentsLeftInQuality(id: moldID, quality: quality) > UInt32(0): "All the moments of this quality have been minted!"
             }
 
             // update the number left in the quality that are allowed to be minted
@@ -321,18 +328,28 @@ pub contract TopShot: TopShotPublic {
             let placeInQuality = TopShot.getNumMintedInQuality(id: moldID, quality: quality)
 
             // mint the new moment
-            let newMoment: @Moment <- create Moment(newID: TopShot.momentID, 
+            let newMoment: @NFT <- create NFT(newID: TopShot.totalSupply, 
                                                     moldID: moldID, 
                                                     quality: quality, 
                                                     place: placeInQuality)
-            
-            // deposit the moment in the owner's account
-            recipient.deposit(token: <-newMoment)
 
-            // update the moment IDs so they can't be reused
-            TopShot.momentID = TopShot.momentID + 1
 
-            return TopShot.momentID - 1
+            TopShot.totalSupply = TopShot.totalSupply + UInt64(1)
+
+            return <-newMoment
+        }
+
+        // batchMintMoment mints an arbitrary quantity of moments and returns all of them in
+        // a new moment Collection
+        pub fun batchMintMoment(moldID: UInt32, quality: Int, quantity: UInt64): @Collection {
+            let newCollection <- create Collection()
+
+            var i: UInt64 = 0
+            while i < quantity {
+                newCollection.deposit(token: <-self.mintMoment(moldID: moldID, quality: quality))
+            }
+
+            return <-newCollection
         }
 
         pub fun createMinter(): @MomentMinter {
@@ -342,14 +359,14 @@ pub contract TopShot: TopShotPublic {
 
     init() {
         self.molds = {}
-        self.moldID = 1
-        self.momentID = 1
+        self.moldID = 0
+        self.totalSupply = 0
 
-        let oldMomentCollection <- self.account.storage[MomentCollection] <- create MomentCollection()
-        destroy oldMomentCollection
+        let oldCollection <- self.account.storage[Collection] <- create Collection()
+        destroy oldCollection
 
-        self.account.storage[&MomentCollection] = &self.account.storage[MomentCollection] as MomentCollection
-        self.account.published[&MomentReceiver] = &self.account.storage[MomentCollection] as MomentReceiver
+        self.account.storage[&Collection] = &self.account.storage[Collection] as Collection
+        self.account.published[&MomentCollectionPublic] = &self.account.storage[Collection] as MomentCollectionPublic
 
         let oldCaster <- self.account.storage[MoldCaster] <- create MoldCaster()
         destroy oldCaster
@@ -359,3 +376,4 @@ pub contract TopShot: TopShotPublic {
     }
 
 }
+ 

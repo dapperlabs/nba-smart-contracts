@@ -1,4 +1,4 @@
-import TopShot from 0x01
+import TopShot from 0x02
 
 // This script checks to see that a mold has the specified
 // metadata
@@ -9,19 +9,19 @@ pub fun main() {
     let name = TopShot.getMoldMetadataField(moldID: 1, field: "Name") ?? panic("Couldn't find this field!")
     log(name)
 
-    if name != "Lebron" {
-        panic("Wrong mold name!")
-    }
+    // if name != "Lebron" {
+    //     panic("Wrong mold name!")
+    // }
 
-    var i=1
-    while(i<=5) {
-        let numLeft = TopShot.getNumMomentsLeftInQuality(id: 1, quality: i)
-        let numMinted = TopShot.getNumMintedInQuality(id: 1, quality: i)
-        let qualityCount = TopShot.getQualityTotal(id: 1, quality: i)
+    // var i=1
+    // while(i<=5) {
+    //     let numLeft = TopShot.getNumMomentsLeftInQuality(id: 1, quality: i)
+    //     let numMinted = TopShot.getNumMintedInQuality(id: 1, quality: i)
+    //     let qualityCount = TopShot.getQualityTotal(id: 1, quality: i)
 
-        assert ( numLeft == qualityCount, message: "Incorrect left in quality!")
-        assert ( numMinted == qualityCount - numLeft, message: "Incorrect num Minted in quality!")
+    //     assert ( numLeft == qualityCount, message: "Incorrect left in quality!")
+    //     assert ( numMinted == qualityCount - numLeft, message: "Incorrect num Minted in quality!")
 
-        i = i + 1
-    }
+    //     i = i + 1
+    // }
 }
