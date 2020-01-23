@@ -18,7 +18,9 @@ Cadence Programming Language.
 
 ## Contract Overview
 
-All functionality and type definitions are included in the TopShot contract.
+All functionality and type definitions are included in the `topshot.cdc` contract.
+An expanded version of the topshot contract is `topshot_expanded.cdc`. This contains
+all the same functionality but has more utility and getter functions.
 
 The TopShot contract defines five types.
 
@@ -31,19 +33,20 @@ The TopShot contract defines five types.
     highlight a user owns. It stores its unique ID, its quality identifier, 
     its place in its quality, 
     and the ID of the mold it references for its metadata.
- - `MomentCollection`: Similar to the `NFTCollection` resource from the NFT
+ - `Collection`: Similar to the `NFTCollection` resource from the NFT
     example, this resource is a repository for a user's moments.  Users can
     withdraw and deposit from this collection and get information about the 
     contained moments.
- - `MoldCaster`: This is a resource type that can be used by admins to cast
-    new molds for Topshot. They will simply call the `castMold` function and
+ - `Admin`: This is a resource type that can be used by admins to cast
+    new molds and mint new moments for Topshot. 
+    For casting a mold, they can simply call the `castMold` function and
     provide the metadata and quality counts and the mold is created and 
     stored in the TopShot contract.
- - `MomentMinter`: This is the resource type that can also be used by admins
-    mint new moments for users of topshot.  When a user makes a purchase 
-    of a scarce moment from the TopShot store, the app will call the
+    For minting a moment, the admin can call the
     `mintMoment` function to mint a new moment that matches a mold that has
-    already been created.
+    already been created.  They can also call `batchMintMoment` to mint multiple
+    moments of the same mold and quality
+
 
 The contract also defines storage fields that are used in mold casting and 
 moment minting.
@@ -53,11 +56,12 @@ moment minting.
  - `pub var moldID: Int`: This is the number that is used for IDs in casting
     molds.  Every time a new mold is created, it gets this number as its ID
     and this number is incremented.
- - `pub var momentID: Int`: This is the number that is used for IDs in minting
+ - `pub var totalSupply: Int`: This is the number that is used for IDs in minting
     moments.  Every time a new mold is minted, it gets this number as its ID
-    and this number is incremented.
+    and this number is incremented. It also keeps track of the total number of 
+    molds that have been minted
 
-There are also a few functions in `TopShot` that allow anyone get get
+There are also a few functions in `TopShot` that allow anyone to get
 data about molds.  These will be covered in the tutorial.
 
 ## How to Deploy and Test the TopShot Contract
@@ -68,13 +72,18 @@ or emulator in our case.
  1. Start the emulator with the `Run emulator` vscode command.
  2. Open the `topshot.cdc` file.  Feel free to read as much as you want to
     familiarize yourself with the contract
- 3. Click the `deploy contract to account` button that appears over the 
+ 3. The TopShot smart contract implements the NFT interface in `nft.cdc`, so you need
+    to open that first and click the `deploy contract to account` button 
+    that appears above the `Tokens` contract. This will deploy the interface definition
+    to account 1.
+ 4. Run the `switch account` command from the vscode comman palette.  Switch to account 2.
+ 5. In `topshot.cdc`, click the `deploy contract to account` button that appears over the 
     `TopShot` contract declaration.
 
-This deploys the contract code to your account. It also runs the contracts
+This deploys the contract code to account 2. It also runs the contracts
 `init` function, which initializes the contract storage variables,
-stores the `MomentCollection`, `MoldCaster`, and `MomentMinter` resources 
-in account storage, and stores references to `MomentCollection`.
+stores the `Collection` and `Admin` resources 
+in account storage, and stores references to `Collection` and `Admin`.
 
 Lets run a script to read some of the contract data
 to make sure it was initialized correctly.

@@ -66,6 +66,14 @@ pub contract TopShot: NonFungibleToken {
             self.placeInQuality = place
             self.metadata = {}
         }
+
+        pub fun getMomentMetadataField(field: String): String? {
+            return TopShot.getMoldMetadataField(moldID: self.moldID, field: field)
+        }
+
+        pub fun getMomentMetadata(): {String:String}? {
+            return TopShot.getMoldMetadata(moldID: self.moldID)
+        }
     }
 
     // variable size dictionary of Mold conforming tokens
@@ -77,8 +85,29 @@ pub contract TopShot: NonFungibleToken {
     pub var moldID: UInt32
 
     // the total number of Top shot moment NFTs in existence
-    // Is also used as moment IDs for minting just like moldID
+    // Is also used as moment IDs just like moldID
     pub var totalSupply: UInt64
+
+    // getMoldMetadata gets a specific metadata field of a mold that is stored in this collection
+    pub fun getMoldMetadataField(moldID: UInt32, field: String): String? {
+        let moldOpt = self.molds[moldID]
+
+        if let mold = moldOpt {
+            return mold.metadata[field]
+        } else {
+            return nil
+        }
+    }
+
+    pub fun getMoldMetadata(moldID: UInt32): {String:String}? {
+        let moldOpt = self.molds[moldID]
+
+        if let mold = moldOpt {
+            return mold.metadata
+        } else {
+            return nil
+        }
+    }
 
     // getNumMomentsLeftInQuality get the number of moments left of a certain quality
     // for the specified mold ID
@@ -103,6 +132,17 @@ pub contract TopShot: NonFungibleToken {
         }
     }
 
+    // getQualityTotal returns the total number of moments of a certain quality
+    // that are allowed to be minted
+    pub fun getQualityTotal(id: UInt32, quality: Int): UInt32 {
+        if let mold = self.molds[id] {
+            let qualityCount = mold.qualityCounts[quality] ?? panic("missing quality count!")
+            return qualityCount
+        } else {
+            return 0
+        }
+    }
+
     // This is the interface that users can cast their moment Collection as
     // to allow others to deposit moments into their collection
     pub resource interface MomentCollectionPublic {
@@ -110,8 +150,16 @@ pub contract TopShot: NonFungibleToken {
         // deposit deposits a token into the collection
         pub fun deposit(token: @NFT)
         pub fun batchDeposit(tokens: @Collection)
+        // idExists checks to see if a Moment with the given ID exists in the collection
+        pub fun idExists(id: UInt64): Bool
         // getIDs returns an array of the IDs that are in the collection
         pub fun getIDs(): [UInt64]
+        // getMetaData returns the metadata associated with a specific moment
+        pub fun getMetaData(id: UInt64, field: String): String 
+        // getMoldMetaDataField returns a field associated with a mold
+        pub fun getMoldMetadataField(id: UInt64, field: String): String?
+        // getMoldMetadata returns all the metadata associated with a mold
+        pub fun getMoldMetadata(id: UInt64): {String:String}?
     }
 
     pub resource Collection: NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.Metadata, MomentCollectionPublic { 
@@ -165,9 +213,60 @@ pub contract TopShot: NonFungibleToken {
             destroy tokens
         }
 
+        // idExists checks to see if a Moment with the given ID exists in the collection
+        pub fun idExists(id: UInt64): Bool {
+            if self.ownedNFTs[id] != nil {
+                return true
+            }
+
+            return false
+        }
+
         // getIDs returns an array of the IDs that are in the collection
         pub fun getIDs(): [UInt64] {
             return self.ownedNFTs.keys
+        }
+
+        // Gets metadata associated with the specific Moment NFT
+        //
+        pub fun getMetaData(id: UInt64, field: String): String {
+            let token <- self.ownedNFTs.remove(key: id) ?? panic("No NFT!")
+            
+            let dataOpt = token.metadata[field]
+
+            let oldToken <- self.ownedNFTs[id] <- token
+            destroy oldToken
+
+            if let data = dataOpt {
+                return data
+            } else {
+                return "None"
+            }
+        }
+
+        // getMomentMetadataField gets a specific mold metadata field of a moment in the collection
+        //
+        pub fun getMoldMetadataField(id: UInt64, field: String): String? {
+            let moment <- self.ownedNFTs[id] <- nil
+
+            let field = moment?.getMomentMetadataField(field: field) ?? panic("moment doesn't exist!")
+
+            let oldMoment <- self.ownedNFTs[id] <- moment
+            destroy oldMoment
+
+            return field
+        }
+
+        // getMomentMetadata gets all the metadata of a certain moment in the collection
+        pub fun getMoldMetadata(id: UInt64): {String:String}? {
+            let moment <- self.ownedNFTs[id] <- nil
+
+            let metadata = moment?.getMomentMetadata() ?? panic("moment doesn't exist!")
+
+            let oldMoment <- self.ownedNFTs[id] <- moment
+            destroy oldMoment
+            
+            return metadata
         }
 
         destroy() {
@@ -179,7 +278,7 @@ pub contract TopShot: NonFungibleToken {
         return <-create Collection()
     }
 
-    // Admin is a resource that the user who has admin access to the Topshot 
+    // MoldCaster is a resource that the user who has admin access to the Topshot 
     // contract will store in their account 
     // this ensures that they are the only ones who can cast molds and mint moments
     pub resource Admin {
@@ -224,6 +323,7 @@ pub contract TopShot: NonFungibleToken {
                                                     quality: quality, 
                                                     place: placeInQuality)
 
+
             TopShot.totalSupply = TopShot.totalSupply + UInt64(1)
 
             return <-newMoment
@@ -257,10 +357,7 @@ pub contract TopShot: NonFungibleToken {
         let oldCollection <- self.account.storage[Collection] <- create Collection()
         destroy oldCollection
 
-        // Create a private reference to the Collection and store it in private account storage
         self.account.storage[&Collection] = &self.account.storage[Collection] as Collection
-
-        // Create a safe, public reference to the Collection and store it in public reference storage
         self.account.published[&MomentCollectionPublic] = &self.account.storage[Collection] as MomentCollectionPublic
 
         // Create a new Admin resource and store it in account storage

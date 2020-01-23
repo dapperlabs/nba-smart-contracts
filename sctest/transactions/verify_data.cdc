@@ -6,7 +6,7 @@ import TopShot from 0x02
 // have made the molds
 pub fun main() {
     
-    let name = TopShot.getMoldMetadataField(moldID: 1, field: "Name") ?? panic("Couldn't find this field!")
+    let name = TopShot.getMoldMetadataField(moldID: 0, field: "Name") ?? panic("Couldn't find this field!")
     log(name)
 
     // if name != "Lebron" {
