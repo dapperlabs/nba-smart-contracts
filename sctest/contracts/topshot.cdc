@@ -18,6 +18,11 @@ import NonFungibleToken from 0x01
 
 pub contract TopShot: NonFungibleToken {
 
+    event MoldCast()
+    event MomentMinted()
+    event Withdraw()
+    event Deposit()
+
     pub struct Mold {
         // the unique ID that the mold has
         pub let id: UInt32
@@ -107,16 +112,14 @@ pub contract TopShot: NonFungibleToken {
     // to allow others to deposit moments into their collection
     pub resource interface MomentCollectionPublic {
         pub var ownedNFTs: @{UInt64: NFT}
-        // deposit deposits a token into the collection
         pub fun deposit(token: @NFT)
         pub fun batchDeposit(tokens: @Collection)
-        // getIDs returns an array of the IDs that are in the collection
         pub fun getIDs(): [UInt64]
     }
 
     pub resource Collection: NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.Metadata, MomentCollectionPublic { 
-        // dictionary of Moment conforming tokens
-        // Moment is a resource type with an `Int` ID field
+        // Dictionary of Moment conforming tokens
+        // NFT is a resource type with a UInt64 ID field
         pub var ownedNFTs: @{UInt64: NFT}
 
         init() {
@@ -130,7 +133,7 @@ pub contract TopShot: NonFungibleToken {
             return <-token
         }
 
-        // withdraws a multiple tokens and returns them as a Collection
+        // batchWithdraw withdraws multiple tokens and returns them as a Collection
         pub fun batchWithdraw(ids: [UInt64]): @Collection {
             var i = 0
             var batchCollection: @Collection <- create Collection()
@@ -151,7 +154,7 @@ pub contract TopShot: NonFungibleToken {
             destroy oldToken
         }
 
-        // takes a Collection object as an argument
+        // batchDeposit takes a Collection object as an argument
         // and deposits each contained NFT into this collection
         pub fun batchDeposit(tokens: @Collection) {
             var i = 0
@@ -183,17 +186,18 @@ pub contract TopShot: NonFungibleToken {
     // contract will store in their account 
     // this ensures that they are the only ones who can cast molds and mint moments
     pub resource Admin {
-        // castMold casts a mold struct and stores it in the dictionary
-        // for the molds
+        // castMold casts a mold struct and stores it in the dictionary for the molds
         // the mold ID must be unused
-        // returns the ID the new mold
+        // returns the ID of the new mold
         pub fun castMold(metadata: {String: String}, qualityCounts: {Int: UInt32}): UInt32 {
             pre {
                 qualityCounts.length == 5: "Wrong number of qualities!"
                 metadata.length != 0: "Wrong amount of metadata!"
             }
+            // Create the new Mold
             var newMold = Mold(id: TopShot.moldID, metadata: metadata, qualityCounts: qualityCounts)
 
+            // Store it in the contract storage
             TopShot.molds[TopShot.moldID] = newMold
 
             // increment the ID so that it isn't used again
@@ -242,6 +246,7 @@ pub contract TopShot: NonFungibleToken {
             return <-newCollection
         }
 
+        // Creates a new admin resource that can be transferred to another account
         pub fun createAdmin(): @Admin {
             return <-create Admin()
         }
@@ -272,4 +277,3 @@ pub contract TopShot: NonFungibleToken {
     }
 
 }
- 

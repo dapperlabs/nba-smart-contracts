@@ -12,7 +12,7 @@ how the topshot smart contracts work.
 Before you read this tutorial, you should be familiar with Flow and the 
 Cadence Programming Language.  
 
- - Read the Flow Primer
+ - [Read the Flow Primer](https://www.withflow.org/en/primer)
  - [Complete the Flow Developer Preview to learn the basics of Cadence](https://www.notion.so/flowpreview/Flow-Developer-Preview-6d5d696c8d584398a2a025185945aa5b)
 
 
