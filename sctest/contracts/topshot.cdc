@@ -14,14 +14,19 @@
 // The top shot account will also have its own moment collection it can use to 
 // hold its own moments
 
+// Note: All state changing functions will panic if an invalid argument is
+// provided, if a mistake happens, or if certain states aren't allowed.  Functions
+// that don't modify state will simply return 0 or nil and those cases need
+// to be handled by the caller.
+
 import NonFungibleToken from 0x01
 
 pub contract TopShot: NonFungibleToken {
 
-    event MoldCast()
-    event MomentMinted()
-    event Withdraw()
-    event Deposit()
+    // event MoldCast()
+    // event MomentMinted()
+    // event Withdraw()
+    // event Deposit()
 
     pub struct Mold {
         // the unique ID that the mold has
@@ -38,6 +43,10 @@ pub contract TopShot: NonFungibleToken {
         pub var numLeft: {Int: UInt32}
 
         init(id: UInt32, metadata: {String: String}, qualityCounts: {Int: UInt32}) {
+            pre {
+                qualityCounts.length == 5: "Wrong number of qualities!"
+                metadata.length != 0: "Wrong amount of metadata!"
+            }
             self.id = id
             self.metadata = metadata
             self.qualityCounts = qualityCounts
@@ -89,8 +98,12 @@ pub contract TopShot: NonFungibleToken {
     // for the specified mold ID
     pub fun getNumMomentsLeftInQuality(id: UInt32, quality: Int): UInt32 {
         if let mold = self.molds[id] {
-            let numLeft = mold.numLeft[quality] ?? panic("missing numLeft!")
-            return numLeft
+            if let numLeft = mold.numLeft[quality] {
+                return numLeft
+            }
+            else {
+                return 0
+            }
         } else {
             return 0
         }
@@ -98,11 +111,19 @@ pub contract TopShot: NonFungibleToken {
 
     // getNumMintedInQuality returns the number of moments that have been minted of 
     // a certain mold ID and quality
+    // All the `return 0` lines are situations when the caller provided an incorrect
+    // paramter value so it returns 0 to show there have been none minted.
     pub fun getNumMintedInQuality(id: UInt32, quality: Int): UInt32 {
         if let mold = self.molds[id] {
-            let numLeft = mold.numLeft[quality] ?? panic("missing numLeft!")
-            let qualityCount = mold.qualityCounts[quality] ?? panic("missing quality count!")
-            return qualityCount - numLeft
+            if let numLeft = mold.numLeft[quality] {
+                if let qualityCount = mold.qualityCounts[quality] {
+                    return qualityCount - numLeft
+                } else {
+                    return 0
+                }
+            } else {
+                return 0
+            }
         } else {
             return 0
         }
@@ -190,10 +211,6 @@ pub contract TopShot: NonFungibleToken {
         // the mold ID must be unused
         // returns the ID of the new mold
         pub fun castMold(metadata: {String: String}, qualityCounts: {Int: UInt32}): UInt32 {
-            pre {
-                qualityCounts.length == 5: "Wrong number of qualities!"
-                metadata.length != 0: "Wrong amount of metadata!"
-            }
             // Create the new Mold
             var newMold = Mold(id: TopShot.moldID, metadata: metadata, qualityCounts: qualityCounts)
 

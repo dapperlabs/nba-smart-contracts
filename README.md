@@ -90,14 +90,10 @@ to make sure it was initialized correctly.
 
  1. Open the `verify_init.cdc` transaction.
  2. Click the `execute script` button to run the script.
- 3. You should see something like:
-```
-DEBU[2517] "Mold ID"                                    
-DEBU[2517] 1                                            
-DEBU[2517] "Moment ID"                                  
-DEBU[2517] 1
-```
-This shows that they were initialized correctly.
+ 3. You should see a bunch of lines that print saying that the the
+    tests are passing.
+
+This shows that the contract and resources were initialized correctly.
 
 As you can see, whenever we want to call a function, read a field,
 or use a type that is defined in a smart contract, we simply import
@@ -110,42 +106,42 @@ Now lets create a mold.
  1. Open the `cast_mold.cdc` transaction file.  
  2. Click the `submit transaction button.
 
-This transaction uses the owners stored `MoldCaster` resource 
+This transaction uses the owners stored `Admin` resource 
 to cast two new molds with the `castMold` funtion.  
-It also prints some of their data to 
-show they were created correctly. Feel free to change some of the 
+Feel free to change some of the 
 casting arguments to create different kinds of molds and to ensure that 
 the contract rejects molds that don't have metadata or the correct qualities.
 
 The `Mold` metadata field is a mapping of String to String, which means it
 is a mapping of the field name, i.e "Player Name" to the value, i.e. "Lebron"
-This makes it so any field can be easily accessed by calling the 
-`getMoldMetadataField` function or to get all the metadata by calling the 
-`getMoldMetadata` function on the contract, providing the ID of the mold.
+This makes it so any field can be easily accessed by providing the name and
+reading the value.
 
 Information about moment quantity restrictions for molds can be accessed 
-by calling the `getNumMomentsLeftInQuality`, `getNumMintedInQuality`, and 
-`getQualityTotal` functions.
+by calling the `getNumMomentsLeftInQuality` and `getNumMintedInQuality` functions.
 
-You can also open the `verify_data.cdc` transaction file to verify that
-the quantities are correct.
+ 1. Open the `verify_mold_data.cdc` transaction file
+ 2. If you ran the castMold transaction as-is, you can just run this script to
+    verify the mold data. If you cast extra molds, you can change the arguments
+    to some of the functions to verify that your molds were cast correctly.
 
 ### Minting Moments 
 
-Now the owner can use the stored `MomentMinter` resource to mint new moments
+Now the owner can use the stored `Admin` resource to mint new moments
 that reference the molds that have been created.
 
  1. Open the `mint_moment.cdc` transaction file and submit it.
  2. You should see the lines printed that the moments were minted successfully
 
 You should also see `[1,2]` print, showing that you currently own the moments.
+Feel free to change some of the moment minting arguments to mint other moments
+and test the restrictions of the quality counts.  
 
-Now we can run a script that shows that we can get the metadata 
-directly from a moment even if the data we are getting isn't directly stored in the moment.  
-It does this because it keeps a record of the mold that it references.
+Now we can run a script that can verify some of the data from the minted molds
 
- 1. Open the `verify_moments.cdc` transaction file and execute the script
- 2. See that it prints "Lebron" from calling a function of the moment!
+ 1. Open the `verify_moment_data.cdc` transaction file.
+ 2. Change the arguments to the tests to match the moments that you have minted
+    and their data.
 
 
 ### Transferring Moments
