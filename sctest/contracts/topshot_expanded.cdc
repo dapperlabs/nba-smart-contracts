@@ -288,7 +288,7 @@ pub contract TopShot: NonFungibleToken {
         // returns the ID the new mold
         pub fun castMold(metadata: {String: String}, qualityCounts: {Int: UInt32}): UInt32 {
             pre {
-                qualityCounts.length == 5: "Wrong number of qualities!"
+                qualityCounts.length > 8: "Wrong number of qualities!"
                 metadata.length != 0: "Wrong amount of metadata!"
             }
             var newMold = Mold(id: TopShot.moldID, metadata: metadata, qualityCounts: qualityCounts)
