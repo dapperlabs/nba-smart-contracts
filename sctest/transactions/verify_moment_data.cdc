@@ -67,7 +67,8 @@ pub fun verifyCollection(account: Address, ids: [UInt64]): Bool {
 
         while i < ids.length {
             if collectionRef.ownedNFTs[ids[i]] == nil {
-                log("ID does not exist ing the collection!")
+                log("ID does not exist in the collection!")
+                log(ids[i])
                 return false
             }
 
