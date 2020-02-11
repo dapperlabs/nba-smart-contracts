@@ -14,6 +14,9 @@
 // The top shot account will also have its own moment collection it can use to 
 // hold its own moments
 
+// THIS CONTRACT IS NOT UP TO DATE, DO NOT USE THIS ONE
+// please use topshot.cdc instead
+
 import NonFungibleToken from 0x01
 
 pub contract TopShot: NonFungibleToken {
