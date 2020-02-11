@@ -35,14 +35,14 @@ access(all) contract TopShot { //: NonFungibleToken {
 
         // the number of moments that have been minted from each quality mold
         // cannot be greater than the corresponding qualityCounts entry
-        access(contract) var numLeft: {Int: UInt32}
+        access(account) var numLeft: {Int: UInt32}
 
         // shows if a certain quality of this mold can be minted or not
-        access(contract) var canBeMinted: {Int: Bool}
+        access(account) var canBeMinted: {Int: Bool}
 
         init(id: UInt32, metadata: {String: String}, qualityCounts: {Int: UInt32}, mintingAllowed: {Int: Bool}) {
             pre {
-                qualityCounts.length == 5: "Wrong number of qualities!"
+                qualityCounts.length == 8: "Wrong number of qualities!"
                 metadata.length != 0: "Wrong amount of metadata!"
             }
             self.id = id
@@ -71,7 +71,7 @@ access(all) contract TopShot { //: NonFungibleToken {
 
         init(newID: UInt64, moldID: UInt32, quality: Int, place: UInt32) {
             pre {
-                quality > 0 && quality <= 5: "Quality identifier must be 1-5!"
+                quality > 0 && quality <= 8: "Quality identifier must be 1-5!"
             }
             self.id = newID
             self.moldID = moldID
@@ -241,7 +241,7 @@ access(all) contract TopShot { //: NonFungibleToken {
         // cannot be reversed
         access(all) fun disallowMinting(moldID: UInt32, quality: Int) {
             pre {
-                quality > 0 && quality <= 5: "Quality must be an integer between 1 and 5"
+                quality > 0 && quality <= 8: "Quality must be an integer between 1 and 5"
             }
             if let mold = TopShot.molds[moldID] {
                 mold.canBeMinted[quality] = false

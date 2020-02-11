@@ -112,7 +112,7 @@ pub fun verifyMoldQualityCounts(id: UInt32, counts: [UInt32]): Bool {
     if let mold = TopShot.molds[id] {
         var i = 1
 
-        while i < 6 {
+        while i < 9 {
             if mold.qualityCounts[i] != counts[i] {
                 log("Quality count is not what was expected!")
                 log("Quality:")
