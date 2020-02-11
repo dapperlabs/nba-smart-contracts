@@ -23,6 +23,12 @@
 
 access(all) contract TopShot { //: NonFungibleToken {
 
+    access(all) event MoldCasted(id: UInt32)
+    access(all) event MomentMinted(id: UInt64, moldID: UInt32)
+    access(all) event ContractInitialized()
+    access(all) event Withdraw(id: UInt64)
+    access(all) event Deposit(id: UInt64)
+
     access(all) struct Mold {
         // the unique ID that the mold has
         access(all) let id: UInt32
@@ -164,6 +170,8 @@ access(all) contract TopShot { //: NonFungibleToken {
         // withdraw removes an Moment from the collection and moves it to the caller
         access(all) fun withdraw(withdrawID: UInt64): @NFT {
             let token <- self.ownedNFTs.remove(key: withdrawID) ?? panic("missing Moment")
+
+            emit Withdraw(id: token.id)
             
             return <-token
         }
@@ -184,8 +192,12 @@ access(all) contract TopShot { //: NonFungibleToken {
         // deposit takes a Moment and adds it to the collections dictionary
         // and adds the ID to the id array
         access(all) fun deposit(token: @NFT) {
+            let id = token.id
             // add the new token to the dictionary
-            let oldToken <- self.ownedNFTs[token.id] <- token
+            let oldToken <- self.ownedNFTs[id] <- token
+
+            emit Deposit(id: id)
+
             destroy oldToken
         }
 
@@ -234,6 +246,8 @@ access(all) contract TopShot { //: NonFungibleToken {
             // increment the ID so that it isn't used again
             TopShot.moldID = TopShot.moldID + UInt32(1)
 
+            emit MoldCasted(id: TopShot.moldID - UInt32(1))
+
             return TopShot.moldID - UInt32(1)
         }
 
@@ -274,13 +288,15 @@ access(all) contract TopShot { //: NonFungibleToken {
                                                     quality: quality, 
                                                     place: placeInQuality)
 
+            emit MomentMinted(id: TopShot.totalSupply, moldID: moldID)
+
             TopShot.totalSupply = TopShot.totalSupply + UInt64(1)
 
             return <-newMoment
         }
 
-        // batchMintMoment mints an arbitrary quantity of moments and returns all of them in
-        // a new moment Collection
+        // batchMintMoment mints an arbitrary quantity of moments all of the same ID
+        // and quality and returns all of them in a new moment Collection
         access(all) fun batchMintMoment(moldID: UInt32, quality: Int, quantity: UInt64): @Collection {
             let newCollection <- create Collection()
 
@@ -320,6 +336,8 @@ access(all) contract TopShot { //: NonFungibleToken {
 
         // Create a private reference to the Admin resource and store it in private account storage
         self.account.storage[&Admin] = &self.account.storage[Admin] as Admin
+
+        emit ContractInitialized()
     }
 
 }
