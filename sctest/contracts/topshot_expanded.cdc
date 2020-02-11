@@ -18,6 +18,9 @@ import NonFungibleToken from 0x01
 
 pub contract TopShot: NonFungibleToken {
 
+    pub event MoldCasted(id: UInt32)
+    pub event MomentMinted(id: UInt64, moldID: UInt32)
+
     pub struct Mold {
         // the unique ID that the mold has
         pub let id: UInt32
@@ -298,6 +301,8 @@ pub contract TopShot: NonFungibleToken {
             // increment the ID so that it isn't used again
             TopShot.moldID = TopShot.moldID + UInt32(1)
 
+            emit MoldCasted(id: TopShot.moldID)
+
             return TopShot.moldID - UInt32(1)
         }
 
@@ -323,6 +328,8 @@ pub contract TopShot: NonFungibleToken {
                                                     quality: quality, 
                                                     place: placeInQuality)
 
+
+	    emit MomentMinted(id: TopShot.totalSupply, moldID: moldID)
 
             TopShot.totalSupply = TopShot.totalSupply + UInt64(1)
 
