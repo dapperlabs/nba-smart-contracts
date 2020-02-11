@@ -19,30 +19,28 @@
 // that don't modify state will simply return 0 or nil and those cases need
 // to be handled by the caller.
 
-import NonFungibleToken from 0x01
+//import NonFungibleToken from 0x01
 
-pub contract TopShot: NonFungibleToken {
+access(all) contract TopShot { //: NonFungibleToken {
 
-    // event MoldCast()
-    // event MomentMinted()
-    // event Withdraw()
-    // event Deposit()
-
-    pub struct Mold {
+    access(all) struct Mold {
         // the unique ID that the mold has
-        pub let id: UInt32
+        access(all) let id: UInt32
 
         // Stores all the metadata about the mold as a string mapping
-        pub let metadata: {String: String}
+        access(all) let metadata: {String: String}
 
         // the number of moments that can be minted from each quality for this mold
-        pub let qualityCounts: {Int: UInt32}
+        access(all) let qualityCounts: {Int: UInt32}
 
         // the number of moments that have been minted from each quality mold
         // cannot be greater than the corresponding qualityCounts entry
-        pub var numLeft: {Int: UInt32}
+        access(contract) var numLeft: {Int: UInt32}
 
-        init(id: UInt32, metadata: {String: String}, qualityCounts: {Int: UInt32}) {
+        // shows if a certain quality of this mold can be minted or not
+        access(contract) var canBeMinted: {Int: Bool}
+
+        init(id: UInt32, metadata: {String: String}, qualityCounts: {Int: UInt32}, mintingAllowed: {Int: Bool}) {
             pre {
                 qualityCounts.length == 5: "Wrong number of qualities!"
                 metadata.length != 0: "Wrong amount of metadata!"
@@ -51,24 +49,25 @@ pub contract TopShot: NonFungibleToken {
             self.metadata = metadata
             self.qualityCounts = qualityCounts
             self.numLeft = qualityCounts
+            self.canBeMinted = mintingAllowed
         }
     }
 
-    pub resource NFT: NonFungibleToken.INFT {
+    access(all) resource NFT { //: NonFungibleToken.INFT {
         // global unique moment ID
-        pub let id: UInt64
+        access(all) let id: UInt64
 
         // shows metadata that is only associated with a specific NFT, and not a mold
-        pub var metadata: {String:String}
+        access(all) var metadata: {String:String}
 
         // quality identifier. Will soon be an enum
-        pub var quality: Int
+        access(all) var quality: Int
 
         // Tells which number of the Quality this moment is
-        pub let placeInQuality: UInt32
+        access(all) let placeInQuality: UInt32
 
         // the ID of the mold that the moment references
-        pub var moldID: UInt32
+        access(all) var moldID: UInt32
 
         init(newID: UInt64, moldID: UInt32, quality: Int, place: UInt32) {
             pre {
@@ -84,19 +83,19 @@ pub contract TopShot: NonFungibleToken {
 
     // variable size dictionary of Mold conforming tokens
     // Mold is a struct type with an `UInt64` ID field
-    pub var molds: {UInt32: Mold}
+    access(all) var molds: {UInt32: Mold}
 
     // the ID that is used to cast molds. Every time a mold is cast,
     // moldID is assigned to the new mold's ID and then is incremented by 1.
-    pub var moldID: UInt32
+    access(all) var moldID: UInt32
 
     // the total number of Top shot moment NFTs in existence
     // Is also used as moment IDs for minting just like moldID
-    pub var totalSupply: UInt64
+    access(all) var totalSupply: UInt64
 
     // getNumMomentsLeftInQuality get the number of moments left of a certain quality
     // for the specified mold ID
-    pub fun getNumMomentsLeftInQuality(id: UInt32, quality: Int): UInt32 {
+    access(all) fun getNumMomentsLeftInQuality(id: UInt32, quality: Int): UInt32 {
         if let mold = self.molds[id] {
             if let numLeft = mold.numLeft[quality] {
                 return numLeft
@@ -113,7 +112,7 @@ pub contract TopShot: NonFungibleToken {
     // a certain mold ID and quality
     // All the `return 0` lines are situations when the caller provided an incorrect
     // paramter value so it returns 0 to show there have been none minted.
-    pub fun getNumMintedInQuality(id: UInt32, quality: Int): UInt32 {
+    access(all) fun getNumMintedInQuality(id: UInt32, quality: Int): UInt32 {
         if let mold = self.molds[id] {
             if let numLeft = mold.numLeft[quality] {
                 if let qualityCount = mold.qualityCounts[quality] {
@@ -129,33 +128,48 @@ pub contract TopShot: NonFungibleToken {
         }
     }
 
-    // This is the interface that users can cast their moment Collection as
-    // to allow others to deposit moments into their collection
-    pub resource interface MomentCollectionPublic {
-        pub var ownedNFTs: @{UInt64: NFT}
-        pub fun deposit(token: @NFT)
-        pub fun batchDeposit(tokens: @Collection)
-        pub fun getIDs(): [UInt64]
+    // mintingAllowed Returns a boolean that indicates if minting is allowed
+    // for a certain mold and quality.
+    //
+    access(all) fun mintingAllowed(id: UInt32, quality: Int): Bool {
+        if let mold = self.molds[id] {
+            if let canBeMinted = mold.canBeMinted[quality] {
+                return canBeMinted
+            } else {
+                return false
+            }
+        } else {
+            return false
+        }
     }
 
-    pub resource Collection: NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.Metadata, MomentCollectionPublic { 
+    // This is the interface that users can cast their moment Collection as
+    // to allow others to deposit moments into their collection
+    access(all) resource interface MomentCollectionPublic {
+        access(all) var ownedNFTs: @{UInt64: NFT}
+        access(all) fun deposit(token: @NFT)
+        access(all) fun batchDeposit(tokens: @Collection)
+        access(all) fun getIDs(): [UInt64]
+    }
+
+    access(all) resource Collection: MomentCollectionPublic { //: NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.Metadata, MomentCollectionPublic { 
         // Dictionary of Moment conforming tokens
         // NFT is a resource type with a UInt64 ID field
-        pub var ownedNFTs: @{UInt64: NFT}
+        access(all) var ownedNFTs: @{UInt64: NFT}
 
         init() {
             self.ownedNFTs <- {}
         }
 
         // withdraw removes an Moment from the collection and moves it to the caller
-        pub fun withdraw(withdrawID: UInt64): @NFT {
+        access(all) fun withdraw(withdrawID: UInt64): @NFT {
             let token <- self.ownedNFTs.remove(key: withdrawID) ?? panic("missing Moment")
             
             return <-token
         }
 
         // batchWithdraw withdraws multiple tokens and returns them as a Collection
-        pub fun batchWithdraw(ids: [UInt64]): @Collection {
+        access(all) fun batchWithdraw(ids: [UInt64]): @Collection {
             var i = 0
             var batchCollection: @Collection <- create Collection()
 
@@ -169,7 +183,7 @@ pub contract TopShot: NonFungibleToken {
 
         // deposit takes a Moment and adds it to the collections dictionary
         // and adds the ID to the id array
-        pub fun deposit(token: @NFT) {
+        access(all) fun deposit(token: @NFT) {
             // add the new token to the dictionary
             let oldToken <- self.ownedNFTs[token.id] <- token
             destroy oldToken
@@ -177,7 +191,7 @@ pub contract TopShot: NonFungibleToken {
 
         // batchDeposit takes a Collection object as an argument
         // and deposits each contained NFT into this collection
-        pub fun batchDeposit(tokens: @Collection) {
+        access(all) fun batchDeposit(tokens: @Collection) {
             var i = 0
             let keys = tokens.getIDs()
 
@@ -190,7 +204,7 @@ pub contract TopShot: NonFungibleToken {
         }
 
         // getIDs returns an array of the IDs that are in the collection
-        pub fun getIDs(): [UInt64] {
+        access(all) fun getIDs(): [UInt64] {
             return self.ownedNFTs.keys
         }
 
@@ -199,20 +213,20 @@ pub contract TopShot: NonFungibleToken {
         }
     }
 
-    pub fun createEmptyCollection(): @Collection {
+    access(all) fun createEmptyCollection(): @Collection {
         return <-create Collection()
     }
 
     // Admin is a resource that the user who has admin access to the Topshot 
     // contract will store in their account 
     // this ensures that they are the only ones who can cast molds and mint moments
-    pub resource Admin {
+    access(all) resource Admin {
         // castMold casts a mold struct and stores it in the dictionary for the molds
         // the mold ID must be unused
         // returns the ID of the new mold
-        pub fun castMold(metadata: {String: String}, qualityCounts: {Int: UInt32}): UInt32 {
+        access(all) fun castMold(metadata: {String: String}, qualityCounts: {Int: UInt32}, mintingAllowed: {Int: Bool}): UInt32 {
             // Create the new Mold
-            var newMold = Mold(id: TopShot.moldID, metadata: metadata, qualityCounts: qualityCounts)
+            var newMold = Mold(id: TopShot.moldID, metadata: metadata, qualityCounts: qualityCounts, mintingAllowed: mintingAllowed)
 
             // Store it in the contract storage
             TopShot.molds[TopShot.moldID] = newMold
@@ -223,11 +237,26 @@ pub contract TopShot: NonFungibleToken {
             return TopShot.moldID - UInt32(1)
         }
 
+        // sets minting allowed to false
+        // cannot be reversed
+        access(all) fun disallowMinting(moldID: UInt32, quality: Int) {
+            pre {
+                quality > 0 && quality <= 5: "Quality must be an integer between 1 and 5"
+            }
+            if let mold = TopShot.molds[moldID] {
+                mold.canBeMinted[quality] = false
+                TopShot.molds[moldID] = mold
+            } else {
+                panic("Incorrect mold specified!")
+            }
+        }
+
         // mintMoment mints a new moment and returns the newly minted moment
-        pub fun mintMoment(moldID: UInt32, quality: Int): @NFT {
+        access(all) fun mintMoment(moldID: UInt32, quality: Int): @NFT {
             pre {
                 // check to see if any more moments of this quality are allowed to be minted
                 TopShot.getNumMomentsLeftInQuality(id: moldID, quality: quality) > UInt32(0): "All the moments of this quality have been minted!"
+                TopShot.mintingAllowed(id: moldID, quality: quality): "This mold quality does not allow new minting!"
             }
 
             // update the number left in the quality that are allowed to be minted
@@ -252,7 +281,7 @@ pub contract TopShot: NonFungibleToken {
 
         // batchMintMoment mints an arbitrary quantity of moments and returns all of them in
         // a new moment Collection
-        pub fun batchMintMoment(moldID: UInt32, quality: Int, quantity: UInt64): @Collection {
+        access(all) fun batchMintMoment(moldID: UInt32, quality: Int, quantity: UInt64): @Collection {
             let newCollection <- create Collection()
 
             var i: UInt64 = 0
@@ -264,7 +293,7 @@ pub contract TopShot: NonFungibleToken {
         }
 
         // Creates a new admin resource that can be transferred to another account
-        pub fun createAdmin(): @Admin {
+        access(all) fun createAdmin(): @Admin {
             return <-create Admin()
         }
     }

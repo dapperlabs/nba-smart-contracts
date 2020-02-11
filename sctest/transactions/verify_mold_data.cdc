@@ -50,6 +50,22 @@ pub fun verifyMoldLen(_ length: Int): Bool  {
     }
 }
 
+pub fun verifyMoldIDs(ids: [UInt32]): Bool  {
+    log("verifyMoldIDs")
+
+    let i = 0
+
+    while i < ids.length {
+        if TopShot.molds.ids[i] == nil {
+            log("mold Id doesn't exist")
+            log(TopShot.molds.ids[i])
+            return false
+        }
+    }
+
+    return true
+}
+
 pub fun numMomentsLeft(id: UInt32, quality: Int, expected: UInt32): Bool  {
     log("numMomentsLeft")
 
