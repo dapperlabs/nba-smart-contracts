@@ -14,11 +14,6 @@ import TopShot from 0x0000000000000000000000000000000000000002
 // They will give a reference to this collection to the central contract
 // that it can use to list tokens
 
-// this is only for one type of NFT for now
-// TODO: make it a marketplace that can buy and sell different classes of NFTs
-//       how do I do this? Generic NFTs? Using interfaces instead of resources as argument
-//       and storage types?
-
 
 access(all) contract Market {
 
@@ -32,6 +27,20 @@ access(all) contract Market {
     
     // the percentage that is taken from every purchase for TopShot
     access(account) var cutPercentage: UInt8
+
+    // The collection of sale references that are included in the marketplace
+    access(all) var saleReferences: {Int: &SalePublic}
+
+    access(all) var numSales: Int
+
+    // The interface that user can publish to allow others too access their sale
+    access(all) resource interface SalePublic {
+        access(all) var prices: {UInt64: UInt256}
+        access(self) let cutPercentage: UInt8
+        access(all) fun purchase(tokenID: UInt64, recipient: &TopShot.Collection, buyTokens: @FlowToken.Vault)
+        access(all) fun idPrice(tokenID: UInt64): UInt256?
+        access(all) fun getIDs(): [UInt64]
+    }
 
     access(all) resource SaleCollection {
 
@@ -49,6 +58,7 @@ access(all) contract Market {
         // the reference that is used for depositing TopShot's cut of every sale
         access(self) let TopShotVault: &FlowToken.Vault
 
+        // the percentage that is taken from every purchase for TopShot
         access(self) let cutPercentage: UInt8
 
         init (vault: &FlowToken.Vault) {
@@ -143,8 +153,33 @@ access(all) contract Market {
         return <- create SaleCollection(vault: ownerVault)
     }
 
+    // These next three functions may or may not be needed but serve as a
+    // preliminary way for the contract to keep track of sales that are
+    // listed in the marketplace
+    access(account) fun addSale(reference: &SalePublic): Int {
+        pre {
+            reference.getIDs().length != 0: "Cannot add an empty sale!"
+        }
+
+        self.saleReferences[self.numSales] = reference
+        self.numSales = self.numSales + 1
+
+        return self.numSales
+    }
+
+    access(account) fun removeSale(id: Int) {
+        self.saleReferences.remove(key: id)
+        self.numSales = self.numSales + 1
+    }
+
+    access(all) fun getSaleReference(id: Int): &SalePublic? {
+        return self.saleReferences[id]
+    }
+
     init() {
         self.TopShotVault = self.account.storage[&FlowToken.Vault]
         self.cutPercentage = 5
+        self.saleReferences = {}
+        self.numSales = 1
     }
 }
