@@ -8,22 +8,22 @@ access(all) contract interface FungibleToken {
     // The total number of tokens in existence
     // it is up to the implementor to ensure that total supply 
     // stays accurate and up to date
-    access(all) var totalSupply: UInt256
+    access(all) var totalSupply: UInt64
 
     // event that is emitted when the contract is created
-    access(all) event FungibleTokenInitialized(initialSupply: UInt256)
+    access(all) event FungibleTokenInitialized(initialSupply: UInt64)
 
     // event that is emitted when tokens are withdrawn from a Vault
-    access(all) event Withdraw(amount: UInt256)
+    access(all) event Withdraw(amount: UInt64)
 
     // event that is emitted when tokens are deposited to a Vault
-    access(all) event Deposit(amount: UInt256)
+    access(all) event Deposit(amount: UInt64)
 
     // Interface that enforces the requirements for withdrawing
     // tokens from the implementing type
     //
     access(all) resource interface Provider {
-        pub fun withdraw(amount: UInt256): @Vault {
+        pub fun withdraw(amount: UInt64): @Vault {
             post {
                 result.balance == amount:
                     "Withdrawal amount must be the same as the balance of the withdrawn Vault"
@@ -40,7 +40,7 @@ access(all) contract interface FungibleToken {
     access(all) resource interface Receiver {
         pub fun deposit(from: @Vault) {
             pre {
-                from.balance > UInt256(0):
+                from.balance > UInt64(0):
                     "Deposit balance must be positive"
             }
         }
@@ -49,7 +49,7 @@ access(all) contract interface FungibleToken {
     // Interface that contains the balance field of the Vault
     //
     access(all) resource interface Balance {
-        pub var balance: UInt256
+        pub var balance: UInt64
     }
 
     // The declaration of a concrete type in a contract interface means that
@@ -60,9 +60,9 @@ access(all) contract interface FungibleToken {
     //
     access(all) resource Vault: Provider, Receiver, Balance {
         // keeps track of the total balance of the accounts tokens
-        access(all) var balance: UInt256
+        access(all) var balance: UInt64
 
-        init(balance: UInt256) {
+        init(balance: UInt64) {
             post {
                 self.balance == balance: "Balance must be initialized to the initial balance"
                 // cannot get interface fields from within resource
@@ -72,7 +72,7 @@ access(all) contract interface FungibleToken {
 
         // withdraw subtracts `amount` from the vaults balance and
         // returns a vault object with the subtracted balance
-        access(all) fun withdraw(amount: UInt256): @Vault {
+        access(all) fun withdraw(amount: UInt64): @Vault {
             pre {
                 self.balance >= amount: "Amount withdrawn must be less than the balance of the Vault!"
             }
@@ -94,7 +94,7 @@ access(all) contract interface FungibleToken {
     //
     access(all) fun createEmptyVault(): @Vault {
         post {
-            result.balance == UInt256(0): "The newly created Vault must have zero balance"
+            result.balance == UInt64(0): "The newly created Vault must have zero balance"
         }
     }
 }
@@ -105,26 +105,26 @@ access(all) contract interface FungibleToken {
 //
 access(all) contract FlowToken: FungibleToken {
 
-    access(all) var totalSupply: UInt256
+    access(all) var totalSupply: UInt64
 
     // event that is emitted when the contract is created
-    access(all) event FungibleTokenInitialized(initialSupply: UInt256)
+    access(all) event FungibleTokenInitialized(initialSupply: UInt64)
 
     // event that is emitted when tokens are withdrawn from a Vault
-    access(all) event Withdraw(amount: UInt256)
+    access(all) event Withdraw(amount: UInt64)
 
     // event that is emitted when tokens are deposited to a Vault
-    access(all) event Deposit(amount: UInt256)
+    access(all) event Deposit(amount: UInt64)
 
     access(all) resource Vault: FungibleToken.Provider, FungibleToken.Receiver, FungibleToken.Balance {
         
-        access(all) var balance: UInt256
+        access(all) var balance: UInt64
 
-        init(balance: UInt256) {
+        init(balance: UInt64) {
             self.balance = balance
         }
 
-        access(all) fun withdraw(amount: UInt256): @Vault {
+        access(all) fun withdraw(amount: UInt64): @Vault {
             self.balance = self.balance - amount
             emit Withdraw(amount: amount)
             return <-create Vault(balance: amount)
@@ -144,7 +144,7 @@ access(all) contract FlowToken: FungibleToken {
     // This function is included here purely for testing purposes and would not be
     // included in an actual implementation
     //
-    access(all) fun createVault(initialBalance: UInt256): @Vault {
+    access(all) fun createVault(initialBalance: UInt64): @Vault {
         return <-create Vault(balance: initialBalance)
     }
 
