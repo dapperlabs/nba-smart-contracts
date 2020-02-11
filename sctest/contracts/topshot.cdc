@@ -46,7 +46,7 @@ access(all) contract TopShot { //: NonFungibleToken {
         // shows if a certain quality of this mold can be minted or not
         access(account) var canBeMinted: {Int: Bool}
 
-        init(id: UInt32, metadata: {String: String}, qualityCounts: {Int: UInt32}, mintingAllowed: {Int: Bool}) {
+        init(id: UInt32, metadata: {String: String}, qualityCounts: {Int: UInt32}) {
             pre {
                 qualityCounts.length == 8: "Wrong number of qualities!"
                 metadata.length != 0: "Wrong amount of metadata!"
@@ -55,7 +55,7 @@ access(all) contract TopShot { //: NonFungibleToken {
             self.metadata = metadata
             self.qualityCounts = qualityCounts
             self.numLeft = qualityCounts
-            self.canBeMinted = mintingAllowed
+            self.canBeMinted = {1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: true}
         }
     }
 
