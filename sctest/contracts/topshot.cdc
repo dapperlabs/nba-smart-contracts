@@ -236,9 +236,9 @@ access(all) contract TopShot { //: NonFungibleToken {
         // castMold casts a mold struct and stores it in the dictionary for the molds
         // the mold ID must be unused
         // returns the ID of the new mold
-        access(all) fun castMold(metadata: {String: String}, qualityCounts: {Int: UInt32}, mintingAllowed: {Int: Bool}): UInt32 {
+        access(all) fun castMold(metadata: {String: String}, qualityCounts: {Int: UInt32}): UInt32 {
             // Create the new Mold
-            var newMold = Mold(id: TopShot.moldID, metadata: metadata, qualityCounts: qualityCounts, mintingAllowed: mintingAllowed)
+            var newMold = Mold(id: TopShot.moldID, metadata: metadata, qualityCounts: qualityCounts)
 
             // Store it in the contract storage
             TopShot.molds[TopShot.moldID] = newMold
