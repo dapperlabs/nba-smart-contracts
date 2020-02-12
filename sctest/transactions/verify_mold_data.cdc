@@ -56,9 +56,9 @@ pub fun verifyMoldIDs(ids: [UInt32]): Bool  {
     let i = 0
 
     while i < ids.length {
-        if TopShot.molds.ids[i] == nil {
+        if TopShot.molds[ids[i]] == nil {
             log("mold Id doesn't exist")
-            log(TopShot.molds.ids[i])
+            log(TopShot.molds[ids[i]])
             return false
         }
     }
@@ -94,6 +94,8 @@ pub fun numMinted(id: UInt32, quality: Int, expected: UInt32): Bool {
 }
 
 pub fun verifyMoldMetaData(id: UInt32, key: String, value: String): Bool {
+    log("verifyMoldMetaData")
+
     if let mold = TopShot.molds[id] {
         if mold.metadata[key] != value || mold.id != id {
             log("Metadata is not what was expected!")
@@ -109,16 +111,20 @@ pub fun verifyMoldMetaData(id: UInt32, key: String, value: String): Bool {
 }
 
 pub fun verifyMoldQualityCounts(id: UInt32, counts: [UInt32]): Bool {
-    if let mold = TopShot.molds[id] {
-        var i = 1
+    log("verifyMoldQualityCounts")
 
-        while i < 9 {
-            if mold.qualityCounts[i] != counts[i] {
+    if let mold = TopShot.molds[id] {
+        var i = 0
+
+        while i < counts.length {
+            if mold.qualityCounts[i+1] != counts[i] {
                 log("Quality count is not what was expected!")
                 log("Quality:")
                 log(i)
-                log("Count")
+                log("mold Count")
                 log(mold.qualityCounts[i])
+                log("expected count")
+                log(counts[i])
                 return false
             }
             i = i + 1
