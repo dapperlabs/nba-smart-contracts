@@ -1,4 +1,4 @@
-import FlowToken from 0x0000000000000000000000000000000000000001
+import FungibleToken, FlowToken from 0x0000000000000000000000000000000000000001
 import TopShot from 0x0000000000000000000000000000000000000002
 
 // Marketplace is where users can put their NFTs up for sale with a price
@@ -23,7 +23,7 @@ access(all) contract Market {
     access(all) event SaleWithdrawn(id: UInt64)
 
     // the reference that is used for depositing TopShot's cut of every sale
-    access(account) var TopShotVault: &FlowToken.Vault
+    access(account) var TopShotVault: &FungibleToken.Receiver
     
     // the percentage that is taken from every purchase for TopShot
     access(account) var cutPercentage: UInt64
@@ -56,7 +56,7 @@ access(all) contract Market {
         access(account) let ownerVault: &FlowToken.Vault
 
         // the reference that is used for depositing TopShot's cut of every sale
-        access(self) let TopShotVault: &FlowToken.Vault
+        access(self) let TopShotVault: &FungibleToken.Receiver
 
         // the percentage that is taken from every purchase for TopShot
         access(self) let cutPercentage: UInt64
@@ -177,7 +177,8 @@ access(all) contract Market {
     }
 
     init() {
-        self.TopShotVault = self.account.storage[&FlowToken.Vault] ?? panic("No vault!")
+        let acct = getAccount(0x01)
+        self.TopShotVault = acct.published[&FungibleToken.Receiver] ?? panic("No vault!")
         self.cutPercentage = 5
         self.saleReferences = {}
         self.numSales = 1
