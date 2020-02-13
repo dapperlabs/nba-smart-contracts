@@ -26,7 +26,7 @@ access(all) contract Market {
     access(account) var TopShotVault: &FungibleToken.Receiver
     
     // the percentage that is taken from every purchase for TopShot
-    access(account) var cutPercentage: UInt64
+    access(all) var cutPercentage: UInt64
 
     // The collection of sale references that are included in the marketplace
     access(all) var saleReferences: {Int: &SalePublic}
@@ -35,14 +35,14 @@ access(all) contract Market {
 
     // The interface that user can publish to allow others too access their sale
     access(all) resource interface SalePublic {
-        access(all) var prices: {UInt64: UInt256}
-        access(self) let cutPercentage: UInt8
+        access(all) var prices: {UInt64: UInt64}
+        access(account) let cutPercentage: UInt64
         access(all) fun purchase(tokenID: UInt64, recipient: &TopShot.Collection, buyTokens: @FlowToken.Vault)
-        access(all) fun idPrice(tokenID: UInt64): UInt256?
+        access(all) fun idPrice(tokenID: UInt64): UInt64?
         access(all) fun getIDs(): [UInt64]
     }
 
-    access(all) resource SaleCollection {
+    access(all) resource SaleCollection: SalePublic {
 
         // a dictionary of the NFTs that the user is putting up for sale
         access(all) var forSale: @{UInt64: TopShot.NFT}
@@ -53,15 +53,15 @@ access(all) contract Market {
         // the fungible token vault of the owner of this sale
         // so that when someone buys a token, this resource can deposit
         // tokens in their account
-        access(account) let ownerVault: &FlowToken.Vault
+        access(account) let ownerVault: &FungibleToken.Receiver
 
         // the reference that is used for depositing TopShot's cut of every sale
         access(self) let TopShotVault: &FungibleToken.Receiver
 
         // the percentage that is taken from every purchase for TopShot
-        access(self) let cutPercentage: UInt64
+        access(account) let cutPercentage: UInt64
 
-        init (vault: &FlowToken.Vault) {
+        init (vault: &FungibleToken.Receiver) {
             self.forSale <- {}
             self.ownerVault = vault
             self.prices = {}
@@ -149,7 +149,7 @@ access(all) contract Market {
     }
 
     // createCollection returns a new collection resource to the caller
-    access(all) fun createSaleCollection(ownerVault: &FlowToken.Vault): @SaleCollection {
+    access(all) fun createSaleCollection(ownerVault: &FungibleToken.Receiver): @SaleCollection {
         return <- create SaleCollection(vault: ownerVault)
     }
 
@@ -161,8 +161,9 @@ access(all) contract Market {
             reference.getIDs().length != 0: "Cannot add an empty sale!"
         }
 
-        self.saleReferences[self.numSales] = reference
         self.numSales = self.numSales + 1
+
+        self.saleReferences[self.numSales] = reference
 
         return self.numSales
     }
@@ -181,6 +182,6 @@ access(all) contract Market {
         self.TopShotVault = acct.published[&FungibleToken.Receiver] ?? panic("No vault!")
         self.cutPercentage = 5
         self.saleReferences = {}
-        self.numSales = 1
+        self.numSales = 0
     }
 }
