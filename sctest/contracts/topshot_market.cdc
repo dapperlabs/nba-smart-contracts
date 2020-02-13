@@ -17,16 +17,16 @@ import TopShot from 0x0000000000000000000000000000000000000002
 
 access(all) contract Market {
 
-    access(all) event ForSale(id: UInt64, price: UInt256)
-    access(all) event PriceChanged(id: UInt64, newPrice: UInt256)
-    access(all) event TokenPurchased(id: UInt64, price: UInt256)
+    access(all) event ForSale(id: UInt64, price: UInt64)
+    access(all) event PriceChanged(id: UInt64, newPrice: UInt64)
+    access(all) event TokenPurchased(id: UInt64, price: UInt64)
     access(all) event SaleWithdrawn(id: UInt64)
 
     // the reference that is used for depositing TopShot's cut of every sale
     access(account) var TopShotVault: &FlowToken.Vault
     
     // the percentage that is taken from every purchase for TopShot
-    access(account) var cutPercentage: UInt8
+    access(account) var cutPercentage: UInt64
 
     // The collection of sale references that are included in the marketplace
     access(all) var saleReferences: {Int: &SalePublic}
@@ -48,7 +48,7 @@ access(all) contract Market {
         access(all) var forSale: @{UInt64: TopShot.NFT}
 
         // dictionary of the prices for each NFT by ID
-        access(all) var prices: {UInt64: UInt256}
+        access(all) var prices: {UInt64: UInt64}
 
         // the fungible token vault of the owner of this sale
         // so that when someone buys a token, this resource can deposit
@@ -59,7 +59,7 @@ access(all) contract Market {
         access(self) let TopShotVault: &FlowToken.Vault
 
         // the percentage that is taken from every purchase for TopShot
-        access(self) let cutPercentage: UInt8
+        access(self) let cutPercentage: UInt64
 
         init (vault: &FlowToken.Vault) {
             self.forSale <- {}
@@ -82,7 +82,7 @@ access(all) contract Market {
         }
 
         // listForSale lists an NFT for sale in this collection
-        access(all) fun listForSale(token: @TopShot.NFT, price: UInt256) {
+        access(all) fun listForSale(token: @TopShot.NFT, price: UInt64) {
             let id: UInt64 = token.id
 
             self.prices[id] = price
@@ -95,7 +95,7 @@ access(all) contract Market {
         }
 
         // changePrice changes the price of a token that is currently for sale
-        access(all) fun changePrice(tokenID: UInt64, newPrice: UInt256) {
+        access(all) fun changePrice(tokenID: UInt64, newPrice: UInt64) {
             pre {
                 self.prices[tokenID] != nil: "Cannot change price for a token that doesnt exist."
             }
@@ -109,7 +109,7 @@ access(all) contract Market {
             pre {
                 self.forSale[tokenID] != nil && self.prices[tokenID] != nil:
                     "No token matching this ID for sale!"
-                buyTokens.balance >= (self.prices[tokenID] ?? UInt256(0)):
+                buyTokens.balance >= (self.prices[tokenID] ?? UInt64(0)):
                     "Not enough tokens to by the NFT!"
             }
 
@@ -117,7 +117,7 @@ access(all) contract Market {
                 self.prices[tokenID] = nil
 
                 // take the cut of the tokens Top shot gets from the sent tokens
-                let TopShotCut = buyTokens.withdraw(amount: price - (price*self.cutPercentage)/100)
+                let TopShotCut <- buyTokens.withdraw(amount: price - (price*self.cutPercentage)/(UInt64(100)))
 
                 // deposit it into topshot's Vault
                 self.TopShotVault.deposit(from: <-TopShotCut)
@@ -133,7 +133,7 @@ access(all) contract Market {
         }
 
         // idPrice returns the price of a specific token in the sale
-        access(all) fun idPrice(tokenID: UInt64): UInt256? {
+        access(all) fun idPrice(tokenID: UInt64): UInt64? {
             let price = self.prices[tokenID]
             return price
         }
@@ -172,12 +172,12 @@ access(all) contract Market {
         self.numSales = self.numSales + 1
     }
 
-    access(all) fun getSaleReference(id: Int): &SalePublic? {
-        return self.saleReferences[id]
+    access(all) fun getSaleReference(id: Int): &SalePublic {
+        return self.saleReferences[id] ?? panic("No reference!")
     }
 
     init() {
-        self.TopShotVault = self.account.storage[&FlowToken.Vault]
+        self.TopShotVault = self.account.storage[&FlowToken.Vault] ?? panic("No vault!")
         self.cutPercentage = 5
         self.saleReferences = {}
         self.numSales = 1
