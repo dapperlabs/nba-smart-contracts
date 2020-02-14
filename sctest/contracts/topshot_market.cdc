@@ -36,7 +36,7 @@ access(all) contract Market {
     // The interface that user can publish to allow others too access their sale
     access(all) resource interface SalePublic {
         access(all) var prices: {UInt64: UInt64}
-        access(account) let cutPercentage: UInt64
+        access(all) let cutPercentage: UInt64
         access(all) fun purchase(tokenID: UInt64, recipient: &TopShot.Collection, buyTokens: @FlowToken.Vault)
         access(all) fun idPrice(tokenID: UInt64): UInt64?
         access(all) fun getIDs(): [UInt64]
@@ -59,7 +59,7 @@ access(all) contract Market {
         access(self) let TopShotVault: &FungibleToken.Receiver
 
         // the percentage that is taken from every purchase for TopShot
-        access(account) let cutPercentage: UInt64
+        access(all) let cutPercentage: UInt64
 
         init (vault: &FungibleToken.Receiver) {
             self.forSale <- {}
@@ -185,3 +185,4 @@ access(all) contract Market {
         self.numSales = 0
     }
 }
+ 

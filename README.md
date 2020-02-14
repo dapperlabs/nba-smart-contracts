@@ -155,6 +155,23 @@ This is just a basic tutorial for now, but it will be getting updated frequently
 Josh Hannan know if you have any questions!
 
 
+### Marketplace
+
+The `topshot_market.cdc` contract allows users to create a marketplace object in their account to sell their moments.
+
+There are also some example transactions to see how a user would sell their moment.
+
+1. Make sure you have followed the steps above to get topshot set up.
+2. Deploy `fungible-token.cdc` to account 1
+3. Deploy `topshop-market.cdc` to account 3
+4. Run the `setup_account.cdc` transaction with all 3 accounts to make sure
+   that all of the accounts are set up to interact with the marketplace.
+5. Run `verify_sale.cdc` to verify that the sale was deployed correctly.
+6. From account `0x02`, run the `start_sale.cdc` transaction.
+7. From account `0x03`, run the `purchase_moment.cdc` transaction to buy the moment
+   from account 2.
+
+
 
 
 

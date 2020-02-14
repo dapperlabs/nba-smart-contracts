@@ -11,6 +11,7 @@ transaction {
             destroy oldVault
 
             acct.published[&FungibleToken.Receiver] = &acct.storage[FlowToken.Vault] as FungibleToken.Receiver
+            acct.published[&FungibleToken.Balance] = &acct.storage[FlowToken.Vault] as FungibleToken.Balance
         }
 
         if acct.storage[TopShot.Collection] == nil {

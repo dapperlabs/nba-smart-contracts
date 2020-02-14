@@ -42,7 +42,7 @@ pub fun verifyCut(_ expected: UInt64): Bool {
     log("verifyCut")
 
     if Market.cutPercentage != expected {
-        log("Incorrect length of sale dictionary!")
+        log("Incorrect cut percentage!")
         return false
     } else {
         return true
