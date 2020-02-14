@@ -5,10 +5,10 @@ pub fun main() {
     if verifyIDs(supply: 0, moldID: 2) { log("PASS") 
     } else { log("FAIL") }
 
-    if numMomentsLeft(0, 1, 1) { log("PASS") 
+    if numMomentsLeft(0, 1, 0) { log("PASS") 
     } else { log("FAIL") }
 
-    if numMinted(0, 1, 0) { log("PASS") 
+    if numMinted(0, 1, 1) { log("PASS") 
     } else { log("FAIL") }
 
     if verifyCollection(account: 0x02, ids: [UInt64(0), UInt64(1)]) { log("PASS") 
@@ -67,7 +67,8 @@ pub fun verifyCollection(account: Address, ids: [UInt64]): Bool {
 
         while i < ids.length {
             if collectionRef.ownedNFTs[ids[i]] == nil {
-                log("ID does not exist ing the collection!")
+                log("ID does not exist in the collection!")
+                log(ids[i])
                 return false
             }
 

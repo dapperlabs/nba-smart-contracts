@@ -26,6 +26,9 @@ pub fun main() {
 
     if verifyAdminNonExistence(account: 0x02) { log("PASS") 
     } else { log("FAIL") }
+
+    if verifyMintingAllowed(id: 0, quality: 1, expected: false) { log("PASS")
+    } else { log("FAIL") }
 }
 
 pub fun verifyIDs(supply: UInt64, moldID: UInt32): Bool  {
@@ -148,7 +151,17 @@ pub fun verifyAdminNonExistence(account: Address): Bool {
     if let adminRef = acct.published[&TopShot.Admin] {
         log("Admin should not exist in published!")
         return false
-    } 
+    }
+    return true
+}
+
+pub fun verifyMintingAllowed(id: UInt32, quality: Int, expected: Bool): Bool {
+    log("verifyMintingAllowed")
+
+    if (TopShot.mintingAllowed(id: id, quality: quality) != expected) {
+        log("MintingAllowed is incorrect for this ID and quality!")
+        return false
+    }
     return true
 }
 
