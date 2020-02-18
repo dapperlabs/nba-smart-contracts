@@ -325,19 +325,20 @@ access(all) contract TopShot { //: NonFungibleToken {
         destroy oldCollection
 
         // Create a private reference to the Collection and store it in private account storage
-        self.account.storage[&Collection] = &self.account.storage[Collection] as Collection
+        self.account.storage[&Collection] = &self.account.storage[Collection] as &Collection
 
         // Create a safe, public reference to the Collection and store it in public reference storage
-        self.account.published[&MomentCollectionPublic] = &self.account.storage[Collection] as MomentCollectionPublic
+        self.account.published[&MomentCollectionPublic] = &self.account.storage[Collection] as &MomentCollectionPublic
 
         // Create a new Admin resource and store it in account storage
         let oldAdmin <- self.account.storage[Admin] <- create Admin()
         destroy oldAdmin
 
         // Create a private reference to the Admin resource and store it in private account storage
-        self.account.storage[&Admin] = &self.account.storage[Admin] as Admin
+        self.account.storage[&Admin] = &self.account.storage[Admin] as &Admin
 
         emit ContractInitialized()
     }
 
 }
+ 

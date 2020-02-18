@@ -2,6 +2,9 @@ import TopShot from 0x02
 import Market from 0x03
 import FungibleToken, FlowToken from 0x01
 
+// This is the transaction you would run from
+// any account to set it up to use the fungible token,
+// topshot, and topshot market
 transaction {
 
     prepare(acct: Account) {
@@ -10,8 +13,8 @@ transaction {
             let oldVault <- acct.storage[FlowToken.Vault] <- vault
             destroy oldVault
 
-            acct.published[&FungibleToken.Receiver] = &acct.storage[FlowToken.Vault] as FungibleToken.Receiver
-            acct.published[&FungibleToken.Balance] = &acct.storage[FlowToken.Vault] as FungibleToken.Balance
+            acct.published[&FungibleToken.Receiver] = &acct.storage[FlowToken.Vault] as &FungibleToken.Receiver
+            acct.published[&FungibleToken.Balance] = &acct.storage[FlowToken.Vault] as &FungibleToken.Balance
         }
 
         if acct.storage[TopShot.Collection] == nil {
@@ -19,7 +22,7 @@ transaction {
             let oldCollection <- acct.storage[TopShot.Collection] <- collection
             destroy oldCollection
 
-            acct.published[&TopShot.MomentCollectionPublic] = &acct.storage[TopShot.Collection] as TopShot.MomentCollectionPublic
+            acct.published[&TopShot.MomentCollectionPublic] = &acct.storage[TopShot.Collection] as &TopShot.MomentCollectionPublic
         }
 
         if acct.storage[Market.SaleCollection] == nil {
@@ -29,7 +32,7 @@ transaction {
             let oldSale <- acct.storage[Market.SaleCollection] <- sale
             destroy oldSale
 
-            acct.published[&Market.SalePublic] = &acct.storage[Market.SaleCollection] as Market.SalePublic
+            acct.published[&Market.SalePublic] = &acct.storage[Market.SaleCollection] as &Market.SalePublic
         }
     }
 }

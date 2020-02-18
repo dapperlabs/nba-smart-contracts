@@ -13,12 +13,12 @@ transaction {
     prepare(acct: Account) {
 
         // create a reference to the stored collection
-        let collectionRef = &acct.storage[TopShot.Collection] as TopShot.Collection
+        let collectionRef = &acct.storage[TopShot.Collection] as &TopShot.Collection
 
         // remove the sale collection from storage
         if acct.storage[Market.SaleCollection] != nil {
 
-            let saleRef = &acct.storage[Market.SaleCollection] as Market.SaleCollection
+            let saleRef = &acct.storage[Market.SaleCollection] as &Market.SaleCollection
 
             // withdraw the token from the collection
             let token <- collectionRef.withdraw(withdrawID: 1)
@@ -47,7 +47,7 @@ transaction {
             destroy oldSale
 
             // publish a reference to the sale
-            acct.published[&Market.SalePublic] = &acct.storage[Market.SaleCollection] as Market.SalePublic
+            acct.published[&Market.SalePublic] = &acct.storage[Market.SaleCollection] as &Market.SalePublic
         }
 
         log("Token put up for sale")

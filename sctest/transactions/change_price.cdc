@@ -15,7 +15,7 @@ transaction {
         // remove the sale collection from storage
         if acct.storage[Market.SaleCollection] != nil {
 
-            let saleRef = &acct.storage[Market.SaleCollection] as Market.SaleCollection
+            let saleRef = &acct.storage[Market.SaleCollection] as &Market.SaleCollection
 
             // put the token up for sale
             saleRef.changePrice(tokenID: 1, newPrice: 30)
