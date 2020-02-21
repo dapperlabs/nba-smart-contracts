@@ -23,7 +23,7 @@
 
 access(all) contract TopShot { //: NonFungibleToken {
 
-    access(all) event MoldCasted(id: UInt32)
+    access(all) event MoldCasted(id: UInt32, qualityCounts: [UInt32])
     access(all) event MomentMinted(id: UInt64, moldID: UInt32)
     access(all) event ContractInitialized()
     access(all) event Withdraw(id: UInt64)
@@ -46,15 +46,15 @@ access(all) contract TopShot { //: NonFungibleToken {
         // shows if a certain quality of this mold can be minted or not
         access(account) var canBeMinted: {Int: Bool}
 
-        init(id: UInt32, metadata: {String: String}, qualityCounts: {Int: UInt32}) {
+        init(id: UInt32, metadata: {String: String}, counts: [UInt32]) {
             pre {
-                qualityCounts.length == 8: "Wrong number of qualities!"
+                counts.length == 8: "Wrong number of qualities!"
                 metadata.length != 0: "Wrong amount of metadata!"
             }
             self.id = id
             self.metadata = metadata
-            self.qualityCounts = qualityCounts
-            self.numLeft = qualityCounts
+            self.qualityCounts = {1: counts[0], 2: counts[1], 3: counts[2], 4: counts[3], 5: counts[4], 6: counts[5], 7: counts[6], 8: counts[7]}
+            self.numLeft = self.qualityCounts
             self.canBeMinted = {1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: true}
         }
     }
@@ -152,16 +152,19 @@ access(all) contract TopShot { //: NonFungibleToken {
     // This is the interface that users can cast their moment Collection as
     // to allow others to deposit moments into their collection
     access(all) resource interface MomentCollectionPublic {
-        access(all) var ownedNFTs: @{UInt64: NFT}
         access(all) fun deposit(token: @NFT)
         access(all) fun batchDeposit(tokens: @Collection)
         access(all) fun getIDs(): [UInt64]
+        access(all) fun getMoldID(id: UInt64): UInt32
+        access(all) fun getQuality(id: UInt64): Int
+        access(all) fun getPlaceInQuality(id: UInt64): UInt32
+        access(all) fun getMetaData(id: UInt64): {String: String}
     }
 
     access(all) resource Collection: MomentCollectionPublic { //: NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.Metadata, MomentCollectionPublic { 
         // Dictionary of Moment conforming tokens
         // NFT is a resource type with a UInt64 ID field
-        access(all) var ownedNFTs: @{UInt64: NFT}
+        access(account) var ownedNFTs: @{UInt64: NFT}
 
         init() {
             self.ownedNFTs <- {}
@@ -220,6 +223,22 @@ access(all) contract TopShot { //: NonFungibleToken {
             return self.ownedNFTs.keys
         }
 
+        access(all) fun getMoldID(id: UInt64): UInt32 {
+            return self.ownedNFTs[id]?.moldID ?? panic("No moment!")
+        }
+
+        access(all) fun getQuality(id: UInt64): Int {
+            return self.ownedNFTs[id]?.quality ?? panic("No moment!")
+        }
+
+        access(all) fun getPlaceInQuality(id: UInt64): UInt32 {
+            return self.ownedNFTs[id]?.placeInQuality ?? panic("No moment!")
+        }
+
+        access(all) fun getMetaData(id: UInt64): {String: String} {
+            return TopShot.molds[self.getMoldID(id: id)]?.metadata ?? panic("No mold!")
+        }
+
         destroy() {
             destroy self.ownedNFTs
         }
@@ -236,9 +255,12 @@ access(all) contract TopShot { //: NonFungibleToken {
         // castMold casts a mold struct and stores it in the dictionary for the molds
         // the mold ID must be unused
         // returns the ID of the new mold
-        access(all) fun castMold(metadata: {String: String}, qualityCounts: {Int: UInt32}): UInt32 {
+        access(all) fun castMold(metadata: {String: String}, qualityCounts: [UInt32]): UInt32 {
+            pre {
+                qualityCounts.length == 8: "Quality Counts must have eight elementS"
+            }
             // Create the new Mold
-            var newMold = Mold(id: TopShot.moldID, metadata: metadata, qualityCounts: qualityCounts)
+            var newMold = Mold(id: TopShot.moldID, metadata: metadata, counts: qualityCounts)
 
             // Store it in the contract storage
             TopShot.molds[TopShot.moldID] = newMold
@@ -246,7 +268,7 @@ access(all) contract TopShot { //: NonFungibleToken {
             // increment the ID so that it isn't used again
             TopShot.moldID = TopShot.moldID + UInt32(1)
 
-            emit MoldCasted(id: TopShot.moldID - UInt32(1))
+            emit MoldCasted(id: TopShot.moldID - UInt32(1), qualityCounts: qualityCounts)
 
             return TopShot.moldID - UInt32(1)
         }

@@ -40,6 +40,10 @@ access(all) contract Market {
         access(all) fun purchase(tokenID: UInt64, recipient: &TopShot.Collection, buyTokens: @FlowToken.Vault)
         access(all) fun idPrice(tokenID: UInt64): UInt64?
         access(all) fun getIDs(): [UInt64]
+        access(all) fun getMoldID(id: UInt64): UInt32
+        access(all) fun getQuality(id: UInt64): Int
+        access(all) fun getPlaceInQuality(id: UInt64): UInt32
+        access(all) fun getMetaData(id: UInt64): {String: String}
     }
 
     access(all) resource SaleCollection: SalePublic {
@@ -141,6 +145,22 @@ access(all) contract Market {
         // getIDs returns an array of token IDs that are for sale
         access(all) fun getIDs(): [UInt64] {
             return self.forSale.keys
+        }
+
+        access(all) fun getMoldID(id: UInt64): UInt32 {
+            return self.forSale[id]?.moldID ?? panic("No moment!")
+        }
+
+        access(all) fun getQuality(id: UInt64): Int {
+            return self.forSale[id]?.quality ?? panic("No moment!")
+        }
+
+        access(all) fun getPlaceInQuality(id: UInt64): UInt32 {
+            return self.forSale[id]?.placeInQuality ?? panic("No moment!")
+        }
+
+        access(all) fun getMetaData(id: UInt64): {String: String} {
+            return TopShot.molds[self.getMoldID(id: id)]?.metadata ?? panic("No mold!")
         }
 
         destroy() {

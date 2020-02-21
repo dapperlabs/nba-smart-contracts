@@ -1,6 +1,5 @@
 import TopShot from 0x02
 
-
 pub fun main() {
     if verifyIDs(supply: 0, moldID: 2) { log("PASS") 
     } else { log("FAIL") }
@@ -64,9 +63,10 @@ pub fun verifyCollection(account: Address, ids: [UInt64]): Bool {
 
     if let collectionRef = acct.published[&TopShot.MomentCollectionPublic] {
         var i = 0
+        let collectionIDs = collectionRef.getIDs()
 
         while i < ids.length {
-            if collectionRef.ownedNFTs[ids[i]] == nil {
+            if ids[i] != collectionIDs[i] {
                 log("ID does not exist in the collection!")
                 log(ids[i])
                 return false
