@@ -20,10 +20,10 @@ access(all) contract Market {
     access(all) event ForSale(id: UInt64, price: UInt64)
     access(all) event PriceChanged(id: UInt64, newPrice: UInt64)
     access(all) event TokenPurchased(id: UInt64, price: UInt64)
-    access(all) event SaleWithdrawn(id: UInt64)
+    access(all) event Withdraw(id: UInt64)
 
     // the reference that is used for depositing TopShot's cut of every sale
-    access(account) var TopShotVault: &FungibleToken.Receiver
+    access(contract) var TopShotVault: &FungibleToken.Receiver
     
     // the percentage that is taken from every purchase for TopShot
     access(all) var cutPercentage: UInt64
@@ -80,7 +80,7 @@ access(all) contract Market {
             // remove and return the token
             let token <- self.forSale.remove(key: tokenID) ?? panic("missing NFT")
 
-            emit SaleWithdrawn(id: tokenID)
+            emit Withdraw(id: token.id)
 
             return <-token
         }
