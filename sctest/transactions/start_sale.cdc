@@ -10,37 +10,22 @@ import FungibleToken, FlowToken from 0x01
 // price of the token
 transaction {
 
+    let collectionRef: &TopShot.Collection
+
+    let saleRef: &Market.SaleCollection
+
     prepare(acct: Account) {
 
-        // create a reference to the stored collection
-        let collectionRef = &acct.storage[TopShot.Collection] as &TopShot.Collection
-
         // remove the sale collection from storage
-        if acct.storage[Market.SaleCollection] != nil {
-
-            let saleRef = &acct.storage[Market.SaleCollection] as &Market.SaleCollection
-
-            // withdraw the token from the collection
-            let token <- collectionRef.withdraw(withdrawID: 1)
-
-            // put the token up for sale
-            saleRef.listForSale(token: <-token, price: 30)
-
-        } else {
+        if acct.storage[Market.SaleCollection] == nil {
             // this branch executes if there isn't a sale already
-            // it creates a new sale collection and puts the same moment up for sale
+            // it creates a new sale collection and puts it in storage
 
             // get the FlowToken receiver reference to the Vault
             let receiverRef = acct.published[&FungibleToken.Receiver] ?? panic("No receiver ref!")
 
             // create a new empty sale collection
             let sale <- Market.createSaleCollection(ownerVault: receiverRef, cutPercentage: 10)
-
-            // withdraw the token from the collection
-            let token <- collectionRef.withdraw(withdrawID: 1)
-
-            // put the token up for sale
-            sale.listForSale(token: <-token, price: 30)
 
             // put the sale back into storage
             let oldSale <- acct.storage[Market.SaleCollection] <- sale
@@ -50,10 +35,24 @@ transaction {
             acct.published[&Market.SalePublic] = &acct.storage[Market.SaleCollection] as &Market.SalePublic
         }
 
+        // create a temporary reference to the stored collection
+        self.collectionRef = &acct.storage[TopShot.Collection] as &TopShot.Collection
+
+        // create a temporary reference to the sale
+        self.saleRef = &acct.storage[Market.SaleCollection] as &Market.SaleCollection
+    }
+
+    execute {
+        // withdraw the token from the collection
+        let token <- self.collectionRef.withdraw(withdrawID: 1)
+
+        // put the token up for sale
+        self.saleRef.listForSale(token: <-token, price: 30)
+
         log("Token put up for sale")
         log(1)
         log("Price:")
-        log(10)
+        log(30)
     }
 }
  

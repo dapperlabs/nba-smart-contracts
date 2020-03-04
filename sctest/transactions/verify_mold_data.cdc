@@ -20,10 +20,16 @@ pub fun main() {
     if verifyMoldMetaData(id: 0, key: "Name", value: "Lebron") { log("PASS") 
     } else { log("FAIL") }
 
-    if verifyMoldQualityCounts(id: 0, counts: [UInt32(3000000000), UInt32(1000000000), UInt32(0), UInt32(0), 
-                                               UInt32(0), UInt32(0), UInt32(0), UInt32(0), 
-                                               UInt32(0), UInt32(0), UInt32(100), UInt32(0), 
-                                               UInt32(0), UInt32(10), UInt32(0), UInt32(3)]) { log("PASS")
+    if verifyMoldQualityCounts(id: 0, counts: [UInt32(3000000000),
+                                               UInt32(1000000000),
+                                               UInt32(0), UInt32(0), 
+                                               UInt32(0), UInt32(0),
+                                               UInt32(0), UInt32(0), 
+                                               UInt32(0), UInt32(0),
+                                               UInt32(100), UInt32(0), 
+                                               UInt32(0), UInt32(10),
+                                               UInt32(0), UInt32(3)]) 
+    { log("PASS")
     } else { log("FAIL") }
 }
 

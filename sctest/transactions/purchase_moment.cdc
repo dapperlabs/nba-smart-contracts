@@ -10,26 +10,40 @@ import FungibleToken, FlowToken from 0x01
 // price of the token
 transaction {
 
+    // temporary reference for the signers moment collection
+    let collectionRef: &TopShot.Collection
+
+    // temp reference for the signer's Vault
+    let vaultRef: &FlowToken.Vault
+
     prepare(acct: Account) {
 
         // create a reference to the stored collection
-        let collectionRef = &acct.storage[TopShot.Collection] as &TopShot.Collection
+        self.collectionRef = &acct.storage[TopShot.Collection] as &TopShot.Collection
 
+        // create reference to Vault
+        self.vaultRef = &acct.storage[FlowToken.Vault] as &FlowToken.Vault
+
+        
+    }
+
+    execute {
+        // get the sellers public account object
         let seller = getAccount(0x02)
 
         // remove the sale collection from storage
         if let saleRef = seller.published[&Market.SalePublic] {
 
-            let vaultRef = &acct.storage[FlowToken.Vault] as &FlowToken.Vault
-            let buyTokens <- vaultRef.withdraw(amount: 30)
+            let buyTokens <- self.vaultRef.withdraw(amount: 30)
 
-            saleRef.purchase(tokenID: 1, recipient: collectionRef, buyTokens: <-buyTokens)
+            saleRef.purchase(tokenID: 1, recipient: self.collectionRef, buyTokens: <-buyTokens)
 
             log("token bought!")
         } else {
             // this branch executes if there isn't a sale
             panic("No sale!")
         }
+
     }
 }
  

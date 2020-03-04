@@ -1,6 +1,4 @@
-import TopShot from 0x02
 import Market from 0x03
-import FungibleToken, FlowToken from 0x01
 
 // this is the transacion a user would run if they want
 // to put one of their moments up for sale
