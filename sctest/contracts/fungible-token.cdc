@@ -165,3 +165,4 @@ access(all) contract FlowToken: FungibleToken {
         emit FungibleTokenInitialized(initialSupply: self.totalSupply)
     }
 }
+ 

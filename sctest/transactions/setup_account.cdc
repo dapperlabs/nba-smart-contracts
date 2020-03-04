@@ -28,7 +28,7 @@ transaction {
         if acct.storage[Market.SaleCollection] == nil {
             let receiverRef = acct.published[&FungibleToken.Receiver] ?? panic("No receiver ref!")
 
-            let sale <- Market.createSaleCollection(ownerVault: receiverRef)
+            let sale <- Market.createSaleCollection(ownerVault: receiverRef, cutPercentage: 10)
             let oldSale <- acct.storage[Market.SaleCollection] <- sale
             destroy oldSale
 
@@ -36,3 +36,4 @@ transaction {
         }
     }
 }
+ 

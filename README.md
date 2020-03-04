@@ -73,7 +73,7 @@ or emulator in our case.
  2. Open the `topshot.cdc` file.  Feel free to read as much as you want to
     familiarize yourself with the contract
  3. The Marketplace smart contract implements the fungible token interface in `fungible-token.cdc`, so you need
-    to open that first and click the `deploy contract to account` button 
+    to open that first and click the `deploy contract to account 0x01` button 
     that appears above the `Tokens` contract. This will deploy the interface definition and contract
     to account 1.
  4. Run the `switch account` command from the vscode comman palette.  Switch to account 2.
@@ -112,7 +112,7 @@ Feel free to change some of the
 casting arguments to create different kinds of molds and to ensure that 
 the contract rejects molds that don't have metadata or the correct qualities.
 
-The `Mold` metadata field is a mapping of String to String, which means it
+The `Mold.metadata` field is a mapping of String to String, which means it
 is a mapping of the field name, i.e "Player Name" to the value, i.e. "Lebron"
 This makes it so any field can be easily accessed by providing the name and
 reading the value.
@@ -174,7 +174,7 @@ There are also some example transactions to see how a user would sell their mome
    that all of the accounts are set up to interact with the marketplace.
 6. Run `verify_market_init.cdc` to verify that the sale was deployed correctly.
 7. From account `0x02`, run the `start_sale.cdc` transaction.
-8. From account `0x03`, run the `purchase_moment.cdc` transaction to buy the moment
+8. From account `0x01`, run the `purchase_moment.cdc` transaction to buy the moment
    from account 2.
 
 

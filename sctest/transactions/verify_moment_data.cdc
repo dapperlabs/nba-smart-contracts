@@ -4,7 +4,7 @@ pub fun main() {
     if verifyIDs(supply: 0, moldID: 2) { log("PASS") 
     } else { log("FAIL") }
 
-    if numMomentsLeft(0, 1, 0) { log("PASS") 
+    if numMomentsLeft(0, 1, 2999999999) { log("PASS") 
     } else { log("FAIL") }
 
     if numMinted(0, 1, 1) { log("PASS") 

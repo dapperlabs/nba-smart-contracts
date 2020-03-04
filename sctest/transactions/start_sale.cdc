@@ -34,13 +34,13 @@ transaction {
             let receiverRef = acct.published[&FungibleToken.Receiver] ?? panic("No receiver ref!")
 
             // create a new empty sale collection
-            let sale <- Market.createSaleCollection(ownerVault: receiverRef)
+            let sale <- Market.createSaleCollection(ownerVault: receiverRef, cutPercentage: 10)
 
             // withdraw the token from the collection
             let token <- collectionRef.withdraw(withdrawID: 1)
 
             // put the token up for sale
-            sale.listForSale(token: <-token, price: 10)
+            sale.listForSale(token: <-token, price: 30)
 
             // put the sale back into storage
             let oldSale <- acct.storage[Market.SaleCollection] <- sale
@@ -52,6 +52,8 @@ transaction {
 
         log("Token put up for sale")
         log(1)
+        log("Price:")
+        log(10)
     }
 }
  

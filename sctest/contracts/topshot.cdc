@@ -48,14 +48,20 @@ access(all) contract TopShot { //: NonFungibleToken {
 
         init(id: UInt32, metadata: {String: String}, counts: [UInt32]) {
             pre {
-                counts.length == 8: "Wrong number of qualities!"
+                counts.length == 16: "Wrong number of qualities!"
                 metadata.length != 0: "Wrong amount of metadata!"
             }
             self.id = id
             self.metadata = metadata
-            self.qualityCounts = {1: counts[0], 2: counts[1], 3: counts[2], 4: counts[3], 5: counts[4], 6: counts[5], 7: counts[6], 8: counts[7]}
+            self.qualityCounts = {1: counts[0], 2: counts[1], 3: counts[2], 4: counts[3], 
+                                  5: counts[4], 6: counts[5], 7: counts[6], 8: counts[7], 
+                                  9: counts[8], 10: counts[9], 11: counts[10], 12: counts[11], 
+                                  13: counts[12], 14: counts[13], 15: counts[14], 16: counts[15]}
+
             self.numLeft = self.qualityCounts
-            self.canBeMinted = {1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: true}
+
+            self.canBeMinted = {1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: true, 
+                                9: true, 10: true, 11: true, 12: true, 13: true, 14: true, 15: true, 16: true}
         }
     }
 
@@ -77,7 +83,7 @@ access(all) contract TopShot { //: NonFungibleToken {
 
         init(newID: UInt64, moldID: UInt32, quality: Int, place: UInt32) {
             pre {
-                quality > 0 && quality <= 8: "Quality identifier must be 1-5!"
+                quality > 0 && quality <= 16: "Quality identifier must be 1-16!"
             }
             self.id = newID
             self.moldID = moldID
@@ -155,16 +161,16 @@ access(all) contract TopShot { //: NonFungibleToken {
         access(all) fun deposit(token: @NFT)
         access(all) fun batchDeposit(tokens: @Collection)
         access(all) fun getIDs(): [UInt64]
-        access(all) fun getMoldID(id: UInt64): UInt32
-        access(all) fun getQuality(id: UInt64): Int
-        access(all) fun getPlaceInQuality(id: UInt64): UInt32
-        access(all) fun getMetaData(id: UInt64): {String: String}
+        access(all) fun getMoldID(id: UInt64): UInt32?
+        access(all) fun getQuality(id: UInt64): Int?
+        access(all) fun getPlaceInQuality(id: UInt64): UInt32?
+        access(all) fun getMetaData(id: UInt64): {String: String}?
     }
 
     access(all) resource Collection: MomentCollectionPublic { //: NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.Metadata, MomentCollectionPublic { 
         // Dictionary of Moment conforming tokens
         // NFT is a resource type with a UInt64 ID field
-        access(account) var ownedNFTs: @{UInt64: NFT}
+        access(all) var ownedNFTs: @{UInt64: NFT}
 
         init() {
             self.ownedNFTs <- {}
@@ -223,20 +229,24 @@ access(all) contract TopShot { //: NonFungibleToken {
             return self.ownedNFTs.keys
         }
 
-        access(all) fun getMoldID(id: UInt64): UInt32 {
-            return self.ownedNFTs[id]?.moldID ?? panic("No moment!")
+        access(all) fun getMoldID(id: UInt64): UInt32? {
+            return self.ownedNFTs[id]?.moldID
         }
 
-        access(all) fun getQuality(id: UInt64): Int {
-            return self.ownedNFTs[id]?.quality ?? panic("No moment!")
+        access(all) fun getQuality(id: UInt64): Int? {
+            return self.ownedNFTs[id]?.quality
         }
 
-        access(all) fun getPlaceInQuality(id: UInt64): UInt32 {
-            return self.ownedNFTs[id]?.placeInQuality ?? panic("No moment!")
+        access(all) fun getPlaceInQuality(id: UInt64): UInt32? {
+            return self.ownedNFTs[id]?.placeInQuality
         }
 
-        access(all) fun getMetaData(id: UInt64): {String: String} {
-            return TopShot.molds[self.getMoldID(id: id)]?.metadata ?? panic("No mold!")
+        access(all) fun getMetaData(id: UInt64): {String: String}? {
+            if let moldID = self.getMoldID(id: id) {
+                return TopShot.molds[moldID]?.metadata
+            } else {
+                return nil
+            }
         }
 
         destroy() {
@@ -256,9 +266,6 @@ access(all) contract TopShot { //: NonFungibleToken {
         // the mold ID must be unused
         // returns the ID of the new mold
         access(all) fun castMold(metadata: {String: String}, qualityCounts: [UInt32]): UInt32 {
-            pre {
-                qualityCounts.length == 8: "Quality Counts must have eight elementS"
-            }
             // Create the new Mold
             var newMold = Mold(id: TopShot.moldID, metadata: metadata, counts: qualityCounts)
 
@@ -277,7 +284,7 @@ access(all) contract TopShot { //: NonFungibleToken {
         // cannot be reversed
         access(all) fun disallowMinting(moldID: UInt32, quality: Int) {
             pre {
-                quality > 0 && quality <= 8: "Quality must be an integer between 1 and 5"
+                quality > 0 && quality <= 16: "Quality must be an integer between 1 and 16"
             }
             if let mold = TopShot.molds[moldID] {
                 mold.canBeMinted[quality] = false
@@ -346,18 +353,12 @@ access(all) contract TopShot { //: NonFungibleToken {
         let oldCollection <- self.account.storage[Collection] <- create Collection()
         destroy oldCollection
 
-        // Create a private reference to the Collection and store it in private account storage
-        self.account.storage[&Collection] = &self.account.storage[Collection] as &Collection
-
         // Create a safe, public reference to the Collection and store it in public reference storage
         self.account.published[&MomentCollectionPublic] = &self.account.storage[Collection] as &MomentCollectionPublic
 
         // Create a new Admin resource and store it in account storage
         let oldAdmin <- self.account.storage[Admin] <- create Admin()
         destroy oldAdmin
-
-        // Create a private reference to the Admin resource and store it in private account storage
-        self.account.storage[&Admin] = &self.account.storage[Admin] as &Admin
 
         emit ContractInitialized()
     }

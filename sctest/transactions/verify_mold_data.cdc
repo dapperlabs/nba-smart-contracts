@@ -11,7 +11,7 @@ pub fun main() {
     if verifyMoldLen(2) { log("PASS") 
     } else { log("FAIL") }
 
-    if numMomentsLeft(id: 0, quality: 1, expected: 1) { log("PASS") 
+    if numMomentsLeft(id: 0, quality: 1, expected: 3000000000) { log("PASS") 
     } else { log("FAIL") }
 
     if numMinted(id: 0, quality: 1, expected: 0) { log("PASS") 
@@ -20,7 +20,10 @@ pub fun main() {
     if verifyMoldMetaData(id: 0, key: "Name", value: "Lebron") { log("PASS") 
     } else { log("FAIL") }
 
-    if verifyMoldQualityCounts(id: 0, counts: [UInt32(1),UInt32(2),UInt32(3),UInt32(4),UInt32(5)]) { log("PASS")
+    if verifyMoldQualityCounts(id: 0, counts: [UInt32(3000000000), UInt32(1000000000), UInt32(0), UInt32(0), 
+                                               UInt32(0), UInt32(0), UInt32(0), UInt32(0), 
+                                               UInt32(0), UInt32(0), UInt32(100), UInt32(0), 
+                                               UInt32(0), UInt32(10), UInt32(0), UInt32(3)]) { log("PASS")
     } else { log("FAIL") }
 }
 
@@ -120,9 +123,9 @@ pub fun verifyMoldQualityCounts(id: UInt32, counts: [UInt32]): Bool {
             if mold.qualityCounts[i+1] != counts[i] {
                 log("Quality count is not what was expected!")
                 log("Quality:")
-                log(i)
+                log(i + 1)
                 log("mold Count")
-                log(mold.qualityCounts[i])
+                log(mold.qualityCounts[i+1])
                 log("expected count")
                 log(counts[i])
                 return false
