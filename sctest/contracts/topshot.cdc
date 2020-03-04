@@ -24,7 +24,7 @@
 access(all) contract TopShot { //: NonFungibleToken {
 
     access(all) event MoldCasted(id: UInt32)
-    access(all) event MomentMinted(id: UInt64, moldID: UInt32)
+    access(all) event MomentMinted(id: UInt64, moldID: UInt32, quality: Int)
     access(all) event ContractInitialized()
     access(all) event Withdraw(id: UInt64)
     access(all) event Deposit(id: UInt64)
@@ -288,7 +288,7 @@ access(all) contract TopShot { //: NonFungibleToken {
                                                     quality: quality, 
                                                     place: placeInQuality)
 
-            emit MomentMinted(id: TopShot.totalSupply, moldID: moldID)
+            emit MomentMinted(id: TopShot.totalSupply, moldID: moldID, quality: quality)
 
             TopShot.totalSupply = TopShot.totalSupply + UInt64(1)
 
