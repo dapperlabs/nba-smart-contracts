@@ -168,14 +168,19 @@ There are also some example transactions to see how a user would sell their mome
 
 1. Make sure you have followed the steps to get topshot set up.
 2. Deploy `fungible-token.cdc` to account 1
-3. Deploy `topshot.cdc` to account 2
+3. Deploy `topshot.cdc` to account 2. Then run the `setup_account.cdc` transaction from account 2.
 4. Deploy `topshop-market.cdc` to account 3
-5. Run the `setup_account.cdc` transaction with all 3 accounts to make sure
+5. Run the `setup_account.cdc` transaction with account 3 and account 1 to make sure
    that all of the accounts are set up to interact with the marketplace.
 6. Run `verify_market_init.cdc` to verify that the sale was deployed correctly.
-7. From account `0x02`, run the `start_sale.cdc` transaction.
-8. From account `0x01`, run the `purchase_moment.cdc` transaction to buy the moment
+7. Run `cast_mold.cdc` from account 2.
+8. Run `mint_moment.cdc` from account 2.
+9. From account `0x02`, run the `start_sale.cdc` transaction.
+10. From account `0x01`, run the `purchase_moment.cdc` transaction to buy the moment
    from account 2.
+
+
+Check out the `stop_sale.cdc` transaction to see how a user would withdraw a moment from their sale.
 
 
 

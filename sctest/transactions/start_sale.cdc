@@ -54,5 +54,10 @@ transaction {
         log("Price:")
         log(30)
     }
+
+    post {
+        self.saleRef.idPrice(tokenID: 1) != nil:
+            "Token should have been put up for sale and should not be nil"
+    }
 }
  

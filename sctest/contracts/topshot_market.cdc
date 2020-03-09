@@ -204,7 +204,7 @@ access(all) contract Market {
     }
 
     init() {
-        let acct = getAccount(0x01)
+        let acct = getAccount(0x02)
         self.TopShotVault = acct.published[&FungibleToken.Receiver] ?? panic("No vault!")
         self.saleReferences = {}
         self.numSales = 0
