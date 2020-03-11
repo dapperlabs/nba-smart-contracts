@@ -2,7 +2,7 @@ import TopShot from 0x02
 
 // This script is meant to be run after initialization of the TopShot
 // contract.  it verifies that everything was initialized correctly.
-pub fun main() {
+access(all) fun main() {
     if verifyIDs(supply: 0, moldID: 0) { log("PASS") 
     } else { log("FAIL") }
 
@@ -115,7 +115,7 @@ pub fun verifyCollectionIDs(account: Address, ids: [UInt64]): Bool {
         var i = 0
 
         while i < ids.length {
-            if collectionRef.ownedNFTs[ids[i]] == nil {
+            if collectionIDs[ids[i]] == nil {
                 log(ids[i])
                 return false
             }

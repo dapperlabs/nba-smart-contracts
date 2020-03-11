@@ -10,10 +10,6 @@ pub fun main() {
 
     if verifySaleLength(0) { log("PASS") 
     } else { log("FAIL") }
-
-    if verifyCut(5) { log("PASS") 
-    } else { log("FAIL") }
-
 }
 
 pub fun verifyNumSales(_ expected: Int): Bool  {
@@ -31,17 +27,6 @@ pub fun verifySaleLength(_ expected: Int): Bool {
     log("verifySaleLength")
 
     if Market.saleReferences.length != expected {
-        log("Incorrect length of sale dictionary!")
-        return false
-    } else {
-        return true
-    }
-}
-
-pub fun verifyCut(_ expected: UInt64): Bool {
-    log("verifyCut")
-
-    if Market.cutPercentage != expected {
         log("Incorrect length of sale dictionary!")
         return false
     } else {

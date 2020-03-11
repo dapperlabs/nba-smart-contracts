@@ -23,7 +23,7 @@
 
 access(all) contract TopShot { //: NonFungibleToken {
 
-    access(all) event MoldCasted(id: UInt32)
+    access(all) event MoldCasted(id: UInt32, qualityCounts: [UInt32])
     access(all) event MomentMinted(id: UInt64, moldID: UInt32, quality: Int)
     access(all) event ContractInitialized()
     access(all) event Withdraw(id: UInt64)
@@ -46,16 +46,22 @@ access(all) contract TopShot { //: NonFungibleToken {
         // shows if a certain quality of this mold can be minted or not
         access(account) var canBeMinted: {Int: Bool}
 
-        init(id: UInt32, metadata: {String: String}, qualityCounts: {Int: UInt32}) {
+        init(id: UInt32, metadata: {String: String}, counts: [UInt32]) {
             pre {
-                qualityCounts.length == 8: "Wrong number of qualities!"
+                counts.length == 16: "Wrong number of qualities!"
                 metadata.length != 0: "Wrong amount of metadata!"
             }
             self.id = id
             self.metadata = metadata
-            self.qualityCounts = qualityCounts
-            self.numLeft = qualityCounts
-            self.canBeMinted = {1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: true}
+            self.qualityCounts = {1: counts[0], 2: counts[1], 3: counts[2], 4: counts[3], 
+                                  5: counts[4], 6: counts[5], 7: counts[6], 8: counts[7], 
+                                  9: counts[8], 10: counts[9], 11: counts[10], 12: counts[11], 
+                                  13: counts[12], 14: counts[13], 15: counts[14], 16: counts[15]}
+
+            self.numLeft = self.qualityCounts
+
+            self.canBeMinted = {1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: true, 
+                                9: true, 10: true, 11: true, 12: true, 13: true, 14: true, 15: true, 16: true}
         }
     }
 
@@ -77,7 +83,7 @@ access(all) contract TopShot { //: NonFungibleToken {
 
         init(newID: UInt64, moldID: UInt32, quality: Int, place: UInt32) {
             pre {
-                quality > 0 && quality <= 8: "Quality identifier must be 1-5!"
+                quality > 0 && quality <= 16: "Quality identifier must be 1-16!"
             }
             self.id = newID
             self.moldID = moldID
@@ -152,10 +158,13 @@ access(all) contract TopShot { //: NonFungibleToken {
     // This is the interface that users can cast their moment Collection as
     // to allow others to deposit moments into their collection
     access(all) resource interface MomentCollectionPublic {
-        access(all) var ownedNFTs: @{UInt64: NFT}
         access(all) fun deposit(token: @NFT)
         access(all) fun batchDeposit(tokens: @Collection)
         access(all) fun getIDs(): [UInt64]
+        access(all) fun getMoldID(id: UInt64): UInt32?
+        access(all) fun getQuality(id: UInt64): Int?
+        access(all) fun getPlaceInQuality(id: UInt64): UInt32?
+        access(all) fun getMetaData(id: UInt64): {String: String}?
     }
 
     access(all) resource Collection: MomentCollectionPublic { //: NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.Metadata, MomentCollectionPublic { 
@@ -220,6 +229,26 @@ access(all) contract TopShot { //: NonFungibleToken {
             return self.ownedNFTs.keys
         }
 
+        access(all) fun getMoldID(id: UInt64): UInt32? {
+            return self.ownedNFTs[id]?.moldID
+        }
+
+        access(all) fun getQuality(id: UInt64): Int? {
+            return self.ownedNFTs[id]?.quality
+        }
+
+        access(all) fun getPlaceInQuality(id: UInt64): UInt32? {
+            return self.ownedNFTs[id]?.placeInQuality
+        }
+
+        access(all) fun getMetaData(id: UInt64): {String: String}? {
+            if let moldID = self.getMoldID(id: id) {
+                return TopShot.molds[moldID]?.metadata
+            } else {
+                return nil
+            }
+        }
+
         destroy() {
             destroy self.ownedNFTs
         }
@@ -236,9 +265,9 @@ access(all) contract TopShot { //: NonFungibleToken {
         // castMold casts a mold struct and stores it in the dictionary for the molds
         // the mold ID must be unused
         // returns the ID of the new mold
-        access(all) fun castMold(metadata: {String: String}, qualityCounts: {Int: UInt32}): UInt32 {
+        access(all) fun castMold(metadata: {String: String}, qualityCounts: [UInt32]): UInt32 {
             // Create the new Mold
-            var newMold = Mold(id: TopShot.moldID, metadata: metadata, qualityCounts: qualityCounts)
+            var newMold = Mold(id: TopShot.moldID, metadata: metadata, counts: qualityCounts)
 
             // Store it in the contract storage
             TopShot.molds[TopShot.moldID] = newMold
@@ -246,7 +275,7 @@ access(all) contract TopShot { //: NonFungibleToken {
             // increment the ID so that it isn't used again
             TopShot.moldID = TopShot.moldID + UInt32(1)
 
-            emit MoldCasted(id: TopShot.moldID - UInt32(1))
+            emit MoldCasted(id: TopShot.moldID - UInt32(1), qualityCounts: qualityCounts)
 
             return TopShot.moldID - UInt32(1)
         }
@@ -255,7 +284,7 @@ access(all) contract TopShot { //: NonFungibleToken {
         // cannot be reversed
         access(all) fun disallowMinting(moldID: UInt32, quality: Int) {
             pre {
-                quality > 0 && quality <= 8: "Quality must be an integer between 1 and 5"
+                quality > 0 && quality <= 16: "Quality must be an integer between 1 and 16"
             }
             if let mold = TopShot.molds[moldID] {
                 mold.canBeMinted[quality] = false
@@ -324,20 +353,15 @@ access(all) contract TopShot { //: NonFungibleToken {
         let oldCollection <- self.account.storage[Collection] <- create Collection()
         destroy oldCollection
 
-        // Create a private reference to the Collection and store it in private account storage
-        self.account.storage[&Collection] = &self.account.storage[Collection] as Collection
-
         // Create a safe, public reference to the Collection and store it in public reference storage
-        self.account.published[&MomentCollectionPublic] = &self.account.storage[Collection] as MomentCollectionPublic
+        self.account.published[&MomentCollectionPublic] = &self.account.storage[Collection] as &MomentCollectionPublic
 
         // Create a new Admin resource and store it in account storage
         let oldAdmin <- self.account.storage[Admin] <- create Admin()
         destroy oldAdmin
 
-        // Create a private reference to the Admin resource and store it in private account storage
-        self.account.storage[&Admin] = &self.account.storage[Admin] as Admin
-
         emit ContractInitialized()
     }
 
 }
+ 

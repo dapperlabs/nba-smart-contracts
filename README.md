@@ -72,9 +72,9 @@ or emulator in our case.
  1. Start the emulator with the `Run emulator` vscode command.
  2. Open the `topshot.cdc` file.  Feel free to read as much as you want to
     familiarize yourself with the contract
- 3. The TopShot smart contract implements the NFT interface in `nft.cdc`, so you need
-    to open that first and click the `deploy contract to account` button 
-    that appears above the `Tokens` contract. This will deploy the interface definition
+ 3. The Marketplace smart contract implements the fungible token interface in `fungible-token.cdc`, so you need
+    to open that first and click the `deploy contract to account 0x01` button 
+    that appears above the `Tokens` contract. This will deploy the interface definition and contract
     to account 1.
  4. Run the `switch account` command from the vscode comman palette.  Switch to account 2.
  5. In `topshot.cdc`, click the `deploy contract to account` button that appears over the 
@@ -112,7 +112,7 @@ Feel free to change some of the
 casting arguments to create different kinds of molds and to ensure that 
 the contract rejects molds that don't have metadata or the correct qualities.
 
-The `Mold` metadata field is a mapping of String to String, which means it
+The `Mold.metadata` field is a mapping of String to String, which means it
 is a mapping of the field name, i.e "Player Name" to the value, i.e. "Lebron"
 This makes it so any field can be easily accessed by providing the name and
 reading the value.
@@ -131,17 +131,25 @@ Now the owner can use the stored `Admin` resource to mint new moments
 that reference the molds that have been created.
 
  1. Open the `mint_moment.cdc` transaction file and submit it.
- 2. You should see the lines printed that the moments were minted successfully
+ 2. You should see the lines printed that the moments were minted successfully.
 
 You should also see `[1,2]` print, showing that you currently own the moments.
 Feel free to change some of the moment minting arguments to mint other moments
 and test the restrictions of the quality counts.  
+
+### Getting data about moments
 
 Now we can run a script that can verify some of the data from the minted molds
 
  1. Open the `verify_moment_data.cdc` transaction file.
  2. Change the arguments to the tests to match the moments that you have minted
     and their data.
+
+There are also functions built in to each moment Collection that can be queried 
+to return different fields of moments.
+
+ 1. Open `get_metadata.cdc` to see the different ways you can read moment
+    data from a collection in an account storage.
 
 
 ### Transferring Moments
@@ -151,8 +159,28 @@ other accounts.  You can see the NFT example in the Flow Developer Preview
 to get an idea of how they are transferred between accounts, then try to 
 translate that to this context.  
 
-This is just a basic tutorial for now, but it will be getting updated frequently to flesh out the explanations and to add more content.  Let 
-Josh Hannan know if you have any questions!
+
+### Marketplace
+
+The `topshot_market.cdc` contract allows users to create a marketplace object in their account to sell their moments.
+
+There are also some example transactions to see how a user would sell their moment.
+
+1. Make sure you have followed the steps to get topshot set up.
+2. Deploy `fungible-token.cdc` to account 1
+3. Deploy `topshot.cdc` to account 2. Then run the `setup_account.cdc` transaction from account 2.
+4. Deploy `topshop-market.cdc` to account 3
+5. Run the `setup_account.cdc` transaction with account 3 and account 1 to make sure
+   that all of the accounts are set up to interact with the marketplace.
+6. Run `verify_market_init.cdc` to verify that the sale was deployed correctly.
+7. Run `cast_mold.cdc` from account 2.
+8. Run `mint_moment.cdc` from account 2.
+9. From account `0x02`, run the `start_sale.cdc` transaction.
+10. From account `0x01`, run the `purchase_moment.cdc` transaction to buy the moment
+   from account 2.
+
+
+Check out the `stop_sale.cdc` transaction to see how a user would withdraw a moment from their sale.
 
 
 

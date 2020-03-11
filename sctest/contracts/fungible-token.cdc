@@ -156,11 +156,13 @@ access(all) contract FlowToken: FungibleToken {
         destroy oldVault
 
         // Create a private reference to the Vault that has all the fields and methods
-        self.account.storage[&Vault] = &self.account.storage[Vault] as Vault
+        self.account.storage[&Vault] = &self.account.storage[Vault] as &Vault
 
         // Create a public reference to the Vault that only exposes the deposit method
-        self.account.published[&FungibleToken.Receiver] = &self.account.storage[Vault] as FungibleToken.Receiver
+        self.account.published[&FungibleToken.Receiver] = &self.account.storage[Vault] as &FungibleToken.Receiver
+        self.account.published[&FungibleToken.Balance] = &self.account.storage[Vault] as &FungibleToken.Balance
 
         emit FungibleTokenInitialized(initialSupply: self.totalSupply)
     }
 }
+ 
