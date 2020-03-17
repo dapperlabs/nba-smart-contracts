@@ -2,29 +2,20 @@ import TopShot from 0x02
 
 transaction {
 
-    let adminRef: &TopShot.Admin
-
     // Reference for the collection who will own the minted NFT
     let receiverRef: &TopShot.MomentCollectionPublic
 
     prepare(acct: Account) {
         // Get the two references from storage
         self.receiverRef = acct.published[&TopShot.MomentCollectionPublic] ?? panic("no ref!")
-        self.adminRef = &acct.storage[TopShot.Admin] as &TopShot.Admin
     }
 
     execute {
 
-        if verifyIDs(supply: 0, moldID: 0) { log("PASS") 
+        if verifyIDs(playID: 0, setID: 0, supply: 0) { log("PASS") 
         } else { log("FAIL") }
 
-        if verifyMoldLen(0) { log("PASS") 
-        } else { log("FAIL") }
-
-        if numMomentsLeft(id: 0, quality: 1, expected: 0) { log("PASS") 
-        } else { log("FAIL") }
-
-        if numMinted(id: 0, quality: 1, expected: 0) { log("PASS") 
+        if verifyPlaysLen(0) { log("PASS") 
         } else { log("FAIL") }
 
         if verifyCollectionLength(account: 0x02, 0) { log("PASS") 
@@ -36,70 +27,47 @@ transaction {
         if verifyCreateCollection() { log("PASS") 
         } else { log("FAIL") }
 
-        if verifyAdminNonExistence(account: 0x02) { log("PASS") 
-        } else { log("FAIL") }
-
-        if verifyMintingAllowed(id: 0, quality: 1, expected: false) { log("PASS")
+        if verifySetNonExistence(account: 0x02) { log("PASS") 
         } else { log("FAIL") }
         
-        let id1 = self.adminRef.castMold(metadata: {"Name": "Lebron"}, 
-                                         qualityCounts: [UInt32(3000000000), UInt32(1000000000), UInt32(0), UInt32(0), 
-                                                         UInt32(0), UInt32(0), UInt32(0), UInt32(0), 
-                                                         UInt32(0), UInt32(0), UInt32(100), UInt32(0), 
-                                                         UInt32(0), UInt32(10), UInt32(0), UInt32(3)])
+        let id1 = TopShot.createPlayData(metadata: {"Name": "Lebron"})
 
-        let id2 = self.adminRef.castMold(metadata: {"Name": "Oladipo"}, 
-                                         qualityCounts: [UInt32(3000000000), UInt32(1000000000), UInt32(0), UInt32(0), 
-                                                         UInt32(0), UInt32(0), UInt32(0), UInt32(0), 
-                                                         UInt32(0), UInt32(0), UInt32(100), UInt32(0), 
-                                                         UInt32(0), UInt32(10), UInt32(0), UInt32(3)])
+        let id2 = TopShot.createPlayData(metadata: {"Name": "Oladipo"})
 
-        log("Molds 1 and 2 Succcesfully cast!")
+        // log("Plays 1 and 2 Succcesfully created!")
 
-        if verifyIDs(supply: 0, moldID: 2) { log("PASS") 
-        } else { log("FAIL") }
+        // if verifyIDs(playID: 2, setID: 0, supply: 0) { log("PASS") 
+        // } else { log("FAIL") }
 
-        if verifyMoldLen(2) { log("PASS") 
-        } else { log("FAIL") }
+        // if verifyPlaysLen(2) { log("PASS") 
+        // } else { log("FAIL") }
 
-        if numMomentsLeft(id: 0, quality: 1, expected: 3000000000) { log("PASS") 
-        } else { log("FAIL") }
+        // if verifyPlayMetaData(id: 0, key: "Name", value: "Lebron") { log("PASS") 
+        // } else { log("FAIL") }
 
-        if numMinted(id: 0, quality: 1, expected: 0) { log("PASS") 
-        } else { log("FAIL") }
+        // Mint two new NFTs from different play IDs
+        // let moment1 <- self.adminRef.mintMoment(playID: 0, quality: 1)
+        // let moment2 <- self.adminRef.mintMoment(playID: 1, quality: 2)
 
-        if verifyMoldMetaData(id: 0, key: "Name", value: "Lebron") { log("PASS") 
-        } else { log("FAIL") }
+        // // deposit them into the owner's account
+        // self.receiverRef.deposit(token: <-moment1)
+        // self.receiverRef.deposit(token: <-moment2)
 
-        if verifyMoldQualityCounts(id: 0, counts: [UInt32(3000000000), UInt32(1000000000), UInt32(0), UInt32(0), 
-                                                UInt32(0), UInt32(0), UInt32(0), UInt32(0), 
-                                                UInt32(0), UInt32(0), UInt32(100), UInt32(0), 
-                                                UInt32(0), UInt32(10), UInt32(0), UInt32(3)]) { log("PASS")
-        } else { log("FAIL") }
+        // log("Minted Moments successfully!")
+        // log("You own these moments!")
+        // log(self.receiverRef.getIDs())
 
-        // Mint two new NFTs from different mold IDs
-        let moment1 <- self.adminRef.mintMoment(moldID: 0, quality: 1)
-        let moment2 <- self.adminRef.mintMoment(moldID: 1, quality: 2)
+        // if verifyIDs(playID: 2, setID: 0, supply: 2) { log("PASS") 
+        // } else { log("FAIL") }
 
-        // deposit them into the owner's account
-        self.receiverRef.deposit(token: <-moment1)
-        self.receiverRef.deposit(token: <-moment2)
+        // if numMomentsLeft(id: 0, quality: 1, expected: 2999999999) { log("PASS") 
+        // } else { log("FAIL") }
 
-        log("Minted Moments successfully!")
-        log("You own these moments!")
-        log(self.receiverRef.getIDs())
+        // if numMinted(id: 0, quality: 1, expected: 1) { log("PASS") 
+        // } else { log("FAIL") }
 
-        if verifyIDs(supply: 0, moldID: 2) { log("PASS") 
-        } else { log("FAIL") }
-
-        if numMomentsLeft(id: 0, quality: 1, expected: 2999999999) { log("PASS") 
-        } else { log("FAIL") }
-
-        if numMinted(id: 0, quality: 1, expected: 1) { log("PASS") 
-        } else { log("FAIL") }
-
-        if verifyCollection(account: 0x02, ids: [UInt64(0), UInt64(1)]) { log("PASS") 
-        } else { log("FAIL") }
+        // if verifyCollection(account: 0x02, ids: [UInt64(0), UInt64(1)]) { log("PASS") 
+        // } else { log("FAIL") }
     }
 }
 
@@ -114,13 +82,15 @@ transaction {
 //
 //
 
-pub fun verifyIDs(supply: UInt64, moldID: UInt32): Bool  {
+pub fun verifyIDs(playID: UInt32, setID: UInt32, supply: UInt64): Bool  {
     log("verifyIDs")
 
-    if TopShot.totalSupply != supply && TopShot.moldID != moldID {
+    if TopShot.totalSupply != supply && TopShot.playID != playID && TopShot.setID != setID {
         log("Wrong IDs")
-        log("Mold ID")
-        log(TopShot.moldID)
+        log("Play ID")
+        log(TopShot.playID)
+        log("Set ID")
+        log(TopShot.setID)
         log("Moment ID")
         log(TopShot.totalSupply)
         return false
@@ -129,43 +99,30 @@ pub fun verifyIDs(supply: UInt64, moldID: UInt32): Bool  {
     }
 }
 
-pub fun verifyMoldLen(_ length: Int): Bool  {
-    log("verifyMoldLen")
+pub fun verifyPlaysLen(_ length: Int): Bool  {
+    log("verifyPlayLen")
 
-    if TopShot.molds.length != length {
-        log("Incorrect nuber of molds!")
+    if TopShot.plays.length != length {
+        log("Incorrect nuber of plays!")
         return false
     } else {
         return true
     }
 }
 
-pub fun numMomentsLeft(id: UInt32, quality: Int, expected: UInt32): Bool  {
-    log("numMomentsLeft")
+// pub fun numMinted(id: UInt32, quality: Int, expected: UInt32): Bool {
+//     log("numMinted")
 
-    let num = TopShot.getNumMomentsLeftInQuality(id: id, quality: quality)
-    if num != expected {
-        log("Incorrect number of moments left in specified quality")
-        log(num)
-        return false
-    } else {
-        return true
-    }
-}
+//     let num = TopShot.getNumMintedInQuality(id: id, quality: quality)
 
-pub fun numMinted(id: UInt32, quality: Int, expected: UInt32): Bool {
-    log("numMinted")
-
-    let num = TopShot.getNumMintedInQuality(id: id, quality: quality)
-
-    if num != expected {
-        log("Incorrect number of moments minted in specified quality")
-        log(num)
-        return false
-    } else {
-        return true
-    }
-}
+//     if num != expected {
+//         log("Incorrect number of moments minted in specified quality")
+//         log(num)
+//         return false
+//     } else {
+//         return true
+//     }
+// }
 
 pub fun verifyCollectionLength(account: Address, _ length: Int): Bool  {
     log("verifyCollectionLength")
@@ -226,42 +183,31 @@ pub fun verifyCreateCollection(): Bool {
     return true
 }
 
-pub fun verifyAdminNonExistence(account: Address): Bool {
-    log("verifyAdminNonExistence")
+pub fun verifySetNonExistence(account: Address): Bool {
+    log("verifySetNonExistence")
 
     let acct = getAccount(account)
 
-    if let adminRef = acct.published[&TopShot.Admin] {
-        log("Admin should not exist in published!")
+    if let adminRef = acct.published[&TopShot.Set] {
+        log("Set should not exist in published!")
         return false
     }
     return true
 }
 
-pub fun verifyMintingAllowed(id: UInt32, quality: Int, expected: Bool): Bool {
-    log("verifyMintingAllowed")
-
-    if (TopShot.mintingAllowed(id: id, quality: quality) != expected) {
-        log("MintingAllowed is incorrect for this ID and quality!")
-        return false
-    }
-    return true
-}
-
-
-// Mold Casting Tests
+// Play Creating Tests
 //
 //
 
-pub fun verifyMoldIDs(ids: [UInt32]): Bool  {
-    log("verifyMoldIDs")
+pub fun verifyPlayIDs(ids: [UInt32]): Bool  {
+    log("verifyPlayIDs")
 
     let i = 0
 
     while i < ids.length {
-        if TopShot.molds[ids[i]] == nil {
-            log("mold Id doesn't exist")
-            log(TopShot.molds[ids[i]])
+        if TopShot.plays[ids[i]] == nil {
+            log("play Id doesn't exist")
+            log(TopShot.plays[ids[i]])
             return false
         }
     }
@@ -269,46 +215,19 @@ pub fun verifyMoldIDs(ids: [UInt32]): Bool  {
     return true
 }
 
-pub fun verifyMoldMetaData(id: UInt32, key: String, value: String): Bool {
-    log("verifyMoldMetaData")
+pub fun verifyPlayMetaData(id: UInt32, key: String, value: String): Bool {
+    log("verifyPlayMetaData")
 
-    if let mold = TopShot.molds[id] {
-        if mold.metadata[key] != value || mold.id != id {
+    if let play = TopShot.plays[id] {
+        if play.metadata[key] != value || play.id != id {
             log("Metadata is not what was expected!")
-            log(mold.metadata[key])
+            log(play.metadata[key])
             return false
         } else {
             return true
         }
     } else {
-        log("Incorrect mold ID")
-        return false
-    }
-}
-
-pub fun verifyMoldQualityCounts(id: UInt32, counts: [UInt32]): Bool {
-    log("verifyMoldQualityCounts")
-
-    if let mold = TopShot.molds[id] {
-        var i = 0
-
-        while i < counts.length {
-            if mold.qualityCounts[i+1] != counts[i] {
-                log("Quality count is not what was expected!")
-                log("Quality:")
-                log(i + 1)
-                log("mold Count")
-                log(mold.qualityCounts[i+1])
-                log("expected count")
-                log(counts[i])
-                return false
-            }
-            i = i + 1
-        }
-        return true
-
-    } else {
-        log("Incorrect mold ID")
+        log("Incorrect play ID")
         return false
     }
 }
