@@ -213,13 +213,13 @@ access(all) contract Tokens: NonFungibleToken {
 		let oldCollection <- self.account.storage[Collection] <- create Collection()
 		destroy oldCollection
 
-		self.account.storage[&Collection] = &self.account.storage[Collection] as Collection
-        self.account.published[&NonFungibleToken.Receiver] = &self.account.storage[Collection] as NonFungibleToken.Receiver
+		self.account.storage[&Collection] = &self.account.storage[Collection] as &Collection
+        self.account.published[&NonFungibleToken.Receiver] = &self.account.storage[Collection] as &NonFungibleToken.Receiver
 
 		let oldFactory <- self.account.storage[NFTFactory] <- create NFTFactory()
 		destroy oldFactory
 
-		self.account.storage[&NFTFactory] = &self.account.storage[NFTFactory] as NFTFactory
+		self.account.storage[&NFTFactory] = &self.account.storage[NFTFactory] as &NFTFactory
 
         emit ContractInitialized()
 	}
