@@ -1,16 +1,19 @@
 import TopShot from 0x02
 
+
+
 transaction {
 
     // Reference for the collection who will own the minted NFT
     let receiverRef: &TopShot.MomentCollectionPublic
 
+    let adminRef: &TopShot.Admin
+
     prepare(acct: Account) {
         // Get the two references from storage
         self.receiverRef = acct.published[&TopShot.MomentCollectionPublic] ?? panic("no ref!")
-    }
 
-    execute {
+        self.adminRef = &acct.storage[TopShot.Admin] as &TopShot.Admin
 
         if verifyIDs(playID: 0, setID: 0, supply: 0) { log("PASS") 
         } else { log("FAIL") }
@@ -27,23 +30,36 @@ transaction {
         if verifyCreateCollection() { log("PASS") 
         } else { log("FAIL") }
 
-        if verifySetNonExistence(account: 0x02) { log("PASS") 
+        if verifyAdminPublicNonExistence(account: 0x02) { log("PASS") 
+        } else { log("FAIL") }
+
+        if verifySetPublicNonExistence(account: 0x02) { log("PASS") 
+        } else { log("FAIL") }
+
+        if verifyAdminCreation(adminRef: self.adminRef) { log("PASS")
         } else { log("FAIL") }
         
-        let id1 = TopShot.createPlayData(metadata: {"Name": "Lebron"})
+        let id1 = self.adminRef.createPlayData(metadata: {"Name": "Lebron"})
 
-        let id2 = TopShot.createPlayData(metadata: {"Name": "Oladipo"})
+        let id2 = self.adminRef.createPlayData(metadata: {"Name": "Oladipo"})
 
-        // log("Plays 1 and 2 Succcesfully created!")
+        log("Plays 1 and 2 Succcesfully created!")
 
-        // if verifyIDs(playID: 2, setID: 0, supply: 0) { log("PASS") 
-        // } else { log("FAIL") }
+        if verifyIDs(playID: 2, setID: 0, supply: 0) { log("PASS") 
+        } else { log("FAIL") }
 
-        // if verifyPlaysLen(2) { log("PASS") 
-        // } else { log("FAIL") }
+        if verifyPlaysLen(2) { log("PASS") 
+        } else { log("FAIL") }
 
-        // if verifyPlayMetaData(id: 0, key: "Name", value: "Lebron") { log("PASS") 
-        // } else { log("FAIL") }
+        if verifyPlayMetaData(id: 0, key: "Name", value: "Lebron") { log("PASS") 
+        } else { log("FAIL") }
+
+        let set1 <- self.adminRef.createSet(name: "Genesis", series: 0)
+
+        
+    }
+
+    execute {
 
         // Mint two new NFTs from different play IDs
         // let moment1 <- self.adminRef.mintMoment(playID: 0, quality: 1)
@@ -183,8 +199,20 @@ pub fun verifyCreateCollection(): Bool {
     return true
 }
 
-pub fun verifySetNonExistence(account: Address): Bool {
-    log("verifySetNonExistence")
+pub fun verifyAdminPublicNonExistence(account: Address): Bool {
+    log("verifyAdminPublicNonExistence")
+
+    let acct = getAccount(account)
+
+    if let adminRef = acct.published[&TopShot.Admin] {
+        log("Admin should not exist in published!")
+        return false
+    }
+    return true
+}
+
+pub fun verifySetPublicNonExistence(account: Address): Bool {
+    log("verifySetPublicNonExistence")
 
     let acct = getAccount(account)
 
@@ -192,6 +220,15 @@ pub fun verifySetNonExistence(account: Address): Bool {
         log("Set should not exist in published!")
         return false
     }
+    return true
+}
+
+pub fun verifyAdminCreation(adminRef: &TopShot.Admin): Bool {
+    log("verifyAdminCreation")
+
+    let Admin <- adminRef.createNewAdmin()
+    destroy Admin
+
     return true
 }
 

@@ -5,7 +5,7 @@
              Dieter Shirley dete@axiomzen.com
 
     This smart contract contains the core functionality for 
-    the NBA topshot game, created by Dapper Labs
+    NBA Top Shot, created by Dapper Labs
 
     The contract manages the metadata associated with all the plays
     that are used as templates for the Moment NFTs
@@ -40,7 +40,7 @@
 
 */
 
-import NonFungibleToken from 0x01
+import NonFungibleToken from 0x02
 
 pub contract TopShot: NonFungibleToken {
 
@@ -65,7 +65,7 @@ pub contract TopShot: NonFungibleToken {
     // emitted when a set is locked, meaning plays cannot be added
     pub event SetLocked(setID: UInt32)
     // emitted when a moment is minted from a set
-    pub event MomentMinted(id: UInt64, playID: UInt32, setID: UInt32)
+    pub event MomentMinted(momentID: UInt64, playID: UInt32, setID: UInt32)
 
     // events for Collection-related actions
     //
@@ -84,13 +84,16 @@ pub contract TopShot: NonFungibleToken {
     // the ID that is used to create PlayDatas. 
     // Every time a PlayData is created, playID is assigned 
     // to the new PlayData's ID and then is incremented by 1.
-    pub var playID: UInt32
+    pub var nextPlayID: UInt32
 
     // the ID that is used to create Sets. Every time a Set is created
     // setID is assigned to the new set's ID and then is incremented by 1.
-    pub var setID: UInt32
+    pub var nextSetID: UInt32
 
-    // the total number of Top shot moment NFTs in existence
+    // the total number of Top shot moment NFTs that have been created
+    // Because NFTs can be destroyed, it doesn't necessarily mean that this
+    // reflects the total number of NFTs in existence, just the number that
+    // have been minted to date.
     // Is also used as global moment IDs for minting
     pub var totalSupply: UInt64
 
@@ -188,7 +191,7 @@ pub contract TopShot: NonFungibleToken {
         pub var numMomentsPerPlay: {UInt32: UInt32}
 
         init(id: UInt32, name: String, series: UInt32) {
-            self.id = 0
+            self.id = id
             self.name = name
             self.series = series
             self.plays = []
@@ -208,18 +211,9 @@ pub contract TopShot: NonFungibleToken {
         //
         pub fun addPlay(playID: UInt32) {
             pre {
-                playID <= TopShot.playID: "Play doesn't exist"
+                playID <= TopShot.nextPlayID: "Play doesn't exist"
                 self.active: "Cannot add a play after the set has been locked"
-            }
-
-            // make sure that the play hasn't already beed added to the set
-            var i = 0
-            while i < self.plays.length {
-                if self.plays[i] == playID {
-                    return
-                }
-
-                i = i + 1
+                self.numMomentsPerPlay[playID] != nil: "The play has already beed added to the set"
             }
 
             // Add the play to the array of plays
@@ -242,9 +236,11 @@ pub contract TopShot: NonFungibleToken {
         // The play needs to be an existing play that is currently open for minting
         // 
         pub fun retirePlay(playID: UInt32) {
-            if self.canBeMinted[playID] == true {
-                self.canBeMinted[playID] = false
-                emit PlayRetiredFromSet(setID: self.id, playID: playID)
+            if let canBeMinted = self.canBeMinted[playID] {
+                if canBeMinted {
+                    self.canBeMinted[playID] = false
+                    emit PlayRetiredFromSet(setID: self.id, playID: playID)
+                }
             }
         }
 
@@ -264,7 +260,7 @@ pub contract TopShot: NonFungibleToken {
         // Pre-Conditions:
         // The set cannot already have been locked
         pub fun lock() {
-            if self.active == true {
+            if self.active {
                 self.active = false
                 emit SetLocked(setID: self.id)
             }
@@ -275,14 +271,14 @@ pub contract TopShot: NonFungibleToken {
         // Parameters: playID: The ID of the play that the moment references
         //
         // Pre-Conditions:
-        // The play must be allowed to mint new moments in this set
+        // The play must exist in the set and be allowed to mint new moments
         //
         // Returns: The NFT that was minted
         // 
         pub fun mintMoment(playID: UInt32): @NFT {
             // Revert if this play canot be minted
-            if let AllowsMinting = self.canBeMinted[playID] {
-                if AllowsMinting == false {
+            if let allowsMinting = self.canBeMinted[playID] {
+                if !allowsMinting {
                     panic("This play has been retired. Minting is disallowed")
                 }
              } else { panic("This play doesn't exist") }
@@ -299,7 +295,7 @@ pub contract TopShot: NonFungibleToken {
                                               setName: self.name,
                                               series: self.series)
 
-            emit MomentMinted(id: TopShot.totalSupply, playID: playID, setID: self.id)
+            emit MomentMinted(momentID: TopShot.totalSupply, playID: playID, setID: self.id)
 
             // Increment the global moment IDs
             TopShot.totalSupply = TopShot.totalSupply + UInt64(1)
@@ -342,17 +338,18 @@ pub contract TopShot: NonFungibleToken {
         // Returns: the ID of the new PlayData object
         pub fun createPlayData(metadata: {String: String}): UInt32 {
             // Create the new PlayData
-            var newPlayData = PlayData(id: TopShot.playID, metadata: metadata)
+            var newPlayData = PlayData(id: TopShot.nextPlayID, metadata: metadata)
+            let newID = newPlayData.id
 
             // Store it in the contract storage
-            TopShot.plays[TopShot.playID] = newPlayData
+            TopShot.plays[TopShot.nextPlayID] = newPlayData
 
             // increment the ID so that it isn't used again
-            TopShot.playID = TopShot.playID + UInt32(1)
+            TopShot.nextPlayID = TopShot.nextPlayID + UInt32(1)
 
-            emit PlayDataCreated(id: TopShot.playID - UInt32(1))
+            emit PlayDataCreated(id: newID)
 
-            return TopShot.playID - UInt32(1)
+            return newID
         }
 
         // createSet creates a new Set resource and returns it
@@ -365,12 +362,12 @@ pub contract TopShot: NonFungibleToken {
         //
         pub fun createSet(name: String, series: UInt32): @Set {
             // Create the new Set
-            var newSet <- create Set(id: TopShot.setID, name: name, series: series)
+            var newSet <- create Set(id: TopShot.nextSetID, name: name, series: series)
 
             // increment the setID so that it isn't used again
-            TopShot.setID = TopShot.setID + UInt32(1)
+            TopShot.nextSetID = TopShot.nextSetID + UInt32(1)
 
-            emit SetCreated(setID: TopShot.setID - UInt32(1))
+            emit SetCreated(setID: newSet.id)
 
             return <-newSet
         }
@@ -394,7 +391,7 @@ pub contract TopShot: NonFungibleToken {
 
         // shows metadata that is only associated with a specific NFT
         // and not the play itself
-        pub var metadata: {String:String}
+        pub var metadata: {String: String}
 
         // the ID of the PlayData that the moment references
         pub let playID: UInt32
@@ -557,6 +554,32 @@ pub contract TopShot: NonFungibleToken {
         return <-create Collection()
     }
 
+    // getPlayMetaData returns all the metadata associated with a specific play
+    // 
+    // Parameters: playID: The id of the play that is being searched
+    //
+    // Returns: The metadata as a String to String mapping optional
+    pub fun getPlayMetaData(playID: UInt32): {String: String}? {
+        return self.plays[playID]?.metadata
+    }
+
+    // getPlayMetaDataByField returns the metadata associated with a 
+    //                        specific field of the metadata
+    //                        Ex: field: "Team" will return something
+    //                        like "Memphis Grizzlies"
+    // 
+    // Parameters: playID: The id of the play that is being searched
+    //             field: The field to search for
+    //
+    // Returns: The metadata field as a String Optional
+    pub fun getPlayMetaDataByField(playID: UInt32, field: String): String? {
+        if let metadata = self.plays[playID]?.metadata {
+            return metadata[field]
+        } else {
+            return nil
+        }
+    }
+
     // -----------------------------------------------------------------------
     // TopShot initialization function
     // -----------------------------------------------------------------------
@@ -564,8 +587,8 @@ pub contract TopShot: NonFungibleToken {
     init() {
         // initialize the fields
         self.plays = {}
-        self.playID = 0
-        self.setID = 0
+        self.nextPlayID = 0
+        self.nextSetID = 0
         self.totalSupply = 0
 
         // Create a new collection
