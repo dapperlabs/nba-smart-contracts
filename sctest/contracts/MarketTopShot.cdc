@@ -36,7 +36,7 @@ pub contract Market {
         pub var prices: {UInt64: UInt64}
         pub var cutPercentage: UInt64
         pub fun purchase(tokenID: UInt64, recipient: &TopShot.Collection, buyTokens: @FlowToken.Vault)
-        pub fun idPrice(tokenID: UInt64): UInt64?
+        pub fun getPrice(tokenID: UInt64): UInt64?
         pub fun getIDs(): [UInt64]
     }
 
@@ -136,7 +136,7 @@ pub contract Market {
         }
 
         // idPrice returns the price of a specific token in the sale
-        pub fun idPrice(tokenID: UInt64): UInt64? {
+        pub fun getPrice(tokenID: UInt64): UInt64? {
             let price = self.prices[tokenID]
             return price
         }

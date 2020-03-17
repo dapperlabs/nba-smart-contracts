@@ -61,11 +61,11 @@ pub contract TopShot: NonFungibleToken {
     // emitted when a new play is added to a set
     pub event PlayAddedToSet(setID: UInt32, playID: UInt32)
     // emitted when a play is retired from a set and cannot be used to mint
-    pub event PlayRetiredFromSet(setID: UInt32, playID: UInt32)
+    pub event PlayRetiredFromSet(setID: UInt32, playID: UInt32, numMoments: UInt32)
     // emitted when a set is locked, meaning plays cannot be added
     pub event SetLocked(setID: UInt32)
     // emitted when a moment is minted from a set
-    pub event MomentMinted(momentID: UInt64, playID: UInt32, setID: UInt32)
+    pub event MomentMinted(momentID: UInt64, playID: UInt32, setID: UInt32, numberInPlay: UInt32)
 
     // events for Collection-related actions
     //
@@ -181,13 +181,14 @@ pub contract TopShot: NonFungibleToken {
         // When a set is inactive, plays cannot be added
         // A set can never be changed from inactive to active.
         // The decision to deactivate it is final
-        // If a set is active, moments can still be minted from it
+        // If a set is inactive, moments can still be minted from plays
+        // that already have been added to it.
         pub var active: Bool
 
         // Indicates the number of moments 
         // that have been minted per play in this set
         // When a moment is minted, this value is stored in the moment to
-        // show where in the play set it is. ex. 13 of 60
+        // show where in the play set it is so far. ex. 13 of 60
         pub var numMomentsPerPlay: {UInt32: UInt32}
 
         init(id: UInt32, name: String, series: UInt32) {
@@ -206,7 +207,7 @@ pub contract TopShot: NonFungibleToken {
         //
         // Pre-Conditions:
         // The play needs to be an existing play
-        // The sale needs to be active
+        // The set needs to be active
         // The play can't have already been added to the set
         //
         pub fun addPlay(playID: UInt32) {
@@ -239,7 +240,9 @@ pub contract TopShot: NonFungibleToken {
             if let canBeMinted = self.canBeMinted[playID] {
                 if canBeMinted {
                     self.canBeMinted[playID] = false
-                    emit PlayRetiredFromSet(setID: self.id, playID: playID)
+
+                    let numMomentsInPlay = self.numMomentsPerPlay[playID] ?? panic("Play doesn't exist")
+                    emit PlayRetiredFromSet(setID: self.id, playID: playID, numMoments: numMomentsInPlay )
                 }
             }
         }
@@ -284,7 +287,7 @@ pub contract TopShot: NonFungibleToken {
              } else { panic("This play doesn't exist") }
 
             // get the number of moments that have been minted for this play
-            // to use as this moment's ID
+            // to use as this moment's serial number
             let numInPlay = self.numMomentsPerPlay[playID] ?? panic("This play doesn't exist")
 
             // mint the new moment
@@ -295,12 +298,12 @@ pub contract TopShot: NonFungibleToken {
                                               setName: self.name,
                                               series: self.series)
 
-            emit MomentMinted(momentID: TopShot.totalSupply, playID: playID, setID: self.id)
+            emit MomentMinted(momentID: TopShot.totalSupply, playID: playID, setID: self.id, numberInPlay: numInPlay)
 
             // Increment the global moment IDs
             TopShot.totalSupply = TopShot.totalSupply + UInt64(1)
 
-            // Increment the id for this play
+            // Increment the count of moments minted for this play
             self.numMomentsPerPlay[playID] = numInPlay + UInt32(1)
 
             return <-newMoment
@@ -387,6 +390,7 @@ pub contract TopShot: NonFungibleToken {
         pub let id: UInt64
 
         // the place in the play that this moment was minted
+        // Otherwise know as the serial number
         pub let numberInPlaySet: UInt32
 
         // shows metadata that is only associated with a specific NFT
