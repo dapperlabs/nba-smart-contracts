@@ -5,8 +5,8 @@ pub contract interface NonFungibleToken {
     pub var totalSupply: UInt64
 
     pub event ContractInitialized()
-    pub event Withdraw(id: UInt64)
-    pub event Deposit(id: UInt64)
+    pub event Withdraw(id: UInt64, from: Address)
+    pub event Deposit(id: UInt64, to: Address)
 
     pub resource interface INFT {
         // The unique ID that each NFT has

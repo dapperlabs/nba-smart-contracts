@@ -8,16 +8,16 @@ pub contract interface FungibleToken {
     // The total number of tokens in existence
     // it is up to the implementer to ensure that total supply 
     // stays accurate and up to date
-    pub var totalSupply: UInt64
+    pub var totalSupply: UFix64
 
     // event that is emitted when the contract is created
-    pub event FungibleTokenInitialized(initialSupply: UInt64)
+    pub event FungibleTokenInitialized(initialSupply: UFix64)
 
     // event that is emitted when tokens are withdrawn from a Vault
-    pub event Withdraw(amount: UInt64)
+    pub event Withdraw(amount: UFix64, from: Address?)
 
     // event that is emitted when tokens are deposited to a Vault
-    pub event Deposit(amount: UInt64)
+    pub event Deposit(amount: UFix64, to: Address?)
 
     // Provider
     // 
@@ -41,7 +41,7 @@ pub contract interface FungibleToken {
         // them access by publishing a resource that exposes the withdraw
         // function.
         //
-        pub fun withdraw(amount: UInt64): @Vault {
+        pub fun withdraw(amount: UFix64): @Vault {
             post {
                 // `result` refers to the return value
                 result.balance == amount:
@@ -69,7 +69,7 @@ pub contract interface FungibleToken {
         //
         pub fun deposit(from: @Vault) {
             pre {
-                from.balance > UInt64(0):
+                from.balance > UFix64(0):
                     "Deposit balance must be positive"
             }
         }
@@ -84,9 +84,9 @@ pub contract interface FungibleToken {
     pub resource interface Balance {
 
         // The total balance of the account's tokens
-        pub var balance: UInt64
+        pub var balance: UFix64
 
-        init(balance: UInt64) {
+        init(balance: UFix64) {
             post {
                 self.balance == balance: 
                     "Balance must be initialized to the initial balance"
@@ -106,14 +106,14 @@ pub contract interface FungibleToken {
     //
     pub resource Vault: Provider, Receiver, Balance {
         // The total balance of the accounts tokens
-        pub var balance: UInt64
+        pub var balance: UFix64
 
         // must declare init to conform to the Balance interface
-        init(balance: UInt64)
+        init(balance: UFix64)
 
         // withdraw subtracts `amount` from the vaults balance and
         // returns a vault object with the subtracted balance
-        pub fun withdraw(amount: UInt64): @Vault {
+        pub fun withdraw(amount: UFix64): @Vault {
             pre {
                 self.balance >= amount: 
                     "Amount withdrawn must be less than or equal than the balance of the Vault"
@@ -143,7 +143,7 @@ pub contract interface FungibleToken {
     //
     pub fun createEmptyVault(): @Vault {
         post {
-            result.balance == UInt64(0): "The newly created Vault must have zero balance"
+            result.balance == UFix64(0): "The newly created Vault must have zero balance"
         }
     }
 }
@@ -154,62 +154,62 @@ pub contract interface FungibleToken {
 //
 pub contract FlowToken: FungibleToken {
 
-    pub var totalSupply: UInt64
+    pub var totalSupply: UFix64
 
     // event that is emitted when the contract is created
-    pub event FungibleTokenInitialized(initialSupply: UInt64)
+    pub event FungibleTokenInitialized(initialSupply: UFix64)
 
     // event that is emitted when tokens are withdrawn from a Vault
-    pub event Withdraw(amount: UInt64)
+    pub event Withdraw(amount: UFix64, from: Address?)
 
     // event that is emitted when tokens are deposited to a Vault
-    pub event Deposit(amount: UInt64)
+    pub event Deposit(amount: UFix64, to: Address?)
 
     pub resource Vault: FungibleToken.Provider, FungibleToken.Receiver, FungibleToken.Balance {
         
-        pub var balance: UInt64
+        pub var balance: UFix64
 
-        init(balance: UInt64) {
+        init(balance: UFix64) {
             self.balance = balance
         }
 
-        pub fun withdraw(amount: UInt64): @Vault {
+        pub fun withdraw(amount: UFix64): @Vault {
             self.balance = self.balance - amount
-            emit Withdraw(amount: amount)
+            emit Withdraw(amount: amount, from: self.owner?.address)
             return <-create Vault(balance: amount)
         }
         
         pub fun deposit(from: @Vault) {
             self.balance = self.balance + from.balance
-            emit Deposit(amount: from.balance)
+            emit Deposit(amount: from.balance, to: self.owner?.address)
             destroy from
         }
     }
 
     pub fun createEmptyVault(): @Vault {
-        return <-create Vault(balance: 0)
+        return <-create Vault(balance: UFix64(0))
     }
 
     // This function is included here purely for testing purposes and would not be
     // included in an actual implementation
     //
-    pub fun createVault(initialBalance: UInt64): @Vault {
+    pub fun createVault(initialBalance: UFix64): @Vault {
         return <-create Vault(balance: initialBalance)
     }
 
     init() {
-        self.totalSupply = 1000
+        self.totalSupply = UFix64(1000)
 
         // create the Vault with the initial balance and put it in storage
-        let oldVault <- self.account.storage[Vault] <- create Vault(balance: 1000)
+        let oldVault <- self.account.storage[Vault] <- create Vault(balance: UFix64(1000))
         destroy oldVault
 
         // Create a private reference to the Vault that has all the fields and methods
         self.account.storage[&Vault] = &self.account.storage[Vault] as &Vault
 
         // Create a public reference to the Vault that only exposes the deposit method
-        self.account.published[&FungibleToken.Receiver] = &self.account.storage[Vault] as &FungibleToken.Receiver
-        self.account.published[&FungibleToken.Balance] = &self.account.storage[Vault] as &FungibleToken.Balance
+        self.account.published[&Vault{FungibleToken.Receiver}] = &self.account.storage[Vault] as &Vault{FungibleToken.Receiver}
+        self.account.published[&Vault{FungibleToken.Balance}] = &self.account.storage[Vault] as &Vault{FungibleToken.Balance}
 
         emit FungibleTokenInitialized(initialSupply: self.totalSupply)
     }

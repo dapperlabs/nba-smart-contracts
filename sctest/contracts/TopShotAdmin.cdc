@@ -78,7 +78,6 @@ pub contract TopShot: NonFungibleToken {
 
     // -----------------------------------------------------------------------
     // TopShot contract-level fields
-    // These contain actual values that are stored in the smart contract
     // -----------------------------------------------------------------------
 
     // Series that this set belongs to
@@ -88,6 +87,9 @@ pub contract TopShot: NonFungibleToken {
 
     // variable size dictionary of PlayData structs
     pub var plays: {UInt32: PlayData}
+
+    // variable size dictionary of Set structs
+    pub var sets: {UInt32: Set}
 
     // the ID that is used to create PlayDatas. 
     // Every time a PlayData is created, playID is assigned 
@@ -106,18 +108,13 @@ pub contract TopShot: NonFungibleToken {
     pub var totalSupply: UInt64
 
     // -----------------------------------------------------------------------
-    // TopShot contract-level Composite Type DEFINITIONS
-    // -----------------------------------------------------------------------
-    // These are just definitions for types that this contract
-    // and other accounts can use. These definitions do not contain
-    // actual stored values, but an instance (or object) of one of these types
-    // can be created by this contract that contains stored values
+    // TopShot contract-level Composite Type Definitions
     // -----------------------------------------------------------------------
 
-    // PlayData is a Struct that holds metadata associated 
-    // with a specific NBA play, like the legendary moment when 
-    // Ray Allen hit the 3 to tie the Heat and Spurs in the 2013 finals game 6
-    // or when Lance Stephenson blew in the ear of Lebron James
+    // Struct that holds metadata associated with a specific NBA play,
+    // like the legendary moment when Ray Allen sank the 3 to put the Heat over
+    // the Spurs in game 6 of the 2013 Finals, or when Lance Stephenson
+    // blew in the ear of Lebron James
     //
     // Moment NFTs will all reference a single PlayData as the owner of
     // its metadata. The PlayDatas are publicly accessible, so anyone can
@@ -172,7 +169,7 @@ pub contract TopShot: NonFungibleToken {
     // If retireAll() and lock() are called back to back, 
     // the Set is closed off forever
     //
-    pub resource Set {
+    pub struct Set {
 
         // unique ID for the set
         pub let setID: UInt32
@@ -228,6 +225,59 @@ pub contract TopShot: NonFungibleToken {
 
             emit SetCreated(setID: self.setID, series: self.series)
         }
+    }
+
+    pub resource Admin {
+
+        // createPlayData creates a new PlayData struct 
+        // and stores it in the plays dictionary in the TopShot smart contract
+        //
+        // Parameters: metadata: A dictionary mapping metadata titles to their data
+        //                       example: {"Player Name": "Kevin Durant", "Height": "7 feet"}
+        //                               (because we all know Kevin Durant is not 6'9")
+        //
+        // Returns: the ID of the new PlayData object
+        pub fun createPlayData(metadata: {String: String}): UInt32 {
+            // Create the new PlayData
+            var newPlayData = PlayData(metadata: metadata)
+            let newID = newPlayData.playID
+
+            // Store it in the contract storage
+            TopShot.plays[TopShot.nextPlayID] = newPlayData
+
+            return newID
+        }
+
+        // createSet creates a new Set resource and returns it
+        // so that the caller can store it in their account
+        //
+        // Parameters: name: The name of the set
+        //             series: The series that the set belongs to
+        //
+        // Returns: The newly created set object
+        //
+        pub fun createSet(name: String) {
+            // Create the new Set
+            var newSet = Set(name: name)
+
+            TopShot.sets[newSet.setID] = newSet
+        }
+
+        // startNewSeries ends the current series by incrementing
+        // the series number, meaning that moments will be using the 
+        // new series number from now on
+        //
+        // Returns: The new series number
+        //
+        pub fun startNewSeries(): UInt32 {
+            // end the current series and start a new one
+            // by incrementing the TopShot series number
+            TopShot.currentSeries = TopShot.currentSeries + UInt32(1)
+
+            emit NewSeriesStarted(newCurrentSeries: TopShot.currentSeries)
+
+            return TopShot.currentSeries
+        }
 
         // addPlay adds a play to the set
         //
@@ -238,15 +288,15 @@ pub contract TopShot: NonFungibleToken {
         // The set needs to be not locked
         // The play can't have already been added to the set
         //
-        pub fun addPlay(playID: UInt32) {
+        pub fun addPlay(setID: UInt32, playID: UInt32) {
             pre {
-                (TopShot.plays[playID] != nil): "Play doesn't exist"
-                !self.locked: "Cannot add a play after the set has been locked"
-                self.numberMintedPerPlay[playID] != nil: "The play has already beed added to the set"
+                TopShot.plays[playID] != nil: "Play doesn't exist"
+                // !TopShot.sets[setID]?.locked: "Cannot add a play after the set has been locked"
+                // self.numberMintedPerPlay[playID] != nil: "The play has already beed added to the set"
             }
 
             // Add the play to the array of plays
-            self.plays.append(playID)
+            TopShot.sets[setID]?.plays.append(playID)
 
             // Open the play up for minting
             self.retired[playID] = false
@@ -348,59 +398,6 @@ pub contract TopShot: NonFungibleToken {
             }
 
             return <-newCollection
-        }
-    }
-
-    pub resource Admin {
-
-        // createPlayData creates a new PlayData struct 
-        // and stores it in the plays dictionary in the TopShot smart contract
-        //
-        // Parameters: metadata: A dictionary mapping metadata titles to their data
-        //                       example: {"Player Name": "Kevin Durant", "Height": "7 feet"}
-        //                               (because we all know Kevin Durant is not 6'9")
-        //
-        // Returns: the ID of the new PlayData object
-        pub fun createPlayData(metadata: {String: String}): UInt32 {
-            // Create the new PlayData
-            var newPlayData = PlayData(metadata: metadata)
-            let newID = newPlayData.playID
-
-            // Store it in the contract storage
-            TopShot.plays[TopShot.nextPlayID] = newPlayData
-
-            return newID
-        }
-
-        // createSet creates a new Set resource and returns it
-        // so that the caller can store it in their account
-        //
-        // Parameters: name: The name of the set
-        //             series: The series that the set belongs to
-        //
-        // Returns: The newly created set object
-        //
-        pub fun createSet(name: String): @Set {
-            // Create the new Set
-            var newSet <- create Set(name: name)
-
-            return <-newSet
-        }
-
-        // startNewSeries ends the current series by incrementing
-        // the series number, meaning that moments will be using the 
-        // new series number from now on
-        //
-        // Returns: The new series number
-        //
-        pub fun startNewSeries(): UInt32 {
-            // end the current series and start a new one
-            // by incrementing the TopShot series number
-            TopShot.currentSeries = TopShot.currentSeries + UInt32(1)
-
-            emit NewSeriesStarted(newCurrentSeries: TopShot.currentSeries)
-
-            return TopShot.currentSeries
         }
 
         // createNewAdmin creates a new Admin Resource
