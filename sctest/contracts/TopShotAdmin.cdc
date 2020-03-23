@@ -291,8 +291,8 @@ pub contract TopShot: NonFungibleToken {
         pub fun addPlay(setID: UInt32, playID: UInt32) {
             pre {
                 TopShot.plays[playID] != nil: "Play doesn't exist"
-                // !TopShot.sets[setID]?.locked: "Cannot add a play after the set has been locked"
-                // self.numberMintedPerPlay[playID] != nil: "The play has already beed added to the set"
+                !TopShot.sets[setID]!.locked: "Cannot add a play after the set has been locked"
+                TopShot.sets[setID]!.numberMintedPerPlay[playID] != nil: "The play has already beed added to the set"
             }
 
             // Add the play to the array of plays
