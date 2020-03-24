@@ -13,7 +13,7 @@ transaction {
 
     let saleRef: &Market.SaleCollection
 
-    prepare(acct: Account) {
+    prepare(acct: AuthAccount) {
 
         // create a temporary reference to the stored collection
         self.collectionRef = &acct.storage[TopShot.Collection] as &TopShot.Collection

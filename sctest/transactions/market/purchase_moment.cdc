@@ -16,7 +16,7 @@ transaction {
     // temp reference for the signer's Vault
     let vaultRef: &FlowToken.Vault
 
-    prepare(acct: Account) {
+    prepare(acct: AuthAccount) {
 
         // create a reference to the stored collection
         self.collectionRef = &acct.storage[TopShot.Collection] as &TopShot.Collection

@@ -14,7 +14,7 @@ transaction {
 
     let saleRef: &Market.SaleCollection
 
-    prepare(acct: Account) {
+    prepare(acct: AuthAccount) {
 
         // remove the sale collection from storage
         if acct.storage[Market.SaleCollection] == nil {

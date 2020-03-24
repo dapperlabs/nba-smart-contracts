@@ -10,11 +10,8 @@ transaction {
 
     execute {
         
-        let id1 = self.adminRef.createPlay(metadata: {"Name": "Lebron"})
+        let newSeriesNumber = self.adminRef.startNewSeries()
 
-        let id2 = self.adminRef.createPlay(metadata: {"Name": "Oladipo"})
-
-        log("PlayData 1 and 2 Succcesfully created!")
     }
 }
  

@@ -11,17 +11,24 @@
     that are used as templates for the Moment NFTs
 
     When a new Play wants to be added to the records, an Admin creates
-    a new PlayData struct that is stored in the smart contract.
+    a new Play struct that is stored in the smart contract.
 
-    Then an Admin can create new Sets. Sets are a resource that is used
-    to mint new moments based off of plays that have been linked to the Set
+    Then an Admin can create new Sets. Sets consist of a public struct that 
+    contains public information about a set, and a resource that is used
+    to mint new moments based off of plays that have been linked to the Set.
+
+    The admin resource has the power to do all of the important actions
+    in the smart contract and sets. When they want to call functions in a set,
+    they call their getSetRef function to get a reference 
+    to a set in the contract. 
+    Then they can call functions on the set using that reference
 
     In this way, the smart contract and its defined resources interact 
     with great teamwork, just like the Indiana Pacers, the greatest NBA team
     of all time.
     
-    When moments are minted, they are returned by the minter.  
-    The transaction has to handle the moment after that
+    When moments are minted, they are initialized with a MomentData struct and
+    are returned by the minter.
 
     The contract also defines a Collection resource. This is an object that 
     every TopShot NFT owner will store in their account
@@ -51,8 +58,8 @@ pub contract TopShot: NonFungibleToken {
     // emitted when the TopShot contract is created
     pub event ContractInitialized()
 
-    // emitted when a new PlayData struct is created
-    pub event PlayDataCreated(id: UInt32)
+    // emitted when a new Play struct is created
+    pub event PlayCreated(id: UInt32)
     // emitted when a new series has been triggered by an admin
     pub event NewSeriesStarted(newCurrentSeries: UInt32)
 
@@ -86,8 +93,8 @@ pub contract TopShot: NonFungibleToken {
     // Many sets can exist at a time, but only one series
     pub var currentSeries: UInt32
 
-    // variable size dictionary of PlayData structs
-    pub var playDatas: {UInt32: PlayData}
+    // variable size dictionary of Play structs
+    pub var playDatas: {UInt32: Play}
 
     // variable size dictionary of SetData structs
     pub var setDatas: {UInt32: SetData}
@@ -95,9 +102,9 @@ pub contract TopShot: NonFungibleToken {
     // variable size dictionary of Set resources
     access(self) var sets: @{UInt32: Set}
 
-    // the ID that is used to create PlayDatas. 
-    // Every time a PlayData is created, playID is assigned 
-    // to the new PlayData's ID and then is incremented by 1.
+    // the ID that is used to create Plays. 
+    // Every time a Play is created, playID is assigned 
+    // to the new Play's ID and then is incremented by 1.
     pub var nextPlayID: UInt32
 
     // the ID that is used to create Sets. Every time a Set is created
@@ -120,21 +127,21 @@ pub contract TopShot: NonFungibleToken {
     // can be created by this contract that contains stored values
     // -----------------------------------------------------------------------
 
-    // PlayData is a Struct that holds metadata associated 
+    // Play is a Struct that holds metadata associated 
     // with a specific NBA play, like the legendary moment when 
     // Ray Allen hit the 3 to tie the Heat and Spurs in the 2013 finals game 6
     // or when Lance Stephenson blew in the ear of Lebron James
     //
-    // Moment NFTs will all reference a single PlayData as the owner of
-    // its metadata. The PlayDatas are publicly accessible, so anyone can
+    // Moment NFTs will all reference a single Play as the owner of
+    // its metadata. The Plays are publicly accessible, so anyone can
     // read the metadata associated with a specific play ID
     //
-    pub struct PlayData {
+    pub struct Play {
 
-        // the unique ID that the PlayData has
+        // the unique ID that the Play has
         pub let playID: UInt32
 
-        // Stores all the metadata about the PlayData as a string mapping
+        // Stores all the metadata about the Play as a string mapping
         // This is not the long term way we will do metadata. Just a temporary
         // construct while we figure out a better way to do metadata
         //
@@ -150,7 +157,7 @@ pub contract TopShot: NonFungibleToken {
             // increment the ID so that it isn't used again
             TopShot.nextPlayID = TopShot.nextPlayID + UInt32(1)
 
-            emit PlayDataCreated(id: self.playID)
+            emit PlayCreated(id: self.playID)
         }
     }
 
@@ -159,8 +166,9 @@ pub contract TopShot: NonFungibleToken {
     // or Magic cards.
     // 
     // SetData is a struct that is stored in a public field of the contract.
-    // This is to allow anyone to be able to query important information
-    // avout a set but not have the ability to modify any data.
+    // This is to allow anyone to be able to query the constant information
+    // about a set but not have the ability to modify any data in the 
+    // private set resource
     //
     pub struct SetData {
 
@@ -201,10 +209,10 @@ pub contract TopShot: NonFungibleToken {
     // Because of this, it acts as an admin resource to add and
     // remove plays from sets, and mint new moments.
     //
-    // The admin can add PlayDatas to a set so that the set can mint moments
+    // The admin can add Plays to a set so that the set can mint moments
     // that reference that playdata.
     // The moments that are minted by a set will be listed as belonging to
-    // the set that minted it, as well as the PlayData it references
+    // the set that minted it, as well as the Play it references
     // 
     // The admin can also retire plays from the set, meaning that the retired
     // play can no longer have moments minted from it.
@@ -352,6 +360,25 @@ pub contract TopShot: NonFungibleToken {
 
             return <-newMoment
         }
+
+        // batchMintMoment mints an arbitrary quantity of moments 
+        // and returns them as a Collection
+        //
+        // Parameters: playID: the ID of the play that the moments are minted for
+        //             quantity: The quantity of moments to be minted
+        //
+        // Returns: Collection object that contains all the moments that were minted
+        //
+        pub fun batchMintMoment(playID: UInt32, quantity: UInt64): @Collection {
+            let newCollection <- create Collection()
+
+            var i: UInt64 = 0
+            while i < quantity {
+                newCollection.deposit(token: <-self.mintMoment(playID: playID))
+            }
+
+            return <-newCollection
+        }
     }
 
     pub struct MomentData {
@@ -361,7 +388,7 @@ pub contract TopShot: NonFungibleToken {
         // the ID of the Set that the Moment comes from
         pub let setID: UInt32
 
-        // the ID of the PlayData that the moment references
+        // the ID of the Play that the moment references
         pub let playID: UInt32
 
         // the place in the play that this moment was minted
@@ -385,7 +412,7 @@ pub contract TopShot: NonFungibleToken {
         
         pub let data: MomentData
 
-        pub let metadata: {String:String}
+        pub var metadata: {String:String}
 
         init(serialNumber: UInt32, playID: UInt32, setID: UInt32) {
             self.id = TopShot.totalSupply
@@ -407,21 +434,21 @@ pub contract TopShot: NonFungibleToken {
     //
     pub resource Admin {
 
-        // createPlayData creates a new PlayData struct 
+        // createPlay creates a new Play struct 
         // and stores it in the plays dictionary in the TopShot smart contract
         //
         // Parameters: metadata: A dictionary mapping metadata titles to their data
         //                       example: {"Player Name": "Kevin Durant", "Height": "7 feet"}
         //                               (because we all know Kevin Durant is not 6'9")
         //
-        // Returns: the ID of the new PlayData object
-        pub fun createPlayData(metadata: {String: String}): UInt32 {
-            // Create the new PlayData
-            var newPlayData = PlayData(metadata: metadata)
-            let newID = newPlayData.playID
+        // Returns: the ID of the new Play object
+        pub fun createPlay(metadata: {String: String}): UInt32 {
+            // Create the new Play
+            var newPlay = Play(metadata: metadata)
+            let newID = newPlay.playID
 
             // Store it in the contract storage
-            TopShot.playDatas[TopShot.nextPlayID] = newPlayData
+            TopShot.playDatas[TopShot.nextPlayID] = newPlay
 
             return newID
         }
@@ -434,66 +461,24 @@ pub contract TopShot: NonFungibleToken {
         //
         // Returns: The newly created set object
         //
-        pub fun createSet(name: String): @Set {
+        pub fun createSet(name: String) {
             // Create the new Set
             var newSet <- create Set(name: name)
 
-            return <-newSet
+            TopShot.sets[newSet.setID] <-! newSet
         }
 
-        // admin function to call the addPlay function in the set
-        pub fun addPlay(setID: UInt32, playID: UInt32) {
-            TopShot.sets[setID]?.addPlay(playID: playID)
-        }
-
-        // admin function to call the returePlay function in the set
-        pub fun retirePlay(setID: UInt32, playID: UInt32) {
-            TopShot.sets[setID]?.retirePlay(playID: playID)
-        }
-
-        // admin function to call the retureAll function in the set
-        pub fun retireAll(setID: UInt32) {
-            TopShot.sets[setID]?.retireAll()
-        }
-
-        // admin function to call the lock function in the set
-        pub fun lock(setID: UInt32) {
-            TopShot.sets[setID]?.lock()
-        }
-
-        // mintMoment mints a new moment and returns the newly minted moment
-        // 
-        // Parameters: playID: The ID of the play that the moment references
-        //             setID: The ID of the set that mints this Moment
+        // getSetRef returns a reference to a set in the TopShot
+        // contract so that the admin can call methods on it
         //
-        // Pre-Conditions:
-        // The play must exist in the set and be allowed to mint new moments
+        // Parameters: setID: The ID of the set that you want to
+        // get a reference to
         //
-        // Returns: The NFT that was minted
-        // 
-        pub fun mintMoment(setID: UInt32, playID: UInt32): @NFT
-        {
-            let newMoment <- TopShot.sets[setID]?.mintMoment(playID: playID) ?? panic("")
-            return <- newMoment
-        }
-
-        // batchMintMoment mints an arbitrary quantity of moments 
-        // and returns them as a Collection
+        // Returns: A reference to the set with all of the fields
+        // and methods exposed
         //
-        // Parameters: playID: the ID of the play that the moments are minted for
-        //             quantity: The quantity of moments to be minted
-        //
-        // Returns: Collection object that contains all the moments that were minted
-        //
-        pub fun batchMintMoment(setID: UInt32, playID: UInt32, quantity: UInt64): @Collection {
-            let newCollection <- create Collection()
-
-            var i: UInt64 = 0
-            while i < quantity {
-                newCollection.deposit(token: <-self.mintMoment(setID: setID, playID: playID))
-            }
-
-            return <-newCollection
+        pub fun getSetRef(setID: UInt32): &Set {
+            return &TopShot.sets[setID] as &Set
         }
 
         // startNewSeries ends the current series by incrementing
@@ -635,8 +620,8 @@ pub contract TopShot: NonFungibleToken {
         }
 
         pub fun getMetaData(id: UInt64): {String: String}? {
-            if let PlayDataID = self.getPlayID(id: id) {
-                return TopShot.playDatas[PlayDataID]?.metadata
+            if let PlayID = self.getPlayID(id: id) {
+                return TopShot.playDatas[PlayID]?.metadata
             } else {
                 return nil
             }
