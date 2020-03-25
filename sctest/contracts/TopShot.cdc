@@ -59,7 +59,7 @@ pub contract TopShot: NonFungibleToken {
     pub event ContractInitialized()
 
     // emitted when a new Play struct is created
-    pub event PlayCreated(id: UInt32)
+    pub event PlayCreated(id: UInt32, metadata: {String:String})
     // emitted when a new series has been triggered by an admin
     pub event NewSeriesStarted(newCurrentSeries: UInt32)
 
@@ -157,7 +157,7 @@ pub contract TopShot: NonFungibleToken {
             // increment the ID so that it isn't used again
             TopShot.nextPlayID = TopShot.nextPlayID + UInt32(1)
 
-            emit PlayCreated(id: self.playID)
+            emit PlayCreated(id: self.playID, metadata: metadata)
         }
     }
 
@@ -412,14 +412,10 @@ pub contract TopShot: NonFungibleToken {
         
         pub let data: MomentData
 
-        pub var metadata: {String:String}
-
         init(serialNumber: UInt32, playID: UInt32, setID: UInt32) {
             self.id = TopShot.totalSupply
 
             self.data = MomentData(momentID: self.id, setID: setID, playID: playID, serialNumber: serialNumber)
-
-            self.metadata = {}
 
             emit MomentMinted(momentID: self.id, playID: playID, setID: self.data.setID, serialNumber: self.data.serialNumber)
 

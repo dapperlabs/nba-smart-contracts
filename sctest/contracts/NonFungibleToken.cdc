@@ -11,15 +11,10 @@ pub contract interface NonFungibleToken {
     pub resource interface INFT {
         // The unique ID that each NFT has
         pub let id: UInt64
-
-        // placeholder for token metadata 
-        pub var metadata: {String: String}
     }
 
     pub resource NFT: INFT {
         pub let id: UInt64
-
-        pub var metadata: {String: String}
     }
 
     pub resource interface Provider {
