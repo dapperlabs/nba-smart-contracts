@@ -217,7 +217,8 @@ pub contract TopShot: NonFungibleToken {
     // The admin can also retire plays from the set, meaning that the retired
     // play can no longer have moments minted from it.
     //
-    // If the admin locks the Set, then no more plays can be added to it
+    // If the admin locks the Set, then no more plays can be added to it, but 
+    // moments can still be minted.
     //
     // If retireAll() and lock() are called back to back, 
     // the Set is closed off forever
@@ -455,8 +456,6 @@ pub contract TopShot: NonFungibleToken {
         // Parameters: name: The name of the set
         //             series: The series that the set belongs to
         //
-        // Returns: The newly created set object
-        //
         pub fun createSet(name: String) {
             // Create the new Set
             var newSet <- create Set(name: name)
@@ -464,7 +463,7 @@ pub contract TopShot: NonFungibleToken {
             TopShot.sets[newSet.setID] <-! newSet
         }
 
-        // getSetRef returns a reference to a set in the TopShot
+        // borrowSet returns a reference to a set in the TopShot
         // contract so that the admin can call methods on it
         //
         // Parameters: setID: The ID of the set that you want to
@@ -473,7 +472,7 @@ pub contract TopShot: NonFungibleToken {
         // Returns: A reference to the set with all of the fields
         // and methods exposed
         //
-        pub fun getSetRef(setID: UInt32): &Set {
+        pub fun borrowSet(setID: UInt32): &Set {
             return &TopShot.sets[setID] as &Set
         }
 
@@ -506,18 +505,13 @@ pub contract TopShot: NonFungibleToken {
         pub fun deposit(token: @NFT)
         pub fun batchDeposit(tokens: @Collection)
         pub fun getIDs(): [UInt64]
-        pub fun getNumberInPlaySet(id: UInt64): UInt32?
-        pub fun getPlayID(id: UInt64): UInt32?
-        pub fun getSetID(id: UInt64): UInt32?
-        pub fun getSetName(id: UInt64): String?
-        pub fun getSeries(id:UInt64): UInt32?
-        pub fun getMetaData(id: UInt64): {String: String}?
+        pub fun borrowNFT(id: UInt64): &NFT
     }
 
     // Collection is a resource that every user who owns NFTs 
     // will store in their account to manage their NFTS
     //
-    pub resource Collection: MomentCollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.Metadata { 
+    pub resource Collection: MomentCollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver { 
         // Dictionary of Moment conforming tokens
         // NFT is a resource type with a UInt64 ID field
         pub var ownedNFTs: @{UInt64: NFT}
@@ -579,48 +573,18 @@ pub contract TopShot: NonFungibleToken {
             return self.ownedNFTs.keys
         }
 
-        // The following functions get a certain piece of metadata
-        // associated with a single Moment in the Collection
+        // borrowNFT Returns a borrowed reference to a Moment in the collection
+        // so that the caller can read data and call methods from it
+        // They can use this to read its setID, playID, serialNumber,
+        // or any of the setData or Play Data associated with it by
+        // getting the setID or playID and reading those fields from
+        // the smart contract
         //
-        // Parameter: id: The ID of the Moment to get the data from
+        // Parameters: id: The ID of the NFT to get the reference for
         //
-        // Returns: nil if the NFT doesn't exist, 
-        //          otherwise it returns the correct data
-
-        pub fun getPlayID(id: UInt64): UInt32? {
-            return self.ownedNFTs[id]?.data?.playID
-        }
-
-        pub fun getNumberInPlaySet(id: UInt64): UInt32? {
-            return self.ownedNFTs[id]?.data?.serialNumber
-        }
-
-        pub fun getSetID(id: UInt64): UInt32? {
-            return self.ownedNFTs[id]?.data?.setID
-        }
-
-        pub fun getSetName(id: UInt64): String? {
-            if let setID = self.ownedNFTs[id]?.data?.setID {
-                return TopShot.setDatas[setID]?.name
-            } else {
-                return nil
-            }
-        }
-
-        pub fun getSeries(id:UInt64): UInt32? {
-            if let setID = self.ownedNFTs[id]?.data?.setID {
-                return TopShot.setDatas[setID]?.series
-            } else {
-                return nil
-            }
-        }
-
-        pub fun getMetaData(id: UInt64): {String: String}? {
-            if let PlayID = self.getPlayID(id: id) {
-                return TopShot.playDatas[PlayID]?.metadata
-            } else {
-                return nil
-            }
+        // Returns: A reference to the NFT
+        pub fun borrowNFT(id: UInt64): &NFT {
+            return &self.ownedNFTs[id] as &NFT
         }
 
         // If a transaction destroys the Collection object,
