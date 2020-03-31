@@ -1,17 +1,32 @@
+/*
+
+    MarketTopShot.cdc
+
+    Description: Contract definitions for users to sell their moments
+
+    Authors: Joshua Hannan joshua.hannan@dapperlabs.com
+             Dieter Shirley dete@axiomzen.com
+
+    Marketplace is where users can create a sale collectio that they
+    store in their account storage. In the sale collection, 
+    they can put their NFTs up for sale with a price and publish a 
+    reference so that others can see the sale.
+
+    If another user sees an NFT that they want to buy,
+    they can send fungible tokens that equal or exceed the buy price
+    to buy the NFT.  The NFT is transferred to them when
+    they make the purchase.
+
+    each user who wants to sell tokens will have a sale collection 
+    instance in their account that holds the tokens that they are putting up for sale
+
+    They can give a reference to this collection to the central contract
+    that it can list the sales in a central place
+
+*/
+
 import FungibleToken, FlowToken from 0x01
 import TopShot from 0x03
-
-// Marketplace is where users can put their NFTs up for sale with a price
-// if another user sees an NFT that they want to buy,
-// they can send fungible tokens that equal or exceed the buy price
-// to buy the NFT.  The NFT is transferred to them when
-// they make the purchase
-
-// each user who wants to sell tokens will have a sale collection 
-// instance in their account that holds the tokens that they are putting up for sale
-
-// They will give a reference to this collection to the central contract
-// that it can use to list tokens
 
 pub contract Market {
 
