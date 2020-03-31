@@ -1,4 +1,4 @@
-import TopShot from 0x02
+import TopShot from 0x03
 
 
 transaction {
@@ -19,7 +19,7 @@ transaction {
         let recipient = getAccount(0x02)
 
         // get the Collection reference for the receiver
-        let receiverRef = recipient.published[&TopShot.NFTReceiver] ?? panic("missing deposit reference")
+        let receiverRef = recipient.published[&TopShot.Collection{TopShot.MomentCollectionPublic}] ?? panic("missing deposit reference")
 
         // deposit the NFT in the receivers collection
         receiverRef.deposit(token: <-self.transferToken)

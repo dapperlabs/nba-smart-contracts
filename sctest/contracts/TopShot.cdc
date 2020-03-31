@@ -14,12 +14,12 @@
     a new Play struct that is stored in the smart contract.
 
     Then an Admin can create new Sets. Sets consist of a public struct that 
-    contains public information about a set, and a resource that is used
+    contains public information about a set, and a private resource used
     to mint new moments based off of plays that have been linked to the Set.
 
     The admin resource has the power to do all of the important actions
     in the smart contract and sets. When they want to call functions in a set,
-    they call their getSetRef function to get a reference 
+    they call their borrowSet function to get a reference 
     to a set in the contract. 
     Then they can call functions on the set using that reference
 
@@ -206,9 +206,6 @@ pub contract TopShot: NonFungibleToken {
     // the admin resource can call its methods and that there can be
     // public getters for some of its fields
     //
-    // Because of this, it acts as an admin resource to add and
-    // remove plays from sets, and mint new moments.
-    //
     // The admin can add Plays to a set so that the set can mint moments
     // that reference that playdata.
     // The moments that are minted by a set will be listed as belonging to
@@ -221,7 +218,7 @@ pub contract TopShot: NonFungibleToken {
     // moments can still be minted.
     //
     // If retireAll() and lock() are called back to back, 
-    // the Set is closed off forever
+    // the Set is closed off forever and nothing more can be done with it
     pub resource Set {
 
         // unique ID for the set
@@ -262,6 +259,7 @@ pub contract TopShot: NonFungibleToken {
             self.locked = false
             self.numberMintedPerPlay = {}
 
+            // Create a new SetData for this Set and store it in contract storage
             TopShot.setDatas[self.setID] = SetData(name: name)
         }
 
@@ -278,7 +276,7 @@ pub contract TopShot: NonFungibleToken {
             pre {
                 TopShot.playDatas[playID] != nil: "Play doesn't exist"
                 !self.locked: "Cannot add a play after the set has been locked"
-                self.numberMintedPerPlay[playID] != nil: "The play has already beed added to the set"
+                self.numberMintedPerPlay[playID] == nil: "The play has already beed added to the set"
             }
 
             // Add the play to the array of plays
@@ -340,16 +338,14 @@ pub contract TopShot: NonFungibleToken {
         // Returns: The NFT that was minted
         // 
         pub fun mintMoment(playID: UInt32): @NFT {
-            // Revert if this play cannot be minted
-            if let retired = self.retired[playID] {
-                if retired {
-                    panic("This play has been retired. Minting is disallowed")
-                }
-             } else { panic("This play doesn't exist") }
+            pre {
+                self.retired[playID] != nil: "This play doesn't exist"
+                !self.retired[playID]!: "This play has been retired. Minting is disallowed"
+            }
 
             // get the number of moments that have been minted for this play
             // to use as this moment's serial number
-            let numInPlay = self.numberMintedPerPlay[playID] ?? panic("This play doesn't exist")
+            let numInPlay = self.numberMintedPerPlay[playID]!
 
             // mint the new moment
             let newMoment: @NFT <- create NFT(serialNumber: numInPlay,
@@ -383,8 +379,6 @@ pub contract TopShot: NonFungibleToken {
     }
 
     pub struct MomentData {
-        // global unique moment ID
-        pub let momentID: UInt64
 
         // the ID of the Set that the Moment comes from
         pub let setID: UInt32
@@ -396,8 +390,7 @@ pub contract TopShot: NonFungibleToken {
         // Otherwise know as the serial number
         pub let serialNumber: UInt32
 
-        init(momentID: UInt64, setID: UInt32, playID: UInt32, serialNumber: UInt32) {
-            self.momentID = momentID
+        init(setID: UInt32, playID: UInt32, serialNumber: UInt32) {
             self.setID = setID
             self.playID = playID
             self.serialNumber = serialNumber
@@ -409,14 +402,17 @@ pub contract TopShot: NonFungibleToken {
     //
     pub resource NFT: NonFungibleToken.INFT {
 
+        // global unique moment ID
         pub let id: UInt64
         
+        // struct of moment metadata
         pub let data: MomentData
 
         init(serialNumber: UInt32, playID: UInt32, setID: UInt32) {
             self.id = TopShot.totalSupply
 
-            self.data = MomentData(momentID: self.id, setID: setID, playID: playID, serialNumber: serialNumber)
+            // set the metadata struct
+            self.data = MomentData(setID: setID, playID: playID, serialNumber: serialNumber)
 
             emit MomentMinted(momentID: self.id, playID: playID, setID: self.data.setID, serialNumber: self.data.serialNumber)
 
@@ -445,7 +441,7 @@ pub contract TopShot: NonFungibleToken {
             let newID = newPlay.playID
 
             // Store it in the contract storage
-            TopShot.playDatas[TopShot.nextPlayID] = newPlay
+            TopShot.playDatas[newID] = newPlay
 
             return newID
         }
@@ -629,11 +625,7 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: The metadata field as a String Optional
     pub fun getPlayMetaDataByField(playID: UInt32, field: String): String? {
-        if let metadata = TopShot.playDatas[playID]?.metadata {
-            return metadata[field]
-        } else {
-            return nil
-        }
+        return TopShot.playDatas[playID]!.metadata[field]
     }
 
     // -----------------------------------------------------------------------

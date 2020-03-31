@@ -1,5 +1,8 @@
 import TopShot from 0x03
 
+// This transaction allows an admin to mint a new moment and
+// deposit it into an NFT Collection
+
 transaction {
 
     // Reference for the collection who will own the minted NFT
@@ -10,24 +13,22 @@ transaction {
 
     prepare(acct: AuthAccount) {
         // Get the two references from storage
-        self.receiverRef = acct.published[&AnyResource{TopShot.MomentCollectionPublic}] ?? panic("no ref!")
+        self.receiverRef = acct.published[&TopShot.Collection{TopShot.MomentCollectionPublic}] ?? panic("no ref!")
         self.adminRef = &acct.storage[TopShot.Admin] as &TopShot.Admin
 
     }
 
     execute {
 
-        let setRef = self.adminRef.getSetRef(setID: 1)
+        let setRef = self.adminRef.borrowSet(setID: 0)
 
-        // Mint two new NFTs from different mold IDs
+        // Mint a new NFT
         let moment1 <- setRef.mintMoment(playID: 1)
-        let moment2 <- setRef.mintMoment(playID: 1)
 
         // deposit them into the owner's account
         self.receiverRef.deposit(token: <-moment1)
-        self.receiverRef.deposit(token: <-moment2)
 
-        log("Minted Moments successfully!")
+        log("Minted Moment successfully!")
         log("You own these moments!")
         log(self.receiverRef.getIDs())
     }
