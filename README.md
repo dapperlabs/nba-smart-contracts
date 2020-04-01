@@ -34,10 +34,7 @@ All functionality and type definitions are included in the `TopShot.cdc` contrac
 The TopShot contract defines  types.
 
  - `Play`: A struct type that holds most of the metadata for the moments.
-    All molds in Top Shot will be stored and modified in the main contract.
-    A `Mold` object contains fields for its ID, the number of moments that can
-    be minted from each quality, the number that can still be minted
-    of each quality, and a field for all the mold's metadata. 
+    All plays in Top Shot will be stored and modified in the main contract.
  - `SetData`: A struct that contains constant information about sets in topshot
     like the name, the series, the id, and such.
  - `Set`: A resource that contains functionality to modify sets,
@@ -83,7 +80,58 @@ or use a type that is defined in a smart contract, we simply import
 that contract from the address it is defined in and then use the imported
 contract to access those fields.
 
-### Directory Structure
+## TopShot Events
+
+The smart contract and its various resources will emit certain events
+that show when specific actions are taken, like transferring an NFT. This
+is a list of events that can be emitted, and what each event means.
+
+    
+- `pub event ContractInitialized()`
+    
+    This event is emitted when the TopShot contract is created
+
+#### Events for plays
+- `pub event PlayCreated(id: UInt32, metadata: {String:String})`
+    
+    Emitted when a new play has been created and added to the smart contract by an admin.
+
+- `pub event NewSeriesStarted(newCurrentSeries: UInt32)`
+    
+    Emitted when a new series has been triggered by an admin
+
+#### Events for Set-Related actions
+
+- `pub event SetCreated(setID: UInt32, series: UInt32)`
+    
+    Emitted when a new Set is created
+- `pub event PlayAddedToSet(setID: UInt32, playID: UInt32)`
+    
+    Emitted when a new play is added to a set.
+    
+- `pub event PlayRetiredFromSet(setID: UInt32, playID: UInt32, numMoments: UInt32)`
+
+    Emitted when a play is retired from a set and cannot be used to mint
+    
+- `pub event SetLocked(setID: UInt32)`
+
+    Emitted when a set is locked, meaning plays cannot be added
+    
+- `pub event MomentMinted(momentID: UInt64, playID: UInt32, setID: UInt32, serialNumber: UInt32)`
+
+    Emitted when a moment is minted from a set. The `momentID` is the global unique identifier that differentiates a moment from all other TopShot moments in existence. The `serialNumber` is the identifier that differentiates the moment within an Edition. It corresponds to the place in that edition where it was minted. 
+
+#### Events for Collection-related actions
+    
+- `pub event Withdraw(id: UInt64, from: Address?)`
+
+    Emitted when a moment is withdrawn from a collection. `id` refers to the global moment ID. If the collection was in an account's storage when it was withdrawn, `from` will show the address of the account that it was withdrawn from. If the collection was not in storage when the Moment was withdrawn, `from` will be `nil`
+
+- `pub event Deposit(id: UInt64, to: Address?)`
+
+    Emitted when a moment is deposited into a collection. `id` refers to the global moment ID. If the collection was in an account's storage when it was deposited, `to` will show the address of the account that it was deposited to. If the collection was not in storage when the Moment was deposited, `to` will be `nil`
+
+## Directory Structure
 
 The directories here are organized into scripts and transactions.
 
