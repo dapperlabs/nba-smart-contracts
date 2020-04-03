@@ -291,6 +291,17 @@ pub contract TopShot: NonFungibleToken {
             emit PlayAddedToSet(setID: self.setID, playID: playID)
         }
 
+        // addPlays adds multiple plays to the set
+        //
+        // Parameters: playIDs: The IDs of the plays that are being added
+        //                      as an array
+        //
+        pub fun addPlays(playIDs: [UInt32]) {
+            for play in playIDs {
+                self.addPlay(playID: play)
+            }
+        }
+
         // retirePlay retires a play from the set so that it can't mint new moments
         //
         // Parameters: playID: The ID of the play that is being retired
@@ -469,6 +480,9 @@ pub contract TopShot: NonFungibleToken {
         // and methods exposed
         //
         pub fun borrowSet(setID: UInt32): &Set {
+            pre {
+                TopShot.sets[setID] != nil: "Set doesn't exist"
+            }
             return &TopShot.sets[setID] as &Set
         }
 
@@ -580,6 +594,9 @@ pub contract TopShot: NonFungibleToken {
         //
         // Returns: A reference to the NFT
         pub fun borrowNFT(id: UInt64): &NFT {
+            pre {
+                self.ownedNFTs[id] != nil: "Moment doesn't exist!"
+            }
             return &self.ownedNFTs[id] as &NFT
         }
 

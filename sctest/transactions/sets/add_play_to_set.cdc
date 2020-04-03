@@ -16,7 +16,7 @@ transaction {
         let setRef = self.adminRef.borrowSet(setID: 0)
 
         // add a play to the set using its reference
-        setRef.addPlay(playID: 1)
+        setRef.addPlay(playID: 0)
     }
 }
  

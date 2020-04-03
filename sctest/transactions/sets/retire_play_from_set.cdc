@@ -15,7 +15,7 @@ transaction {
 
     execute {
         // get a reference to a specific set
-        let setRef = self.adminRef.borrowSet(setID: 1)
+        let setRef = self.adminRef.borrowSet(setID: 0)
 
         // retire a play from the set
         setRef.retirePlay(playID: 1)

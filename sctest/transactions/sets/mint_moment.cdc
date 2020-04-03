@@ -23,7 +23,7 @@ transaction {
         let setRef = self.adminRef.borrowSet(setID: 0)
 
         // Mint a new NFT
-        let moment1 <- setRef.mintMoment(playID: 1)
+        let moment1 <- setRef.mintMoment(playID: 0)
 
         // deposit them into the owner's account
         self.receiverRef.deposit(token: <-moment1)
