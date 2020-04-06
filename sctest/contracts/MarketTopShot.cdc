@@ -1,69 +1,80 @@
+/*
+
+    MarketTopShot.cdc
+
+    Description: Contract definitions for users to sell their moments
+
+    Authors: Joshua Hannan joshua.hannan@dapperlabs.com
+             Dieter Shirley dete@axiomzen.com
+
+    Marketplace is where users can create a sale collectio that they
+    store in their account storage. In the sale collection, 
+    they can put their NFTs up for sale with a price and publish a 
+    reference so that others can see the sale.
+
+    If another user sees an NFT that they want to buy,
+    they can send fungible tokens that equal or exceed the buy price
+    to buy the NFT.  The NFT is transferred to them when
+    they make the purchase.
+
+    each user who wants to sell tokens will have a sale collection 
+    instance in their account that holds the tokens that they are putting up for sale
+
+    They can give a reference to this collection to the central contract
+    that it can list the sales in a central place
+
+*/
+
 import FungibleToken, FlowToken from 0x01
-import TopShot from 0x02
+import TopShot from 0x03
 
-// Marketplace is where users can put their NFTs up for sale with a price
-// if another user sees an NFT that they want to buy,
-// they can send fungible tokens that equal or exceed the buy price
-// to buy the NFT.  The NFT is transferred to them when
-// they make the purchase
+pub contract Market {
 
-// each user who wants to sell tokens will have a sale collection 
-// instance in their account that holds the tokens that they are putting up for sale
-
-// They will give a reference to this collection to the central contract
-// that it can use to list tokens
-
-access(all) contract Market {
-
-    access(all) event ForSale(id: UInt64, price: UInt64)
-    access(all) event PriceChanged(id: UInt64, newPrice: UInt64)
-    access(all) event TokenPurchased(id: UInt64, price: UInt64)
-    access(all) event SaleWithdrawn(id: UInt64)
-    access(all) event CutPercentageChanged(newPercent: UInt64)
+    pub event ForSale(id: UInt64, price: UFix64)
+    pub event PriceChanged(id: UInt64, newPrice: UFix64)
+    pub event TokenPurchased(id: UInt64, price: UFix64)
+    pub event SaleWithdrawn(id: UInt64)
+    pub event CutPercentageChanged(newPercent: UFix64)
 
     // the reference that is used for depositing TopShot's cut of every sale
-    access(contract) var TopShotVault: &FungibleToken.Receiver
+    access(contract) var TopShotVault: &AnyResource{FungibleToken.Receiver}
 
     // The collection of sale references that are included in the marketplace
-    access(all) var saleReferences: {Int: &SalePublic}
+    pub var saleReferences: {UInt64: &AnyResource{SalePublic}}
 
     // The number of sales that have been listed in this contract
     // used as an index to the central sale listings
-    access(all) var numSales: Int
+    pub var numSales: UInt64
 
     // The interface that user can publish to allow others too access their sale
-    access(all) resource interface SalePublic {
-        access(all) var prices: {UInt64: UInt64}
-        access(all) var cutPercentage: UInt64
-        access(all) fun purchase(tokenID: UInt64, recipient: &TopShot.Collection, buyTokens: @FlowToken.Vault)
-        access(all) fun idPrice(tokenID: UInt64): UInt64?
-        access(all) fun getIDs(): [UInt64]
-        access(all) fun getMoldID(id: UInt64): UInt32?
-        access(all) fun getQuality(id: UInt64): Int?
-        access(all) fun getPlaceInQuality(id: UInt64): UInt32?
-        access(all) fun getMetaData(id: UInt64): {String: String}?
+    pub resource interface SalePublic {
+        pub var prices: {UInt64: UFix64}
+        pub var cutPercentage: UFix64
+        pub fun purchase(tokenID: UInt64, recipient: &TopShot.Collection, buyTokens: @FlowToken.Vault)
+        pub fun getPrice(tokenID: UInt64): UFix64?
+        pub fun getIDs(): [UInt64]
     }
 
-    access(all) resource SaleCollection: SalePublic {
+    pub resource SaleCollection: SalePublic {
 
         // a dictionary of the NFTs that the user is putting up for sale
-        access(all) var forSale: @TopShot.Collection
+        pub var forSale: @TopShot.Collection
 
         // dictionary of the prices for each NFT by ID
-        access(all) var prices: {UInt64: UInt64}
+        pub var prices: {UInt64: UFix64}
 
         // the fungible token vault of the owner of this sale
         // so that when someone buys a token, this resource can deposit
         // tokens in their account
-        access(account) let ownerVault: &FungibleToken.Receiver
+        access(self) let ownerVault: &AnyResource{FungibleToken.Receiver}
 
         // the reference that is used for depositing TopShot's cut of every sale
-        access(self) let TopShotVault: &FungibleToken.Receiver
+        access(self) let TopShotVault: &AnyResource{FungibleToken.Receiver}
 
         // the percentage that is taken from every purchase for TopShot
-        access(all) var cutPercentage: UInt64
+        pub var cutPercentage: UFix64
 
-        init (vault: &FungibleToken.Receiver, cutPercentage: UInt64) {
+        init (vault: &AnyResource{FungibleToken.Receiver}, cutPercentage: UFix64) {
             self.forSale <- TopShot.createEmptyCollection()
             self.ownerVault = vault
             self.prices = {}
@@ -72,7 +83,7 @@ access(all) contract Market {
         }
 
         // withdraw gives the owner the opportunity to remove a sale from the collection
-        access(all) fun withdraw(tokenID: UInt64): @TopShot.NFT {
+        pub fun withdraw(tokenID: UInt64): @TopShot.NFT {
             // remove the price
             self.prices.remove(key: tokenID)
             // remove and return the token
@@ -84,7 +95,7 @@ access(all) contract Market {
         }
 
         // listForSale lists an NFT for sale in this collection
-        access(all) fun listForSale(token: @TopShot.NFT, price: UInt64) {
+        pub fun listForSale(token: @TopShot.NFT, price: UFix64) {
             let id: UInt64 = token.id
 
             self.prices[id] = price
@@ -95,7 +106,7 @@ access(all) contract Market {
         }
 
         // changePrice changes the price of a token that is currently for sale
-        access(all) fun changePrice(tokenID: UInt64, newPrice: UInt64) {
+        pub fun changePrice(tokenID: UInt64, newPrice: UFix64) {
             pre {
                 self.prices[tokenID] != nil: "Cannot change price for a token that doesnt exist."
             }
@@ -105,18 +116,18 @@ access(all) contract Market {
         }
 
         // changePercentage changes the cut percentage of a token that is currently for sale
-        access(all) fun changePercentage(newPercent: UInt64) {
+        pub fun changePercentage(newPercent: UFix64) {
             self.cutPercentage = newPercent
 
             emit CutPercentageChanged(newPercent: newPercent)
         }
 
         // purchase lets a user send tokens to purchase an NFT that is for sale
-        access(all) fun purchase(tokenID: UInt64, recipient: &TopShot.Collection, buyTokens: @FlowToken.Vault) {
+        pub fun purchase(tokenID: UInt64, recipient: &TopShot.Collection, buyTokens: @FlowToken.Vault) {
             pre {
                 self.forSale.ownedNFTs[tokenID] != nil && self.prices[tokenID] != nil:
                     "No token matching this ID for sale!"
-                buyTokens.balance >= (self.prices[tokenID] ?? UInt64(0)):
+                buyTokens.balance >= (self.prices[tokenID] ?? UFix64(0)):
                     "Not enough tokens to by the NFT!"
             }
 
@@ -124,7 +135,7 @@ access(all) contract Market {
                 self.prices[tokenID] = nil
 
                 // take the cut of the tokens Top shot gets from the sent tokens
-                let TopShotCut <- buyTokens.withdraw(amount: price - (price*self.cutPercentage)/(UInt64(100)))
+                let TopShotCut <- buyTokens.withdraw(amount: price - (price*self.cutPercentage)/(UFix64(100)))
 
                 // deposit it into topshot's Vault
                 self.TopShotVault.deposit(from: <-TopShotCut)
@@ -140,34 +151,14 @@ access(all) contract Market {
         }
 
         // idPrice returns the price of a specific token in the sale
-        access(all) fun idPrice(tokenID: UInt64): UInt64? {
+        pub fun getPrice(tokenID: UInt64): UFix64? {
             let price = self.prices[tokenID]
             return price
         }
 
         // getIDs returns an array of token IDs that are for sale
-        access(all) fun getIDs(): [UInt64] {
+        pub fun getIDs(): [UInt64] {
             return self.forSale.getIDs()
-        }
-
-        access(all) fun getMoldID(id: UInt64): UInt32? {
-            return self.forSale.getMoldID(id: id)
-        }
-
-        access(all) fun getQuality(id: UInt64): Int? {
-            return self.forSale.getQuality(id: id)
-        }
-
-        access(all) fun getPlaceInQuality(id: UInt64): UInt32? {
-            return self.forSale.getPlaceInQuality(id: id)
-        }
-
-        access(all) fun getMetaData(id: UInt64): {String: String}? {
-            if let moldID = self.forSale.getMoldID(id: id) {
-                return TopShot.molds[moldID]?.metadata
-            } else {
-                return nil
-            }
         }
 
         destroy() {
@@ -176,36 +167,36 @@ access(all) contract Market {
     }
 
     // createCollection returns a new collection resource to the caller
-    access(all) fun createSaleCollection(ownerVault: &FungibleToken.Receiver, cutPercentage: UInt64): @SaleCollection {
+    pub fun createSaleCollection(ownerVault: &AnyResource{FungibleToken.Receiver}, cutPercentage: UFix64): @SaleCollection {
         return <- create SaleCollection(vault: ownerVault, cutPercentage: cutPercentage)
     }
 
     // These next three functions may or may not be needed but serve as a
     // preliminary way for the contract to keep track of sales that are
     // listed in the marketplace
-    access(account) fun addSale(reference: &SalePublic): Int {
+    access(account) fun addSale(reference: &AnyResource{SalePublic}): UInt64 {
         pre {
             reference.getIDs().length != 0: "Cannot add an empty sale!"
         }
 
-        self.numSales = self.numSales + 1
+        self.numSales = self.numSales + UInt64(1)
 
         self.saleReferences[self.numSales] = reference
 
         return self.numSales
     }
 
-    access(account) fun removeSale(id: Int) {
+    access(account) fun removeSale(id: UInt64) {
         self.saleReferences.remove(key: id)
     }
 
-    access(all) fun getSaleReference(id: Int): &SalePublic {
+    pub fun getSaleReference(id: UInt64): &AnyResource{SalePublic} {
         return self.saleReferences[id] ?? panic("No reference!")
     }
 
     init() {
         let acct = getAccount(0x02)
-        self.TopShotVault = acct.published[&FungibleToken.Receiver] ?? panic("No vault!")
+        self.TopShotVault = acct.published[&FlowToken.Vault{FungibleToken.Receiver}] ?? panic("No vault!")
         self.saleReferences = {}
         self.numSales = 0
     }

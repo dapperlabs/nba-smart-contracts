@@ -8,7 +8,7 @@ import Market from 0x03
 // price of the token
 transaction {
 
-    prepare(acct: Account) {
+    prepare(acct: AuthAccount) {
 
         // remove the sale collection from storage
         if acct.storage[Market.SaleCollection] != nil {
