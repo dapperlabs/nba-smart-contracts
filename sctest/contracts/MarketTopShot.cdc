@@ -30,11 +30,11 @@ import TopShot from 0x03
 
 pub contract Market {
 
-    pub event ForSale(id: UInt64, price: UFix64)
-    pub event PriceChanged(id: UInt64, newPrice: UFix64)
-    pub event TokenPurchased(id: UInt64, price: UFix64)
-    pub event SaleWithdrawn(id: UInt64)
-    pub event CutPercentageChanged(newPercent: UFix64)
+    pub event MomentListed(id: UInt64, price: UFix64, seller: Address?)
+    pub event PriceChanged(id: UInt64, newPrice: UFix64, seller: Address?)
+    pub event TokenPurchased(id: UInt64, price: UFix64, seller: Address?)
+    pub event SaleWithdrawn(id: UInt64, owner: Address?)
+    pub event CutPercentageChanged(newPercent: UFix64, seller: Address?)
 
     // the reference that is used for depositing TopShot's cut of every sale
     access(contract) var TopShotVault: &AnyResource{FungibleToken.Receiver}

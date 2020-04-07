@@ -321,10 +321,8 @@ pub contract TopShot: NonFungibleToken {
         // Afterwards, none of the retired plays will be able to mint new moments
         //
         pub fun retireAll() {
-            var i = 0
-            while i < self.plays.length {
-                self.retirePlay(playID: self.plays[i])
-                i = i + 1
+            for play in self.plays {
+                self.retirePlay(playID: play)
             }
         }
 
@@ -383,6 +381,7 @@ pub contract TopShot: NonFungibleToken {
             var i: UInt64 = 0
             while i < quantity {
                 newCollection.deposit(token: <-self.mintMoment(playID: playID))
+                i = i + UInt64(1)
             }
 
             return <-newCollection
@@ -541,13 +540,11 @@ pub contract TopShot: NonFungibleToken {
 
         // batchWithdraw withdraws multiple tokens and returns them as a Collection
         pub fun batchWithdraw(ids: [UInt64]): @Collection {
-            var i = 0
             var batchCollection: @Collection <- create Collection()
-
-            while i < ids.length {
-                batchCollection.deposit(token: <-self.withdraw(withdrawID: ids[i]))
-
-                i = i + 1
+            
+            // iterate through the ids and withdraw them from the collection
+            for id in ids {
+                batchCollection.deposit(token: <-self.withdraw(withdrawID: id))
             }
             return <-batchCollection
         }
@@ -567,13 +564,11 @@ pub contract TopShot: NonFungibleToken {
         // batchDeposit takes a Collection object as an argument
         // and deposits each contained NFT into this collection
         pub fun batchDeposit(tokens: @Collection) {
-            var i = 0
             let keys = tokens.getIDs()
 
-            while i < keys.length {
-                self.deposit(token: <-tokens.withdraw(withdrawID: keys[i]))
-
-                i = i + 1
+            // iterate through the keys in the collection and deposit each one
+            for key in keys {
+                self.deposit(token: <-tokens.withdraw(withdrawID: key))
             }
             destroy tokens
         }
