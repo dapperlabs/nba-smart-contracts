@@ -142,6 +142,27 @@ Transactions contain the transactions that various admins and users can use
 to performa actions in the smart contract like creating plays and sets,
 minting moments, and transfering moments.
 
+ - `contracts/` : Where the TopShot related smart contracts live
+ - `scripts/`  : This contains all the read-only Cadence scripts 
+ that are used to read information from the smart contract
+ or from a resource in account storage
+   - `collections/`: Used to read information about a user's Moment collection
+   - `market/`: Used to read information about the market smart contract and about a user's Moment sales.
+   - `plays/`: Used to read information related to play data and IDs.
+   - `sets/`: Used to read various information about set names and IDs
+ - `test/`  : This contains special transactions and scripts that are used
+ to quickly test the functionality of the smart contracts. They are not all 
+ working now and will be updated to be extensive when the contracts
+ are updated with the new storage interface changes.
+ - `transactions/` : This directory contains all the state-changing transactions
+ that are associated with the TopShot smart contracts.
+   - `collections/`: Transactions for a user to interact with their Moment collection
+   - `market/`: Transactions for users to buy and sell moments using
+   the market smart contract.
+   - `plays/`: Transactions for an Admin to add and modify play data and IDs.
+   - `sets/`: Transactions for an Admin to take all 
+   the actions associated wit sets, like adding plays, minting moments,
+   locking sets, and more.
 
 ### Marketplace
 
@@ -153,7 +174,30 @@ The `topshot_market.cdc` contract allows users to create a marketplace object in
 4. Deploy `MarketTopShot.cdc` to account 4. Feel free to look at the various 
    fields and functions in the smart contract.
 
-There currently aren't many example transactions for the market but they will be added soon.
+There currently aren't many example transactions for the market but they will be added soon once we have a better idea of exactly how it will function.
+
+#### Events for Market-related actions
+
+- `pub event MomentListed(id: UInt64, price: UFix64, seller: Address?)`
+   
+   Emitted when a user lists a moment for sale in their SaleCollection.
+
+- `pub event PriceChanged(id: UInt64, newPrice: UFix64, seller: Address?)`
+
+   Emitted when a user changes the price of their moment.
+
+- `pub event TokenPurchased(id: UInt64, price: UFix64, seller: Address?)`
+
+   Emitted when a user purchases a moment that is for sale.
+
+- `pub event SaleWithdrawn(id: UInt64, owner: Address?)`
+
+   Emitted when a seller withdraws their moment from their SaleCollection
+
+- `pub event CutPercentageChanged(newPercent: UFix64, seller: Address?)`
+
+   Emitted when a seller changes the percentage cut that is taken
+   from their sales and sent to a beneficiary.
 
 
 
