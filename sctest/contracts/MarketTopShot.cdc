@@ -39,13 +39,6 @@ pub contract Market {
     // the reference that is used for depositing TopShot's cut of every sale
     access(contract) var TopShotVault: &AnyResource{FungibleToken.Receiver}
 
-    // The collection of sale references that are included in the marketplace
-    pub var saleReferences: {UInt64: &AnyResource{SalePublic}}
-
-    // The number of sales that have been listed in this contract
-    // used as an index to the central sale listings
-    pub var numSales: UInt64
-
     // The interface that user can publish to allow others too access their sale
     pub resource interface SalePublic {
         pub var prices: {UInt64: UFix64}
@@ -171,34 +164,9 @@ pub contract Market {
         return <- create SaleCollection(vault: ownerVault, cutPercentage: cutPercentage)
     }
 
-    // These next three functions may or may not be needed but serve as a
-    // preliminary way for the contract to keep track of sales that are
-    // listed in the marketplace
-    access(account) fun addSale(reference: &AnyResource{SalePublic}): UInt64 {
-        pre {
-            reference.getIDs().length != 0: "Cannot add an empty sale!"
-        }
-
-        self.numSales = self.numSales + UInt64(1)
-
-        self.saleReferences[self.numSales] = reference
-
-        return self.numSales
-    }
-
-    access(account) fun removeSale(id: UInt64) {
-        self.saleReferences.remove(key: id)
-    }
-
-    pub fun getSaleReference(id: UInt64): &AnyResource{SalePublic} {
-        return self.saleReferences[id] ?? panic("No reference!")
-    }
-
     init() {
         let acct = getAccount(0x02)
         self.TopShotVault = acct.published[&FlowToken.Vault{FungibleToken.Receiver}] ?? panic("No vault!")
-        self.saleReferences = {}
-        self.numSales = 0
     }
 }
  
