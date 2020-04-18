@@ -166,7 +166,8 @@ pub contract Market {
 
     init() {
         let acct = getAccount(0x02)
-        self.TopShotVault = acct.published[&FlowToken.Vault{FungibleToken.Receiver}] ?? panic("No vault!")
+        self.TopShotVault = acct.getCapability(from: /public/Receiver)!
+                                .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
     }
 }
  

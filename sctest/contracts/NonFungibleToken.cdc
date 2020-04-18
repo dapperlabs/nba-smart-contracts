@@ -1,6 +1,6 @@
 /*
 
-    Description: The Cadence Fungible Token standard
+    Description: The Cadence Non-Fungible Token standard
 
     authors: Joshua Hannan joshua.hannan@dapperlabs.com
              Dieter Shirley dete@axiomzen.com
