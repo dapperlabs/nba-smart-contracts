@@ -9,7 +9,8 @@ pub fun main(): [UInt64] {
 
     let acct = getAccount(0x01)
 
-    let collectionRef = acct.published[&TopShot.MomentCollectionPublic] ?? panic("no reference")
+    let collectionRef = acct.getCapability(/public/MomentCollection)!
+                            .borrow<&{TopShot.MomentCollectionPublic}>()!
 
     log(collectionRef.getIDs())
 
