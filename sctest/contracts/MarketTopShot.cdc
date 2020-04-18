@@ -37,7 +37,7 @@ pub contract Market {
     pub event CutPercentageChanged(newPercent: UFix64, seller: Address?)
 
     // the reference that is used for depositing TopShot's cut of every sale
-    access(contract) var TopShotVault: &AnyResource{FungibleToken.Receiver}
+    access(contract) var TopShotVault: &{FungibleToken.Receiver}
 
     // The interface that user can publish to allow others too access their sale
     pub resource interface SalePublic {
@@ -59,15 +59,15 @@ pub contract Market {
         // the fungible token vault of the owner of this sale
         // so that when someone buys a token, this resource can deposit
         // tokens in their account
-        access(self) let ownerVault: &AnyResource{FungibleToken.Receiver}
+        access(self) let ownerVault: &{FungibleToken.Receiver}
 
         // the reference that is used for depositing TopShot's cut of every sale
-        access(self) let TopShotVault: &AnyResource{FungibleToken.Receiver}
+        access(self) let TopShotVault: &{FungibleToken.Receiver}
 
         // the percentage that is taken from every purchase for TopShot
         pub var cutPercentage: UFix64
 
-        init (vault: &AnyResource{FungibleToken.Receiver}, cutPercentage: UFix64) {
+        init (vault: &{FungibleToken.Receiver}, cutPercentage: UFix64) {
             self.forSale <- TopShot.createEmptyCollection()
             self.ownerVault = vault
             self.prices = {}
@@ -160,14 +160,14 @@ pub contract Market {
     }
 
     // createCollection returns a new collection resource to the caller
-    pub fun createSaleCollection(ownerVault: &AnyResource{FungibleToken.Receiver}, cutPercentage: UFix64): @SaleCollection {
+    pub fun createSaleCollection(ownerVault: &{FungibleToken.Receiver}, cutPercentage: UFix64): @SaleCollection {
         return <- create SaleCollection(vault: ownerVault, cutPercentage: cutPercentage)
     }
 
     init() {
         let acct = getAccount(0x02)
         self.TopShotVault = acct.getCapability(from: /public/Receiver)!
-                                .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()
+                                .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()!
     }
 }
  
