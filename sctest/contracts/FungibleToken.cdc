@@ -148,64 +148,65 @@ pub contract interface FungibleToken {
     }
 }
 
-/*
+/**
 
-    Description: FlowToken example contract
+# FlowToken example contract
 
-    authors: Joshua Hannan joshua.hannan@dapperlabs.com
-             Dieter Shirley dete@axiomzen.com
-             Bastian Mueller bastian@axiomzen.co
+Authors:
 
-    This is an example implementation of the Fungible Token Standard
-    It is not part of the standard, but just shows how most tokens 
-    should implememt the standard, including the Flow network token itself.
-    
-    The FlowToken contract only needs to be deployed in one account.
-    The only part of the contract that would be stored in each user's account
-    is the Vault object, below
-    
-    The implementation does not need to redefine the interfaces that are
-    already defined in the Fungible Token interface
+- Joshua Hannan <joshua.hannan@dapperlabs.com>
+- Dieter Shirley <dete@dapperlabs.com>
+- Bastian Mueller <bastian@dapperlabs.com>
 
- */
+It is not part of the standard, but just shows how most tokens
+should implement the standard, including the Flow network token itself.
+
+The FlowToken contract only needs to be deployed in one account.
+The only part of the contract that would be stored in each user's account
+is the Vault object, below
+
+The implementation does not need to redefine the interfaces that are
+already defined in the Fungible Token interface
+
+*/
 
 pub contract FlowToken: FungibleToken {
 
     // Total supply of flow tokens in existence
     pub var totalSupply: UFix64
 
-    // event that is emitted when the contract is created
+    // Event that is emitted when the contract is created
     pub event FungibleTokenInitialized(initialSupply: UFix64)
 
-    // event that is emitted when tokens are withdrawn from a Vault
+    // Event that is emitted when tokens are withdrawn from a Vault
     pub event Withdraw(amount: UFix64, from: Address?)
 
-    // event that is emitted when tokens are deposited to a Vault
+    // Event that is emitted when tokens are deposited to a Vault
     pub event Deposit(amount: UFix64, to: Address?)
 
-    // event that is emitted when new tokens are minted
+    // Event that is emitted when new tokens are minted
     pub event Mint(amount: UFix64)
 
-    // event that is emitted when tokens are destroyed
+    // Event that is emitted when tokens are destroyed
     pub event Burn(amount: UFix64)
 
-    // event that is emitted when a mew minter resource is created
+    // Event that is emitted when a mew minter resource is created
     pub event MinterCreated(allowedAmount: UFix64)
 
     // Vault
     //
     // Each user stores an instance of only the Vault in their storage
     // The functions in the Vault and governed by the pre and post conditions
-    // in FungibleToken when they are called. 
+    // in FungibleToken when they are called.
     // The checks happen at runtime whenever a function is called.
     //
     // Resources can only be created in the context of the contract that they
     // are defined in, so there is no way for a malicious user to create Vaults
     // out of thin air. A special Minter resource needs to be defined to mint
     // new tokens.
-    // 
+    //
     pub resource Vault: FungibleToken.Provider, FungibleToken.Receiver, FungibleToken.Balance {
-        
+
         // holds the balance of a users tokens
         pub var balance: UFix64
 
@@ -251,7 +252,7 @@ pub contract FlowToken: FungibleToken {
     // account to be able to receive deposits of this token type.
     //
     pub fun createEmptyVault(): @Vault {
-        return <-create Vault(balance: UFix64(0))
+        return <-create Vault(balance: 0.0)
     }
 
     // MintAndBurn
@@ -283,9 +284,10 @@ pub contract FlowToken: FungibleToken {
         // burnTokens
         //
         // Function that takes a Vault as an argument, subtracts its balance
-        // from the totalSupply, then destroys the Vault, thereby 
-        // removing the tokens from existence
-        // Returns the amount that was burnt
+        // from the total supply, then destroys the Vault,
+        // thereby removing the tokens from existence.
+        //
+        // Returns the amount that was burnt.
         //
         pub fun burnTokens(from: @Vault): UFix64 {
             let amount = from.balance
@@ -309,28 +311,47 @@ pub contract FlowToken: FungibleToken {
         }
     }
 
-    // The init function for the contract. All fields in the contract must
+    // The initializer for the contract. All fields in the contract must
     // be initialized at deployment. This is just an example of what
-    // an implementation could do in the init function. The numbers are arbitrary.
+    // an implementation could do in the initializer.
+    //
+    // The numbers are arbitrary.
+    //
     init() {
-        // initialize the totalSupply field to the initial balance
-        self.totalSupply = UFix64(1000)
+        // Initialize the totalSupply field to the initial balance
+        self.totalSupply = 1000.0
 
-        // create the Vault with the initial balance and put it in storage
-        self.account.save<@Vault>(<-create Vault(balance: UFix64(1000)), to: /storage/flowTokenVault)
+        // Create the Vault with the total supply of tokens and save it in storage
+        //
+        let vault <- create Vault(balance: self.totalSupply)
+        self.account.save(<-vault, to: /storage/flowTokenVault)
 
-        // Create a public capability to the Vault that only exposes the deposit method
-        let ReceiverRef = self.account.link<&AnyResource{FungibleToken.Receiver}>(/public/flowTokenReceiver, target: /storage/flowTokenVault)
-        // Create a public reference to the Vault that only exposes the balance field
-        let BalanceRef = self.account.link<&AnyResource{FungibleToken.Balance}>(/public/flowTokenBalance, target: /storage/flowTokenVault)
+        // Create a public capability to the stored Vault that only exposes
+        // the `deposit` method through the `Receiver` interface
+        //
+        self.account.link<&{FungibleToken.Receiver}>(
+            /public/flowTokenReceiver,
+            target: /storage/flowTokenVault
+        )
+
+        // Create a public capability to the stored Vault that only exposes
+        // the `balance` field through the `Balance` interface
+        //
+        self.account.link<&{FungibleToken.Balance}>(
+            /public/flowTokenBalance,
+            target: /storage/flowTokenVault
+        )
 
         // Create a new MintAndBurn resource and store it in account storage
-        self.account.save<@MintAndBurn>(<-create MintAndBurn(allowedAmount: UFix64(100)), to: /storage/flowTokenMintAndBurn)
+        let mintAndBurn <- create MintAndBurn(allowedAmount: 100.0)
+        self.account.save(<-mintAndBurn, to: /storage/flowTokenMintAndBurn)
 
         // Emit an event that shows that the contract was initialized
         emit FungibleTokenInitialized(initialSupply: self.totalSupply)
     }
 }
+
+
  
 
  
