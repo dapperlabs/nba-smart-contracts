@@ -654,17 +654,14 @@ pub contract TopShot: NonFungibleToken {
         self.nextSetID = 0
         self.totalSupply = 0
 
-        // Create a new collection
-        let oldCollection <- self.account.storage[Collection] <- create Collection()
-        destroy oldCollection
+        // Put a new Collection in storage
+        self.account.save<@Collection>(<- create Collection(), to: /storage/MomentCollection)
 
-        // Create a safe, public reference to the Collection 
-        // and store it in public reference storage
-        self.account.published[&Collection{MomentCollectionPublic}] = &self.account.storage[Collection] as &Collection{MomentCollectionPublic}
+        // create a public capability for the collection
+        self.account.link<&{MomentCollectionPublic}>(/public/MomentCollection, target: /storage/MomentCollection)
 
-        // Create a new Admin resource and store it
-        let oldAdmin <- self.account.storage[Admin] <- create Admin()
-        destroy oldAdmin
+        // Put the Minter in storage
+        self.account.save<@Admin>(<- create Admin(), to: /storage/TopShotAdmin)
 
         emit ContractInitialized()
     }
