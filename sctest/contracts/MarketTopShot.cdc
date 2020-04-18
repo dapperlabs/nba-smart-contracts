@@ -82,7 +82,7 @@ pub contract Market {
             // remove and return the token
             let token <- self.forSale.withdraw(withdrawID: tokenID)
 
-            emit SaleWithdrawn(id: token.id)
+            emit SaleWithdrawn(id: token.id, owner: self.owner?.address)
 
             return <-token
         }
@@ -95,7 +95,7 @@ pub contract Market {
 
             self.forSale.deposit(token: <-token)
 
-            emit ForSale(id: id, price: price)
+            emit MomentListed(id: id, price: price, seller: self.owner?.address)
         }
 
         // changePrice changes the price of a token that is currently for sale
@@ -105,14 +105,14 @@ pub contract Market {
             }
             self.prices[tokenID] = newPrice
 
-            emit PriceChanged(id: tokenID, newPrice: newPrice)
+            emit PriceChanged(id: tokenID, newPrice: newPrice, seller: self.owner?.address)
         }
 
         // changePercentage changes the cut percentage of a token that is currently for sale
         pub fun changePercentage(newPercent: UFix64) {
             self.cutPercentage = newPercent
 
-            emit CutPercentageChanged(newPercent: newPercent)
+            emit CutPercentageChanged(newPercent: newPercent, seller: self.owner?.address)
         }
 
         // purchase lets a user send tokens to purchase an NFT that is for sale
@@ -139,7 +139,7 @@ pub contract Market {
                 // deposit the NFT into the buyers collection
                 recipient.deposit(token: <-self.withdraw(tokenID: tokenID))
 
-                emit TokenPurchased(id: tokenID, price: price)
+                emit TokenPurchased(id: tokenID, price: price, seller: self.owner?.address)
             }
         }
 
@@ -166,7 +166,7 @@ pub contract Market {
 
     init() {
         let acct = getAccount(0x02)
-        self.TopShotVault = acct.getCapability(from: /public/Receiver)!
+        self.TopShotVault = acct.getCapability(/public/flowTokenReceiver)!
                                 .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()!
     }
 }
