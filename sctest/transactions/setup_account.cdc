@@ -31,7 +31,7 @@ transaction {
         if acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection) == nil {
             let collection <- TopShot.createEmptyCollection()
             // Put a new Collection in storage
-            acct.save<@TopShot.Collection>(<-collection, to: /storage/MomentCollection)
+            acct.save(<-collection, to: /storage/MomentCollection)
 
             // create a public capability for the collection
             acct.link<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection, target: /storage/MomentCollection)
