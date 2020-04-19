@@ -10,7 +10,7 @@ transaction {
 
     prepare(acct: AuthAccount) {
         // create a reference to the private admin resource object
-        self.adminRef = &acct.storage[TopShot.Admin] as &TopShot.Admin
+        self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
     }
 
     execute {

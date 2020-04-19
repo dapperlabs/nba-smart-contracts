@@ -13,13 +13,12 @@ transaction {
 
     prepare(acct: AuthAccount) {
         // Get the two references from storage
-        self.receiverRef = acct.published[&TopShot.Collection{TopShot.MomentCollectionPublic}] ?? panic("no ref!")
-        self.adminRef = &acct.storage[TopShot.Admin] as &TopShot.Admin
-
+        self.receiverRef = acct.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
+        self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
     }
 
     execute {
-
+        // borrow a reference to the private set
         let setRef = self.adminRef.borrowSet(setID: 0)
 
         // Mint a new NFT

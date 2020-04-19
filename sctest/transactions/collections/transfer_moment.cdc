@@ -11,15 +11,15 @@ transaction {
 
         // call the withdraw function on the sender's Collection
         // to move the NFT out of the collection
-        self.transferToken <- acct.storage[TopShot.Collection]?.withdraw(withdrawID: 1) ?? panic("missing collection")
+        self.transferToken <- acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)!.withdraw(withdrawID: 0)
     }
 
     execute {
         // get the recipient's public account object
-        let recipient = getAccount(0x02)
+        let recipient = getAccount(0x01)
 
         // get the Collection reference for the receiver
-        let receiverRef = recipient.published[&TopShot.Collection{TopShot.MomentCollectionPublic}] ?? panic("missing deposit reference")
+        let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
 
         // deposit the NFT in the receivers collection
         receiverRef.deposit(token: <-self.transferToken)

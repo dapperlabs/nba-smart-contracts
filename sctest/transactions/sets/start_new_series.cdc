@@ -8,7 +8,7 @@ transaction {
     let adminRef: &TopShot.Admin
 
     prepare(acct: AuthAccount) {
-        self.adminRef = &acct.storage[TopShot.Admin] as &TopShot.Admin
+        self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
     }
 
     execute {

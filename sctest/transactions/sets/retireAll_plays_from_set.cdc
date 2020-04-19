@@ -9,7 +9,7 @@ transaction {
 
     prepare(acct: AuthAccount) {
         // create a temporary admin reference
-        self.adminRef = &acct.storage[TopShot.Admin] as &TopShot.Admin
+        self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
     }
 
     execute {
