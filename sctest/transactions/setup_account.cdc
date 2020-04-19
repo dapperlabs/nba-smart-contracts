@@ -7,21 +7,34 @@ import FungibleToken, FlowToken from 0x01
 transaction {
 
     prepare(acct: AuthAccount) {
-        if acct.storage[FlowToken.Vault] == nil {
+        if acct.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault) == nil {
             let vault <- FlowToken.createEmptyVault()
-            let oldVault <- acct.storage[FlowToken.Vault] <- vault
-            destroy oldVault
+            acct.save(<-vault, to: /storage/flowTokenVault)
 
-            acct.published[&FlowToken.Vault{FungibleToken.Receiver}] = &acct.storage[FlowToken.Vault] as &FlowToken.Vault{FungibleToken.Receiver}
-            acct.published[&FlowToken.Vault{FungibleToken.Balance}] = &acct.storage[FlowToken.Vault] as &FlowToken.Vault{FungibleToken.Balance}
+            // Create a public capability to the stored Vault that only exposes
+            // the `deposit` method through the `Receiver` interface
+            //
+            acct.link<&{FungibleToken.Receiver}>(
+                /public/flowTokenReceiver,
+                target: /storage/flowTokenVault
+            )
+
+            // Create a public capability to the stored Vault that only exposes
+            // the `balance` field through the `Balance` interface
+            //
+            acct.link<&{FungibleToken.Balance}>(
+                /public/flowTokenBalance,
+                target: /storage/flowTokenVault
+            )
         }
 
-        if acct.storage[TopShot.Collection] == nil {
+        if acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection) == nil {
             let collection <- TopShot.createEmptyCollection()
-            let oldCollection <- acct.storage[TopShot.Collection] <- collection
-            destroy oldCollection
+            // Put a new Collection in storage
+            acct.save<@TopShot.Collection>(<-collection, to: /storage/MomentCollection)
 
-            acct.published[&TopShot.Collection{TopShot.MomentCollectionPublic}] = &acct.storage[TopShot.Collection] as &TopShot.Collection{TopShot.MomentCollectionPublic}
+            // create a public capability for the collection
+            acct.link<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection, target: /storage/MomentCollection)
         }
     }
 }
