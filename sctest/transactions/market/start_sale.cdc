@@ -1,5 +1,5 @@
-import TopShot from 0x02
-import Market from 0x03
+import TopShot from 0x03
+import Market from 0x04
 import FungibleToken, FlowToken from 0x01
 
 // this is the transacion a user would run if they want
@@ -17,29 +17,29 @@ transaction {
     prepare(acct: AuthAccount) {
 
         // remove the sale collection from storage
-        if acct.storage[Market.SaleCollection] == nil {
+        if acct.borrow<&Market.SaleCollection>(from: /storage/MomentSale) == nil {
             // this branch executes if there isn't a sale already
             // it creates a new sale collection and puts it in storage
 
             // get the FlowToken receiver reference to the Vault
-            let receiverRef = acct.published[&FungibleToken.Receiver] ?? panic("No receiver ref!")
+            let receiverRef = acct.getCapability(/public/flowTokenReceiver)!
+                                .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()!
 
             // create a new empty sale collection
-            let sale <- Market.createSaleCollection(ownerVault: receiverRef, cutPercentage: 10)
+            let sale <- Market.createSaleCollection(ownerVault: receiverRef, cutPercentage: 0.10)
 
             // put the sale back into storage
-            let oldSale <- acct.storage[Market.SaleCollection] <- sale
-            destroy oldSale
+            acct.save(<-sale, to: /storage/MomentSale)
 
             // publish a reference to the sale
-            acct.published[&Market.SalePublic] = &acct.storage[Market.SaleCollection] as &Market.SalePublic
+            acct.link<&{Market.SalePublic}>(/public/MomentSale, target: /storage/MomentSale)
         }
 
         // create a temporary reference to the stored collection
-        self.collectionRef = &acct.storage[TopShot.Collection] as &TopShot.Collection
+        self.collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)!
 
         // create a temporary reference to the sale
-        self.saleRef = &acct.storage[Market.SaleCollection] as &Market.SaleCollection
+        self.saleRef = acct.borrow<&Market.SaleCollection>(from: /storage/MomentSale)!
     }
 
     execute {
@@ -47,7 +47,7 @@ transaction {
         let token <- self.collectionRef.withdraw(withdrawID: 1)
 
         // put the token up for sale
-        self.saleRef.listForSale(token: <-token, price: 30)
+        self.saleRef.listForSale(token: <-token, price: 30.00)
 
         log("Token put up for sale")
         log(1)
@@ -56,7 +56,7 @@ transaction {
     }
 
     post {
-        self.saleRef.idPrice(tokenID: 1) != nil:
+        self.saleRef.getPrice(tokenID: 1) != nil:
             "Token should have been put up for sale and should not be nil"
     }
 }
