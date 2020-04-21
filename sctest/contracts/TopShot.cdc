@@ -310,6 +310,10 @@ pub contract TopShot: NonFungibleToken {
         // The play needs to be an existing play that is currently open for minting
         // 
         pub fun retirePlay(playID: UInt32) {
+            pre {
+                self.retired[playID] != nil: "Play doesn't exist in this set!"
+            }
+
             if !self.retired[playID]! {
                 self.retired[playID] = true
 

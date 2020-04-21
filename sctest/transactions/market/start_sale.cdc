@@ -23,7 +23,7 @@ transaction {
 
             // get the FlowToken receiver reference to the Vault
             let receiverRef = acct.getCapability(/public/flowTokenReceiver)!
-                                .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()!
+                                .borrow<&{FungibleToken.Receiver}>()!
 
             // create a new empty sale collection
             let sale <- Market.createSaleCollection(ownerVault: receiverRef, cutPercentage: 0.10)
@@ -44,7 +44,7 @@ transaction {
 
     execute {
         // withdraw the token from the collection
-        let token <- self.collectionRef.withdraw(withdrawID: 1)
+        let token <- self.collectionRef.withdraw(withdrawID: 0)
 
         // put the token up for sale
         self.saleRef.listForSale(token: <-token, price: 30.00)
@@ -56,7 +56,7 @@ transaction {
     }
 
     post {
-        self.saleRef.getPrice(tokenID: 1) != nil:
+        self.saleRef.getPrice(tokenID: 0) != nil:
             "Token should have been put up for sale and should not be nil"
     }
 }

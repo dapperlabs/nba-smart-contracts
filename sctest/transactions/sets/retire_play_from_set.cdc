@@ -18,7 +18,7 @@ transaction {
         let setRef = self.adminRef.borrowSet(setID: 0)
 
         // retire a play from the set
-        setRef.retirePlay(playID: 1)
+        setRef.retirePlay(playID: 0)
     }
 }
  

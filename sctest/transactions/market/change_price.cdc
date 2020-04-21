@@ -11,16 +11,16 @@ transaction {
     prepare(acct: AuthAccount) {
 
         // remove the sale collection from storage
-        if acct.borrow<&Market.SaleCollection>(from: /storage/MomentSale) == nil {
+        if acct.borrow<&Market.SaleCollection>(from: /storage/MomentSale) != nil {
 
             // create a temporary reference to the sale
             let saleRef = acct.borrow<&Market.SaleCollection>(from: /storage/MomentSale)!
 
             // put the token up for sale
-            saleRef.changePrice(tokenID: 1, newPrice: 40.00)
+            saleRef.changePrice(tokenID: 0, newPrice: 40.00)
 
             log("Token price changed")
-            log(1)
+            log(0)
 
         } else {
             panic("No sale!")

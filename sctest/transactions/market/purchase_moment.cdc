@@ -27,14 +27,14 @@ transaction {
 
     execute {
         // get the sellers public account object
-        let seller = getAccount(0x02)
+        let seller = getAccount(0x03)
 
         // get the public capability and reference to the sellers Sale
         if let saleRef = seller.getCapability(/public/MomentSale)!.borrow<&{Market.SalePublic}>() {
 
-            let buyTokens <- self.vaultRef.withdraw(amount: 30.00)
+            let buyTokens <- self.vaultRef.withdraw(amount: 40.00)
 
-            saleRef.purchase(tokenID: 1, recipient: self.collectionRef, buyTokens: <-buyTokens)
+            saleRef.purchase(tokenID: 0, recipient: self.collectionRef, buyTokens: <-buyTokens)
 
             log("token bought!")
         } else {
