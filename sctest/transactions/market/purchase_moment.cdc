@@ -1,5 +1,5 @@
-import TopShot from 0x02
-import Market from 0x03
+import TopShot from 0x03
+import Market from 0x04
 import FungibleToken, FlowToken from 0x01
 
 // this is the transacion a user would run if they want
@@ -18,25 +18,23 @@ transaction {
 
     prepare(acct: AuthAccount) {
 
-        // create a reference to the stored collection
-        self.collectionRef = &acct.storage[TopShot.Collection] as &TopShot.Collection
+        // create a temporary reference to the stored collection
+        self.collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)!
 
         // create reference to Vault
-        self.vaultRef = &acct.storage[FlowToken.Vault] as &FlowToken.Vault
-
-        
+        self.vaultRef = acct.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault)!
     }
 
     execute {
         // get the sellers public account object
-        let seller = getAccount(0x02)
+        let seller = getAccount(0x03)
 
-        // remove the sale collection from storage
-        if let saleRef = seller.published[&Market.SalePublic] {
+        // get the public capability and reference to the sellers Sale
+        if let saleRef = seller.getCapability(/public/MomentSale)!.borrow<&{Market.SalePublic}>() {
 
-            let buyTokens <- self.vaultRef.withdraw(amount: 30)
+            let buyTokens <- self.vaultRef.withdraw(amount: 40.00)
 
-            saleRef.purchase(tokenID: 1, recipient: self.collectionRef, buyTokens: <-buyTokens)
+            saleRef.purchase(tokenID: 0, recipient: self.collectionRef, buyTokens: <-buyTokens)
 
             log("token bought!")
         } else {

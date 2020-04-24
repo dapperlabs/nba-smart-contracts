@@ -51,7 +51,7 @@ pub contract Market {
     pub resource SaleCollection: SalePublic {
 
         // a dictionary of the NFTs that the user is putting up for sale
-        pub var forSale: @TopShot.Collection
+        access(self) var forSale: @TopShot.Collection
 
         // dictionary of the prices for each NFT by ID
         pub var prices: {UInt64: UFix64}
@@ -65,6 +65,8 @@ pub contract Market {
         access(self) let TopShotVault: &{FungibleToken.Receiver}
 
         // the percentage that is taken from every purchase for TopShot
+        // This is a literal percentage
+        // For example, if the percentage is 15%, cutPercentage = 0.15
         pub var cutPercentage: UFix64
 
         init (vault: &{FungibleToken.Receiver}, cutPercentage: UFix64) {
@@ -120,7 +122,7 @@ pub contract Market {
             pre {
                 self.forSale.ownedNFTs[tokenID] != nil && self.prices[tokenID] != nil:
                     "No token matching this ID for sale!"
-                buyTokens.balance >= (self.prices[tokenID] ?? UFix64(0)):
+                buyTokens.balance == (self.prices[tokenID] ?? UFix64(0)):
                     "Not enough tokens to by the NFT!"
             }
 
@@ -128,7 +130,7 @@ pub contract Market {
                 self.prices[tokenID] = nil
 
                 // take the cut of the tokens Top shot gets from the sent tokens
-                let TopShotCut <- buyTokens.withdraw(amount: price - (price*self.cutPercentage)/(UFix64(100)))
+                let TopShotCut <- buyTokens.withdraw(amount: price*self.cutPercentage)
 
                 // deposit it into topshot's Vault
                 self.TopShotVault.deposit(from: <-TopShotCut)
@@ -165,9 +167,12 @@ pub contract Market {
     }
 
     init() {
-        let acct = getAccount(0x02)
+        // Get the public account object for the main TopShot account
+        let acct = getAccount(0x03)
+
+        // initialize the Vault receiver object to be the main TopShot receiver
         self.TopShotVault = acct.getCapability(/public/flowTokenReceiver)!
-                                .borrow<&FlowToken.Vault{FungibleToken.Receiver}>()!
+                                .borrow<&{FungibleToken.Receiver}>()!
     }
 }
  

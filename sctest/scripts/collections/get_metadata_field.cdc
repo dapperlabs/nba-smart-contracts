@@ -1,6 +1,6 @@
 import TopShot from 0x03
 
-// This transaction gets the metadata associated with a moment
+// This script gets the metadata associated with a moment
 // in a collection by looking up its playID and then searching
 // for that play's metadata in the TopShot contract
 
@@ -10,7 +10,8 @@ pub fun main(): String {
     let acct = getAccount(0x01)
 
     // Get that account's published collectionRef
-    let collectionRef = acct.published[&TopShot.MomentCollectionPublic] ?? panic("no reference")
+     let collectionRef = acct.getCapability(/public/MomentCollection)!
+                            .borrow<&{TopShot.MomentCollectionPublic}>()!
 
     // Get a reference to a specific NFT in the collection
     let ref = collectionRef.borrowNFT(id: 1)

@@ -1,5 +1,5 @@
-import TopShot from 0x02
-import Market from 0x03
+import TopShot from 0x03
+import Market from 0x04
 import FungibleToken, FlowToken from 0x01
 
 // this is the transacion a user would run if they want
@@ -16,17 +16,17 @@ transaction {
     prepare(acct: AuthAccount) {
 
         // create a temporary reference to the stored collection
-        self.collectionRef = &acct.storage[TopShot.Collection] as &TopShot.Collection
+        self.collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)!
 
         // create a temporary reference to the sale
-        self.saleRef = &acct.storage[Market.SaleCollection] as &Market.SaleCollection
+        self.saleRef = acct.borrow<&Market.SaleCollection>(from: /storage/MomentSale)!
     }
 
     execute {
         // withdraw the token from the sale
         let token <- self.saleRef.withdraw(tokenID: 1)
 
-        // put the token up for sale
+        // put the token back in the normal collection
         self.collectionRef.deposit(token: <-token)
 
         log("Token withdrawn from the sale")
@@ -34,7 +34,7 @@ transaction {
     }
 
     post {
-        self.saleRef.idPrice(tokenID: 1) == nil:
+        self.saleRef.getPrice(tokenID: 1) == nil:
             "Moment should have been removed from the sale!"
     }
 }

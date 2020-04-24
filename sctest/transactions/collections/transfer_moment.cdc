@@ -25,3 +25,4 @@ transaction {
         receiverRef.deposit(token: <-self.transferToken)
     }
 }
+ 

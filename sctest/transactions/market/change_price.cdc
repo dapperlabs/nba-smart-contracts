@@ -1,25 +1,26 @@
-import Market from 0x03
+import Market from 0x04
 
 // this is the transacion a user would run if they want
-// to put one of their moments up for sale
+// to change the price of one of their tokens that is for sale
 
 // values that would be configurable are
-// withdrawID of the token for sale 
-// price of the token
+// id of the token for sale 
+// new price of the token
 transaction {
 
     prepare(acct: AuthAccount) {
 
         // remove the sale collection from storage
-        if acct.storage[Market.SaleCollection] != nil {
+        if acct.borrow<&Market.SaleCollection>(from: /storage/MomentSale) != nil {
 
-            let saleRef = &acct.storage[Market.SaleCollection] as &Market.SaleCollection
+            // create a temporary reference to the sale
+            let saleRef = acct.borrow<&Market.SaleCollection>(from: /storage/MomentSale)!
 
             // put the token up for sale
-            saleRef.changePrice(tokenID: 1, newPrice: 30)
+            saleRef.changePrice(tokenID: 0, newPrice: 40.00)
 
             log("Token price changed")
-            log(1)
+            log(0)
 
         } else {
             panic("No sale!")

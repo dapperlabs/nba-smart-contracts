@@ -8,11 +8,14 @@ transaction {
     let adminRef: &TopShot.Admin
 
     prepare(acct: AuthAccount) {
+
+        // get a reference to the stored admin resource
         self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
     }
 
     execute {
         
+        // Call the startNewSeries function with the Admin reference
         let newSeriesNumber = self.adminRef.startNewSeries()
 
     }
