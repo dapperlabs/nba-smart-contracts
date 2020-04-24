@@ -122,7 +122,7 @@ pub contract Market {
             pre {
                 self.forSale.ownedNFTs[tokenID] != nil && self.prices[tokenID] != nil:
                     "No token matching this ID for sale!"
-                buyTokens.balance >= (self.prices[tokenID] ?? UFix64(0)):
+                buyTokens.balance == (self.prices[tokenID] ?? UFix64(0)):
                     "Not enough tokens to by the NFT!"
             }
 
