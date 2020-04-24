@@ -1,6 +1,6 @@
 import TopShot from 0x03
 
-// This transaction gets the metadata associated with a moment
+// This script gets the metadata associated with a moment
 // in a collection by looking up its playID and then searching
 // for that play's metadata in the TopShot contract
 
