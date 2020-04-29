@@ -83,6 +83,9 @@ pub contract TopShot: NonFungibleToken {
     // emitted when a moment is deposited into a collection
     pub event Deposit(id: UInt64, to: Address?)
 
+    // emitted when a moment is destroyed
+    pub event MomentDestroyed(id: UInt64)
+
     // -----------------------------------------------------------------------
     // TopShot contract-level fields
     // These contain actual values that are stored in the smart contract
@@ -435,7 +438,7 @@ pub contract TopShot: NonFungibleToken {
         }
 
         destroy() {
-            TopShot.totalSupply = TopShot.totalSupply - UInt64(1)
+            emit MomentDestroyed(id: self.id)
         }
     }
 
