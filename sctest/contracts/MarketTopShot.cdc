@@ -43,7 +43,7 @@ pub contract Market {
     pub resource interface SalePublic {
         pub var prices: {UInt64: UFix64}
         pub var cutPercentage: UFix64
-        pub fun purchase(tokenID: UInt64, recipient: &TopShot.Collection, buyTokens: @FlowToken.Vault)
+        pub fun purchase(tokenID: UInt64, recipient: &AnyResource{TopShot.MomentCollectionPublic}, buyTokens: @FlowToken.Vault)
         pub fun getPrice(tokenID: UInt64): UFix64?
         pub fun getIDs(): [UInt64]
     }
@@ -118,7 +118,7 @@ pub contract Market {
         }
 
         // purchase lets a user send tokens to purchase an NFT that is for sale
-        pub fun purchase(tokenID: UInt64, recipient: &TopShot.Collection, buyTokens: @FlowToken.Vault) {
+        pub fun purchase(tokenID: UInt64, recipient: &AnyResource{TopShot.MomentCollectionPublic}, buyTokens: @FlowToken.Vault) {
             pre {
                 self.forSale.ownedNFTs[tokenID] != nil && self.prices[tokenID] != nil:
                     "No token matching this ID for sale!"

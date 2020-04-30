@@ -83,6 +83,9 @@ pub contract TopShot: NonFungibleToken {
     // emitted when a moment is deposited into a collection
     pub event Deposit(id: UInt64, to: Address?)
 
+    // emitted when a moment is destroyed
+    pub event MomentDestroyed(id: UInt64)
+
     // -----------------------------------------------------------------------
     // TopShot contract-level fields
     // These contain actual values that are stored in the smart contract
@@ -433,6 +436,10 @@ pub contract TopShot: NonFungibleToken {
             // Increment the global moment IDs
             TopShot.totalSupply = TopShot.totalSupply + UInt64(1)
         }
+
+        destroy() {
+            emit MomentDestroyed(id: self.id)
+        }
     }
 
     // Admin is a special authorization resource that 
@@ -524,7 +531,7 @@ pub contract TopShot: NonFungibleToken {
     // Collection is a resource that every user who owns NFTs 
     // will store in their account to manage their NFTS
     //
-    pub resource Collection: MomentCollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver { 
+    pub resource Collection: MomentCollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.Borrow { 
         // Dictionary of Moment conforming tokens
         // NFT is a resource type with a UInt64 ID field
         pub var ownedNFTs: @{UInt64: NFT}
@@ -556,6 +563,8 @@ pub contract TopShot: NonFungibleToken {
         // deposit takes a Moment and adds it to the collections dictionary
         // and adds the ID to the id array
         pub fun deposit(token: @NFT) {
+            let token <- token as! @TopShot.NFT
+
             let id = token.id
             // add the new token to the dictionary
             let oldToken <- self.ownedNFTs[id] <- token
@@ -593,9 +602,6 @@ pub contract TopShot: NonFungibleToken {
         //
         // Returns: A reference to the NFT
         pub fun borrowNFT(id: UInt64): &NFT {
-            pre {
-                self.ownedNFTs[id] != nil: "Moment doesn't exist!"
-            }
             return &self.ownedNFTs[id] as &NFT
         }
 
@@ -618,7 +624,7 @@ pub contract TopShot: NonFungibleToken {
     // Once they have a Collection in their storage, they are able to receive
     // Moments in transactions
     //
-    pub fun createEmptyCollection(): @Collection {
+    pub fun createEmptyCollection(): @TopShot.Collection {
         return <-create Collection()
     }
 

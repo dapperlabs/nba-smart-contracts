@@ -24,7 +24,7 @@ transaction {
 
     execute {
         // withdraw the token from the sale
-        let token <- self.saleRef.withdraw(tokenID: 1)
+        let token <- self.saleRef.withdraw(tokenID: 0)
 
         // put the token back in the normal collection
         self.collectionRef.deposit(token: <-token)
@@ -34,7 +34,7 @@ transaction {
     }
 
     post {
-        self.saleRef.getPrice(tokenID: 1) == nil:
+        self.saleRef.getPrice(tokenID: 0) == nil:
             "Moment should have been removed from the sale!"
     }
 }
