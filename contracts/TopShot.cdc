@@ -522,10 +522,10 @@ pub contract TopShot: NonFungibleToken {
     // This is the interface that users can cast their moment Collection as
     // to allow others to deposit moments into their collection
     pub resource interface MomentCollectionPublic {
-        pub fun deposit(token: @NFT)
-        pub fun batchDeposit(tokens: @Collection)
+        pub fun deposit(token: @NonFungibleToken.NFT)
+        pub fun batchDeposit(tokens: @NonFungibleToken.Collection)
         pub fun getIDs(): [UInt64]
-        pub fun borrowNFT(id: UInt64): &NFT
+        pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT
     }
 
     // Collection is a resource that every user who owns NFTs 
@@ -534,14 +534,14 @@ pub contract TopShot: NonFungibleToken {
     pub resource Collection: MomentCollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic { 
         // Dictionary of Moment conforming tokens
         // NFT is a resource type with a UInt64 ID field
-        pub var ownedNFTs: @{UInt64: NFT}
+        pub var ownedNFTs: @{UInt64: NonFungibleToken.NFT}
 
         init() {
             self.ownedNFTs <- {}
         }
 
         // withdraw removes an Moment from the collection and moves it to the caller
-        pub fun withdraw(withdrawID: UInt64): @NFT {
+        pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT {
             let token <- self.ownedNFTs.remove(key: withdrawID) ?? panic("missing Moment")
 
             emit Withdraw(id: token.id, from: self.owner?.address)
@@ -550,8 +550,8 @@ pub contract TopShot: NonFungibleToken {
         }
 
         // batchWithdraw withdraws multiple tokens and returns them as a Collection
-        pub fun batchWithdraw(ids: [UInt64]): @Collection {
-            var batchCollection: @Collection <- create Collection()
+        pub fun batchWithdraw(ids: [UInt64]): @NonFungibleToken.Collection {
+            var batchCollection <- create Collection()
             
             // iterate through the ids and withdraw them from the collection
             for id in ids {
@@ -562,7 +562,7 @@ pub contract TopShot: NonFungibleToken {
 
         // deposit takes a Moment and adds it to the collections dictionary
         // and adds the ID to the id array
-        pub fun deposit(token: @NFT) {
+        pub fun deposit(token: @NonFungibleToken.NFT) {
             let token <- token as! @TopShot.NFT
 
             let id = token.id
@@ -576,7 +576,7 @@ pub contract TopShot: NonFungibleToken {
 
         // batchDeposit takes a Collection object as an argument
         // and deposits each contained NFT into this collection
-        pub fun batchDeposit(tokens: @Collection) {
+        pub fun batchDeposit(tokens: @NonFungibleToken.Collection) {
             let keys = tokens.getIDs()
 
             // iterate through the keys in the collection and deposit each one
@@ -601,8 +601,8 @@ pub contract TopShot: NonFungibleToken {
         // Parameters: id: The ID of the NFT to get the reference for
         //
         // Returns: A reference to the NFT
-        pub fun borrowNFT(id: UInt64): &NFT {
-            return &self.ownedNFTs[id] as &NFT
+        pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
+            return &self.ownedNFTs[id] as &NonFungibleToken.NFT
         }
 
         // If a transaction destroys the Collection object,
@@ -624,8 +624,8 @@ pub contract TopShot: NonFungibleToken {
     // Once they have a Collection in their storage, they are able to receive
     // Moments in transactions
     //
-    pub fun createEmptyCollection(): @TopShot.Collection {
-        return <-create Collection()
+    pub fun createEmptyCollection(): @NonFungibleToken.Collection {
+        return <-create TopShot.Collection()
     }
 
     // getPlayMetaData returns all the metadata associated with a specific play
