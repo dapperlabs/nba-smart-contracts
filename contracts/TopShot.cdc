@@ -364,7 +364,7 @@ pub contract TopShot: NonFungibleToken {
             let numInPlay = self.numberMintedPerPlay[playID]!
 
             // mint the new moment
-            let newMoment: @NFT <- create NFT(serialNumber: numInPlay,
+            let newMoment: @NFT <- create NFT(serialNumber: numInPlay + UInt32(1),
                                               playID: playID,
                                               setID: self.setID)
 
@@ -660,8 +660,8 @@ pub contract TopShot: NonFungibleToken {
         self.playDatas = {}
         self.setDatas = {}
         self.sets <- {}
-        self.nextPlayID = 0
-        self.nextSetID = 0
+        self.nextPlayID = 1
+        self.nextSetID = 1
         self.totalSupply = 0
 
         // Put a new Collection in storage
