@@ -25,7 +25,8 @@
 
 */
 
-import FungibleToken, FlowToken from 0x01
+import FungibleToken from 0x04
+import FlowToken from 0x05
 import TopShot from 0x03
 
 pub contract Market {
