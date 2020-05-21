@@ -426,15 +426,15 @@ pub contract TopShot: NonFungibleToken {
         pub let data: MomentData
 
         init(serialNumber: UInt32, playID: UInt32, setID: UInt32) {
+            // Increment the global moment IDs
+            TopShot.totalSupply = TopShot.totalSupply + UInt64(1)
+
             self.id = TopShot.totalSupply
 
             // set the metadata struct
             self.data = MomentData(setID: setID, playID: playID, serialNumber: serialNumber)
 
             emit MomentMinted(momentID: self.id, playID: playID, setID: self.data.setID, serialNumber: self.data.serialNumber)
-
-            // Increment the global moment IDs
-            TopShot.totalSupply = TopShot.totalSupply + UInt64(1)
         }
 
         destroy() {

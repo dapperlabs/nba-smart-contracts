@@ -1,5 +1,6 @@
 import TopShot from 0x03
-import FungibleToken, FlowToken from 0x01
+import FungibleToken from 0x04
+import FlowToken from 0x05
 
 // This is the transaction you would run from
 // any account to set it up to use the fungible token and topshot Collection
@@ -8,7 +9,7 @@ transaction {
 
     prepare(acct: AuthAccount) {
         if acct.borrow<&FlowToken.Vault>(from: /storage/flowTokenVault) == nil {
-            let vault <- FlowToken.createEmptyVault()
+            let vault <- FlowToken.createEmptyVault() as! @FlowToken.Vault
             acct.save(<-vault, to: /storage/flowTokenVault)
 
             // Create a public capability to the stored Vault that only exposes
@@ -29,7 +30,7 @@ transaction {
         }
 
         if acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection) == nil {
-            let collection <- TopShot.createEmptyCollection()
+            let collection <- TopShot.createEmptyCollection() as! @TopShot.Collection
             // Put a new Collection in storage
             acct.save(<-collection, to: /storage/MomentCollection)
 

@@ -431,10 +431,16 @@ github.com/onflow/cadence v0.0.0-20200421031132-d6870aa2e8f9 h1:OxEcrZVs3Pj89DrH
 github.com/onflow/cadence v0.0.0-20200421031132-d6870aa2e8f9/go.mod h1:T2EWFkpigNIK4Kwn0zWcQbDXrVpjstyRXML/lK8qltY=
 github.com/onflow/cadence v0.3.0-beta1 h1:hvCoaDfGRCWbS+M6S+5uyh9CRjd7uGJvOtuPB4oYrh4=
 github.com/onflow/cadence v0.3.0-beta1/go.mod h1:GaLQ7IsJi5bqpH66GprNs8uoQtperK/xbXXIOq11nZw=
+github.com/onflow/flow-ft v0.0.0-20200520235619-a19779fa84d9 h1:fKqWNeOQAO6Om8irpzcfFAro74IVYrTC1+PSJTtc8W0=
+github.com/onflow/flow-ft v0.0.0-20200520235619-a19779fa84d9/go.mod h1:HDXtkbqu+Qyv24uUe8+rdoGbmQCPc5I8fAAS4pznyG4=
 github.com/onflow/flow-go-sdk v0.1.0 h1:fRc9H6prHO0O8acsYwtu5pG893go8bn5RLVMKifA0JU=
 github.com/onflow/flow-go-sdk v0.1.0/go.mod h1:ShDDEC0Nb1PXtb3sGhwnFnbu+Hmib5uDfuC8H383PNE=
 github.com/onflow/flow-go-sdk v0.3.0-beta1 h1:HmAqosPHLoNmYfhUECsSFpvSD4kWIkJ+Xs8LAJijKDc=
 github.com/onflow/flow-go-sdk v0.3.0-beta1/go.mod h1:8v6vcYGh5/PtYcM3IXflLcCb00I91WDbnNF8SjirnlI=
+github.com/onflow/flow-nft v0.0.0-20200521005250-1b481419b697 h1:cy63DcrWCLhM84xN66x0IhoS+JwcDJu/Zgko54Gz3IY=
+github.com/onflow/flow-nft v0.0.0-20200521005250-1b481419b697/go.mod h1:UfjPuptn+50G4DlBiwb+RnHxSFALTa1vpLzPeKC6v+8=
+github.com/onflow/flow-nft v0.0.0-20200521012636-3c3797b7d396 h1:0KhAKDfqc+IECbPc3y1SwF+7mFiznAvS1rOeG10ibVw=
+github.com/onflow/flow-nft v0.0.0-20200521012636-3c3797b7d396/go.mod h1:UfjPuptn+50G4DlBiwb+RnHxSFALTa1vpLzPeKC6v+8=
 github.com/onflow/flow/protobuf/go/flow v0.1.3/go.mod h1:kRugbzZjwQqvevJhrnnCFMJZNmoSJmxlKt6hTGXZojM=
 github.com/onflow/flow/protobuf/go/flow v0.1.4/go.mod h1:kRugbzZjwQqvevJhrnnCFMJZNmoSJmxlKt6hTGXZojM=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=

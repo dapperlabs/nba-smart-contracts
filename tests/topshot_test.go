@@ -1,4 +1,4 @@
-package tests
+package topshottests
 
 import (
 	"testing"
@@ -42,7 +42,7 @@ func TestNFTDeployment(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestTransferNFT(t *testing.T) {
+func TestMintNFTs(t *testing.T) {
 	b := NewEmulator()
 
 	accountKeys := test.AccountKeyGenerator()
@@ -58,11 +58,162 @@ func TestTransferNFT(t *testing.T) {
 	topshotAddr, err := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
 	assert.NoError(t, err)
 
+	// ExecuteScriptAndCheck(t, b, templates.GenerateInspectFieldScript(nftAddr, tokenAddr, "currentSeries", 0))
+	// ExecuteScriptAndCheck(t, b, templates.GenerateInspectFieldScript(nftAddr, tokenAddr, "nextPlayID", 1))
+	// ExecuteScriptAndCheck(t, b, templates.GenerateInspectFieldScript(nftAddr, tokenAddr, "nextSetID", 1))
+	// ExecuteScriptAndCheck(t, b, templates.GenerateInspectFieldScript(nftAddr, tokenAddr, "totalSupply", 0))
+
 	// create a new Collection
 	t.Run("Should be able to create a new Play", func(t *testing.T) {
 		metadata := data.PlayMetadata{FullName: "Lebron"}
 
 		template, err := templates.GenerateMintPlayScript(topshotAddr, metadata)
+		assert.NoError(t, err)
+
+		tx := flow.NewTransaction().
+			SetScript(template).
+			SetGasLimit(20).
+			SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
+			SetPayer(b.RootKey().Address).
+			AddAuthorizer(topshotAddr)
+
+		SignAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.RootKey().Address, topshotAddr},
+			[]crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			false,
+		)
+	})
+
+	// create a new Collection
+	t.Run("Should be able to create multiple new Plays", func(t *testing.T) {
+		metadata := data.PlayMetadata{FullName: "Oladipo"}
+
+		template, err := templates.GenerateMintPlayScript(topshotAddr, metadata)
+		assert.NoError(t, err)
+
+		tx := flow.NewTransaction().
+			SetScript(template).
+			SetGasLimit(20).
+			SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
+			SetPayer(b.RootKey().Address).
+			AddAuthorizer(topshotAddr)
+
+		SignAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.RootKey().Address, topshotAddr},
+			[]crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			false,
+		)
+
+		metadata = data.PlayMetadata{FullName: "Hayward"}
+
+		template, err = templates.GenerateMintPlayScript(topshotAddr, metadata)
+		assert.NoError(t, err)
+
+		tx = flow.NewTransaction().
+			SetScript(template).
+			SetGasLimit(20).
+			SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
+			SetPayer(b.RootKey().Address).
+			AddAuthorizer(topshotAddr)
+
+		SignAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.RootKey().Address, topshotAddr},
+			[]crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			false,
+		)
+	})
+
+	// create a new Collection
+	t.Run("Should be able to create a new Set", func(t *testing.T) {
+
+		template, err := templates.GenerateMintSetScript(topshotAddr, "Genesis")
+		assert.NoError(t, err)
+
+		tx := flow.NewTransaction().
+			SetScript(template).
+			SetGasLimit(20).
+			SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
+			SetPayer(b.RootKey().Address).
+			AddAuthorizer(topshotAddr)
+
+		SignAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.RootKey().Address, topshotAddr},
+			[]crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			false,
+		)
+	})
+
+	// create a new Collection
+	t.Run("Should be able to add a play to a Set", func(t *testing.T) {
+
+		template, err := templates.GenerateAddPlayToSetScript(topshotAddr, 1, 1)
+		assert.NoError(t, err)
+
+		tx := flow.NewTransaction().
+			SetScript(template).
+			SetGasLimit(20).
+			SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
+			SetPayer(b.RootKey().Address).
+			AddAuthorizer(topshotAddr)
+
+		SignAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.RootKey().Address, topshotAddr},
+			[]crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			false,
+		)
+	})
+
+	// create a new Collection
+	t.Run("Should be able to add multiple plays to a Set", func(t *testing.T) {
+
+		template, err := templates.GenerateAddPlaysToSetScript(topshotAddr, 1, []uint32{2, 3})
+		assert.NoError(t, err)
+
+		tx := flow.NewTransaction().
+			SetScript(template).
+			SetGasLimit(20).
+			SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
+			SetPayer(b.RootKey().Address).
+			AddAuthorizer(topshotAddr)
+
+		SignAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.RootKey().Address, topshotAddr},
+			[]crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			false,
+		)
+	})
+
+	// create a new Collection
+	t.Run("Should be able to mint a moment", func(t *testing.T) {
+
+		template, err := templates.GenerateMintMomentScript(topshotAddr, topshotAddr, 1, 1)
+		assert.NoError(t, err)
+
+		tx := flow.NewTransaction().
+			SetScript(template).
+			SetGasLimit(20).
+			SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
+			SetPayer(b.RootKey().Address).
+			AddAuthorizer(topshotAddr)
+
+		SignAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.RootKey().Address, topshotAddr},
+			[]crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			false,
+		)
+	})
+
+	// create a new Collection
+	t.Run("Should be able to mint a batch of moments", func(t *testing.T) {
+
+		template, err := templates.GenerateBatchMintMomentScript(topshotAddr, topshotAddr, 1, 3, 1)
 		assert.NoError(t, err)
 
 		tx := flow.NewTransaction().

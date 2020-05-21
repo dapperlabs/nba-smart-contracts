@@ -12,91 +12,91 @@ import (
 
 // GenerateMintMomentScript generates a script to mint a new moment
 // from a play-set combination
-func GenerateMintMomentScript(tokenCodeAddr, recipientAddress flow.Address, setId, playId uint32) []byte {
+func GenerateMintMomentScript(tokenCodeAddr, recipientAddress flow.Address, setID, playID uint32) ([]byte, error) {
 	template := `
-				import TopShot from 0x%s
+		import TopShot from 0x%s
 
-				transaction {
-					let adminRef: &TopShot.Admin
-				
-					prepare(acct: AuthAccount) {
-						self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
-					}
-				
-					execute {
-						let setRef = self.adminRef.borrowSet(setID: %d)
+		transaction {
+			let adminRef: &TopShot.Admin
+		
+			prepare(acct: AuthAccount) {
+				self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
+			}
+		
+			execute {
+				let setRef = self.adminRef.borrowSet(setID: %d)
 
-						// Mint a new NFT
-						let moment1 <- setRef.mintMoment(playID: %d)
-						let recipient = getAccount(0x%s)
-						// get the Collection reference for the receiver
-						let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
-						// deposit the NFT in the receivers collection
-						receiverRef.deposit(token: <-moment1)
-					}
-				}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setId, playId, recipientAddress.String()))
+				// Mint a new NFT
+				let moment1 <- setRef.mintMoment(playID: %d)
+				let recipient = getAccount(0x%s)
+				// get the Collection reference for the receiver
+				let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
+				// deposit the NFT in the receivers collection
+				receiverRef.deposit(token: <-moment1)
+			}
+		}`
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID, recipientAddress.String())), nil
 }
 
 // GenerateBatchMintMomentScript mints multiple moments of the same play-set combination
-func GenerateBatchMintMomentScript(tokenCodeAddr flow.Address, destinationAccount flow.Address, setId, playId uint32, quantity uint64) []byte {
+func GenerateBatchMintMomentScript(tokenCodeAddr flow.Address, destinationAccount flow.Address, setID, playID uint32, quantity uint64) ([]byte, error) {
 	template := `
-				import TopShot from 0x%s
+		import TopShot from 0x%s
 
-				transaction {
-					let adminRef: &TopShot.Admin
-				
-					prepare(acct: AuthAccount) {
-						self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
-					}
-				
-					execute {
-						let setRef = self.adminRef.borrowSet(setID: %d)
+		transaction {
+			let adminRef: &TopShot.Admin
+		
+			prepare(acct: AuthAccount) {
+				self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
+			}
+		
+			execute {
+				let setRef = self.adminRef.borrowSet(setID: %d)
 
-						// Mint a new NFT
-						let collection <- setRef.batchMintMoment(playID: %d, quantity: %d)
-						let recipient = getAccount(0x%s)
-						// get the Collection reference for the receiver
-						let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
-						// deposit the NFT in the receivers collection
-                        receiverRef.batchDeposit(tokens: <-collection)
-					}
-				}`
+				// Mint a new NFT
+				let collection <- setRef.batchMintMoment(playID: %d, quantity: %d)
+				let recipient = getAccount(0x%s)
+				// get the Collection reference for the receiver
+				let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
+				// deposit the NFT in the receivers collection
+				receiverRef.batchDeposit(tokens: <-collection)
+			}
+		}`
 
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setId, playId, quantity, destinationAccount))
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID, quantity, destinationAccount)), nil
 }
 
 // GenerateAddPlayToSetScript adds a play to a set
 // so that moments can be minted from the combo
-func GenerateAddPlayToSetScript(tokenCodeAddr flow.Address, setId, playId uint32) ([]byte, error) {
+func GenerateAddPlayToSetScript(tokenCodeAddr flow.Address, setID, playID uint32) ([]byte, error) {
 	template := `
-				import TopShot from 0x%s
-				
-				transaction {
+		import TopShot from 0x%s
+		
+		transaction {
 
-					prepare(acct: AuthAccount) {
-						let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
-						let setRef = admin.borrowSet(setID: %d)
-						setRef.addPlay(playID: %d)
-					}
-				}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setId, playId)), nil
+			prepare(acct: AuthAccount) {
+				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
+				let setRef = admin.borrowSet(setID: %d)
+				setRef.addPlay(playID: %d)
+			}
+		}`
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID)), nil
 }
 
 // GenerateAddPlaysToSetScript adds multiple plays to a set
-func GenerateAddPlaysToSetScript(tokenCodeAddr flow.Address, setId uint32, playIds []uint32) ([]byte, error) {
+func GenerateAddPlaysToSetScript(tokenCodeAddr flow.Address, setID uint32, playIDs []uint32) ([]byte, error) {
 	template := `
-				import TopShot from 0x%s
-				
-				transaction {
+		import TopShot from 0x%s
+		
+		transaction {
 
-					prepare(acct: AuthAccount) {
-						let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
-						let setRef = admin.borrowSet(setID: %d)
-						setRef.addPlays(playIDs: %s)
-					}
-				}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setId, uint32ToCadenceArr(playIds))), nil
+			prepare(acct: AuthAccount) {
+				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
+				let setRef = admin.borrowSet(setID: %d)
+				setRef.addPlays(playIDs: %s)
+			}
+		}`
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, uint32ToCadenceArr(playIDs))), nil
 }
 
 func uint32ToCadenceArr(nums []uint32) []byte {
@@ -119,44 +119,44 @@ func GenerateMintPlayScript(tokenCodeAddr flow.Address, metadata data.PlayMetada
 		return nil, err
 	}
 	template := `
-				import TopShot from 0x%s
-				
-				transaction {
-					prepare(acct: AuthAccount) {
-						let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
-						admin.createPlay(metadata: %s)
-					}
-				}`
+		import TopShot from 0x%s
+		
+		transaction {
+			prepare(acct: AuthAccount) {
+				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
+				admin.createPlay(metadata: %s)
+			}
+		}`
 	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), string(md))), nil
 }
 
 // GenerateMintSetScript creates a new Set struct and initializes its metadata
-func GenerateMintSetScript(tokenCodeAddr flow.Address, metadata data.SetMetadata) ([]byte, error) {
+func GenerateMintSetScript(tokenCodeAddr flow.Address, name string) ([]byte, error) {
 	template := `
-                 import TopShot from 0x%s
+		import TopShot from 0x%s
 
-                 transaction {
-                    prepare(acct: AuthAccount) {
-						let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
-						admin.createSet(name: "%s")
-                    }
-				 }`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), metadata.FlowName)), nil
+		transaction {
+			prepare(acct: AuthAccount) {
+				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
+				admin.createSet(name: "%s")
+			}
+		}`
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), name)), nil
 }
 
 // GenerateFulfillPackScript creates a script that fulfulls a pack
 func GenerateFulfillPackScript(tokenCodeAddr flow.Address, destinationAccount flow.Address, momentIDs []uint64) []byte {
 	template := `
-                import TopShot from 0x%s
-	
-                transaction {
-                   prepare(acct: AuthAccount) {
-                       let recipient = getAccount(0x%s)
-                       let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
-                       let momentIDs = [%s]
-                       let collection <- acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)!.batchWithdraw(ids: momentIDs)
-                       receiverRef.batchDeposit(tokens: <-collection)
-                   }
+		import TopShot from 0x%s
+
+		transaction {
+			prepare(acct: AuthAccount) {
+				let recipient = getAccount(0x%s)
+				let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
+				let momentIDs = [%s]
+				let collection <- acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)!.batchWithdraw(ids: momentIDs)
+				receiverRef.batchDeposit(tokens: <-collection)
+			}
 		}`
 
 	// Stringify moment IDs
