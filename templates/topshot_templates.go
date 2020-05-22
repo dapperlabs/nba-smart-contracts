@@ -172,3 +172,28 @@ func GenerateFulfillPackScript(tokenCodeAddr flow.Address, destinationAccount fl
 
 	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), destinationAccount.String(), momentIDList))
 }
+
+// GenerateTransferAdminScript generates a script to create and admin capability
+// and transfer it to another account's admin receiver
+func GenerateTransferAdminScript(topshotAddr, adminReceiverAddr flow.Address) ([]byte, error) {
+	template := `
+		import TopShot from 0x%s
+		import TopshotAdminReceiver from 0x%s
+		
+		transaction {
+		
+			prepare(acct: AuthAccount) {
+				acct.link<&TopShot.Admin>(/private/TopShotAdmin, target: /storage/TopShotAdmin)
+
+				let adminCapability = acct.getCapability(/private/TopShotAdmin)
+					?? panic("No admin capability!")
+		
+				let holderRef = getAccount(0x%s).getCapability(/public/topshotAdminReceiver)!
+					.borrow<&TopshotAdminReceiver.AdminHolder{TopshotAdminReceiver.Receiver}>()
+					?? panic("Couldn't borrow Receiver ref")
+		
+				holderRef.setAdmin(newAdminCapability: adminCapability)
+			}
+		}`
+	return []byte(fmt.Sprintf(template, topshotAddr.String(), adminReceiverAddr.String(), adminReceiverAddr.String())), nil
+}

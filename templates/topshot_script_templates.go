@@ -11,7 +11,7 @@ import (
 func GenerateInspectTopshotFieldScript(nftAddr, tokenAddr flow.Address, fieldName string, expectedSeries int) []byte {
 	template := `
 		import NonFungibleToken from 0x%s
-		import Topshot from 0x%s
+		import TopShot from 0x%s
 
 		pub fun main() {
 			assert(

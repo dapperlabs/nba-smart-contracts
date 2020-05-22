@@ -7,13 +7,16 @@ import TopshotAdminReceiver from 0x06
 transaction {
 
     prepare(acct: AuthAccount) {
-        acct.getCapability(/storage/TopShotAdmin)
+        acct.link<&TopShot.Admin>(/private/TopShotAdmin, target: /storage/TopShotAdmin)
+
+        let adminCapability = acct.getCapability(/private/TopShotAdmin)
+            ?? panic("No admin capability!")
 
         let holderRef = getAccount(0x06).getCapability(/public/topshotAdminReceiver)!
             .borrow<&TopshotAdminReceiver.AdminHolder{TopshotAdminReceiver.Receiver}>()
             ?? panic("Couldn't borrow Receiver ref")
 
-        holderRef.setAdmin(newAdminCapability: holderRef)
+        holderRef.setAdmin(newAdminCapability: adminCapability)
     }
 }
  
