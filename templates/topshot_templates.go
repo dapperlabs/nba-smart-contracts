@@ -123,7 +123,8 @@ func GenerateMintPlayScript(tokenCodeAddr flow.Address, metadata data.PlayMetada
 		
 		transaction {
 			prepare(acct: AuthAccount) {
-				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
+				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+					?? panic("No admin resource in storage")
 				admin.createPlay(metadata: %s)
 			}
 		}`
@@ -183,17 +184,11 @@ func GenerateTransferAdminScript(topshotAddr, adminReceiverAddr flow.Address) ([
 		transaction {
 		
 			prepare(acct: AuthAccount) {
-				acct.link<&TopShot.Admin>(/private/TopShotAdmin, target: /storage/TopShotAdmin)
+				let admin <- acct.load<@TopShot.Admin>(from: /storage/TopShotAdmin)
+					?? panic("No topshot admin in storage")
 
-				let adminCapability = acct.getCapability(/private/TopShotAdmin)
-					?? panic("No admin capability!")
-		
-				let holderRef = getAccount(0x%s).getCapability(/public/topshotAdminReceiver)!
-					.borrow<&TopshotAdminReceiver.AdminHolder{TopshotAdminReceiver.Receiver}>()
-					?? panic("Couldn't borrow Receiver ref")
-		
-				holderRef.setAdmin(newAdminCapability: adminCapability)
+				TopshotAdminReceiver.storeAdmin(newAdmin: <-admin)
 			}
 		}`
-	return []byte(fmt.Sprintf(template, topshotAddr.String(), adminReceiverAddr.String(), adminReceiverAddr.String())), nil
+	return []byte(fmt.Sprintf(template, topshotAddr.String(), adminReceiverAddr.String())), nil
 }

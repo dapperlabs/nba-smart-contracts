@@ -257,12 +257,12 @@ func TestTransferAdmin(t *testing.T) {
 
 	// Should be able to deploy a contract as a new account with no keys.
 	adminReceiverCode := ReadFile(AdminReceiverFile)
-	adminAccountKey, _ := accountKeys.NewWithSigner()
+	adminAccountKey, adminSigner := accountKeys.NewWithSigner()
 	adminAddr, _ := b.CreateAccount([]*flow.AccountKey{adminAccountKey}, adminReceiverCode)
 	b.CommitBlock()
 
 	// create a new Collection
-	t.Run("Should be able to transfer an admin Capability to the receiver", func(t *testing.T) {
+	t.Run("Should be able to transfer an admin Capability to the receiver account", func(t *testing.T) {
 
 		template, err := GenerateTransferAdminScript(topshotAddr, adminAddr)
 		assert.NoError(t, err)
@@ -282,6 +282,50 @@ func TestTransferAdmin(t *testing.T) {
 		)
 	})
 
+	// create a new Collection
+	t.Run("Shouldn't be able to create a new Play with the old admin account", func(t *testing.T) {
+		metadata := data.PlayMetadata{FullName: "Lebron"}
+
+		template, err := templates.GenerateMintPlayScript(topshotAddr, metadata)
+		assert.NoError(t, err)
+
+		tx := flow.NewTransaction().
+			SetScript(template).
+			SetGasLimit(20).
+			SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
+			SetPayer(b.RootKey().Address).
+			AddAuthorizer(topshotAddr)
+
+		SignAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.RootKey().Address, topshotAddr},
+			[]crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			true,
+		)
+	})
+
+	// create a new Collection
+	t.Run("Should be able to create a new Play with the new Admin account", func(t *testing.T) {
+		metadata := data.PlayMetadata{FullName: "Lebron"}
+
+		template, err := templates.GenerateMintPlayScript(topshotAddr, metadata)
+		assert.NoError(t, err)
+
+		tx := flow.NewTransaction().
+			SetScript(template).
+			SetGasLimit(20).
+			SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
+			SetPayer(b.RootKey().Address).
+			AddAuthorizer(adminAddr)
+
+		SignAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.RootKey().Address, adminAddr},
+			[]crypto.Signer{b.RootKey().Signer(), adminSigner},
+			false,
+		)
+	})
+
 }
 
 // GenerateTransferAdminScript generates a script to create and admin capability
@@ -294,17 +338,11 @@ func GenerateTransferAdminScript(topshotAddr, adminReceiverAddr flow.Address) ([
 		transaction {
 		
 			prepare(acct: AuthAccount) {
-				acct.link<&TopShot.Admin>(/private/TopShotAdmin, target: /storage/TopShotAdmin)
+				let admin <- acct.load<@TopShot.Admin>(from: /storage/TopShotAdmin)
+					?? panic("No topshot admin in storage")
 
-				let adminCapability = acct.getCapability(/private/TopShotAdmin)
-					?? panic("No admin capability!")
-		
-				let holderRef = getAccount(0x%s).getCapability(/public/topshotAdminReceiver)!
-					.borrow<&TopshotAdminReceiver.AdminHolder{TopshotAdminReceiver.Receiver}>()
-					?? panic("Couldn't borrow Receiver ref")
-		
-				holderRef.setAdmin(newAdminCapability: adminCapability)
+				TopshotAdminReceiver.storeAdmin(newAdmin: <-admin)
 			}
 		}`
-	return []byte(fmt.Sprintf(template, topshotAddr.String(), adminReceiverAddr.String(), adminReceiverAddr.String())), nil
+	return []byte(fmt.Sprintf(template, topshotAddr.String(), adminReceiverAddr.String())), nil
 }
