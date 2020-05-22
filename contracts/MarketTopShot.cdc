@@ -27,6 +27,7 @@
 
 import FungibleToken from 0x04
 import FlowToken from 0x05
+import NonFungibleToken from 0x02
 import TopShot from 0x03
 
 pub contract Market {
@@ -36,9 +37,6 @@ pub contract Market {
     pub event TokenPurchased(id: UInt64, price: UFix64, seller: Address?)
     pub event SaleWithdrawn(id: UInt64, owner: Address?)
     pub event CutPercentageChanged(newPercent: UFix64, seller: Address?)
-
-    // the reference that is used for depositing TopShot's cut of every sale
-    access(contract) var TopShotVault: &{FungibleToken.Receiver}
 
     // The interface that user can publish to allow others too access their sale
     pub resource interface SalePublic {
@@ -60,21 +58,28 @@ pub contract Market {
         // the fungible token vault of the owner of this sale
         // so that when someone buys a token, this resource can deposit
         // tokens in their account
-        access(self) let ownerVault: &{FungibleToken.Receiver}
+        access(self) let ownerCapability: Capability
 
-        // the reference that is used for depositing TopShot's cut of every sale
-        access(self) let TopShotVault: &{FungibleToken.Receiver}
+        // the reference that is used for depositing the beneficiary's cut of every sale
+        access(self) let beneficiaryCapability: Capability
 
         // the percentage that is taken from every purchase for TopShot
         // This is a literal percentage
         // For example, if the percentage is 15%, cutPercentage = 0.15
         pub var cutPercentage: UFix64
 
-        init (vault: &{FungibleToken.Receiver}, cutPercentage: UFix64) {
-            self.forSale <- TopShot.createEmptyCollection()
-            self.ownerVault = vault
+        init (ownerCapability: Capability, beneficiaryCapability: Capability, cutPercentage: UFix64) {
+            pre {
+                ownerCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
+                    "Owner's Receiver Capability is invalid!"
+                beneficiaryCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
+                    "Beneficiary's Receiver Capability is invalid!" 
+            }
+            
+            self.forSale <- TopShot.createEmptyCollection() as! @TopShot.Collection
+            self.ownerCapability = ownerCapability
+            self.beneficiaryCapability = beneficiaryCapability
             self.prices = {}
-            self.TopShotVault = Market.TopShotVault
             self.cutPercentage = cutPercentage
         }
 
@@ -83,7 +88,7 @@ pub contract Market {
             // remove the price
             self.prices.remove(key: tokenID)
             // remove and return the token
-            let token <- self.forSale.withdraw(withdrawID: tokenID)
+            let token <- self.forSale.withdraw(withdrawID: tokenID) as! @TopShot.NFT
 
             emit SaleWithdrawn(id: token.id, owner: self.owner?.address)
 
@@ -127,23 +132,25 @@ pub contract Market {
                     "Not enough tokens to by the NFT!"
             }
 
-            if let price = self.prices[tokenID] {
-                self.prices[tokenID] = nil
+            let price = self.prices[tokenID]!
 
-                // take the cut of the tokens Top shot gets from the sent tokens
-                let TopShotCut <- buyTokens.withdraw(amount: price*self.cutPercentage)
+            self.prices[tokenID] = nil
 
-                // deposit it into topshot's Vault
-                self.TopShotVault.deposit(from: <-TopShotCut)
-                
-                // deposit the remaining tokens into the owners vault
-                self.ownerVault.deposit(from: <-buyTokens)
+            // take the cut of the tokens Top shot gets from the sent tokens
+            let TopShotCut <- buyTokens.withdraw(amount: price*self.cutPercentage)
 
-                // deposit the NFT into the buyers collection
-                recipient.deposit(token: <-self.withdraw(tokenID: tokenID))
+            // deposit it into topshot's Vault
+            self.beneficiaryCapability.borrow<&{FungibleToken.Receiver}>()!
+                .deposit(from: <-TopShotCut)
+            
+            // deposit the remaining tokens into the owners vault
+            self.ownerCapability.borrow<&{FungibleToken.Receiver}>()!
+                .deposit(from: <-buyTokens)
 
-                emit TokenPurchased(id: tokenID, price: price, seller: self.owner?.address)
-            }
+            // deposit the NFT into the buyers collection
+            recipient.deposit(token: <-self.withdraw(tokenID: tokenID))
+
+            emit TokenPurchased(id: tokenID, price: price, seller: self.owner?.address)
         }
 
         // idPrice returns the price of a specific token in the sale
@@ -163,17 +170,8 @@ pub contract Market {
     }
 
     // createCollection returns a new collection resource to the caller
-    pub fun createSaleCollection(ownerVault: &{FungibleToken.Receiver}, cutPercentage: UFix64): @SaleCollection {
-        return <- create SaleCollection(vault: ownerVault, cutPercentage: cutPercentage)
-    }
-
-    init() {
-        // Get the public account object for the main TopShot account
-        let acct = getAccount(0x03)
-
-        // initialize the Vault receiver object to be the main TopShot receiver
-        self.TopShotVault = acct.getCapability(/public/flowTokenReceiver)!
-                                .borrow<&{FungibleToken.Receiver}>()!
+    pub fun createSaleCollection(ownerCapability: Capability, beneficiaryCapability: Capability, cutPercentage: UFix64): @SaleCollection {
+        return <- create SaleCollection(ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: cutPercentage)
     }
 }
  

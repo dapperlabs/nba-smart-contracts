@@ -7,7 +7,9 @@ require (
 	github.com/dapperlabs/flow-go/protobuf v0.3.2-0.20200312195452-df4550a863b7 // indirect
 	github.com/dchest/siphash v1.2.1 // indirect
 	github.com/onflow/cadence v0.3.0-beta1
+	github.com/onflow/flow-ft v0.0.0-20200520235619-a19779fa84d9
 	github.com/onflow/flow-go-sdk v0.3.0-beta1
+	github.com/onflow/flow-nft v0.0.0-20200521012636-3c3797b7d396
 	github.com/philhofer/fwd v1.0.0 // indirect
 	github.com/stretchr/testify v1.5.1
 	github.com/tinylib/msgp v1.1.2 // indirect
