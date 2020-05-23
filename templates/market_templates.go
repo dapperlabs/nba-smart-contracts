@@ -68,7 +68,7 @@ func GenerateBuySaleScript(tokenAddr, nftAddr, marketAddr, userAddr flow.Address
 				let collection = acct.borrow<&ExampleNFT.Collection>(from: /storage/NFTCollection)
 					?? panic("Could not borrow public reference to NFT Collection")
 
-				let provider = acct.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!
+				let provider = acct.borrow<&FlowToken.Vault{FungibleToken.Provider}>(from: /storage/flowTokenVault)!
 				
 				let tokens <- provider.withdraw(amount: %d.0)
 

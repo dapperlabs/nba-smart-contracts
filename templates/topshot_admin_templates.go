@@ -10,6 +10,85 @@ import (
 	"github.com/onflow/flow-go-sdk"
 )
 
+func uint32ToCadenceArr(nums []uint32) []byte {
+	var s string
+	for _, n := range nums {
+		s += fmt.Sprintf("UInt32(%d), ", n)
+	}
+	// slice the last 2 characters off as that's the comma and the whitespace
+	return []byte("[" + s[:len(s)-2] + "]")
+}
+
+// GenerateMintPlayScript creates a new play data struct
+// and initializes it with metadata
+func GenerateMintPlayScript(tokenCodeAddr flow.Address, metadata data.PlayMetadata) ([]byte, error) {
+	metadata = data.PlayMetadata{
+		FullName: "testcase testlofsky",
+	}
+	md, err := json.Marshal(metadata)
+	if err != nil {
+		return nil, err
+	}
+	template := `
+		import TopShot from 0x%s
+		
+		transaction {
+			prepare(acct: AuthAccount) {
+				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+					?? panic("No admin resource in storage")
+				admin.createPlay(metadata: %s)
+			}
+		}`
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), string(md))), nil
+}
+
+// GenerateMintSetScript creates a new Set struct and initializes its metadata
+func GenerateMintSetScript(tokenCodeAddr flow.Address, name string) ([]byte, error) {
+	template := `
+		import TopShot from 0x%s
+
+		transaction {
+			prepare(acct: AuthAccount) {
+				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
+				admin.createSet(name: "%s")
+			}
+		}`
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), name)), nil
+}
+
+// GenerateAddPlayToSetScript adds a play to a set
+// so that moments can be minted from the combo
+func GenerateAddPlayToSetScript(tokenCodeAddr flow.Address, setID, playID uint32) ([]byte, error) {
+	template := `
+		import TopShot from 0x%s
+		
+		transaction {
+
+			prepare(acct: AuthAccount) {
+				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
+				let setRef = admin.borrowSet(setID: %d)
+				setRef.addPlay(playID: %d)
+			}
+		}`
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID)), nil
+}
+
+// GenerateAddPlaysToSetScript adds multiple plays to a set
+func GenerateAddPlaysToSetScript(tokenCodeAddr flow.Address, setID uint32, playIDs []uint32) ([]byte, error) {
+	template := `
+		import TopShot from 0x%s
+		
+		transaction {
+
+			prepare(acct: AuthAccount) {
+				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
+				let setRef = admin.borrowSet(setID: %d)
+				setRef.addPlays(playIDs: %s)
+			}
+		}`
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, uint32ToCadenceArr(playIDs))), nil
+}
+
 // GenerateMintMomentScript generates a script to mint a new moment
 // from a play-set combination
 func GenerateMintMomentScript(tokenCodeAddr, recipientAddress flow.Address, setID, playID uint32) ([]byte, error) {
@@ -66,83 +145,70 @@ func GenerateBatchMintMomentScript(tokenCodeAddr flow.Address, destinationAccoun
 	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID, quantity, destinationAccount)), nil
 }
 
-// GenerateAddPlayToSetScript adds a play to a set
-// so that moments can be minted from the combo
-func GenerateAddPlayToSetScript(tokenCodeAddr flow.Address, setID, playID uint32) ([]byte, error) {
+// GenerateRetirePlayScript retires a play from a set
+func GenerateRetirePlayScript(tokenCodeAddr flow.Address, setID, playID int) ([]byte, error) {
 	template := `
 		import TopShot from 0x%s
 		
 		transaction {
+			let adminRef: &TopShot.Admin
 
 			prepare(acct: AuthAccount) {
-				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
-				let setRef = admin.borrowSet(setID: %d)
-				setRef.addPlay(playID: %d)
+				self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+					?? panic("No admin resource in storage")
+			}
+
+			execute {
+				let setRef = self.adminRef.borrowSet(setID: %d)
+
+				setRef.retirePlay(playID: UInt32(%d))
 			}
 		}`
 	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID)), nil
 }
 
-// GenerateAddPlaysToSetScript adds multiple plays to a set
-func GenerateAddPlaysToSetScript(tokenCodeAddr flow.Address, setID uint32, playIDs []uint32) ([]byte, error) {
+// GenerateRetireAllPlaysScript retires all plays from a set
+func GenerateRetireAllPlaysScript(tokenCodeAddr flow.Address, setID int) ([]byte, error) {
 	template := `
 		import TopShot from 0x%s
 		
 		transaction {
+			let adminRef: &TopShot.Admin
 
 			prepare(acct: AuthAccount) {
-				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
-				let setRef = admin.borrowSet(setID: %d)
-				setRef.addPlays(playIDs: %s)
-			}
-		}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, uint32ToCadenceArr(playIDs))), nil
-}
-
-func uint32ToCadenceArr(nums []uint32) []byte {
-	var s string
-	for _, n := range nums {
-		s += fmt.Sprintf("UInt32(%d), ", n)
-	}
-	// slice the last 2 characters off as that's the comma and the whitespace
-	return []byte("[" + s[:len(s)-2] + "]")
-}
-
-// GenerateMintPlayScript creates a new play data struct
-// and initializes it with metadata
-func GenerateMintPlayScript(tokenCodeAddr flow.Address, metadata data.PlayMetadata) ([]byte, error) {
-	metadata = data.PlayMetadata{
-		FullName: "testcase testlofsky",
-	}
-	md, err := json.Marshal(metadata)
-	if err != nil {
-		return nil, err
-	}
-	template := `
-		import TopShot from 0x%s
-		
-		transaction {
-			prepare(acct: AuthAccount) {
-				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+				self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
 					?? panic("No admin resource in storage")
-				admin.createPlay(metadata: %s)
+			}
+
+			execute {
+				let setRef = self.adminRef.borrowSet(setID: %d)
+
+				setRef.retireAll()
 			}
 		}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), string(md))), nil
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID)), nil
 }
 
-// GenerateMintSetScript creates a new Set struct and initializes its metadata
-func GenerateMintSetScript(tokenCodeAddr flow.Address, name string) ([]byte, error) {
+// GenerateLockSetScript locks a set
+func GenerateLockSetScript(tokenCodeAddr flow.Address, setID int) ([]byte, error) {
 	template := `
 		import TopShot from 0x%s
-
+		
 		transaction {
+			let adminRef: &TopShot.Admin
+
 			prepare(acct: AuthAccount) {
-				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
-				admin.createSet(name: "%s")
+				self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+					?? panic("No admin resource in storage")
+			}
+
+			execute {
+				let setRef = self.adminRef.borrowSet(setID: %d)
+
+				setRef.lock()
 			}
 		}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), name)), nil
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID)), nil
 }
 
 // GenerateFulfillPackScript creates a script that fulfulls a pack
@@ -191,4 +257,19 @@ func GenerateTransferAdminScript(topshotAddr, adminReceiverAddr flow.Address) ([
 			}
 		}`
 	return []byte(fmt.Sprintf(template, topshotAddr.String(), adminReceiverAddr.String())), nil
+}
+
+// GenerateChangeSeriesScript uses the admin to update the current series
+func GenerateChangeSeriesScript(tokenCodeAddr flow.Address) ([]byte, error) {
+	template := `
+		import TopShot from 0x%s
+		
+		transaction {
+			prepare(acct: AuthAccount) {
+				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+					?? panic("No admin resource in storage")
+				admin.startNewSeries()
+			}
+		}`
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String())), nil
 }
