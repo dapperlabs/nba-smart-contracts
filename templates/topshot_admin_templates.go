@@ -21,13 +21,13 @@ func uint32ToCadenceArr(nums []uint32) []byte {
 
 // GenerateMintPlayScript creates a new play data struct
 // and initializes it with metadata
-func GenerateMintPlayScript(tokenCodeAddr flow.Address, metadata data.PlayMetadata) ([]byte, error) {
+func GenerateMintPlayScript(tokenCodeAddr flow.Address, metadata data.PlayMetadata) []byte {
 	metadata = data.PlayMetadata{
 		FullName: "testcase testlofsky",
 	}
 	md, err := json.Marshal(metadata)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 	template := `
 		import TopShot from 0x%s
@@ -39,11 +39,11 @@ func GenerateMintPlayScript(tokenCodeAddr flow.Address, metadata data.PlayMetada
 				admin.createPlay(metadata: %s)
 			}
 		}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), string(md))), nil
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), string(md)))
 }
 
 // GenerateMintSetScript creates a new Set struct and initializes its metadata
-func GenerateMintSetScript(tokenCodeAddr flow.Address, name string) ([]byte, error) {
+func GenerateMintSetScript(tokenCodeAddr flow.Address, name string) []byte {
 	template := `
 		import TopShot from 0x%s
 
@@ -53,12 +53,12 @@ func GenerateMintSetScript(tokenCodeAddr flow.Address, name string) ([]byte, err
 				admin.createSet(name: "%s")
 			}
 		}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), name)), nil
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), name))
 }
 
 // GenerateAddPlayToSetScript adds a play to a set
 // so that moments can be minted from the combo
-func GenerateAddPlayToSetScript(tokenCodeAddr flow.Address, setID, playID uint32) ([]byte, error) {
+func GenerateAddPlayToSetScript(tokenCodeAddr flow.Address, setID, playID uint32) []byte {
 	template := `
 		import TopShot from 0x%s
 		
@@ -70,11 +70,11 @@ func GenerateAddPlayToSetScript(tokenCodeAddr flow.Address, setID, playID uint32
 				setRef.addPlay(playID: %d)
 			}
 		}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID)), nil
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID))
 }
 
 // GenerateAddPlaysToSetScript adds multiple plays to a set
-func GenerateAddPlaysToSetScript(tokenCodeAddr flow.Address, setID uint32, playIDs []uint32) ([]byte, error) {
+func GenerateAddPlaysToSetScript(tokenCodeAddr flow.Address, setID uint32, playIDs []uint32) []byte {
 	template := `
 		import TopShot from 0x%s
 		
@@ -86,12 +86,12 @@ func GenerateAddPlaysToSetScript(tokenCodeAddr flow.Address, setID uint32, playI
 				setRef.addPlays(playIDs: %s)
 			}
 		}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, uint32ToCadenceArr(playIDs))), nil
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, uint32ToCadenceArr(playIDs)))
 }
 
 // GenerateMintMomentScript generates a script to mint a new moment
 // from a play-set combination
-func GenerateMintMomentScript(tokenCodeAddr, recipientAddress flow.Address, setID, playID uint32) ([]byte, error) {
+func GenerateMintMomentScript(tokenCodeAddr, recipientAddress flow.Address, setID, playID uint32) []byte {
 	template := `
 		import TopShot from 0x%s
 
@@ -114,11 +114,11 @@ func GenerateMintMomentScript(tokenCodeAddr, recipientAddress flow.Address, setI
 				receiverRef.deposit(token: <-moment1)
 			}
 		}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID, recipientAddress.String())), nil
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID, recipientAddress.String()))
 }
 
 // GenerateBatchMintMomentScript mints multiple moments of the same play-set combination
-func GenerateBatchMintMomentScript(tokenCodeAddr flow.Address, destinationAccount flow.Address, setID, playID uint32, quantity uint64) ([]byte, error) {
+func GenerateBatchMintMomentScript(tokenCodeAddr flow.Address, destinationAccount flow.Address, setID, playID uint32, quantity uint64) []byte {
 	template := `
 		import TopShot from 0x%s
 
@@ -142,11 +142,11 @@ func GenerateBatchMintMomentScript(tokenCodeAddr flow.Address, destinationAccoun
 			}
 		}`
 
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID, quantity, destinationAccount)), nil
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID, quantity, destinationAccount))
 }
 
 // GenerateRetirePlayScript retires a play from a set
-func GenerateRetirePlayScript(tokenCodeAddr flow.Address, setID, playID int) ([]byte, error) {
+func GenerateRetirePlayScript(tokenCodeAddr flow.Address, setID, playID int) []byte {
 	template := `
 		import TopShot from 0x%s
 		
@@ -164,11 +164,11 @@ func GenerateRetirePlayScript(tokenCodeAddr flow.Address, setID, playID int) ([]
 				setRef.retirePlay(playID: UInt32(%d))
 			}
 		}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID)), nil
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID, playID))
 }
 
 // GenerateRetireAllPlaysScript retires all plays from a set
-func GenerateRetireAllPlaysScript(tokenCodeAddr flow.Address, setID int) ([]byte, error) {
+func GenerateRetireAllPlaysScript(tokenCodeAddr flow.Address, setID int) []byte {
 	template := `
 		import TopShot from 0x%s
 		
@@ -186,11 +186,11 @@ func GenerateRetireAllPlaysScript(tokenCodeAddr flow.Address, setID int) ([]byte
 				setRef.retireAll()
 			}
 		}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID)), nil
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID))
 }
 
 // GenerateLockSetScript locks a set
-func GenerateLockSetScript(tokenCodeAddr flow.Address, setID int) ([]byte, error) {
+func GenerateLockSetScript(tokenCodeAddr flow.Address, setID int) []byte {
 	template := `
 		import TopShot from 0x%s
 		
@@ -208,7 +208,7 @@ func GenerateLockSetScript(tokenCodeAddr flow.Address, setID int) ([]byte, error
 				setRef.lock()
 			}
 		}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID)), nil
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), setID))
 }
 
 // GenerateFulfillPackScript creates a script that fulfulls a pack
@@ -242,7 +242,7 @@ func GenerateFulfillPackScript(tokenCodeAddr flow.Address, destinationAccount fl
 
 // GenerateTransferAdminScript generates a script to create and admin capability
 // and transfer it to another account's admin receiver
-func GenerateTransferAdminScript(topshotAddr, adminReceiverAddr flow.Address) ([]byte, error) {
+func GenerateTransferAdminScript(topshotAddr, adminReceiverAddr flow.Address) []byte {
 	template := `
 		import TopShot from 0x%s
 		import TopshotAdminReceiver from 0x%s
@@ -256,11 +256,11 @@ func GenerateTransferAdminScript(topshotAddr, adminReceiverAddr flow.Address) ([
 				TopshotAdminReceiver.storeAdmin(newAdmin: <-admin)
 			}
 		}`
-	return []byte(fmt.Sprintf(template, topshotAddr.String(), adminReceiverAddr.String())), nil
+	return []byte(fmt.Sprintf(template, topshotAddr.String(), adminReceiverAddr.String()))
 }
 
 // GenerateChangeSeriesScript uses the admin to update the current series
-func GenerateChangeSeriesScript(tokenCodeAddr flow.Address) ([]byte, error) {
+func GenerateChangeSeriesScript(tokenCodeAddr flow.Address) []byte {
 	template := `
 		import TopShot from 0x%s
 		
@@ -271,5 +271,5 @@ func GenerateChangeSeriesScript(tokenCodeAddr flow.Address) ([]byte, error) {
 				admin.startNewSeries()
 			}
 		}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String())), nil
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String()))
 }

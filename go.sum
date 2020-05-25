@@ -439,6 +439,8 @@ github.com/onflow/cadence v0.3.0-beta1 h1:hvCoaDfGRCWbS+M6S+5uyh9CRjd7uGJvOtuPB4
 github.com/onflow/cadence v0.3.0-beta1/go.mod h1:GaLQ7IsJi5bqpH66GprNs8uoQtperK/xbXXIOq11nZw=
 github.com/onflow/cadence v0.3.0-beta3 h1:muvmL9o0iqyUVL8XCAlhzAiJsX42syvk9GmEkt3+m4M=
 github.com/onflow/cadence v0.3.0-beta3/go.mod h1:GaLQ7IsJi5bqpH66GprNs8uoQtperK/xbXXIOq11nZw=
+github.com/onflow/cadence v0.3.0-beta3.0.20200523010558-3fe40e24eeab h1:+pF2JaEn3s2PaWf4VLA8U89T/uJGLJUOk5ycLrpLBxc=
+github.com/onflow/cadence v0.3.0-beta3.0.20200523010558-3fe40e24eeab/go.mod h1:GaLQ7IsJi5bqpH66GprNs8uoQtperK/xbXXIOq11nZw=
 github.com/onflow/flow-ft v0.0.0-20200520235619-a19779fa84d9 h1:fKqWNeOQAO6Om8irpzcfFAro74IVYrTC1+PSJTtc8W0=
 github.com/onflow/flow-ft v0.0.0-20200520235619-a19779fa84d9/go.mod h1:HDXtkbqu+Qyv24uUe8+rdoGbmQCPc5I8fAAS4pznyG4=
 github.com/onflow/flow-ft v0.0.0-20200522195050-f52a75e639bf h1:RBK8Pw0/9j8BMuFYUXcRnpS4s4TU88uz6FzgaMjftf0=

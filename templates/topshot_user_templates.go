@@ -8,7 +8,7 @@ import (
 )
 
 // GenerateSetupAccountScript creates a script that sets up an account to use topshot
-func GenerateSetupAccountScript(nftAddr, tokenCodeAddr flow.Address) ([]byte, error) {
+func GenerateSetupAccountScript(nftAddr, tokenCodeAddr flow.Address) []byte {
 	template := `
 	import NonFungibleToken from 0x%s
 	import TopShot from 0x%s
@@ -29,11 +29,11 @@ func GenerateSetupAccountScript(nftAddr, tokenCodeAddr flow.Address) ([]byte, er
 	}
 	 
 	`
-	return []byte(fmt.Sprintf(template, nftAddr, tokenCodeAddr.String())), nil
+	return []byte(fmt.Sprintf(template, nftAddr, tokenCodeAddr.String()))
 }
 
 // GenerateTransferMomentScript creates a script that transfers a moment
-func GenerateTransferMomentScript(nftAddr, tokenCodeAddr, recipientAddr flow.Address, tokenID int) ([]byte, error) {
+func GenerateTransferMomentScript(nftAddr, tokenCodeAddr, recipientAddr flow.Address, tokenID int) []byte {
 	template := `
 		import NonFungibleToken from 0x%s
 		import TopShot from 0x%s
@@ -58,11 +58,11 @@ func GenerateTransferMomentScript(nftAddr, tokenCodeAddr, recipientAddr flow.Add
 				receiverRef.deposit(token: <-self.transferToken)
 			}
 		}`
-	return []byte(fmt.Sprintf(template, nftAddr, tokenCodeAddr.String(), tokenID, recipientAddr)), nil
+	return []byte(fmt.Sprintf(template, nftAddr, tokenCodeAddr.String(), tokenID, recipientAddr))
 }
 
 // GenerateBatchTransferMomentScript creates a script that transfers a moment
-func GenerateBatchTransferMomentScript(nftAddr, tokenCodeAddr, recipientAddr flow.Address, momentIDs []uint64) ([]byte, error) {
+func GenerateBatchTransferMomentScript(nftAddr, tokenCodeAddr, recipientAddr flow.Address, momentIDs []uint64) []byte {
 	template := `
 		import NonFungibleToken from 0x%s
 		import TopShot from 0x%s
@@ -99,5 +99,5 @@ func GenerateBatchTransferMomentScript(nftAddr, tokenCodeAddr, recipientAddr flo
 	if idListLen := len(momentIDList); idListLen > 2 {
 		momentIDList = momentIDList[:len(momentIDList)-2]
 	}
-	return []byte(fmt.Sprintf(template, nftAddr, tokenCodeAddr.String(), momentIDList, recipientAddr)), nil
+	return []byte(fmt.Sprintf(template, nftAddr, tokenCodeAddr.String(), momentIDList, recipientAddr))
 }

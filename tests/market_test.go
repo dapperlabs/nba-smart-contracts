@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	FungibleTokenContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-ft/master/contracts/"
+	FungibleTokenContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-ft/master/src/contracts/"
 	FungibleTokenInterfaceFile    = "FungibleToken.cdc"
 	FlowTokenFile                 = "FlowToken.cdc"
 	MarketContractFile            = "../contracts/MarketTopShot.cdc"
