@@ -46,14 +46,7 @@ pub contract TopShotShardedCollection {
             // find the bucket it should be withdrawn from
             let bucket = withdrawID % self.numBuckets
 
-            // remove the collection from the dictionary
-            let collection <- self.collections.remove(key: bucket)!
-
-            // withdraw the nft
-            let token <- collection.withdraw(withdrawID: withdrawID)
-
-            // put the collection back in the dictionary
-            self.collections[bucket] <-! collection
+            let token <- self.collections[bucket]?.withdraw(withdrawID: withdrawID)!
             
             return <-token
         }
@@ -76,14 +69,7 @@ pub contract TopShotShardedCollection {
             // find the bucket this corresponds to
             let bucket = token.id % UInt64(self.numBuckets)
 
-            // remove the collection from the dictionary
-            let collection <- self.collections.remove(key: bucket)!
-
-            // deposit the nft
-            collection.deposit(token: <-token)
-
-            // store the collection back in the dictionary
-            self.collections[bucket] <-! collection
+            self.collections[bucket]?.deposit(token: <-token)
         }
 
         // batchDeposit takes a Collection object as an argument

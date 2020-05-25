@@ -2,6 +2,7 @@ package templates
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/onflow/flow-go-sdk"
 )
@@ -44,4 +45,39 @@ func GenerateInspectCollectionScript(nftAddr, tokenAddr, ownerAddr flow.Address,
 	`
 
 	return []byte(fmt.Sprintf(template, nftAddr, tokenAddr, ownerAddr, expectedID, expectedID, expectedID))
+}
+
+// GenerateInspectCollectionIDsScript creates a script that checks
+// a collection for a certain ID
+func GenerateInspectCollectionIDsScript(nftAddr, tokenAddr, ownerAddr flow.Address, momentIDs []uint64) []byte {
+	template := `
+		import NonFungibleToken from 0x%s
+		import TopShot from 0x%s
+
+		pub fun main() {
+			let collectionRef = getAccount(0x%s).getCapability(/public/MomentCollection)!
+				.borrow<&{TopShot.MomentCollectionPublic}>()
+				?? panic("Could not get public moment collection reference")
+
+			let ids = collectionRef.getIDs()).
+
+			assert(
+                ids == [%s],
+                message: "IDs [%s] do not exist in the collection"
+            )
+		}
+	`
+
+	// Stringify moment IDs
+	momentIDList := ""
+	for _, momentID := range momentIDs {
+		id := strconv.Itoa(int(momentID))
+		momentIDList = momentIDList + `UInt64(` + id + `), `
+	}
+	// Remove comma and space from last entry
+	if idListLen := len(momentIDList); idListLen > 2 {
+		momentIDList = momentIDList[:len(momentIDList)-2]
+	}
+
+	return []byte(fmt.Sprintf(template, nftAddr, tokenAddr, ownerAddr, momentIDList, momentIDList))
 }
