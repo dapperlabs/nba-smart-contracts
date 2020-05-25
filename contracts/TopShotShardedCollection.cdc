@@ -40,6 +40,9 @@ pub contract TopShotShardedCollection {
 
         // withdraw removes an Moment from the collection and moves it to the caller
         pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT {
+            post {
+                result.id == withdrawID: "The ID of the withdrawn NFT is incorrect"
+            }
             // find the bucket it should be withdrawn from
             let bucket = withdrawID % self.numBuckets
 
@@ -111,6 +114,9 @@ pub contract TopShotShardedCollection {
         // borrowNFT Returns a borrowed reference to a Moment in the collection
         // so that the caller can read data and call methods from it
         pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
+            post {
+                result.id == id: "The ID of the reference is incorrect"
+            }
 
             let bucket = id % self.numBuckets
 
