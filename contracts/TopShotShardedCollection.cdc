@@ -122,14 +122,5 @@ pub contract TopShotShardedCollection {
     pub fun createEmptyCollection(numBuckets: UInt64): @ShardedCollection {
         return <-create ShardedCollection(numBuckets: numBuckets)
     }
-
-    init() {
-
-        // Put a new Collection in storage
-        self.account.save<@ShardedCollection>(<- create ShardedCollection(numBuckets: 32), to: /storage/ShardedMomentCollection)
-
-        // create a public capability for the collection
-        self.account.link<&{TopShot.MomentCollectionPublic}>(/public/ShardedMomentCollection, target: /storage/ShardedMomentCollection)
-    }
 }
  
