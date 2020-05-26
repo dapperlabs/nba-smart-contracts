@@ -561,7 +561,6 @@ pub contract TopShot: NonFungibleToken {
         }
 
         // deposit takes a Moment and adds it to the collections dictionary
-        // and adds the ID to the id array
         pub fun deposit(token: @NonFungibleToken.NFT) {
             let token <- token as! @TopShot.NFT
 
@@ -569,7 +568,9 @@ pub contract TopShot: NonFungibleToken {
             // add the new token to the dictionary
             let oldToken <- self.ownedNFTs[id] <- token
 
-            emit Deposit(id: id, to: self.owner?.address)
+            if self.owner?.address != nil {
+                emit Deposit(id: id, to: self.owner?.address)
+            }
 
             destroy oldToken
         }

@@ -38,7 +38,7 @@ func GenerateInspectCollectionScript(nftAddr, tokenAddr, ownerAddr flow.Address,
 				?? panic("Could not get public moment collection reference")
 
 			assert(
-                collectionRef.borrowNFT(id: UInt64(%d)).id == UInt64(%d),
+                collectionRef.borrowNFT(id: %d).id == UInt64(%d),
                 message: "ID %d does not exist in the collection"
             )
 		}
