@@ -92,10 +92,16 @@ pub contract TopShotShardedCollection {
         pub fun deposit(token: @NonFungibleToken.NFT) {
 
             // find the bucket this corresponds to
-            let bucket = token.id % UInt64(self.numBuckets)
+            let bucket = token.id % self.numBuckets
+
+            // remove the collection
+            let collection <- self.collections.remove(key: bucket)!
 
             // deposit the nft into the bucket
-            self.collections[bucket]?.deposit(token: <-token)
+            collection.deposit(token: <-token)
+
+            // put the collection back in storage
+            self.collections[bucket] <-! collection
         }
 
         // batchDeposit takes a Collection object as an argument
@@ -113,14 +119,14 @@ pub contract TopShotShardedCollection {
         // getIDs returns an array of the IDs that are in the collection
         pub fun getIDs(): [UInt64] {
 
-            var idArray: [UInt64] = []
-
+            var ids: [UInt64] = []
             // concatenate IDs in all the collections
             for key in self.collections.keys {
-                idArray = idArray.concat(self.collections[key]?.getIDs() ?? [])
+                for id in self.collections[key]?.getIDs() ?? [] {
+                    ids.append(id)
+                }
             }
-
-            return idArray
+            return ids
         }
 
         // borrowNFT Returns a borrowed reference to a Moment in the collection
@@ -133,11 +139,8 @@ pub contract TopShotShardedCollection {
             // get the bucket of the nft to be borrowed
             let bucket = id % self.numBuckets
 
-            // borrow the reference
-            let ref = self.collections[bucket]?.borrowNFT(id: id)!
-
             // find NFT in the collections and borrow a reference
-            return ref
+            return self.collections[bucket]?.borrowNFT(id: id)!
         }
 
         // If a transaction destroys the Collection object,

@@ -216,6 +216,7 @@ func TestMintNFTs(t *testing.T) {
 	})
 
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, topshotAddr, 1))
+	ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionIDsScript(nftAddr, topshotAddr, topshotAddr, []uint64{1, 2, 3, 4, 5, 6}))
 
 	// retire a play
 	t.Run("Should be able to retire a Play which stops minting", func(t *testing.T) {

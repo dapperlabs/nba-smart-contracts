@@ -59,12 +59,22 @@ func GenerateInspectCollectionIDsScript(nftAddr, tokenAddr, ownerAddr flow.Addre
 				.borrow<&{TopShot.MomentCollectionPublic}>()
 				?? panic("Could not get public moment collection reference")
 
-			let ids = collectionRef.getIDs()).
+			let ids = collectionRef.getIDs()
+
+			let expectedIDs = [%s]
 
 			assert(
-                ids == [%s],
-                message: "IDs [%s] do not exist in the collection"
-            )
+				ids.length == expectedIDs.length,
+				message: "ID array is not the expected length"
+			)
+
+			var i = 0
+			for element in ids {
+				if element != expectedIDs[i] {
+					panic("Unexpected ID in the array")
+				}
+				i = i + 1
+			}
 		}
 	`
 
@@ -79,5 +89,5 @@ func GenerateInspectCollectionIDsScript(nftAddr, tokenAddr, ownerAddr flow.Addre
 		momentIDList = momentIDList[:len(momentIDList)-2]
 	}
 
-	return []byte(fmt.Sprintf(template, nftAddr, tokenAddr, ownerAddr, momentIDList, momentIDList))
+	return []byte(fmt.Sprintf(template, nftAddr, tokenAddr, ownerAddr, momentIDList))
 }
