@@ -212,16 +212,24 @@ func GenerateLockSetScript(tokenCodeAddr flow.Address, setID int) []byte {
 }
 
 // GenerateFulfillPackScript creates a script that fulfulls a pack
-func GenerateFulfillPackScript(tokenCodeAddr flow.Address, destinationAccount flow.Address, momentIDs []uint64) []byte {
+func GenerateFulfillPackScript(tokenCodeAddr, shardedAddr, destinationAccount flow.Address, momentIDs []uint64) []byte {
 	template := `
 		import TopShot from 0x%s
+		import TopShotShardedCollection from 0x%s
 
 		transaction {
 			prepare(acct: AuthAccount) {
 				let recipient = getAccount(0x%s)
-				let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
+				let receiverRef = recipient.getCapability(/public/MomentCollection)!
+					.borrow<&{TopShot.MomentCollectionPublic}>()
+					?? panic("Could not borrow reference to receiver's collection")
+
 				let momentIDs = [%s]
-				let collection <- acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)!.batchWithdraw(ids: momentIDs)
+
+				let collection <- acct.borrow<&TopShotShardedCollection.ShardedCollection>
+					(from: /storage/ShardedMomentCollection)!
+					.batchWithdraw(ids: momentIDs)
+					
 				receiverRef.batchDeposit(tokens: <-collection)
 			}
 		}`
@@ -237,7 +245,7 @@ func GenerateFulfillPackScript(tokenCodeAddr flow.Address, destinationAccount fl
 		momentIDList = momentIDList[:len(momentIDList)-2]
 	}
 
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), destinationAccount.String(), momentIDList))
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), shardedAddr.String(), destinationAccount.String(), momentIDList))
 }
 
 // GenerateTransferAdminScript generates a script to create and admin capability
