@@ -48,6 +48,30 @@ func NewEmulator() *emulator.Blockchain {
 	return b
 }
 
+// createSignAndSubmit creates a new transaction and submits it
+func createSignAndSubmit(
+	t *testing.T,
+	b *emulator.Blockchain,
+	template []byte,
+	signerAddresses []flow.Address,
+	signers []crypto.Signer,
+	shouldRevert bool,
+) {
+	tx := flow.NewTransaction().
+		SetScript(template).
+		SetGasLimit(99999).
+		SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
+		SetPayer(b.RootKey().Address).
+		AddAuthorizer(signerAddresses[1])
+
+	SignAndSubmit(
+		t, b, tx,
+		signerAddresses,
+		signers,
+		shouldRevert,
+	)
+}
+
 // SignAndSubmit signs a transaction with an array of signers and adds their signatures to the transaction
 // Then submits the transaction to the emulator. If the private keys don't match up with the addresses,
 // the transaction will not succeed.

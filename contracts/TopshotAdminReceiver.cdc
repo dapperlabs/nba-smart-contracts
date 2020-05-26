@@ -9,6 +9,7 @@
  */
 
 import TopShot from 0x03
+import TopShotShardedCollection from 0x04
 
 pub contract TopshotAdminReceiver {
 
@@ -17,11 +18,12 @@ pub contract TopshotAdminReceiver {
     }
     
     init() {
-            let collection <- TopShot.createEmptyCollection() as! @TopShot.Collection
+        if self.account.borrow<&TopShotShardedCollection.ShardedCollection>(from: /storage/ShardedMomentCollection) == nil {
+            let collection <- TopShotShardedCollection.createEmptyCollection(numBuckets: 32)
             // Put a new Collection in storage
-            self.account.save(<-collection, to: /storage/MomentCollection)
+            self.account.save(<-collection, to: /storage/ShardedMomentCollection)
 
-            // create a public capability for the collection
-            self.account.link<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection, target: /storage/MomentCollection)
+            self.account.link<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection, target: /storage/ShardedMomentCollection)
+        }
     }
 }
