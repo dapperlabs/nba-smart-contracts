@@ -117,7 +117,7 @@ pub contract TopShotShardedCollection {
 
             // concatenate IDs in all the collections
             for key in self.collections.keys {
-                idArray.concat(self.collections[key]?.getIDs() ?? [])
+                idArray = idArray.concat(self.collections[key]?.getIDs() ?? [])
             }
 
             return idArray
