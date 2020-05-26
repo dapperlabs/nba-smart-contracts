@@ -45,18 +45,18 @@ func TestNFTDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
-	// Should be able to deploy the admin receiver contract
-	// as a new account with no keys.
-	adminReceiverCode := ReadFile(AdminReceiverFile)
-	_, err = b.CreateAccount(nil, adminReceiverCode)
+	shardedCollectionCode := ReadFile(ShardedCollectionFile)
+	_, err = b.CreateAccount(nil, shardedCollectionCode)
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
-	shardedCollectionCode := ReadFile(ShardedCollectionFile)
-	_, err = b.CreateAccount(nil, shardedCollectionCode)
+	// Should be able to deploy the admin receiver contract
+	// as a new account with no keys.
+	adminReceiverCode := ReadFile(AdminReceiverFile)
+	_, err = b.CreateAccount(nil, adminReceiverCode)
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -315,6 +315,10 @@ func TestTransferAdmin(t *testing.T) {
 	topshotCode := ReadFile(TopShotContractFile)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
+
+	shardedCollectionCode := ReadFile(ShardedCollectionFile)
+	_, _ = b.CreateAccount(nil, shardedCollectionCode)
+	_, _ = b.CommitBlock()
 
 	// Should be able to deploy a contract as a new account with no keys.
 	adminReceiverCode := ReadFile(AdminReceiverFile)

@@ -56,7 +56,7 @@ pub contract TopShotShardedCollection {
             var i: UInt64 = 0
             while i < numBuckets {
 
-                self.collections[i] <-! TopShot.createEmptyCollection()
+                self.collections[i] <-! TopShot.createEmptyCollection() as! @TopShot.Collection
 
                 i = i + UInt64(1)
             }

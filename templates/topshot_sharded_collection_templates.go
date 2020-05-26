@@ -25,9 +25,10 @@ func GenerateSetupShardedCollectionScript(nftAddr, tokenCodeAddr flow.Address, n
 				// create a public capability for the collection
 				if acct.link<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection, target: /storage/ShardedMomentCollection) == nil {
 					acct.unlink(/public/MomentCollection)
-
-					acct.link<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection, target: /storage/ShardedMomentCollection)
 				}
+
+				acct.link<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection, target: /storage/ShardedMomentCollection)
+				
 			} else {
 				panic("Sharded Collection already exists!")
 			}
