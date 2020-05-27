@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -92,7 +93,11 @@ func GenerateInspectCollectionIDsScript(nftAddr, tokenAddr, ownerAddr flow.Addre
 	return []byte(fmt.Sprintf(template, nftAddr, tokenAddr, ownerAddr, momentIDList))
 }
 
-func GenerateChallengeCompletedScript(userAddress flow.Address, setIDs []uint32, playIDs []uint32) []byte {
+func GenerateChallengeCompletedScript(userAddress flow.Address, setIDs []uint32, playIDs []uint32) ([]byte, error) {
+	if len(setIDs) != len(playIDs) {
+		return nil, errors.New("set and play ID slices must be of same length")
+	}
+
 	template := `
 fun main(): Int {
 	let acct = getAccount(0x%s)
@@ -119,7 +124,7 @@ fun main(): Int {
 	}
 	return numMatchingMoments
 }`
-	return []byte(fmt.Sprintf(template, userAddress, stringifyUint32Slice(setIDs), stringifyUint32Slice(playIDs)))
+	return []byte(fmt.Sprintf(template, userAddress, stringifyUint32Slice(setIDs), stringifyUint32Slice(playIDs))), nil
 }
 
 func stringifyUint32Slice(ints []uint32) string {
