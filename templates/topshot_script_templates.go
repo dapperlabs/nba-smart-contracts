@@ -92,7 +92,7 @@ func GenerateInspectCollectionIDsScript(nftAddr, tokenAddr, ownerAddr flow.Addre
 	return []byte(fmt.Sprintf(template, nftAddr, tokenAddr, ownerAddr, momentIDList))
 }
 
-func GenerateChallengeCompletedScript(userAddress flow.Address, setIDs []int, playIDs []int) []byte {
+func GenerateChallengeCompletedScript(userAddress flow.Address, setIDs []uint32, playIDs []uint32) []byte {
 	template := `
 fun main(): Int {
 	let acct = getAccount(0x%s)
@@ -101,8 +101,8 @@ fun main(): Int {
 
 	var numMatchingMoments = 0
 
-	let setIDs = [1, 2, 3]
-	let playIDs = [1, 2, 3]
+	let setIDs = [%s]
+	let playIDs = [%s]
 
 	var i = 0
 	while i < setIDs.length {
@@ -119,5 +119,18 @@ fun main(): Int {
 	}
 	return numMatchingMoments
 }`
-	return []byte(fmt.Sprintf(template, userAddress))
+	return []byte(fmt.Sprintf(template, userAddress, stringifyUint32Slice(setIDs), stringifyUint32Slice(playIDs)))
+}
+
+func stringifyUint32Slice(ints []uint32) string {
+	intArrayStr := ""
+	for _, i := range ints {
+		intStr := strconv.Itoa(int(i))
+		intArrayStr = intArrayStr + `UInt32(` + intStr + `), `
+	}
+	// Remove comma and space from last entry
+	if arrayLen := len(intArrayStr); arrayLen > 2 {
+		intArrayStr = intArrayStr[:len(intArrayStr)-2]
+	}
+	return intArrayStr
 }
