@@ -91,3 +91,33 @@ func GenerateInspectCollectionIDsScript(nftAddr, tokenAddr, ownerAddr flow.Addre
 
 	return []byte(fmt.Sprintf(template, nftAddr, tokenAddr, ownerAddr, momentIDList))
 }
+
+func GenerateChallengeCompletedScript(userAddress flow.Address, setIDs []int, playIDs []int) []byte {
+	template := `
+fun main(): Int {
+	let acct = getAccount(0x%s)
+	let collectionRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
+	let momentIDs = collectionRef.getIDs()
+
+	var numMatchingMoments = 0
+
+	let setIDs = [1, 2, 3]
+	let playIDs = [1, 2, 3]
+
+	var i = 0
+	while i < setIDs.length {
+		for momentID in momentIDs {
+			let moment = collectionRef.borrowNFT(id: momentID)
+			let setID = moment.data.setID
+			let playID = moment.data.playID
+			if setID == setIDs[i] && playID == playIDs[i] {
+				numMatchingMoments = numMatchingMoments + 1
+				break
+			}
+		}
+		i = i + 1
+	}
+	return numMatchingMoments
+}`
+	return []byte(fmt.Sprintf(template, userAddress))
+}
