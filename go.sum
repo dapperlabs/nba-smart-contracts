@@ -453,6 +453,8 @@ github.com/onflow/flow-nft v0.0.0-20200521005250-1b481419b697 h1:cy63DcrWCLhM84x
 github.com/onflow/flow-nft v0.0.0-20200521005250-1b481419b697/go.mod h1:UfjPuptn+50G4DlBiwb+RnHxSFALTa1vpLzPeKC6v+8=
 github.com/onflow/flow-nft v0.0.0-20200521012636-3c3797b7d396 h1:0KhAKDfqc+IECbPc3y1SwF+7mFiznAvS1rOeG10ibVw=
 github.com/onflow/flow-nft v0.0.0-20200521012636-3c3797b7d396/go.mod h1:UfjPuptn+50G4DlBiwb+RnHxSFALTa1vpLzPeKC6v+8=
+github.com/onflow/flow-nft v0.0.0-20200528194639-18c29d3c8e3c h1:T5zgQAIi8dzHVSKl/c+iII5enqVE24LcnrByY0mifV4=
+github.com/onflow/flow-nft v0.0.0-20200528194639-18c29d3c8e3c/go.mod h1:Kj3iVWzbxYbFLO1CGKPZ8oPlW6qsoOuUSpyvFPPiyQc=
 github.com/onflow/flow/protobuf/go/flow v0.1.3/go.mod h1:kRugbzZjwQqvevJhrnnCFMJZNmoSJmxlKt6hTGXZojM=
 github.com/onflow/flow/protobuf/go/flow v0.1.4/go.mod h1:kRugbzZjwQqvevJhrnnCFMJZNmoSJmxlKt6hTGXZojM=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
