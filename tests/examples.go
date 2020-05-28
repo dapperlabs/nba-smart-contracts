@@ -1,4 +1,4 @@
-package topshottests
+package tests
 
 import (
 	"io/ioutil"
@@ -58,8 +58,8 @@ func createSignAndSubmit(
 	tx := flow.NewTransaction().
 		SetScript(template).
 		SetGasLimit(99999).
-		SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
-		SetPayer(b.RootKey().Address).
+		SetProposalKey(b.ServiceKey().Address, b.ServiceKey().ID, b.ServiceKey().SequenceNumber).
+		SetPayer(b.ServiceKey().Address).
 		AddAuthorizer(signerAddresses[1])
 
 	SignAndSubmit(
