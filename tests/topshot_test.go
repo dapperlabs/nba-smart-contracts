@@ -3,8 +3,8 @@ package topshottests
 import (
 	"testing"
 
-	"github.com/onflow/nba-smart-contracts/data"
-	"github.com/onflow/nba-smart-contracts/templates"
+	"github.com/dapperlabs/nba-smart-contracts/data"
+	"github.com/dapperlabs/nba-smart-contracts/templates"
 
 	"github.com/onflow/flow-go-sdk/crypto"
 	"github.com/onflow/flow-go-sdk/test"

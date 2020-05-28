@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/onflow/nba-smart-contracts/data"
+	"github.com/dapperlabs/nba-smart-contracts/data"
 
 	"github.com/onflow/flow-go-sdk"
 )
