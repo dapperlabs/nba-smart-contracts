@@ -297,6 +297,13 @@ func TestMintNFTs(t *testing.T) {
 		)
 	})
 
+	// TODO
+	t.Run("Should be able check how many of a user's moments contribute towards a set Challenge", func(t *testing.T) {
+		challengeScript, err := templates.GenerateChallengeCompletedScript(topshotAddr, joshAddress, []uint32{}, []uint32{})
+		assert.NoError(t, err)
+		ExecuteScriptAndCheck(t, b, challengeScript)
+	})
+
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "currentSeries", "UInt32", 1))
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "nextPlayID", "UInt32", 5))
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "nextSetID", "UInt32", 2))

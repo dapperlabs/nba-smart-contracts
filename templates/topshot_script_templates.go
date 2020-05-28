@@ -93,38 +93,43 @@ func GenerateInspectCollectionIDsScript(nftAddr, tokenAddr, ownerAddr flow.Addre
 	return []byte(fmt.Sprintf(template, nftAddr, tokenAddr, ownerAddr, momentIDList))
 }
 
-func GenerateChallengeCompletedScript(userAddress flow.Address, setIDs []uint32, playIDs []uint32) ([]byte, error) {
+func GenerateChallengeCompletedScript(tokenAddr, userAddress flow.Address, setIDs []uint32, playIDs []uint32) ([]byte, error) {
 	if len(setIDs) != len(playIDs) {
-		return nil, errors.New("set and play ID slices must be of same length")
+		return nil, errors.New("set and play ID arrays have mismatched lengths")
 	}
 
 	template := `
-fun main(): Int {
-	let acct = getAccount(0x%s)
-	let collectionRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
-	let momentIDs = collectionRef.getIDs()
-
-	var numMatchingMoments = 0
-
-	let setIDs = [%s]
-	let playIDs = [%s]
-
-	var i = 0
-	while i < setIDs.length {
-		for momentID in momentIDs {
-			let moment = collectionRef.borrowNFT(id: momentID)
-			let setID = moment.data.setID
-			let playID = moment.data.playID
-			if setID == setIDs[i] && playID == playIDs[i] {
-				numMatchingMoments = numMatchingMoments + 1
-				break
+		import TopShot from 0x%s
+		
+		fun main(): Int {
+			let setIDs = [%s]
+			let playIDs = [%s]
+			assert(
+				setIDs.length == playIDs.length,
+				message: "set and play ID arrays have mismatched lengths"
+			)
+		
+			let collectionRef = getAccount(0x%s).getCapability(/public/MomentCollection)!
+						.borrow<&{TopShot.MomentCollectionPublic}>()
+						?? panic("Could not get public moment collection reference")
+			let momentIDs = collectionRef.getIDs()
+		
+			var numMatchingMoments = 0
+			var i = 0
+			while i < setIDs.length {
+				for momentID in momentIDs {
+					let moment = collectionRef.borrowNFT(id: momentID)
+					let setID = moment.data.setID
+					let playID = moment.data.playID
+					if setID == setIDs[i] && playID == playIDs[i] {
+						numMatchingMoments = numMatchingMoments + 1
+						break
+					}
+				}
+				i = i + 1
 			}
-		}
-		i = i + 1
-	}
-	return numMatchingMoments
 }`
-	return []byte(fmt.Sprintf(template, userAddress, stringifyUint32Slice(setIDs), stringifyUint32Slice(playIDs))), nil
+	return []byte(fmt.Sprintf(template, tokenAddr, stringifyUint32Slice(setIDs), stringifyUint32Slice(playIDs), userAddress)), nil
 }
 
 func stringifyUint32Slice(ints []uint32) string {
