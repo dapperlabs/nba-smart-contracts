@@ -730,26 +730,26 @@ pub contract TopShot: NonFungibleToken {
     // TopShot initialization function
     // -----------------------------------------------------------------------
     //
-    init() {
-        // initialize the fields
-        self.currentSeries = 0
-        self.playDatas = {}
-        self.setDatas = {}
-        self.sets <- {}
-        self.nextPlayID = 1
-        self.nextSetID = 1
-        self.totalSupply = 0
+    // init() {
+    //     // initialize the fields
+    //     self.currentSeries = 0
+    //     self.playDatas = {}
+    //     self.setDatas = {}
+    //     self.sets <- {}
+    //     self.nextPlayID = 1
+    //     self.nextSetID = 1
+    //     self.totalSupply = 0
 
-        // Put a new Collection in storage
-        self.account.save<@Collection>(<- create Collection(), to: /storage/MomentCollection)
+    //     // Put a new Collection in storage
+    //     self.account.save<@Collection>(<- create Collection(), to: /storage/MomentCollection)
 
-        // create a public capability for the collection
-        self.account.link<&{MomentCollectionPublic}>(/public/MomentCollection, target: /storage/MomentCollection)
+    //     // create a public capability for the collection
+    //     self.account.link<&{MomentCollectionPublic}>(/public/MomentCollection, target: /storage/MomentCollection)
 
-        // Put the Minter in storage
-        self.account.save<@Admin>(<- create Admin(), to: /storage/TopShotAdmin)
+    //     // Put the Minter in storage
+    //     self.account.save<@Admin>(<- create Admin(), to: /storage/TopShotAdmin)
 
-        emit ContractInitialized()
-    }
+    //     emit ContractInitialized()
+    // }
 }
  

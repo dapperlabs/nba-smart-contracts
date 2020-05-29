@@ -22,9 +22,6 @@ func uint32ToCadenceArr(nums []uint32) []byte {
 // GenerateMintPlayScript creates a new play data struct
 // and initializes it with metadata
 func GenerateMintPlayScript(tokenCodeAddr flow.Address, metadata data.PlayMetadata) []byte {
-	metadata = data.PlayMetadata{
-		FullName: "testcase testlofsky",
-	}
 	md, err := json.Marshal(metadata)
 	if err != nil {
 		return nil
