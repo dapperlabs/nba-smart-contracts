@@ -1,13 +1,11 @@
-package topshottests
+package tests
 
 import (
 	"io/ioutil"
 	"net/http"
 	"testing"
 
-	"github.com/onflow/flow-ft/fttest"
 	"github.com/onflow/flow-go-sdk/crypto"
-	"github.com/onflow/flow-nft/nfttests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -60,8 +58,8 @@ func createSignAndSubmit(
 	tx := flow.NewTransaction().
 		SetScript(template).
 		SetGasLimit(99999).
-		SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
-		SetPayer(b.RootKey().Address).
+		SetProposalKey(b.ServiceKey().Address, b.ServiceKey().ID, b.ServiceKey().SequenceNumber).
+		SetPayer(b.ServiceKey().Address).
 		AddAuthorizer(signerAddresses[1])
 
 	SignAndSubmit(
@@ -137,50 +135,5 @@ func ExecuteScriptAndCheck(t *testing.T, b *emulator.Blockchain, script []byte) 
 	require.NoError(t, err)
 	if !assert.True(t, result.Succeeded()) {
 		t.Log(result.Error.Error())
-	}
-}
-
-// setupUsersTokens sets up two accounts with an empty Vault
-// and a NFT collection
-func setupUsersTokens(
-	t *testing.T,
-	b *emulator.Blockchain,
-	ftAddr flow.Address,
-	flowAddr flow.Address,
-	nftAddr flow.Address,
-	topshotAddr flow.Address,
-	signerAddresses []flow.Address,
-	signerKeys []*flow.AccountKey,
-	signers []crypto.Signer,
-) {
-	// add array of signers to transaction
-	for i := 0; i < len(signerAddresses); i++ {
-		tx := flow.NewTransaction().
-			SetScript(fttest.GenerateCreateTokenScript(ftAddr, flowAddr)).
-			SetGasLimit(20).
-			SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
-			SetPayer(b.RootKey().Address).
-			AddAuthorizer(signerAddresses[i])
-
-		SignAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.RootKey().Address, signerAddresses[i]},
-			[]crypto.Signer{b.RootKey().Signer(), signers[i]},
-			false,
-		)
-
-		tx = flow.NewTransaction().
-			SetScript(nfttests.GenerateCreateCollectionScript(nftAddr, "TopShot", topshotAddr, "MomentCollection")).
-			SetGasLimit(20).
-			SetProposalKey(b.RootKey().Address, b.RootKey().ID, b.RootKey().SequenceNumber).
-			SetPayer(b.RootKey().Address).
-			AddAuthorizer(signerAddresses[i])
-
-		SignAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.RootKey().Address, signerAddresses[i]},
-			[]crypto.Signer{b.RootKey().Signer(), signers[i]},
-			false,
-		)
 	}
 }
