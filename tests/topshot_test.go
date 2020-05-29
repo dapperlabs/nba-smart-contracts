@@ -132,6 +132,9 @@ func TestMintNFTs(t *testing.T) {
 		)
 	})
 
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnAllPlaysScript(topshotAddr))
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnPlayMetadataScript(topshotAddr, 1, "FullName", "Lebron"))
+
 	// create a new Collection
 	t.Run("Should be able to create a new Set", func(t *testing.T) {
 
@@ -142,6 +145,10 @@ func TestMintNFTs(t *testing.T) {
 			false,
 		)
 	})
+
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetNameScript(topshotAddr, 1, "Genesis"))
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetIDbyNameScript(topshotAddr, "Genesis", 1))
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetSeriesScript(topshotAddr, 1, 0))
 
 	t.Run("Should be able to add a play to a Set", func(t *testing.T) {
 
@@ -163,6 +170,10 @@ func TestMintNFTs(t *testing.T) {
 			false,
 		)
 	})
+
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnPlaysInSetScript(topshotAddr, 1, []int{1, 2, 3}))
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsEditionRetiredScript(topshotAddr, 1, 1, "false"))
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsSetLockedScript(topshotAddr, 1, "false"))
 
 	// create a new sharded collection
 	t.Run("Should be able to create new sharded moment collection and store it", func(t *testing.T) {
@@ -202,6 +213,8 @@ func TestMintNFTs(t *testing.T) {
 			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
 			true,
 		)
+
+		ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsSetLockedScript(topshotAddr, 1, "true"))
 	})
 
 	// create a new Collection
@@ -214,6 +227,9 @@ func TestMintNFTs(t *testing.T) {
 			false,
 		)
 	})
+
+	ExecuteScriptAndCheck(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 1, 1, 1))
+	ExecuteScriptAndCheck(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 1, 3, 5))
 
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, topshotAddr, 1))
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionIDsScript(nftAddr, topshotAddr, topshotAddr, []uint64{1, 2, 3, 4, 5, 6}))
@@ -234,6 +250,8 @@ func TestMintNFTs(t *testing.T) {
 			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
 			true,
 		)
+
+		ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsEditionRetiredScript(topshotAddr, 1, 1, "true"))
 	})
 
 	// retire all plays

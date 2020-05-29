@@ -13,6 +13,7 @@ import (
 
 const (
 	topshotFile           = "./TopShot.cdc"
+	topshotV1File         = "./TopShotv1.cdc"
 	marketFile            = "./MarketTopShot.cdc"
 	shardedCollectionFile = "./TopShotShardedCollection.cdc"
 	adminReceiverFile     = "./TopShotAdminReceiver.cdc"
@@ -23,6 +24,16 @@ const (
 func GenerateTopShotContract(nftAddr flow.Address) []byte {
 
 	topShotCode := fttest.ReadFile(topshotFile)
+	codeWithNFTAddr := strings.ReplaceAll(string(topShotCode), "0x02", nftAddr.String())
+
+	return []byte(codeWithNFTAddr)
+}
+
+// GenerateTopShotV1Contract returns a copy
+// of the original topshot contract with the import addresses updated
+func GenerateTopShotV1Contract(nftAddr flow.Address) []byte {
+
+	topShotCode := fttest.ReadFile(topshotV1File)
 	codeWithNFTAddr := strings.ReplaceAll(string(topShotCode), "0x02", nftAddr.String())
 
 	return []byte(codeWithNFTAddr)

@@ -651,105 +651,30 @@ pub contract TopShot: NonFungibleToken {
         return TopShot.playDatas[playID]!.metadata[field]
     }
 
-    // getSetSeries returns the series that the specified set
-    //              is associated with.
-    // 
-    // Parameters: setID: The id of the set that is being searched
-    //
-    // Returns: The series that the set belongs to
-    pub fun getSetSeries(setID: UInt32): UInt32 {
-        return TopShot.setDatas[setID]?.series!
-    }
-
-    // getPlaysInSet returns the list of play IDs that are in the set
-    // 
-    // Parameters: setID: The id of the set that is being searched
-    //
-    // Returns: An array of play IDs
-    pub fun getPlaysInSet(setID: UInt32): [UInt32]? {
-        return TopShot.sets[setID]?.plays
-    }
-
-    // isEditionRetired returns a boolean that indicates if a set/play combo
-    //                  (otherwise known as an edition) is retired.
-    //                  If an edition is retired, it still remains in the set,
-    //                  but moments can no longer be minted from it.
-    // 
-    // Parameters: setID: The id of the set that is being searched
-    //             playID: The id of the play that is being searched
-    //
-    // Returns: Boolean indicating if the edition is retired or not
-    pub fun isEditionRetired(setID: UInt32, playID: UInt32): Bool {
-        let setToRead <- TopShot.sets.remove(key: setID)!
-
-        let retired = setToRead.retired[playID]!
-
-        TopShot.sets[setID] <-! setToRead
-
-        return retired
-    }
-
-    // isSetLocked returns a boolean that indicates if a set
-    //             is locked. If an set is locked, 
-    //             new plays can no longer be added to it,
-    //             but moments can still be minted from plays
-    //             that are currently in it.
-    // 
-    // Parameters: setID: The id of the set that is being searched
-    //
-    // Returns: Boolean indicating if the edition is retired or not
-    pub fun isSetLocked(setID: UInt32): Bool {
-        let setToRead <- TopShot.sets.remove(key: setID)!
-
-        let locked = setToRead.locked
-
-        TopShot.sets[setID] <-! setToRead
-
-        return locked
-    }
-
-    // getNumMomentsInEdition return the number of moments that have been 
-    //                        minted from a certain edition.
-    //
-    // Parameters: setID: The id of the set that is being searched
-    //             playID: The id of the play that is being searched
-    //
-    // Returns: The total number of moments 
-    //          that have been minted from an edition
-    pub fun getNumMomentsInEdition(setID: UInt32, playID: UInt32): UInt32 {
-        let setToRead <- TopShot.sets.remove(key: setID)!
-
-        let amount = setToRead.numberMintedPerPlay[playID]!
-
-        TopShot.sets[setID] <-! setToRead
-
-        return amount
-    }
-
     // -----------------------------------------------------------------------
     // TopShot initialization function
     // -----------------------------------------------------------------------
     //
-    // init() {
-    //     // initialize the fields
-    //     self.currentSeries = 0
-    //     self.playDatas = {}
-    //     self.setDatas = {}
-    //     self.sets <- {}
-    //     self.nextPlayID = 1
-    //     self.nextSetID = 1
-    //     self.totalSupply = 0
+    init() {
+        // initialize the fields
+        self.currentSeries = 0
+        self.playDatas = {}
+        self.setDatas = {}
+        self.sets <- {}
+        self.nextPlayID = 1
+        self.nextSetID = 1
+        self.totalSupply = 0
 
-    //     // Put a new Collection in storage
-    //     self.account.save<@Collection>(<- create Collection(), to: /storage/MomentCollection)
+        // Put a new Collection in storage
+        self.account.save<@Collection>(<- create Collection(), to: /storage/MomentCollection)
 
-    //     // create a public capability for the collection
-    //     self.account.link<&{MomentCollectionPublic}>(/public/MomentCollection, target: /storage/MomentCollection)
+        // create a public capability for the collection
+        self.account.link<&{MomentCollectionPublic}>(/public/MomentCollection, target: /storage/MomentCollection)
 
-    //     // Put the Minter in storage
-    //     self.account.save<@Admin>(<- create Admin(), to: /storage/TopShotAdmin)
+        // Put the Minter in storage
+        self.account.save<@Admin>(<- create Admin(), to: /storage/TopShotAdmin)
 
-    //     emit ContractInitialized()
-    // }
+        emit ContractInitialized()
+    }
 }
  

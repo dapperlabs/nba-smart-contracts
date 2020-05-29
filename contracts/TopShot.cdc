@@ -97,10 +97,10 @@ pub contract TopShot: NonFungibleToken {
     pub var currentSeries: UInt32
 
     // variable size dictionary of Play structs
-    pub var playDatas: {UInt32: Play}
+    access(self) var playDatas: {UInt32: Play}
 
     // variable size dictionary of SetData structs
-    pub var setDatas: {UInt32: SetData}
+    access(self) var setDatas: {UInt32: SetData}
 
     // variable size dictionary of Set resources
     access(self) var sets: @{UInt32: Set}
@@ -629,6 +629,13 @@ pub contract TopShot: NonFungibleToken {
         return <-create TopShot.Collection()
     }
 
+    // getAllPlays returns all the plays in topshot
+    //
+    // Returns: An array of all the plays that have been created
+    pub fun getAllPlays(): [TopShot.Play] {
+        return TopShot.playDatas.values
+    }
+
     // getPlayMetaData returns all the metadata associated with a specific play
     // 
     // Parameters: playID: The id of the play that is being searched
@@ -648,7 +655,21 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: The metadata field as a String Optional
     pub fun getPlayMetaDataByField(playID: UInt32, field: String): String? {
-        return TopShot.playDatas[playID]!.metadata[field]
+        if let play = TopShot.playDatas[playID] {
+            return play.metadata[field]
+        } else {
+            return nil
+        }
+    }
+
+    // getSetName returns the name that the specified set
+    //            is associated with.
+    // 
+    // Parameters: setID: The id of the set that is being searched
+    //
+    // Returns: The name of the set
+    pub fun getSetName(setID: UInt32): String? {
+        return TopShot.setDatas[setID]?.name
     }
 
     // getSetSeries returns the series that the specified set
@@ -657,8 +678,28 @@ pub contract TopShot: NonFungibleToken {
     // Parameters: setID: The id of the set that is being searched
     //
     // Returns: The series that the set belongs to
-    pub fun getSetSeries(setID: UInt32): UInt32 {
-        return TopShot.setDatas[setID]?.series!
+    pub fun getSetSeries(setID: UInt32): UInt32? {
+        return TopShot.setDatas[setID]?.series
+    }
+
+    // getSetIDbyName returns the ID that the specified set name
+    //                is associated with.
+    // 
+    // Parameters: setID: The id of the set that is being searched
+    //
+    // Returns: The ID of the set if it exists, or nil if not
+    pub fun getSetIDbyName(setName: String): UInt32? {
+
+        // iterate through all the setDatas and search for the name
+        for setData in TopShot.setDatas.values {
+            if setName == setData.name {
+                // if the name is found, return the ID
+                return setData.setID
+            }
+        }
+
+        // If the name isn't found, return nil
+        return nil
     }
 
     // getPlaysInSet returns the list of play IDs that are in the set
@@ -679,14 +720,17 @@ pub contract TopShot: NonFungibleToken {
     //             playID: The id of the play that is being searched
     //
     // Returns: Boolean indicating if the edition is retired or not
-    pub fun isEditionRetired(setID: UInt32, playID: UInt32): Bool {
-        let setToRead <- TopShot.sets.remove(key: setID)!
+    pub fun isEditionRetired(setID: UInt32, playID: UInt32): Bool? {
+        if let setToRead <- TopShot.sets.remove(key: setID) {
 
-        let retired = setToRead.retired[playID]!
+            let retired = setToRead.retired[playID]
 
-        TopShot.sets[setID] <-! setToRead
+            TopShot.sets[setID] <-! setToRead
 
-        return retired
+            return retired
+        } else {
+            return nil
+        }
     }
 
     // isSetLocked returns a boolean that indicates if a set
@@ -698,14 +742,8 @@ pub contract TopShot: NonFungibleToken {
     // Parameters: setID: The id of the set that is being searched
     //
     // Returns: Boolean indicating if the edition is retired or not
-    pub fun isSetLocked(setID: UInt32): Bool {
-        let setToRead <- TopShot.sets.remove(key: setID)!
-
-        let locked = setToRead.locked
-
-        TopShot.sets[setID] <-! setToRead
-
-        return locked
+    pub fun isSetLocked(setID: UInt32): Bool? {
+        return TopShot.sets[setID]?.locked
     }
 
     // getNumMomentsInEdition return the number of moments that have been 
@@ -716,14 +754,17 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: The total number of moments 
     //          that have been minted from an edition
-    pub fun getNumMomentsInEdition(setID: UInt32, playID: UInt32): UInt32 {
-        let setToRead <- TopShot.sets.remove(key: setID)!
+    pub fun getNumMomentsInEdition(setID: UInt32, playID: UInt32): UInt32? {
+        if let setToRead <- TopShot.sets.remove(key: setID) {
 
-        let amount = setToRead.numberMintedPerPlay[playID]!
+            let amount = setToRead.numberMintedPerPlay[playID]
 
-        TopShot.sets[setID] <-! setToRead
+            TopShot.sets[setID] <-! setToRead
 
-        return amount
+            return amount
+        } else {
+            return nil
+        }
     }
 
     // -----------------------------------------------------------------------
