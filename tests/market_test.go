@@ -3,6 +3,7 @@ package topshottests
 import (
 	"testing"
 
+	"github.com/dapperlabs/nba-smart-contracts/contracts"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +19,7 @@ func TestMarketDeployment(t *testing.T) {
 
 	// Should be able to deploy a contract as a new account with no keys.
 	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	_, err := b.CreateAccount(nil, nftCode)
+	nftAddr, err := b.CreateAccount(nil, nftCode)
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -26,7 +27,7 @@ func TestMarketDeployment(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should be able to deploy a contract as a new account with no keys.
-	topshotCode := ReadFile(TopShotContractFile)
+	topshotCode := contracts.GenerateTopShotContract(nftAddr)
 	_, err = b.CreateAccount(nil, topshotCode)
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())

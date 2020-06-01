@@ -278,3 +278,17 @@ func GenerateChangeSeriesScript(tokenCodeAddr flow.Address) []byte {
 		}`
 	return []byte(fmt.Sprintf(template, tokenCodeAddr.String()))
 }
+
+// GenerateInvalidChangePlaysScript tries to modify the playDatas dictionary
+// which should be invalid
+func GenerateInvalidChangePlaysScript(tokenCodeAddr flow.Address) []byte {
+	template := `
+		import TopShot from 0x%s
+		
+		transaction {
+			prepare(acct: AuthAccount) {
+				TopShot.playDatas[UInt32(1)] = nil
+			}
+		}`
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String()))
+}

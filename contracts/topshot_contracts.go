@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	topshotFile           = "./TopShot.cdc"
-	topshotV1File         = "./TopShotv1.cdc"
-	marketFile            = "./MarketTopShot.cdc"
-	shardedCollectionFile = "./TopShotShardedCollection.cdc"
-	adminReceiverFile     = "./TopShotAdminReceiver.cdc"
+	topshotFile           = "../contracts/TopShot.cdc"
+	topshotV1File         = "../contracts/TopShotv1.cdc"
+	marketFile            = "../contracts/MarketTopShot.cdc"
+	shardedCollectionFile = "../contracts/TopShotShardedCollection.cdc"
+	adminReceiverFile     = "../contracts/TopShotAdminReceiver.cdc"
 )
 
 // GenerateTopShotContract returns a copy
@@ -24,7 +24,7 @@ const (
 func GenerateTopShotContract(nftAddr flow.Address) []byte {
 
 	topShotCode := fttest.ReadFile(topshotFile)
-	codeWithNFTAddr := strings.ReplaceAll(string(topShotCode), "0x02", nftAddr.String())
+	codeWithNFTAddr := strings.ReplaceAll(string(topShotCode), "02", nftAddr.String())
 
 	return []byte(codeWithNFTAddr)
 }
@@ -34,7 +34,7 @@ func GenerateTopShotContract(nftAddr flow.Address) []byte {
 func GenerateTopShotV1Contract(nftAddr flow.Address) []byte {
 
 	topShotCode := fttest.ReadFile(topshotV1File)
-	codeWithNFTAddr := strings.ReplaceAll(string(topShotCode), "0x02", nftAddr.String())
+	codeWithNFTAddr := strings.ReplaceAll(string(topShotCode), "02", nftAddr.String())
 
 	return []byte(codeWithNFTAddr)
 }
@@ -43,9 +43,9 @@ func GenerateTopShotV1Contract(nftAddr flow.Address) []byte {
 // of the TopShotShardedCollectionContract with the import addresses updated
 func GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr flow.Address) []byte {
 
-	shardedCode := fttest.ReadFile(marketFile)
-	codeWithNFTAddr := strings.ReplaceAll(string(shardedCode), "0x02", nftAddr.String())
-	codeWithTopshotAddr := strings.ReplaceAll(string(codeWithNFTAddr), "0x03", topshotAddr.String())
+	shardedCode := fttest.ReadFile(shardedCollectionFile)
+	codeWithNFTAddr := strings.ReplaceAll(string(shardedCode), "02", nftAddr.String())
+	codeWithTopshotAddr := strings.ReplaceAll(string(codeWithNFTAddr), "03", topshotAddr.String())
 
 	return []byte(codeWithTopshotAddr)
 }
@@ -55,8 +55,8 @@ func GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr flow.Address)
 func GenerateTopshotAdminReceiverContract(topshotAddr, shardedAddr flow.Address) []byte {
 
 	adminReceiverCode := fttest.ReadFile(adminReceiverFile)
-	codeWithTopshotAddr := strings.ReplaceAll(string(adminReceiverCode), "0x03", topshotAddr.String())
-	codeWithShardedAddr := strings.ReplaceAll(string(codeWithTopshotAddr), "0x04", shardedAddr.String())
+	codeWithTopshotAddr := strings.ReplaceAll(string(adminReceiverCode), "03", topshotAddr.String())
+	codeWithShardedAddr := strings.ReplaceAll(string(codeWithTopshotAddr), "04", shardedAddr.String())
 
 	return []byte(codeWithShardedAddr)
 }
@@ -66,10 +66,10 @@ func GenerateTopshotAdminReceiverContract(topshotAddr, shardedAddr flow.Address)
 func GenerateTopShotMarketContract(fungibletokenAddr, flowtokenAddr, nftAddr, topshotAddr flow.Address) []byte {
 
 	marketCode := fttest.ReadFile(marketFile)
-	codeWithFunTAddr := strings.ReplaceAll(string(marketCode), "0x04", fungibletokenAddr.String())
-	codeWithFlowTAddr := strings.ReplaceAll(string(codeWithFunTAddr), "0x05", flowtokenAddr.String())
-	codeWithNFTAddr := strings.ReplaceAll(string(codeWithFlowTAddr), "0x02", nftAddr.String())
-	codeWithTopshotAddr := strings.ReplaceAll(string(codeWithNFTAddr), "0x03", topshotAddr.String())
+	codeWithFunTAddr := strings.ReplaceAll(string(marketCode), "04", fungibletokenAddr.String())
+	codeWithFlowTAddr := strings.ReplaceAll(string(codeWithFunTAddr), "05", flowtokenAddr.String())
+	codeWithNFTAddr := strings.ReplaceAll(string(codeWithFlowTAddr), "02", nftAddr.String())
+	codeWithTopshotAddr := strings.ReplaceAll(string(codeWithNFTAddr), "03", topshotAddr.String())
 
 	return []byte(codeWithTopshotAddr)
 }

@@ -655,6 +655,7 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: The metadata field as a String Optional
     pub fun getPlayMetaDataByField(playID: UInt32, field: String): String? {
+        // Don't force a revert if the playID or field is invalid
         if let play = TopShot.playDatas[playID] {
             return play.metadata[field]
         } else {
@@ -669,6 +670,7 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: The name of the set
     pub fun getSetName(setID: UInt32): String? {
+        // Don't force a revert if the setID is invalid
         return TopShot.setDatas[setID]?.name
     }
 
@@ -679,27 +681,34 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: The series that the set belongs to
     pub fun getSetSeries(setID: UInt32): UInt32? {
+        // Don't force a revert if the setID is invalid
         return TopShot.setDatas[setID]?.series
     }
 
-    // getSetIDbyName returns the ID that the specified set name
-    //                is associated with.
+    // getSetIDsByName returns the IDs that the specified set name
+    //                 is associated with.
     // 
-    // Parameters: setID: The id of the set that is being searched
+    // Parameters: setName: The name of the set that is being searched
     //
-    // Returns: The ID of the set if it exists, or nil if not
-    pub fun getSetIDbyName(setName: String): UInt32? {
+    // Returns: An array of the IDs of the set if it exists, or nil if doesn't
+    pub fun getSetIDsByName(setName: String): [UInt32]? {
+        var setIDs: [UInt32] = []
 
         // iterate through all the setDatas and search for the name
         for setData in TopShot.setDatas.values {
             if setName == setData.name {
                 // if the name is found, return the ID
-                return setData.setID
+                setIDs.append(setData.setID)
             }
         }
 
         // If the name isn't found, return nil
-        return nil
+        // Don't force a revert if the setName is invalid
+        if setIDs.length == 0 {
+            return nil
+        } else {
+            return setIDs
+        }
     }
 
     // getPlaysInSet returns the list of play IDs that are in the set
@@ -708,6 +717,7 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: An array of play IDs
     pub fun getPlaysInSet(setID: UInt32): [UInt32]? {
+        // Don't force a revert if the setID is invalid
         return TopShot.sets[setID]?.plays
     }
 
@@ -721,6 +731,8 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: Boolean indicating if the edition is retired or not
     pub fun isEditionRetired(setID: UInt32, playID: UInt32): Bool? {
+        // Don't force a revert if the set or play ID is invalid
+        // remove the set from the dictionary to ket its field
         if let setToRead <- TopShot.sets.remove(key: setID) {
 
             let retired = setToRead.retired[playID]
@@ -743,6 +755,7 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: Boolean indicating if the edition is retired or not
     pub fun isSetLocked(setID: UInt32): Bool? {
+        // Don't force a revert if the setID is invalid
         return TopShot.sets[setID]?.locked
     }
 
@@ -755,10 +768,14 @@ pub contract TopShot: NonFungibleToken {
     // Returns: The total number of moments 
     //          that have been minted from an edition
     pub fun getNumMomentsInEdition(setID: UInt32, playID: UInt32): UInt32? {
+        // Don't force a revert if the set or play ID is invalid
+        // remove the set from the dictionary to get its field
         if let setToRead <- TopShot.sets.remove(key: setID) {
 
+            // read the numMintedPerPlay
             let amount = setToRead.numberMintedPerPlay[playID]
 
+            // put the set back
             TopShot.sets[setID] <-! setToRead
 
             return amount

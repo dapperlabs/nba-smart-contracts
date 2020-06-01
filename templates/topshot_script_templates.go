@@ -146,20 +146,20 @@ func GenerateReturnSetNameScript(tokenAddr flow.Address, setID int, expectedName
 	return []byte(fmt.Sprintf(template, tokenAddr, setID, expectedName))
 }
 
-// GenerateReturnSetIDbyNameScript creates a script that returns the metadata of a play
-func GenerateReturnSetIDbyNameScript(tokenAddr flow.Address, setName string, expectedID int) []byte {
+// GenerateReturnSetIDsByNameScript creates a script that returns the metadata of a play
+func GenerateReturnSetIDsByNameScript(tokenAddr flow.Address, setName string, expectedID int) []byte {
 	template := `
 		import TopShot from 0x%s
 
-		pub fun main(): UInt32 {
-			let id = TopShot.getSetIDbyName(setName: "%s")!
+		pub fun main(): [UInt32] {
+			let ids = TopShot.getSetIDsByName(setName: "%s")!
 
 			assert (
-				id == UInt32(%d),
+				ids[0] == UInt32(%d),
 				message: "Set id is incorrect"
 			)
 
-			return id
+			return ids
 		}
 	`
 
