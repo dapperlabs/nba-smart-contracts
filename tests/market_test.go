@@ -1,4 +1,4 @@
-package topshottests
+package tests
 
 import (
 	"testing"

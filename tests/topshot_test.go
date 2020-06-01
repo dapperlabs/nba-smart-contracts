@@ -1,4 +1,4 @@
-package topshottests
+package tests
 
 import (
 	"testing"
@@ -36,15 +36,15 @@ func TestNFTDeployment(t *testing.T) {
 	// Should be able to deploy the topshot contract
 	// as a new account with no keys.
 	topshotCode := contracts.GenerateTopShotContract(nftAddr)
-	topShotAddr, err := b.CreateAccount(nil, topshotCode)
+	topshotAddr, err := b.CreateAccount(nil, topshotCode)
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
-	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr, topShotAddr)
-	shardedCollectionAddr, err := b.CreateAccount(nil, shardedCollectionCode)
+	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr)
+	shardedAddr, err := b.CreateAccount(nil, shardedCollectionCode)
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -53,7 +53,7 @@ func TestNFTDeployment(t *testing.T) {
 
 	// Should be able to deploy the admin receiver contract
 	// as a new account with no keys.
-	adminReceiverCode := contracts.GenerateTopshotAdminReceiverContract(topShotAddr, shardedCollectionAddr)
+	adminReceiverCode := contracts.GenerateTopshotAdminReceiverContract(topshotAddr, shardedAddr)
 	_, err = b.CreateAccount(nil, adminReceiverCode)
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
@@ -101,7 +101,7 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintPlayScript(topshotAddr, data.PlayMetadata{FullName: "Lebron"}),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -111,21 +111,21 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintPlayScript(topshotAddr, data.PlayMetadata{FullName: "Oladipo"}),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintPlayScript(topshotAddr, data.PlayMetadata{FullName: "Hayward"}),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintPlayScript(topshotAddr, data.PlayMetadata{FullName: "Durant"}),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
@@ -143,7 +143,7 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintSetScript(topshotAddr, "Genesis"),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
@@ -161,7 +161,7 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateAddPlayToSetScript(topshotAddr, 1, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -171,7 +171,7 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateAddPlaysToSetScript(topshotAddr, 1, []uint32{2, 3}),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 		ExecuteScriptAndCheck(t, b, templates.GenerateReturnPlaysInSetScript(topshotAddr, 1, []int{1, 2, 3}), false)
@@ -190,7 +190,7 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateSetupShardedCollectionScript(topshotAddr, shardedAddr, 32),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -200,7 +200,7 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintMomentScript(topshotAddr, topshotAddr, 1, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -210,14 +210,14 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateLockSetScript(topshotAddr, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateAddPlayToSetScript(topshotAddr, 1, 4),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			true,
 		)
 
@@ -229,7 +229,7 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateBatchMintMomentScript(topshotAddr, topshotAddr, 1, 3, 5),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
@@ -248,14 +248,14 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateRetirePlayScript(topshotAddr, 1, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintMomentScript(topshotAddr, topshotAddr, 1, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			true,
 		)
 
@@ -267,14 +267,14 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateRetireAllPlaysScript(topshotAddr, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintMomentScript(topshotAddr, topshotAddr, 1, 3),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			true,
 		)
 	})
@@ -284,7 +284,7 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateSetupAccountScript(nftAddr, topshotAddr),
-			[]flow.Address{b.RootKey().Address, joshAddress}, []crypto.Signer{b.RootKey().Signer(), joshSigner},
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
 			false,
 		)
 	})
@@ -293,7 +293,7 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateTransferMomentfromShardedCollectionScript(nftAddr, topshotAddr, shardedAddr, joshAddress, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, joshAddress, 1), false)
@@ -303,7 +303,7 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateBatchTransferMomentfromShardedCollectionScript(nftAddr, topshotAddr, shardedAddr, joshAddress, []uint64{2, 3, 4}),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -312,7 +312,7 @@ func TestMintNFTs(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateChangeSeriesScript(topshotAddr),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -360,7 +360,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintPlayScript(topshotAddr, metadata),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -370,7 +370,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintSetScript(topshotAddr, "Genesis"),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -379,7 +379,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateAddPlayToSetScript(topshotAddr, 1, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -389,7 +389,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateSetupShardedCollectionScript(topshotAddr, shardedAddr, 32),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -399,7 +399,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintMomentScript(topshotAddr, topshotAddr, 1, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -410,14 +410,14 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateLockSetScript(topshotAddr, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateAddPlayToSetScript(topshotAddr, 1, 4),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			true,
 		)
 	})
@@ -430,14 +430,14 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateRetirePlayScript(topshotAddr, 1, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintMomentScript(topshotAddr, topshotAddr, 1, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			true,
 		)
 	})
@@ -447,7 +447,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateSetupAccountScript(nftAddr, topshotAddr),
-			[]flow.Address{b.RootKey().Address, joshAddress}, []crypto.Signer{b.RootKey().Signer(), joshSigner},
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
 			false,
 		)
 	})
@@ -456,7 +456,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateTransferMomentfromShardedCollectionScript(nftAddr, topshotAddr, shardedAddr, joshAddress, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -508,14 +508,14 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateAddPlayToSetScript(topshotAddr, 1, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			true,
 		)
 
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintMomentScript(topshotAddr, topshotAddr, 1, 1),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			true,
 		)
 	})
@@ -527,7 +527,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintPlayScript(topshotAddr, metadata),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -537,7 +537,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintSetScript(topshotAddr, "Gold"),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -546,7 +546,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateAddPlayToSetScript(topshotAddr, 2, 2),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -556,7 +556,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintMomentScript(topshotAddr, topshotAddr, 2, 2),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
@@ -569,14 +569,14 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateLockSetScript(topshotAddr, 2),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateAddPlayToSetScript(topshotAddr, 2, 4),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			true,
 		)
 	})
@@ -586,14 +586,14 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateRetirePlayScript(topshotAddr, 2, 2),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintMomentScript(topshotAddr, topshotAddr, 2, 2),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			true,
 		)
 	})
@@ -602,7 +602,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateTransferMomentfromShardedCollectionScript(nftAddr, topshotAddr, shardedAddr, joshAddress, 2),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -632,11 +632,11 @@ func TestTransferAdmin(t *testing.T) {
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
 
 	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr)
-	shardedCollectionAddr, _ := b.CreateAccount(nil, shardedCollectionCode)
+	shardedAddr, _ := b.CreateAccount(nil, shardedCollectionCode)
 	_, _ = b.CommitBlock()
 
 	// Should be able to deploy a contract as a new account with no keys.
-	adminReceiverCode := contracts.GenerateTopshotAdminReceiverContract(topshotAddr, shardedCollectionAddr)
+	adminReceiverCode := contracts.GenerateTopshotAdminReceiverContract(topshotAddr, shardedAddr)
 	adminAccountKey, adminSigner := accountKeys.NewWithSigner()
 	adminAddr, _ := b.CreateAccount([]*flow.AccountKey{adminAccountKey}, adminReceiverCode)
 	b.CommitBlock()
@@ -647,7 +647,7 @@ func TestTransferAdmin(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateTransferAdminScript(topshotAddr, adminAddr),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 	})
@@ -659,7 +659,7 @@ func TestTransferAdmin(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintPlayScript(topshotAddr, metadata),
-			[]flow.Address{b.RootKey().Address, topshotAddr}, []crypto.Signer{b.RootKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			true,
 		)
 	})
@@ -671,7 +671,7 @@ func TestTransferAdmin(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintPlayScript(topshotAddr, metadata),
-			[]flow.Address{b.RootKey().Address, adminAddr}, []crypto.Signer{b.RootKey().Signer(), adminSigner},
+			[]flow.Address{b.ServiceKey().Address, adminAddr}, []crypto.Signer{b.ServiceKey().Signer(), adminSigner},
 			false,
 		)
 	})
