@@ -237,6 +237,7 @@ func TestMintNFTs(t *testing.T) {
 		ExecuteScriptAndCheck(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 1, 3, 5), false)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, topshotAddr, 1), false)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionIDsScript(nftAddr, topshotAddr, topshotAddr, []uint64{1, 2, 3, 4, 5, 6}), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, topshotAddr, 1, 1), false)
 
 		// These should fail because an argument is wrong
 		ExecuteScriptAndCheck(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 2, 1, 1), true)
@@ -306,6 +307,7 @@ func TestMintNFTs(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, joshAddress, 2, 1), false)
 	})
 
 	t.Run("Should be able to change the current series", func(t *testing.T) {
@@ -346,9 +348,13 @@ func TestUpgradeTopshot(t *testing.T) {
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "nextSetID", "UInt32", 1), false)
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "totalSupply", "UInt64", 0), false)
 
-	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr)
-	shardedAddr, _ := b.CreateAccount(nil, shardedCollectionCode)
-	_, _ = b.CommitBlock()
+	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionV1Contract(nftAddr, topshotAddr)
+	shardedAddr, err := b.CreateAccount(nil, shardedCollectionCode)
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
 
 	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
 	joshAddress, _ := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
@@ -470,9 +476,17 @@ func TestUpgradeTopshot(t *testing.T) {
 
 	// Update the topshot account with the upgraded topshot contract code
 	// without overwriting any of its state
-	t.Run("Should be able to upgrade the topshot code without resetting its fields", func(t *testing.T) {
-		// topshotCode := ReadFile(TopShotContractFile)
+	t.Run("Should be able to upgrade the topshot code and sharded Code without resetting its fields", func(t *testing.T) {
+		// topshotCode := contracts.GenerateTopShotontract(nftAddr)
 		// _, err = b.GenerateUnsafeNotInitializingSetCodeScript(nil, topshotCode)
+		// if !assert.NoError(t, err) {
+		// 	t.Log(err.Error())
+		// }
+		// _, err = b.CommitBlock()
+		// assert.NoError(t, err)
+
+		// shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr)
+		// _, err = b.GenerateUnsafeNotInitializingSetCodeScript(nil, shardedCollectionCode)
 		// if !assert.NoError(t, err) {
 		// 	t.Log(err.Error())
 		// }
@@ -487,7 +501,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "nextSetID", "UInt32", 2), false)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "totalSupply", "UInt64", 1), false)
 
-		// New scripts from the updated contract
+		// New scripts from the updated topshot contract
 		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetNameScript(topshotAddr, 1, "Genesis"), false)
 		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetIDsByNameScript(topshotAddr, "Genesis", 1), false)
 		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetSeriesScript(topshotAddr, 1, 0), false)
@@ -495,6 +509,9 @@ func TestUpgradeTopshot(t *testing.T) {
 		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsEditionRetiredScript(topshotAddr, 1, 1, "true"), false)
 		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsSetLockedScript(topshotAddr, 1, "true"), false)
 		// ExecuteScriptAndCheck(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 1, 1, 1), false)
+
+		// New script from the updated sharded collection contract
+		// ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, joshAddr, 1, 1), false)
 
 		// // These should fail becuase an argument is wrong
 		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetNameScript(topshotAddr, 5, "Genesis"), true)

@@ -526,6 +526,7 @@ pub contract TopShot: NonFungibleToken {
         pub fun batchDeposit(tokens: @NonFungibleToken.Collection)
         pub fun getIDs(): [UInt64]
         pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT
+        pub fun borrowMoment(id: UInt64): &TopShot.NFT
     }
 
     // Collection is a resource that every user who owns NFTs 
@@ -593,6 +594,16 @@ pub contract TopShot: NonFungibleToken {
         }
 
         // borrowNFT Returns a borrowed reference to a Moment in the collection
+        // so that the caller can read its ID
+        //
+        // Parameters: id: The ID of the NFT to get the reference for
+        //
+        // Returns: A reference to the NFT
+        pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
+            return &self.ownedNFTs[id] as &NonFungibleToken.NFT
+        }
+
+        // borrowMoment Returns a borrowed reference to a Moment in the collection
         // so that the caller can read data and call methods from it
         // They can use this to read its setID, playID, serialNumber,
         // or any of the setData or Play Data associated with it by
@@ -602,8 +613,12 @@ pub contract TopShot: NonFungibleToken {
         // Parameters: id: The ID of the NFT to get the reference for
         //
         // Returns: A reference to the NFT
-        pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
-            return &self.ownedNFTs[id] as &NonFungibleToken.NFT
+        pub fun borrowMoment(id: UInt64): &TopShot.NFT {
+            post {
+                result.id == id: "The ID of the reference is incorrect"
+            }
+            let ref = &self.ownedNFTs[id] as auth &NonFungibleToken.NFT
+            return ref as! &TopShot.NFT
         }
 
         // If a transaction destroys the Collection object,

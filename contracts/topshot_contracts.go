@@ -11,11 +11,12 @@ import (
 )
 
 const (
-	topshotFile           = "../contracts/TopShot.cdc"
-	topshotV1File         = "../contracts/TopShotv1.cdc"
-	marketFile            = "../contracts/MarketTopShot.cdc"
-	shardedCollectionFile = "../contracts/TopShotShardedCollection.cdc"
-	adminReceiverFile     = "../contracts/TopShotAdminReceiver.cdc"
+	topshotFile             = "../contracts/TopShot.cdc"
+	topshotV1File           = "../contracts/TopShotv1.cdc"
+	marketFile              = "../contracts/MarketTopShot.cdc"
+	shardedCollectionFile   = "../contracts/TopShotShardedCollection.cdc"
+	shardedCollectionV1File = "../contracts/TopShotShardedCollectionV1.cdc"
+	adminReceiverFile       = "../contracts/TopShotAdminReceiver.cdc"
 )
 
 // GenerateTopShotContract returns a copy
@@ -43,6 +44,17 @@ func GenerateTopShotV1Contract(nftAddr flow.Address) []byte {
 func GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr flow.Address) []byte {
 
 	shardedCode := ReadFile(shardedCollectionFile)
+	codeWithNFTAddr := strings.ReplaceAll(string(shardedCode), "02", nftAddr.String())
+	codeWithTopshotAddr := strings.ReplaceAll(string(codeWithNFTAddr), "03", topshotAddr.String())
+
+	return []byte(codeWithTopshotAddr)
+}
+
+// GenerateTopShotShardedCollectionV1Contract returns a copy
+// of the original TopShotShardedCollectionContract with the import addresses updated
+func GenerateTopShotShardedCollectionV1Contract(nftAddr, topshotAddr flow.Address) []byte {
+
+	shardedCode := ReadFile(shardedCollectionV1File)
 	codeWithNFTAddr := strings.ReplaceAll(string(shardedCode), "02", nftAddr.String())
 	codeWithTopshotAddr := strings.ReplaceAll(string(codeWithNFTAddr), "03", topshotAddr.String())
 

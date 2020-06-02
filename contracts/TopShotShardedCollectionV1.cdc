@@ -143,27 +143,6 @@ pub contract TopShotShardedCollection {
             return self.collections[bucket]?.borrowNFT(id: id)!
         }
 
-        // borrowMoment Returns a borrowed reference to a Moment in the collection
-        // so that the caller can read data and call methods from it
-        // They can use this to read its setID, playID, serialNumber,
-        // or any of the setData or Play Data associated with it by
-        // getting the setID or playID and reading those fields from
-        // the smart contract
-        //
-        // Parameters: id: The ID of the NFT to get the reference for
-        //
-        // Returns: A reference to the NFT
-        pub fun borrowMoment(id: UInt64): &TopShot.NFT {
-            post {
-                result.id == id: "The ID of the reference is incorrect"
-            }
-
-            // get the bucket of the nft to be borrowed
-            let bucket = id % self.numBuckets
-
-            return self.collections[bucket]?.borrowMoment(id: id)!
-        }
-
         // If a transaction destroys the Collection object,
         // All the NFTs contained within are also destroyed
         destroy() {

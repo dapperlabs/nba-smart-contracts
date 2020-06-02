@@ -1,12 +1,5 @@
 package tests
 
-import (
-	"testing"
-
-	"github.com/dapperlabs/nba-smart-contracts/contracts"
-	"github.com/stretchr/testify/assert"
-)
-
 const (
 	FungibleTokenContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-ft/master/src/contracts/"
 	FungibleTokenInterfaceFile    = "FungibleToken.cdc"
@@ -14,55 +7,55 @@ const (
 	MarketContractFile            = "../contracts/MarketTopShot.cdc"
 )
 
-func TestMarketDeployment(t *testing.T) {
-	b := NewEmulator()
+// func TestMarketDeployment(t *testing.T) {
+// 	b := NewEmulator()
 
-	// Should be able to deploy a contract as a new account with no keys.
-	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, err := b.CreateAccount(nil, nftCode)
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
+// 	// Should be able to deploy a contract as a new account with no keys.
+// 	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
+// 	nftAddr, err := b.CreateAccount(nil, nftCode)
+// 	if !assert.NoError(t, err) {
+// 		t.Log(err.Error())
+// 	}
+// 	_, err = b.CommitBlock()
+// 	assert.NoError(t, err)
 
-	// Should be able to deploy a contract as a new account with no keys.
-	topshotCode := contracts.GenerateTopShotContract(nftAddr)
-	_, err = b.CreateAccount(nil, topshotCode)
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
+// 	// Should be able to deploy a contract as a new account with no keys.
+// 	topshotCode := contracts.GenerateTopShotContract(nftAddr)
+// 	_, err = b.CreateAccount(nil, topshotCode)
+// 	if !assert.NoError(t, err) {
+// 		t.Log(err.Error())
+// 	}
+// 	_, err = b.CommitBlock()
+// 	assert.NoError(t, err)
 
-	// Should be able to deploy a contract as a new account with no keys.
-	ftCode, _ := DownloadFile(FungibleTokenContractsBaseURL + FungibleTokenInterfaceFile)
-	_, err = b.CreateAccount(nil, ftCode)
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
+// 	// Should be able to deploy a contract as a new account with no keys.
+// 	ftCode, _ := DownloadFile(FungibleTokenContractsBaseURL + FungibleTokenInterfaceFile)
+// 	_, err = b.CreateAccount(nil, ftCode)
+// 	if !assert.NoError(t, err) {
+// 		t.Log(err.Error())
+// 	}
+// 	_, err = b.CommitBlock()
+// 	assert.NoError(t, err)
 
-	// Should be able to deploy a contract as a new account with no keys.
-	// flowTokenCode, _ := DownloadFile(FungibleTokenContractsBaseURL + FlowTokenFile)
-	// codeWithFTAddr := strings.ReplaceAll(string(flowTokenCode), "0x02", "0x04")
-	// _, err = b.CreateAccount(nil, []byte(codeWithFTAddr))
-	// if !assert.NoError(t, err) {
-	// 	t.Log(err.Error())
-	// }
-	// _, err = b.CommitBlock()
-	// assert.NoError(t, err)
+// Should be able to deploy a contract as a new account with no keys.
+// flowTokenCode, _ := DownloadFile(FungibleTokenContractsBaseURL + FlowTokenFile)
+// codeWithFTAddr := strings.ReplaceAll(string(flowTokenCode), "0x02", "0x04")
+// _, err = b.CreateAccount(nil, []byte(codeWithFTAddr))
+// if !assert.NoError(t, err) {
+// 	t.Log(err.Error())
+// }
+// _, err = b.CommitBlock()
+// assert.NoError(t, err)
 
-	// // Should be able to deploy a contract as a new account with no keys.
-	// marketCode := ReadFile(MarketContractFile)
-	// _, err = b.CreateAccount(nil, marketCode)
-	// if !assert.Nil(t, err) {
-	// 	t.Log(err.Error())
-	// }
-	// _, err = b.CommitBlock()
-	// require.NoError(t, err)
-}
+// // Should be able to deploy a contract as a new account with no keys.
+// marketCode := ReadFile(MarketContractFile)
+// _, err = b.CreateAccount(nil, marketCode)
+// if !assert.Nil(t, err) {
+// 	t.Log(err.Error())
+// }
+// _, err = b.CommitBlock()
+// require.NoError(t, err)
+//}
 
 //
 // first deploy the FT, NFT, and market code

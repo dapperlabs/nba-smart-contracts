@@ -25,8 +25,8 @@
 
 */
 
-import FungibleToken from 0x04
-import FlowToken from 0x05
+// import FungibleToken from 0x04
+// import FlowToken from 0x05
 import NonFungibleToken from 0x02
 import TopShot from 0x03
 
@@ -162,6 +162,16 @@ pub contract Market {
         // getIDs returns an array of token IDs that are for sale
         pub fun getIDs(): [UInt64] {
             return self.forSale.getIDs()
+        }
+
+        // borrowMoment Returns a borrowed reference to a Moment in the collection
+        // so that the caller can read data from it
+        pub fun borrowMoment(id: UInt64): &TopShot.NFT {
+            post {
+                result.id == id: "The ID of the reference is incorrect"
+            }
+            let ref = self.forSale.borrowMoment(id: id)
+            return ref
         }
 
         destroy() {

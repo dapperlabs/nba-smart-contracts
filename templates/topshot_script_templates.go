@@ -47,6 +47,32 @@ func GenerateInspectCollectionScript(nftAddr, tokenAddr, ownerAddr flow.Address,
 	return []byte(fmt.Sprintf(template, nftAddr, tokenAddr, ownerAddr, expectedID, expectedID, expectedID))
 }
 
+// GenerateInspectCollectionDataScript creates a script that checks
+// a collection for a certain ID
+func GenerateInspectCollectionDataScript(nftAddr, tokenAddr, ownerAddr flow.Address, expectedID, expectedSet int) []byte {
+	template := `
+		import NonFungibleToken from 0x%s
+		import TopShot from 0x%s
+
+		pub fun main() {
+			let collectionRef = getAccount(0x%s).getCapability(/public/MomentCollection)!
+				.borrow<&{TopShot.MomentCollectionPublic}>()
+				?? panic("Could not get public moment collection reference")
+
+			let token = collectionRef.borrowMoment(id: %d)
+
+			let data = token.data
+
+			assert(
+                data.setID == UInt32(%d),
+                message: "ID %d does not have the expected Set ID %d"
+            )
+		}
+	`
+
+	return []byte(fmt.Sprintf(template, nftAddr, tokenAddr, ownerAddr, expectedID, expectedSet, expectedID, expectedSet))
+}
+
 // GenerateInspectCollectionIDsScript creates a script that checks
 // a collection for a certain ID
 func GenerateInspectCollectionIDsScript(nftAddr, tokenAddr, ownerAddr flow.Address, momentIDs []uint64) []byte {
