@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -291,4 +292,17 @@ func GenerateInvalidChangePlaysScript(tokenCodeAddr flow.Address) []byte {
 			}
 		}`
 	return []byte(fmt.Sprintf(template, tokenCodeAddr.String()))
+}
+
+// GenerateUnsafeNotInitializingSetCodeScript generates a script to upgrade the topshot
+// contract
+func GenerateUnsafeNotInitializingSetCodeScript(newCode []byte) []byte {
+	template := `
+		
+		transaction {
+			prepare(acct: AuthAccount) {
+				acct.unsafeNotInitializingSetCode("%s".decodeHex())
+			}
+		}`
+	return []byte(fmt.Sprintf(template, hex.EncodeToString(newCode)))
 }

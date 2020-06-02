@@ -349,7 +349,8 @@ func TestUpgradeTopshot(t *testing.T) {
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "totalSupply", "UInt64", 0), false)
 
 	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionV1Contract(nftAddr, topshotAddr)
-	shardedAddr, err := b.CreateAccount(nil, shardedCollectionCode)
+	shardedCollectionAccountKey, _ := accountKeys.NewWithSigner()
+	shardedAddr, err := b.CreateAccount([]*flow.AccountKey{shardedCollectionAccountKey}, shardedCollectionCode)
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -477,21 +478,21 @@ func TestUpgradeTopshot(t *testing.T) {
 	// Update the topshot account with the upgraded topshot contract code
 	// without overwriting any of its state
 	t.Run("Should be able to upgrade the topshot code and sharded Code without resetting its fields", func(t *testing.T) {
-		// topshotCode := contracts.GenerateTopShotontract(nftAddr)
-		// _, err = b.GenerateUnsafeNotInitializingSetCodeScript(nil, topshotCode)
-		// if !assert.NoError(t, err) {
-		// 	t.Log(err.Error())
-		// }
-		// _, err = b.CommitBlock()
-		// assert.NoError(t, err)
+		// topshotCode := contracts.GenerateTopShotContract(nftAddr)
+		// createSignAndSubmit(
+		// 	t, b,
+		// 	templates.GenerateUnsafeNotInitializingSetCodeScript(topshotCode),
+		// 	[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		// 	false,
+		// )
 
 		// shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr)
-		// _, err = b.GenerateUnsafeNotInitializingSetCodeScript(nil, shardedCollectionCode)
-		// if !assert.NoError(t, err) {
-		// 	t.Log(err.Error())
-		// }
-		// _, err = b.CommitBlock()
-		// assert.NoError(t, err)
+		// createSignAndSubmit(
+		// 	t, b,
+		// 	templates.GenerateUnsafeNotInitializingSetCodeScript(shardedCollectionCode),
+		// 	[]flow.Address{b.ServiceKey().Address, shardedAddr}, []crypto.Signer{b.ServiceKey().Signer(), shardedCollectionSigner},
+		// 	false,
+		// )
 
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, joshAddress, 1), false)
 
