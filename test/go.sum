@@ -58,6 +58,7 @@ github.com/antlr/antlr4 v0.0.0-20200503195918-621b933c7a7f/go.mod h1:T7PbCXFs94r
 github.com/aristanetworks/goarista v0.0.0-20170210015632-ea17b1a17847/go.mod h1:D/tb0zPVXnP7fmsLZjtdUhSsumbK/ij54UXjjVgMGxQ=
 github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6/go.mod h1:grANhF5doyWs3UAsr3K4I6qtAmlQcZDesFNEHPZAzj8=
 github.com/aws/aws-sdk-go v1.25.48/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
+github.com/axw/gocov v1.0.0/go.mod h1:LvQpEYiwwIb2nYkXY2fDWhg9/AsYqkhmrCshjlUJECE=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
@@ -113,6 +114,14 @@ github.com/dapperlabs/flow-go/crypto v0.3.2-0.20200602194037-af8844481849 h1:2KF
 github.com/dapperlabs/flow-go/crypto v0.3.2-0.20200602194037-af8844481849/go.mod h1:9RLfdwwRI3FVD/tm4Y8E9aqViRnCiXTcGgcmB8CsEVQ=
 github.com/dapperlabs/nba-smart-contracts v0.1.2 h1:YxRQrxZkD/5k9+93bqtp/RwxIzvRFEVzrVhks7BJq5U=
 github.com/dapperlabs/nba-smart-contracts v0.1.2/go.mod h1:0q2fCiLukgkPZXJkeC9B+D2WeLDHMckpFr12indmSzc=
+github.com/dapperlabs/nba-smart-contracts v0.1.3 h1:Vl9aluoJITbUsahS2EPYK9pYibDb2MHbpYnNU4IAhFM=
+github.com/dapperlabs/nba-smart-contracts v0.1.3/go.mod h1:KV5dJ/mIiIhYd4CjkPwL82dakunEQjZap8aL/TB1CzY=
+github.com/dapperlabs/nba-smart-contracts/contracts v0.0.0-20200603212829-1171ac72a5d7 h1:2ji2DQ/nKyE74Ho/vZ4pqEVdkb2pnk6K6UZ3jwZ361E=
+github.com/dapperlabs/nba-smart-contracts/contracts v0.0.0-20200603212829-1171ac72a5d7/go.mod h1:bNDdu+s87Z5k2ntZv2XTkk/qfhmG8H6p47we00HKqdc=
+github.com/dapperlabs/nba-smart-contracts/data v0.0.0-20200603212829-1171ac72a5d7 h1:aubrHbma4sNoKMB1b0TS/YKQQungrErOHPMXpVfPRuw=
+github.com/dapperlabs/nba-smart-contracts/data v0.0.0-20200603212829-1171ac72a5d7/go.mod h1:YnXE/zaPTfPMhrQg/Gz5S/MrLukeH4gyo0VxmbKWzV4=
+github.com/dapperlabs/nba-smart-contracts/templates v0.0.0-20200603212829-1171ac72a5d7 h1:sjXorBBMUZHC6CW8SmnGFD6G0KnMOH9/O+gv1CyfEsM=
+github.com/dapperlabs/nba-smart-contracts/templates v0.0.0-20200603212829-1171ac72a5d7/go.mod h1:frUEMcV/yHFCAkmk/1DhGEU32kGncG+0BzscPXRcTz8=
 github.com/davecgh/go-spew v0.0.0-20171005155431-ecdeabc65495/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
@@ -154,6 +163,7 @@ github.com/fogleman/gg v1.2.1-0.20190220221249-0403632d5b90/go.mod h1:R/bRT+9gY/
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fxamacker/cbor/v2 v2.2.0 h1:6eXqdDDe588rSYAi1HfZKbx6YYQO4mxQ9eC6xYpU/JQ=
 github.com/fxamacker/cbor/v2 v2.2.0/go.mod h1:TA1xS00nchWmaBnEIxPSE5oHLuJBAVvqrtAnWBwBCVo=
+github.com/gammazero/deque v0.0.0-20200310222745-50fa758af896/go.mod h1:D90+MBHVc9Sk1lJAbEVgws0eYEurY4mv2TDso3Nxh3w=
 github.com/gballet/go-libpcsclite v0.0.0-20190607065134-2772fd86a8ff/go.mod h1:x7DCsMOv1taUwEWCzT4cmDeAkigA5/QCwUodaVOe8Ww=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-check/check v0.0.0-20180628173108-788fd7840127/go.mod h1:9ES+weclKsC9YodN5RgxqK/VD9HM9JsCSh7rNhMZE98=
@@ -754,6 +764,7 @@ golang.org/x/tools v0.0.0-20190425163242-31fd60d6bfdc/go.mod h1:RgjU9mgBXZiqYHBn
 golang.org/x/tools v0.0.0-20190506145303-2d16b83fe98c/go.mod h1:RgjU9mgBXZiqYHBnxXauZ1Gv1EHHAz9KjViQ78xBX0Q=
 golang.org/x/tools v0.0.0-20190524140312-2c0ae7006135/go.mod h1:RgjU9mgBXZiqYHBnxXauZ1Gv1EHHAz9KjViQ78xBX0Q=
 golang.org/x/tools v0.0.0-20190606124116-d0a3d012864b/go.mod h1:/rFqwRUd4F7ZHNgwSSTFct+R/Kf4OFW1sUzUTQQTgfc=
+golang.org/x/tools v0.0.0-20190617190820-da514acc4774/go.mod h1:/rFqwRUd4F7ZHNgwSSTFct+R/Kf4OFW1sUzUTQQTgfc=
 golang.org/x/tools v0.0.0-20190621195816-6e04913cbbac/go.mod h1:/rFqwRUd4F7ZHNgwSSTFct+R/Kf4OFW1sUzUTQQTgfc=
 golang.org/x/tools v0.0.0-20190628153133-6cdbf07be9d0/go.mod h1:/rFqwRUd4F7ZHNgwSSTFct+R/Kf4OFW1sUzUTQQTgfc=
 golang.org/x/tools v0.0.0-20190816200558-6889da9d5479/go.mod h1:b+2E5dAYhXwXZwtnZ6UAqBI28+e2cm9otk0dWdXHAEo=
