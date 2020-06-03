@@ -113,20 +113,11 @@ github.com/dapperlabs/flow-emulator v1.0.0-alpha.7.0.20200520061219-5db33b4e5fd5
 github.com/dapperlabs/flow-emulator v1.0.0-alpha.7.0.20200520061219-5db33b4e5fd5/go.mod h1:dGoKDnBx89z6cxhVTMEu0qtLuMEbBSqB9894JENnY94=
 github.com/dapperlabs/flow-emulator v1.0.0-alpha.7.0.20200522225230-51e97f42cb03 h1:p72Hc7Ju5zVctDYsDrgg4O03q/FeSC6OFYaPE7+du7g=
 github.com/dapperlabs/flow-emulator v1.0.0-alpha.7.0.20200522225230-51e97f42cb03/go.mod h1:c2n0nG7Wikp17yPuaAer9xaJLzjGcOCfEKiM29MQia4=
-github.com/dapperlabs/flow-go v0.3.2-0.20200419224034-72584949fbfa h1:8gHPrLkDRsrYMrdKiAZ9caHlTjJ+ZeQ06fwEBbQ5F08=
-github.com/dapperlabs/flow-go v0.3.2-0.20200419224034-72584949fbfa/go.mod h1:LqYQxU1Oa3Bqux8h5fg8vRHzXOcQp8dzmL/vX6r0jjU=
-github.com/dapperlabs/flow-go v0.3.2-0.20200520025804-833d4413e3d3 h1:yQCnqd4TTyxKym0XNqlFHPPYTRYeOtNGpGiy7SjLZyE=
-github.com/dapperlabs/flow-go v0.3.2-0.20200520025804-833d4413e3d3/go.mod h1:qdTB1Q5uKj4uRq2ztmCMV9tggmkFUfE2HXOZVsD6PpM=
-github.com/dapperlabs/flow-go v0.3.2-0.20200520200337-3476e94b144b h1:ZBwPx8vlkkotdxh0UO/vlmx0lIT7PDaJJ0FGCcAMSyY=
-github.com/dapperlabs/flow-go v0.3.2-0.20200520200337-3476e94b144b/go.mod h1:qdTB1Q5uKj4uRq2ztmCMV9tggmkFUfE2HXOZVsD6PpM=
 github.com/dapperlabs/flow-go v0.3.2-0.20200526114319-64417088e5ec h1:yytosvDNMbid8SyMneOOOHt4CXyNwAUzC6KuiLFxFpM=
 github.com/dapperlabs/flow-go v0.3.2-0.20200526114319-64417088e5ec/go.mod h1:3W0Zl47rQGTIQSzfKocKsCF5we+4hEtK5a6bdi5SuwY=
 github.com/dapperlabs/flow-go/crypto v0.3.2-0.20200312195452-df4550a863b7/go.mod h1:6UyHoekg86OJnzTz9hp3Ubzp2ZkrDMFg2krGbVEiloU=
-github.com/dapperlabs/flow-go/crypto v0.3.2-0.20200331201607-7630da6300eb h1:RcnnZlmBctQ4HW5yBffWYnaPRpv+g0+HCh+HMknsnus=
-github.com/dapperlabs/flow-go/crypto v0.3.2-0.20200331201607-7630da6300eb/go.mod h1:YvBv3ybk5MvA7rVxBGHK+E5drf5fzhMBpHpmrpPqxJE=
 github.com/dapperlabs/flow-go/crypto v0.3.2-0.20200505040645-6043e0fe5246 h1:Do+yDKdrWcyFGvDdhQ7SthDADpHgoD47D8xB2Vyz7yc=
 github.com/dapperlabs/flow-go/crypto v0.3.2-0.20200505040645-6043e0fe5246/go.mod h1:DtpZLXm4h787U0fkDZ6F9/S3vpRr/JT8xFNJ9mfKzXw=
-github.com/dapperlabs/flow-go/protobuf v0.3.2-0.20200312195452-df4550a863b7/go.mod h1:oaMV7AdCz45OC/zPUvCcruE+8XLGiHS92VWas9dV6A8=
 github.com/davecgh/go-spew v0.0.0-20171005155431-ecdeabc65495/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
@@ -670,6 +661,7 @@ golang.org/x/lint v0.0.0-20190409202823-959b441ac422/go.mod h1:6SW0HCj/g11FgYtHl
 golang.org/x/lint v0.0.0-20190909230951-414d861bb4ac/go.mod h1:6SW0HCj/g11FgYtHlgUYUwCkIfeOF89ocIRzGO/8vkc=
 golang.org/x/lint v0.0.0-20190930215403-16217165b5de/go.mod h1:6SW0HCj/g11FgYtHlgUYUwCkIfeOF89ocIRzGO/8vkc=
 golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f/go.mod h1:5qLYkcX4OjUUV8bRuDixDT3tpyyb+LUpUlRWLxfhWrs=
+golang.org/x/lint v0.0.0-20200130185559-910be7a94367 h1:0IiAsCRByjO2QjX7ZPkw5oU9x+n1YqRL802rjC0c3Aw=
 golang.org/x/lint v0.0.0-20200130185559-910be7a94367/go.mod h1:3xt1FjdF8hUf6vQPIChWIBhFzV8gjjsPE/fR3IyQdNY=
 golang.org/x/mobile v0.0.0-20190312151609-d3739f865fa6/go.mod h1:z+o9i4GpDbdi3rU15maQ/Ox0txvL9dWGYEHz965HBQE=
 golang.org/x/mobile v0.0.0-20190719004257-d2bd2a29d028/go.mod h1:E/iHnbuqvinMTCcRqshq8CkpyQDoeVncDDYHnLhea+o=
@@ -797,6 +789,7 @@ golang.org/x/tools v0.0.0-20200130002326-2f3ba24bd6e7/go.mod h1:TB2adYChydJhpapK
 golang.org/x/tools v0.0.0-20200204074204-1cc6d1ef6c74/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
 golang.org/x/tools v0.0.0-20200207183749-b753a1ba74fa/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
 golang.org/x/tools v0.0.0-20200212150539-ea181f53ac56/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
+golang.org/x/tools v0.0.0-20200224181240-023911ca70b2 h1:L/G4KZvrQn7FWLN/LlulBtBzrLUhqjiGfTWWDmrh+IQ=
 golang.org/x/tools v0.0.0-20200224181240-023911ca70b2/go.mod h1:TB2adYChydJhpapKDTa4BR/hXlZSLoq2Wpct/0txZ28=
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
