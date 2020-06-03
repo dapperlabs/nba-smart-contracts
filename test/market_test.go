@@ -1,4 +1,4 @@
-package tests
+package test
 
 const (
 	FungibleTokenContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-ft/master/src/contracts/"

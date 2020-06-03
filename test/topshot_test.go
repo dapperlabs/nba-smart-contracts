@@ -1,4 +1,4 @@
-package tests
+package test
 
 import (
 	"testing"
@@ -18,9 +18,6 @@ import (
 const (
 	NonFungibleTokenContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/master/src/contracts/"
 	NonFungibleTokenInterfaceFile    = "NonFungibleToken.cdc"
-	TopShotContractFile              = "../contracts/TopShot.cdc"
-	AdminReceiverFile                = "../contracts/TopshotAdminReceiver.cdc"
-	ShardedCollectionFile            = "../contracts/TopShotShardedCollection.cdc"
 )
 
 func TestNFTDeployment(t *testing.T) {
