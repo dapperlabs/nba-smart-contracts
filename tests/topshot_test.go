@@ -240,6 +240,7 @@ func TestMintNFTs(t *testing.T) {
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, topshotAddr, 1, 1), false)
 
 		// These should fail because an argument is wrong
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, topshotAddr, 10, 1), true)
 		ExecuteScriptAndCheck(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 2, 1, 1), true)
 		ExecuteScriptAndCheck(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 1, 6, 5), true)
 	})
@@ -349,7 +350,7 @@ func TestUpgradeTopshot(t *testing.T) {
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "totalSupply", "UInt64", 0), false)
 
 	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionV1Contract(nftAddr, topshotAddr)
-	shardedCollectionAccountKey, _ := accountKeys.NewWithSigner()
+	shardedCollectionAccountKey, shardedCollectionSigner := accountKeys.NewWithSigner()
 	shardedAddr, err := b.CreateAccount([]*flow.AccountKey{shardedCollectionAccountKey}, shardedCollectionCode)
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
@@ -478,21 +479,21 @@ func TestUpgradeTopshot(t *testing.T) {
 	// Update the topshot account with the upgraded topshot contract code
 	// without overwriting any of its state
 	t.Run("Should be able to upgrade the topshot code and sharded Code without resetting its fields", func(t *testing.T) {
-		// topshotCode := contracts.GenerateTopShotContract(nftAddr)
-		// createSignAndSubmit(
-		// 	t, b,
-		// 	templates.GenerateUnsafeNotInitializingSetCodeScript(topshotCode),
-		// 	[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
-		// 	false,
-		// )
+		topshotCode := contracts.GenerateTopShotContract(nftAddr)
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateUnsafeNotInitializingSetCodeScript(topshotCode),
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			false,
+		)
 
-		// shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr)
-		// createSignAndSubmit(
-		// 	t, b,
-		// 	templates.GenerateUnsafeNotInitializingSetCodeScript(shardedCollectionCode),
-		// 	[]flow.Address{b.ServiceKey().Address, shardedAddr}, []crypto.Signer{b.ServiceKey().Signer(), shardedCollectionSigner},
-		// 	false,
-		// )
+		shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr)
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateUnsafeNotInitializingSetCodeScript(shardedCollectionCode),
+			[]flow.Address{b.ServiceKey().Address, shardedAddr}, []crypto.Signer{b.ServiceKey().Signer(), shardedCollectionSigner},
+			false,
+		)
 
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, joshAddress, 1), false)
 
@@ -503,21 +504,21 @@ func TestUpgradeTopshot(t *testing.T) {
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "totalSupply", "UInt64", 1), false)
 
 		// New scripts from the updated topshot contract
-		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetNameScript(topshotAddr, 1, "Genesis"), false)
-		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetIDsByNameScript(topshotAddr, "Genesis", 1), false)
-		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetSeriesScript(topshotAddr, 1, 0), false)
-		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnPlaysInSetScript(topshotAddr, 1, []int{1}), false)
-		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsEditionRetiredScript(topshotAddr, 1, 1, "true"), false)
-		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsSetLockedScript(topshotAddr, 1, "true"), false)
-		// ExecuteScriptAndCheck(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 1, 1, 1), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetNameScript(topshotAddr, 1, "Genesis"), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetIDsByNameScript(topshotAddr, "Genesis", 1), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetSeriesScript(topshotAddr, 1, 0), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateReturnPlaysInSetScript(topshotAddr, 1, []int{1}), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsEditionRetiredScript(topshotAddr, 1, 1, "true"), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsSetLockedScript(topshotAddr, 1, "true"), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 1, 1, 1), false)
 
 		// New script from the updated sharded collection contract
-		// ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, joshAddr, 1, 1), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, joshAddress, 1, 1), false)
 
-		// // These should fail becuase an argument is wrong
-		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetNameScript(topshotAddr, 5, "Genesis"), true)
-		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetIDsByNameScript(topshotAddr, "Gold", 1), true)
-		// ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetSeriesScript(topshotAddr, 4, 0), true)
+		// These should fail becuase an argument is wrong
+		ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetNameScript(topshotAddr, 5, "Genesis"), true)
+		ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetIDsByNameScript(topshotAddr, "Gold", 1), true)
+		ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetSeriesScript(topshotAddr, 4, 0), true)
 
 	})
 
@@ -538,7 +539,17 @@ func TestUpgradeTopshot(t *testing.T) {
 		)
 	})
 
-	// create a new Collection
+	t.Run("Should not be able to create an empty Play", func(t *testing.T) {
+		metadata := data.PlayMetadata{}
+
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateMintPlayScript(topshotAddr, metadata),
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			true,
+		)
+	})
+
 	t.Run("Should be able to create a new Play", func(t *testing.T) {
 		metadata := data.PlayMetadata{FullName: "Jordan"}
 
@@ -550,13 +561,30 @@ func TestUpgradeTopshot(t *testing.T) {
 		)
 	})
 
-	// create a new Collection
+	t.Run("Should not be able to create a new Set with no Name", func(t *testing.T) {
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateMintSetScript(topshotAddr, ""),
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			true,
+		)
+	})
+
 	t.Run("Should be able to create a new Set", func(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintSetScript(topshotAddr, "Gold"),
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
+		)
+	})
+
+	t.Run("Should not be able to add a play that doesn't exist to a Set", func(t *testing.T) {
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateAddPlayToSetScript(topshotAddr, 2, 5),
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			true,
 		)
 	})
 
@@ -569,8 +597,29 @@ func TestUpgradeTopshot(t *testing.T) {
 		)
 	})
 
+	t.Run("Should not be able to add a play to a Set if it has already been added", func(t *testing.T) {
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateAddPlayToSetScript(topshotAddr, 2, 2),
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			true,
+		)
+	})
+
+	t.Run("Shouldn't be able to mint a moment for a play that doesn't exist in a set", func(t *testing.T) {
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateMintMomentScript(topshotAddr, topshotAddr, 2, 1),
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			true,
+		)
+
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, topshotAddr, 2), true)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, topshotAddr, 2, 2), true)
+	})
+
 	// mint a moment
-	t.Run("Should be able to mint a moment", func(t *testing.T) {
+	t.Run("Should be able to mint moments", func(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintMomentScript(topshotAddr, topshotAddr, 2, 2),
@@ -580,6 +629,18 @@ func TestUpgradeTopshot(t *testing.T) {
 
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, topshotAddr, 2), false)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionIDsScript(nftAddr, topshotAddr, topshotAddr, []uint64{2}), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, topshotAddr, 2, 2), false)
+
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateBatchMintMomentScript(topshotAddr, topshotAddr, 2, 2, 5),
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			false,
+		)
+
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, topshotAddr, 5), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionIDsScript(nftAddr, topshotAddr, topshotAddr, []uint64{2, 3, 4, 5, 6, 7}), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, topshotAddr, 7, 2), false)
 	})
 
 	// lock a set
@@ -610,6 +671,13 @@ func TestUpgradeTopshot(t *testing.T) {
 
 		createSignAndSubmit(
 			t, b,
+			templates.GenerateRetirePlayScript(topshotAddr, 2, 9),
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			true,
+		)
+
+		createSignAndSubmit(
+			t, b,
 			templates.GenerateMintMomentScript(topshotAddr, topshotAddr, 2, 2),
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			true,
@@ -623,16 +691,48 @@ func TestUpgradeTopshot(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
+
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, joshAddress, 2), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionIDsScript(nftAddr, topshotAddr, joshAddress, []uint64{1, 2}), false)
 	})
 
-	// ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetNameScript(topshotAddr, 2, "Gold"), false)
-	// ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetIDsByNameScript(topshotAddr, "Gold", 2), false)
-	// ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetSeriesScript(topshotAddr, 2, 0), false)
-	// ExecuteScriptAndCheck(t, b, templates.GenerateReturnPlaysInSetScript(topshotAddr, 2, []int{2}), false)
-	// ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsEditionRetiredScript(topshotAddr, 2, 2, "true"), false)
-	// ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsSetLockedScript(topshotAddr, 2, "true"), false)
-	// ExecuteScriptAndCheck(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 2, 2, 1), false)
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetNameScript(topshotAddr, 2, "Gold"), false)
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetIDsByNameScript(topshotAddr, "Gold", 2), false)
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnSetSeriesScript(topshotAddr, 2, 0), false)
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnPlaysInSetScript(topshotAddr, 2, []int{2}), false)
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsEditionRetiredScript(topshotAddr, 2, 2, "true"), false)
+	ExecuteScriptAndCheck(t, b, templates.GenerateReturnIsSetLockedScript(topshotAddr, 2, "true"), false)
+	ExecuteScriptAndCheck(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 2, 2, 6), false)
+	ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, joshAddress, 2, 2), false)
 
+	// These should fail because an argument is wrong
+	ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, topshotAddr, 10, 1), true)
+
+	// Create a new account
+	ericAccountKey, ericSigner := accountKeys.NewWithSigner()
+	ericAddress, _ := b.CreateAccount([]*flow.AccountKey{ericAccountKey}, nil)
+
+	t.Run("Should be able to transfer a moment again", func(t *testing.T) {
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateSetupAccountScript(nftAddr, topshotAddr),
+			[]flow.Address{b.ServiceKey().Address, ericAddress}, []crypto.Signer{b.ServiceKey().Signer(), ericSigner},
+			false,
+		)
+
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateTransferMomentScript(nftAddr, topshotAddr, ericAddress, 2),
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			false,
+		)
+
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionIDsScript(nftAddr, topshotAddr, joshAddress, []uint64{1}), false)
+
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, ericAddress, 2), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionIDsScript(nftAddr, topshotAddr, ericAddress, []uint64{2}), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, ericAddress, 2, 2), false)
+	})
 }
 
 func TestTransferAdmin(t *testing.T) {

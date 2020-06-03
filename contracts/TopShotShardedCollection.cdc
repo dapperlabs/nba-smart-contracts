@@ -153,15 +153,12 @@ pub contract TopShotShardedCollection {
         // Parameters: id: The ID of the NFT to get the reference for
         //
         // Returns: A reference to the NFT
-        pub fun borrowMoment(id: UInt64): &TopShot.NFT {
-            post {
-                result.id == id: "The ID of the reference is incorrect"
-            }
+        pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
 
             // get the bucket of the nft to be borrowed
             let bucket = id % self.numBuckets
 
-            return self.collections[bucket]?.borrowMoment(id: id)!
+            return self.collections[bucket]?.borrowMoment(id: id) ?? nil
         }
 
         // If a transaction destroys the Collection object,

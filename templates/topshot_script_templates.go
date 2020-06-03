@@ -60,6 +60,7 @@ func GenerateInspectCollectionDataScript(nftAddr, tokenAddr, ownerAddr flow.Addr
 				?? panic("Could not get public moment collection reference")
 
 			let token = collectionRef.borrowMoment(id: %d)
+				?? panic("Could not borrow a reference to the specified moment")
 
 			let data = token.data
 
@@ -94,12 +95,14 @@ func GenerateInspectCollectionIDsScript(nftAddr, tokenAddr, ownerAddr flow.Addre
 				message: "ID array is not the expected length"
 			)
 
-			var i = 0
-			for element in ids {
-				if element != expectedIDs[i] {
-					panic("Unexpected ID in the array")
+			if ids.length != 0 {
+				var i = 0
+				for element in ids {
+					if element != expectedIDs[i] {
+						panic("Unexpected ID in the array")
+					}
+					i = i + 1
 				}
-				i = i + 1
 			}
 		}
 	`
