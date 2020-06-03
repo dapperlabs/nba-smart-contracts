@@ -60,14 +60,6 @@ func TestNFTDeployment(t *testing.T) {
 	}
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
-
-	// topshotCode := contracts.GenerateTopShotContract(nftAddr)
-	// _, err = b.UnsafeAccountCodeUpdate(nil, topshotCode)
-	// if !assert.NoError(t, err) {
-	// 	t.Log(err.Error())
-	// }
-	// _, err = b.CommitBlock()
-	// assert.NoError(t, err)
 }
 
 func TestMintNFTs(t *testing.T) {
