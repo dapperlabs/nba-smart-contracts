@@ -4,7 +4,6 @@ go 1.13
 
 require (
 	github.com/dapperlabs/flow-emulator v0.4.0-beta1
-	github.com/dapperlabs/flow-go/protobuf v0.3.2-0.20200312195452-df4550a863b7 // indirect
 	github.com/dchest/siphash v1.2.1 // indirect
 	github.com/onflow/cadence v0.4.0-beta1
 	github.com/onflow/flow-go-sdk v0.4.0-beta1
