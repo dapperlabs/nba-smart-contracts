@@ -35,7 +35,7 @@ func TestNFTDeployment(t *testing.T) {
 
 	// Should be able to deploy the topshot contract
 	// as a new account with no keys.
-	topshotCode := contracts.GenerateTopShotContract(nftAddr)
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
 	topshotAddr, err := b.CreateAccount(nil, topshotCode)
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
@@ -43,7 +43,7 @@ func TestNFTDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
-	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr)
+	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr.String(), topshotAddr.String())
 	shardedAddr, err := b.CreateAccount(nil, shardedCollectionCode)
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
@@ -53,7 +53,7 @@ func TestNFTDeployment(t *testing.T) {
 
 	// Should be able to deploy the admin receiver contract
 	// as a new account with no keys.
-	adminReceiverCode := contracts.GenerateTopshotAdminReceiverContract(topshotAddr, shardedAddr)
+	adminReceiverCode := contracts.GenerateTopshotAdminReceiverContract(topshotAddr.String(), shardedAddr.String())
 	_, err = b.CreateAccount(nil, adminReceiverCode)
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
@@ -72,7 +72,7 @@ func TestMintNFTs(t *testing.T) {
 	nftAddr, _ := b.CreateAccount(nil, nftCode)
 
 	// First, deploy the contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr)
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
 
@@ -81,7 +81,7 @@ func TestMintNFTs(t *testing.T) {
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "nextSetID", "UInt32", 1))
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "totalSupply", "UInt64", 0))
 
-	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr)
+	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr.String(), topshotAddr.String())
 	shardedAddr, _ := b.CreateAccount(nil, shardedCollectionCode)
 	_, _ = b.CommitBlock()
 
@@ -311,16 +311,16 @@ func TestTransferAdmin(t *testing.T) {
 	nftAddr, _ := b.CreateAccount(nil, nftCode)
 
 	// First, deploy the contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr)
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
 
-	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr)
+	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr.String(), topshotAddr.String())
 	shardedAddr, _ := b.CreateAccount(nil, shardedCollectionCode)
 	_, _ = b.CommitBlock()
 
 	// Should be able to deploy a contract as a new account with no keys.
-	adminReceiverCode := contracts.GenerateTopshotAdminReceiverContract(topshotAddr, shardedAddr)
+	adminReceiverCode := contracts.GenerateTopshotAdminReceiverContract(topshotAddr.String(), shardedAddr.String())
 	adminAccountKey, adminSigner := accountKeys.NewWithSigner()
 	adminAddr, _ := b.CreateAccount([]*flow.AccountKey{adminAccountKey}, adminReceiverCode)
 	b.CommitBlock()
