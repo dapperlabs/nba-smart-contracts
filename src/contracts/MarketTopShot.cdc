@@ -164,6 +164,16 @@ pub contract Market {
             return self.forSale.getIDs()
         }
 
+        // borrowMoment Returns a borrowed reference to a Moment in the collection
+        // so that the caller can read data from it
+        pub fun borrowMoment(id: UInt64): &TopShot.NFT {
+            post {
+                result.id == id: "The ID of the reference is incorrect"
+            }
+            let ref = self.forSale.borrowMoment(id: id)
+            return ref
+        }
+
         destroy() {
             destroy self.forSale
         }

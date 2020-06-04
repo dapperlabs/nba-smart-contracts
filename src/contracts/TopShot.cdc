@@ -777,7 +777,7 @@ pub contract TopShot: NonFungibleToken {
     // 
     // Parameters: setID: The id of the set that is being searched
     //
-    // Returns: Boolean indicating if the edition is retired or not
+    // Returns: Boolean indicating if the set is locked or not
     pub fun isSetLocked(setID: UInt32): Bool? {
         // Don't force a revert if the setID is invalid
         return TopShot.sets[setID]?.locked
