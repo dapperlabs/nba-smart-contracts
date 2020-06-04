@@ -97,10 +97,10 @@ pub contract TopShot: NonFungibleToken {
     pub var currentSeries: UInt32
 
     // variable size dictionary of Play structs
-    pub var playDatas: {UInt32: Play}
+    access(self) var playDatas: {UInt32: Play}
 
     // variable size dictionary of SetData structs
-    pub var setDatas: {UInt32: SetData}
+    access(self) var setDatas: {UInt32: SetData}
 
     // variable size dictionary of Set resources
     access(self) var sets: @{UInt32: Set}
@@ -152,7 +152,7 @@ pub contract TopShot: NonFungibleToken {
 
         init(metadata: {String: String}) {
             pre {
-                metadata.length != 0: "Wrong amount of metadata!"
+                metadata.length != 0: "New Play Metadata cannot be empty"
             }
             self.playID = TopShot.nextPlayID
             self.metadata = metadata
@@ -189,7 +189,7 @@ pub contract TopShot: NonFungibleToken {
 
         init(name: String) {
             pre {
-                name.length > 0: "Name cannot be empty"
+                name.length > 0: "New Set name cannot be empty"
             }
             self.setID = TopShot.nextSetID
             self.name = name
@@ -277,8 +277,8 @@ pub contract TopShot: NonFungibleToken {
         //
         pub fun addPlay(playID: UInt32) {
             pre {
-                TopShot.playDatas[playID] != nil: "Play doesn't exist"
-                !self.locked: "Cannot add a play after the set has been locked"
+                TopShot.playDatas[playID] != nil: "Cannot add the Play to Set: Play doesn't exist"
+                !self.locked: "Cannot add the play to the Set after the set has been locked"
                 self.numberMintedPerPlay[playID] == nil: "The play has already beed added to the set"
             }
 
@@ -314,7 +314,7 @@ pub contract TopShot: NonFungibleToken {
         // 
         pub fun retirePlay(playID: UInt32) {
             pre {
-                self.retired[playID] != nil: "Play doesn't exist in this set!"
+                self.retired[playID] != nil: "Cannot retire the Play: Play doesn't exist in this set!"
             }
 
             if !self.retired[playID]! {
@@ -355,8 +355,8 @@ pub contract TopShot: NonFungibleToken {
         // 
         pub fun mintMoment(playID: UInt32): @NFT {
             pre {
-                self.retired[playID] != nil: "This play doesn't exist"
-                !self.retired[playID]!: "This play has been retired. Minting is disallowed"
+                self.retired[playID] != nil: "Cannot mint the moment: This play doesn't exist"
+                !self.retired[playID]!: "Cannot mint the moment from this play: This play has been retired"
             }
 
             // get the number of moments that have been minted for this play
@@ -491,7 +491,7 @@ pub contract TopShot: NonFungibleToken {
         //
         pub fun borrowSet(setID: UInt32): &Set {
             pre {
-                TopShot.sets[setID] != nil: "Set doesn't exist"
+                TopShot.sets[setID] != nil: "Cannot borrow Set: The Set doesn't exist"
             }
             return &TopShot.sets[setID] as &Set
         }
@@ -526,6 +526,14 @@ pub contract TopShot: NonFungibleToken {
         pub fun batchDeposit(tokens: @NonFungibleToken.Collection)
         pub fun getIDs(): [UInt64]
         pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT
+        pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
+            // If the result isn't nil, the id of the returned reference
+            // should be the same as the argument to the function
+            post {
+                (result == nil) || (result?.id == id): 
+                    "Cannot borrow Moment reference: The ID of the returned reference is incorrect"
+            }
+        }
     }
 
     // Collection is a resource that every user who owns NFTs 
@@ -542,7 +550,8 @@ pub contract TopShot: NonFungibleToken {
 
         // withdraw removes an Moment from the collection and moves it to the caller
         pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT {
-            let token <- self.ownedNFTs.remove(key: withdrawID) ?? panic("missing Moment")
+            let token <- self.ownedNFTs.remove(key: withdrawID) 
+                ?? panic("Cannot withdraw: Moment does not exist in the collection")
 
             emit Withdraw(id: token.id, from: self.owner?.address)
             
@@ -593,6 +602,16 @@ pub contract TopShot: NonFungibleToken {
         }
 
         // borrowNFT Returns a borrowed reference to a Moment in the collection
+        // so that the caller can read its ID
+        //
+        // Parameters: id: The ID of the NFT to get the reference for
+        //
+        // Returns: A reference to the NFT
+        pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
+            return &self.ownedNFTs[id] as &NonFungibleToken.NFT
+        }
+
+        // borrowMoment Returns a borrowed reference to a Moment in the collection
         // so that the caller can read data and call methods from it
         // They can use this to read its setID, playID, serialNumber,
         // or any of the setData or Play Data associated with it by
@@ -602,8 +621,13 @@ pub contract TopShot: NonFungibleToken {
         // Parameters: id: The ID of the NFT to get the reference for
         //
         // Returns: A reference to the NFT
-        pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
-            return &self.ownedNFTs[id] as &NonFungibleToken.NFT
+        pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
+            if self.ownedNFTs[id] != nil {
+                let ref = &self.ownedNFTs[id] as auth &NonFungibleToken.NFT
+                return ref as! &TopShot.NFT
+            } else {
+                return nil
+            }
         }
 
         // If a transaction destroys the Collection object,
@@ -629,6 +653,13 @@ pub contract TopShot: NonFungibleToken {
         return <-create TopShot.Collection()
     }
 
+    // getAllPlays returns all the plays in topshot
+    //
+    // Returns: An array of all the plays that have been created
+    pub fun getAllPlays(): [TopShot.Play] {
+        return TopShot.playDatas.values
+    }
+
     // getPlayMetaData returns all the metadata associated with a specific play
     // 
     // Parameters: playID: The id of the play that is being searched
@@ -648,7 +679,133 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: The metadata field as a String Optional
     pub fun getPlayMetaDataByField(playID: UInt32, field: String): String? {
-        return TopShot.playDatas[playID]!.metadata[field]
+        // Don't force a revert if the playID or field is invalid
+        if let play = TopShot.playDatas[playID] {
+            return play.metadata[field]
+        } else {
+            return nil
+        }
+    }
+
+    // getSetName returns the name that the specified set
+    //            is associated with.
+    // 
+    // Parameters: setID: The id of the set that is being searched
+    //
+    // Returns: The name of the set
+    pub fun getSetName(setID: UInt32): String? {
+        // Don't force a revert if the setID is invalid
+        return TopShot.setDatas[setID]?.name
+    }
+
+    // getSetSeries returns the series that the specified set
+    //              is associated with.
+    // 
+    // Parameters: setID: The id of the set that is being searched
+    //
+    // Returns: The series that the set belongs to
+    pub fun getSetSeries(setID: UInt32): UInt32? {
+        // Don't force a revert if the setID is invalid
+        return TopShot.setDatas[setID]?.series
+    }
+
+    // getSetIDsByName returns the IDs that the specified set name
+    //                 is associated with.
+    // 
+    // Parameters: setName: The name of the set that is being searched
+    //
+    // Returns: An array of the IDs of the set if it exists, or nil if doesn't
+    pub fun getSetIDsByName(setName: String): [UInt32]? {
+        var setIDs: [UInt32] = []
+
+        // iterate through all the setDatas and search for the name
+        for setData in TopShot.setDatas.values {
+            if setName == setData.name {
+                // if the name is found, return the ID
+                setIDs.append(setData.setID)
+            }
+        }
+
+        // If the name isn't found, return nil
+        // Don't force a revert if the setName is invalid
+        if setIDs.length == 0 {
+            return nil
+        } else {
+            return setIDs
+        }
+    }
+
+    // getPlaysInSet returns the list of play IDs that are in the set
+    // 
+    // Parameters: setID: The id of the set that is being searched
+    //
+    // Returns: An array of play IDs
+    pub fun getPlaysInSet(setID: UInt32): [UInt32]? {
+        // Don't force a revert if the setID is invalid
+        return TopShot.sets[setID]?.plays
+    }
+
+    // isEditionRetired returns a boolean that indicates if a set/play combo
+    //                  (otherwise known as an edition) is retired.
+    //                  If an edition is retired, it still remains in the set,
+    //                  but moments can no longer be minted from it.
+    // 
+    // Parameters: setID: The id of the set that is being searched
+    //             playID: The id of the play that is being searched
+    //
+    // Returns: Boolean indicating if the edition is retired or not
+    pub fun isEditionRetired(setID: UInt32, playID: UInt32): Bool? {
+        // Don't force a revert if the set or play ID is invalid
+        // remove the set from the dictionary to ket its field
+        if let setToRead <- TopShot.sets.remove(key: setID) {
+
+            let retired = setToRead.retired[playID]
+
+            TopShot.sets[setID] <-! setToRead
+
+            return retired
+        } else {
+            return nil
+        }
+    }
+
+    // isSetLocked returns a boolean that indicates if a set
+    //             is locked. If an set is locked, 
+    //             new plays can no longer be added to it,
+    //             but moments can still be minted from plays
+    //             that are currently in it.
+    // 
+    // Parameters: setID: The id of the set that is being searched
+    //
+    // Returns: Boolean indicating if the set is locked or not
+    pub fun isSetLocked(setID: UInt32): Bool? {
+        // Don't force a revert if the setID is invalid
+        return TopShot.sets[setID]?.locked
+    }
+
+    // getNumMomentsInEdition return the number of moments that have been 
+    //                        minted from a certain edition.
+    //
+    // Parameters: setID: The id of the set that is being searched
+    //             playID: The id of the play that is being searched
+    //
+    // Returns: The total number of moments 
+    //          that have been minted from an edition
+    pub fun getNumMomentsInEdition(setID: UInt32, playID: UInt32): UInt32? {
+        // Don't force a revert if the set or play ID is invalid
+        // remove the set from the dictionary to get its field
+        if let setToRead <- TopShot.sets.remove(key: setID) {
+
+            // read the numMintedPerPlay
+            let amount = setToRead.numberMintedPerPlay[playID]
+
+            // put the set back
+            TopShot.sets[setID] <-! setToRead
+
+            return amount
+        } else {
+            return nil
+        }
     }
 
     // -----------------------------------------------------------------------
