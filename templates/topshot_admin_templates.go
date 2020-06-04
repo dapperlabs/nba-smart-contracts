@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-
-	"github.com/dapperlabs/nba-smart-contracts/data"
-
+	"github.com/dapperlabs/nba-smart-contracts/templates/data"
 	"github.com/onflow/flow-go-sdk"
 )
 
