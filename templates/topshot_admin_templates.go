@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -22,9 +23,6 @@ func uint32ToCadenceArr(nums []uint32) []byte {
 // GenerateMintPlayScript creates a new play data struct
 // and initializes it with metadata
 func GenerateMintPlayScript(tokenCodeAddr flow.Address, metadata data.PlayMetadata) []byte {
-	metadata = data.PlayMetadata{
-		FullName: "testcase testlofsky",
-	}
 	md, err := json.Marshal(metadata)
 	if err != nil {
 		return nil
@@ -280,4 +278,31 @@ func GenerateChangeSeriesScript(tokenCodeAddr flow.Address) []byte {
 			}
 		}`
 	return []byte(fmt.Sprintf(template, tokenCodeAddr.String()))
+}
+
+// GenerateInvalidChangePlaysScript tries to modify the playDatas dictionary
+// which should be invalid
+func GenerateInvalidChangePlaysScript(tokenCodeAddr flow.Address) []byte {
+	template := `
+		import TopShot from 0x%s
+		
+		transaction {
+			prepare(acct: AuthAccount) {
+				TopShot.playDatas[UInt32(1)] = nil
+			}
+		}`
+	return []byte(fmt.Sprintf(template, tokenCodeAddr.String()))
+}
+
+// GenerateUnsafeNotInitializingSetCodeScript generates a script to upgrade the topshot
+// contract
+func GenerateUnsafeNotInitializingSetCodeScript(newCode []byte) []byte {
+	template := `
+		
+		transaction {
+			prepare(acct: AuthAccount) {
+				acct.unsafeNotInitializingSetCode("%s".decodeHex())
+			}
+		}`
+	return []byte(fmt.Sprintf(template, hex.EncodeToString(newCode)))
 }
