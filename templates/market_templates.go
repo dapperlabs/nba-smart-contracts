@@ -81,6 +81,29 @@ func GenerateCreateAndStartSaleScript(topshotAddr, marketAddr, beneficiaryAddr f
 	return []byte(fmt.Sprintf(template, marketAddr, beneficiaryAddr, tokenStorageName, cutPercentage, tokenID, price, topshotAddr))
 }
 
+// GenerateWithdrawFromSaleScript creates a cadence transaction that starts a sale by depositing
+// an NFT into the Sale Collection with an associated price
+func GenerateWithdrawFromSaleScript(topshotAddr, marketAddr flow.Address, id int) []byte {
+	template := `
+		import TopShot from 0x%[1]s
+		import Market from 0x%[2]s
+
+		transaction {
+			prepare(acct: AuthAccount) {
+				let nftCollection = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
+					?? panic("Could not borrow from MomentCollection in storage")
+
+				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+					?? panic("Could not borrow from sale in storage")
+
+				let token <- topshotSaleCollection.withdraw(tokenID: %[3]d)
+
+				nftCollection.deposit(token: <-token)
+			}
+		}`
+	return []byte(fmt.Sprintf(template, topshotAddr, marketAddr, id))
+}
+
 // GenerateChangePriceScript creates a cadence transaction that changes the price on an existing sale
 func GenerateChangePriceScript(topshotAddr, marketAddr flow.Address, id, price int) []byte {
 	template := `

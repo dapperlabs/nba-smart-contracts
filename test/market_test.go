@@ -284,4 +284,14 @@ func TestMarket(t *testing.T) {
 		)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSalePercentageScript(marketAddr, bastianAddress, .18), false)
 	})
+
+	t.Run("Can withdraw a moment from a sale", func(t *testing.T) {
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateWithdrawFromSaleScript(topshotAddr, marketAddr, 2),
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			false,
+		)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 0), false)
+	})
 }
