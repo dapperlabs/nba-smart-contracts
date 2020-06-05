@@ -3,7 +3,6 @@ module github.com/dapperlabs/nba-smart-contracts/contracts
 go 1.14
 
 require (
-	github.com/dapperlabs/nba-smart-contracts/templates v0.1.6 // indirect
 	github.com/ethereum/go-ethereum v1.9.13 // indirect
 	github.com/kevinburke/go-bindata v3.21.0+incompatible // indirect
 	github.com/onflow/cadence v0.4.0 // indirect
