@@ -25,10 +25,10 @@
 
 */
 
-import FungibleToken from 0x04
-import ExampleToken from 0x05
-import NonFungibleToken from 0x02
-import TopShot from 0x03
+import FungibleToken from 0xFUNGIBLETOKENADDRESS
+import DapperUtilityCoin from 0xDUCADDRESS
+import NonFungibleToken from 0xNFTADDRESS
+import TopShot from 0xTOPSHOTADDRESS
 
 pub contract Market {
 
@@ -40,11 +40,18 @@ pub contract Market {
 
     // The interface that user can publish to allow others too access their sale
     pub resource interface SalePublic {
-        pub var prices: {UInt64: UFix64}
         pub var cutPercentage: UFix64
-        pub fun purchase(tokenID: UInt64, recipient: &AnyResource{TopShot.MomentCollectionPublic}, buyTokens: @ExampleToken.Vault)
+        pub fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT
         pub fun getPrice(tokenID: UInt64): UFix64?
         pub fun getIDs(): [UInt64]
+        pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
+            // If the result isn't nil, the id of the returned reference
+            // should be the same as the argument to the function
+            post {
+                (result == nil) || (result?.id == id): 
+                    "Cannot borrow Moment reference: The ID of the returned reference is incorrect"
+            }
+        }
     }
 
     pub resource SaleCollection: SalePublic {
@@ -53,7 +60,7 @@ pub contract Market {
         access(self) var forSale: @TopShot.Collection
 
         // dictionary of the prices for each NFT by ID
-        pub var prices: {UInt64: UFix64}
+        access(self) var prices: {UInt64: UFix64}
 
         // the fungible token vault of the owner of this sale
         // so that when someone buys a token, this resource can deposit
@@ -72,7 +79,7 @@ pub contract Market {
             pre {
                 ownerCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
                     "Owner's Receiver Capability is invalid!"
-                beneficiaryCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
+                beneficiaryCapability.borrow<&DapperUtilityCoin.Vault{FungibleToken.Receiver}>() != nil: 
                     "Beneficiary's Receiver Capability is invalid!" 
             }
             
@@ -124,7 +131,8 @@ pub contract Market {
         }
 
         // purchase lets a user send tokens to purchase an NFT that is for sale
-        pub fun purchase(tokenID: UInt64, recipient: &AnyResource{TopShot.MomentCollectionPublic}, buyTokens: @ExampleToken.Vault) {
+        // the purchased NFT is returned to the transaction context
+        pub fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
             pre {
                 self.forSale.ownedNFTs[tokenID] != nil && self.prices[tokenID] != nil:
                     "No token matching this ID for sale!"
@@ -147,10 +155,9 @@ pub contract Market {
             self.ownerCapability.borrow<&{FungibleToken.Receiver}>()!
                 .deposit(from: <-buyTokens)
 
-            // deposit the NFT into the buyers collection
-            recipient.deposit(token: <-self.withdraw(tokenID: tokenID))
-
             emit TokenPurchased(id: tokenID, price: price, seller: self.owner?.address)
+
+            return <-self.withdraw(tokenID: tokenID)
         }
 
         // idPrice returns the price of a specific token in the sale
@@ -166,10 +173,7 @@ pub contract Market {
 
         // borrowMoment Returns a borrowed reference to a Moment in the collection
         // so that the caller can read data from it
-        pub fun borrowMoment(id: UInt64): &TopShot.NFT {
-            post {
-                result.id == id: "The ID of the reference is incorrect"
-            }
+        pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
             let ref = self.forSale.borrowMoment(id: id)
             return ref
         }
