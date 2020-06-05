@@ -155,6 +155,26 @@ func GenerateReturnPlayMetadataScript(tokenAddr flow.Address, playID int, expect
 	return []byte(fmt.Sprintf(template, tokenAddr, playID, expectedKey, expectedValue))
 }
 
+// GenerateReturnPlayMetadataByFieldScript creates a script that returns the metadata of a play
+func GenerateReturnPlayMetadataByFieldScript(tokenAddr flow.Address, playID int, expectedKey, expectedValue string) []byte {
+	template := `
+		import TopShot from 0x%s
+
+		pub fun main(): String {
+			let metadata = TopShot.getPlayMetaDataByField(playID: %d, field: "%s")!
+
+			assert (
+				metadata == "%s",
+				message: "Field Value is incorrect"
+			)
+
+			return metadata
+		}
+	`
+
+	return []byte(fmt.Sprintf(template, tokenAddr, playID, expectedKey, expectedValue))
+}
+
 // GenerateReturnSetNameScript creates a script that returns the metadata of a play
 func GenerateReturnSetNameScript(tokenAddr flow.Address, setID int, expectedName string) []byte {
 	template := `

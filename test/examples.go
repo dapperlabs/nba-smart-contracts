@@ -130,10 +130,15 @@ func Submit(
 
 // ExecuteScriptAndCheck executes a script and checks to make sure
 // that it succeeded
-func ExecuteScriptAndCheck(t *testing.T, b *emulator.Blockchain, script []byte) {
+func ExecuteScriptAndCheck(t *testing.T, b *emulator.Blockchain, script []byte, shouldRevert bool) {
 	result, err := b.ExecuteScript(script)
 	require.NoError(t, err)
-	if !assert.True(t, result.Succeeded()) {
-		t.Log(result.Error.Error())
+	if shouldRevert {
+		assert.True(t, result.Reverted())
+	} else {
+		if !assert.True(t, result.Succeeded()) {
+			t.Log(result.Error.Error())
+			cmd.PrettyPrintError(result.Error, "", map[string]string{"": ""})
+		}
 	}
 }
