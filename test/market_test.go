@@ -46,7 +46,7 @@ func TestMarketDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
-	// Should be able to deploy a contract as a new account with no keys.
+	// Should be able to deploy a token contract
 	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
 	tokenAddr, err := b.CreateAccount(nil, []byte(tokenCode))
 	if !assert.NoError(t, err) {
@@ -55,7 +55,7 @@ func TestMarketDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
-	// Should be able to deploy a contract as a new account with no keys.
+	// Should be able to deploy the market contract
 	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), tokenAddr.String())
 	_, err = b.CreateAccount(nil, marketCode)
 	if !assert.Nil(t, err) {
@@ -65,6 +65,7 @@ func TestMarketDeployment(t *testing.T) {
 	require.NoError(t, err)
 }
 
+// Tests all the main functionality of Sale Collections
 func TestMarket(t *testing.T) {
 	b := NewEmulator()
 
@@ -81,7 +82,6 @@ func TestMarket(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should be able to deploy the topshot contract
-	// as a new account with no keys.
 	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, err := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
@@ -91,7 +91,7 @@ func TestMarket(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
-	// Should be able to deploy a contract as a new account with no keys.
+	// Should be able to deploy the token contract
 	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
 	tokenAccountKey, tokenSigner := accountKeys.NewWithSigner()
 	tokenAddr, err := b.CreateAccount([]*flow.AccountKey{tokenAccountKey}, []byte(tokenCode))
@@ -101,7 +101,7 @@ func TestMarket(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
-	// Should be able to deploy a contract as a new account with no keys.
+	// Should be able to deploy the token contract
 	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), tokenAddr.String())
 	marketAddr, err := b.CreateAccount(nil, marketCode)
 	if !assert.Nil(t, err) {
@@ -117,9 +117,10 @@ func TestMarket(t *testing.T) {
 	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
 	joshAddress, err := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
 
-	// Admin sends a transaction to create a play
+	// Setup both accounts to have DUC and a sale collection
 	t.Run("Should be able to setup both users' accounts to use the market", func(t *testing.T) {
 
+		// create a Vault for bastian
 		createSignAndSubmit(
 			t, b,
 			fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName, defaultTokenStorage),
@@ -127,6 +128,7 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 
+		// create a Vault for Josh
 		createSignAndSubmit(
 			t, b,
 			fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName, defaultTokenStorage),
@@ -134,6 +136,7 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 
+		// Mint tokens to bastian's vault
 		createSignAndSubmit(
 			t, b,
 			fungibleTokenTemplates.GenerateMintTokensScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, bastianAddress, defaultTokenName, defaultTokenStorage, 80),
@@ -141,6 +144,8 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 
+		// Create a sale collection for josh's account, setting bastian as the beneficiary
+		// and with a 15% cut
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateCreateSaleScript(marketAddr, bastianAddress, defaultTokenStorage, .15),
@@ -149,15 +154,17 @@ func TestMarket(t *testing.T) {
 		)
 	})
 
-	// Admin sends a transaction to create a play
+	// Admin sends transactions to create a play, set, and moments
 	t.Run("Should be able to setup a play, set, and mint moment", func(t *testing.T) {
+		// create a new play
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateMintPlayScript(topshotAddr, data.PlayMetadata{FullName: "Lebron"}),
+			templates.GenerateMintPlayScript(topshotAddr, data.GenerateEmptyPlay("Lebron")),
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
+		// create a new set
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateMintSetScript(topshotAddr, "Genesis"),
@@ -165,6 +172,7 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 
+		// add the play to the set
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateAddPlayToSetScript(topshotAddr, 1, 1),
@@ -172,6 +180,7 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 
+		// mint a batch of moments
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateBatchMintMomentScript(topshotAddr, topshotAddr, 1, 1, 6),
@@ -179,6 +188,7 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 
+		// setup bastian's account to hold topshot moments
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateSetupAccountScript(nftAddr, topshotAddr),
@@ -186,6 +196,7 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 
+		// setup josh's account to hold topshot moments
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateSetupAccountScript(nftAddr, topshotAddr),
@@ -193,6 +204,7 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 
+		// transfer a moment to josh's account
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateTransferMomentScript(nftAddr, topshotAddr, joshAddress, 1),
@@ -200,6 +212,7 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 
+		// transfer a moment to bastian's account
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateTransferMomentScript(nftAddr, topshotAddr, bastianAddress, 2),
@@ -209,19 +222,21 @@ func TestMarket(t *testing.T) {
 	})
 
 	t.Run("Can put an NFT up for sale", func(t *testing.T) {
+		// start a sale with the moment josh owns, setting its price to 80
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateStartSaleScript(topshotAddr, marketAddr, 1, 80),
 			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
 			false,
 		)
+		// check the price, sale length, and the sale's data
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, joshAddress, 1, 80), false)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, joshAddress, 1), false)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, joshAddress, 1, 1), false)
 	})
 
 	t.Run("Cannot buy an NFT for less than the sale price", func(t *testing.T) {
-
+		// bastian tries to buy the moment for only 9 tokens
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateBuySaleScript(tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 9),
@@ -230,8 +245,18 @@ func TestMarket(t *testing.T) {
 		)
 	})
 
-	t.Run("Cannot buy an NFT that is not for sale", func(t *testing.T) {
+	t.Run("Cannot buy an NFT for more than the sale price", func(t *testing.T) {
+		// bastian tries to buy the moment for too many tokens
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateBuySaleScript(tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 90),
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			true,
+		)
+	})
 
+	t.Run("Cannot buy an NFT that is not for sale", func(t *testing.T) {
+		// bastian tries to buy the wrong moment
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateBuySaleScript(tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 2, 80),
@@ -241,7 +266,7 @@ func TestMarket(t *testing.T) {
 	})
 
 	t.Run("Can buy an NFT that is for sale", func(t *testing.T) {
-
+		// bastian sends the correct amount of tokens to buy it
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateBuySaleScript(tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 80),
@@ -249,43 +274,78 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 
+		// make sure that the cut was taken correctly and that josh receied the purchasing tokens
 		ExecuteScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, bastianAddress, defaultTokenName, defaultTokenStorage, 12), false)
 		ExecuteScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, joshAddress, defaultTokenName, defaultTokenStorage, 68), false)
+
+		// make sure bastian received the purchase's moment
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, bastianAddress, 1), false)
 	})
 
 	t.Run("Can create a sale and put an NFT up for sale in one transaction", func(t *testing.T) {
+		// Bastian creates a new sale collection object and puts the moment for sale,
+		// setting himself as the beneficiary with a 15% cut
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateCreateAndStartSaleScript(topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .15, 2, 50),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
+		// Make sure that moment id 2 is for sale for 50 tokens and the data is correct
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), false)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), false)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), false)
 	})
 
+	t.Run("Cannot change the price of a moment that isn't for sale", func(t *testing.T) {
+		// try to change the price of the wrong moment
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateChangePriceScript(topshotAddr, marketAddr, 5, 40),
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			true,
+		)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), false)
+	})
+
 	t.Run("Can change the price of a sale", func(t *testing.T) {
+		// change the price of the moment
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateChangePriceScript(topshotAddr, marketAddr, 2, 40),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
+		// make sure the price has been changed
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 40), false)
 	})
 
 	t.Run("Can change the cut percentage of a sale", func(t *testing.T) {
+		// change the cut percentage for the sale collection to 18%
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateChangePercentageScript(topshotAddr, marketAddr, .18),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
+		// make sure the percentage was changed correctly
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSalePercentageScript(marketAddr, bastianAddress, .18), false)
 	})
 
+	t.Run("Cannot withdraw a moment that doesn't exist from a sale", func(t *testing.T) {
+		// bastian tries to withdraw the wrong moment
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateWithdrawFromSaleScript(topshotAddr, marketAddr, 7),
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			true,
+		)
+		// make sure nothing was withdrawn
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), false)
+	})
+
 	t.Run("Can withdraw a moment from a sale", func(t *testing.T) {
+		// bastian withdraws the correct moment
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateWithdrawFromSaleScript(topshotAddr, marketAddr, 2),
