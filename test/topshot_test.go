@@ -98,7 +98,7 @@ func TestMintNFTs(t *testing.T) {
 	t.Run("Should be able to create a new Play", func(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateMintPlayScript(topshotAddr, data.PlayMetadata{FullName: "Lebron"}),
+			templates.GenerateMintPlayScript(topshotAddr, data.GenerateEmptyPlay("Lebron")),
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
@@ -108,21 +108,21 @@ func TestMintNFTs(t *testing.T) {
 	t.Run("Should be able to create multiple new Plays", func(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateMintPlayScript(topshotAddr, data.PlayMetadata{FullName: "Oladipo"}),
+			templates.GenerateMintPlayScript(topshotAddr, data.GenerateEmptyPlay("Oladipo")),
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateMintPlayScript(topshotAddr, data.PlayMetadata{FullName: "Hayward"}),
+			templates.GenerateMintPlayScript(topshotAddr, data.GenerateEmptyPlay("Hayward")),
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateMintPlayScript(topshotAddr, data.PlayMetadata{FullName: "Durant"}),
+			templates.GenerateMintPlayScript(topshotAddr, data.GenerateEmptyPlay("Durant")),
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
@@ -388,7 +388,7 @@ func TestUpgradeTopshot(t *testing.T) {
 
 	// create a new play
 	t.Run("Should be able to create a new Play", func(t *testing.T) {
-		metadata := data.PlayMetadata{FullName: "Lebron"}
+		metadata := data.GenerateEmptyPlay("Lebron")
 
 		createSignAndSubmit(
 			t, b,
@@ -589,7 +589,7 @@ func TestUpgradeTopshot(t *testing.T) {
 
 	// Create a new play
 	t.Run("Should be able to create a new Play", func(t *testing.T) {
-		metadata := data.PlayMetadata{FullName: "Jordan"}
+		metadata := data.GenerateEmptyPlay("Jordan")
 
 		createSignAndSubmit(
 			t, b,
@@ -832,7 +832,7 @@ func TestTransferAdmin(t *testing.T) {
 
 	// cannot create a new play with the old admin
 	t.Run("Shouldn't be able to create a new Play with the old admin account", func(t *testing.T) {
-		metadata := data.PlayMetadata{FullName: "Lebron"}
+		metadata := data.GenerateEmptyPlay("Lebron")
 
 		createSignAndSubmit(
 			t, b,
@@ -844,7 +844,7 @@ func TestTransferAdmin(t *testing.T) {
 
 	// can create a new play with the new admin
 	t.Run("Should be able to create a new Play with the new Admin account", func(t *testing.T) {
-		metadata := data.PlayMetadata{FullName: "Lebron"}
+		metadata := data.GenerateEmptyPlay("Lebron")
 
 		createSignAndSubmit(
 			t, b,

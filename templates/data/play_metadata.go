@@ -32,3 +32,33 @@ type PlayMetadata struct {
 	HomeTeamScore        *int32 `json:",string"`
 	AwayTeamScore        *int32 `json:",string"`
 }
+
+// GenerateEmptyPlay generates a play with all its fields
+// empty except for FullName for testing
+func GenerateEmptyPlay(fullName string) PlayMetadata {
+	num := int32(10)
+	return PlayMetadata{FullName: fullName,
+		FirstName:            "",
+		LastName:             "",
+		Birthdate:            "",
+		Birthplace:           "",
+		JerseyNumber:         "",
+		TeamAtMomentNBAID:    "",
+		CurrentTeamID:        "",
+		TeamAtMoment:         "",
+		CurrentTeam:          "",
+		PrimaryPosition:      "",
+		PlayerPosition:       "",
+		Height:               &num,
+		Weight:               &num,
+		TotalYearsExperience: "",
+		NbaSeason:            "",
+		DateOfMoment:         "",
+		PlayCategory:         "",
+		PlayType:             "",
+		HomeTeamName:         "",
+		AwayTeamName:         "",
+		HomeTeamScore:        &num,
+		AwayTeamScore:        &num,
+	}
+}
