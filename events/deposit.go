@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	// This variable specifies that there is a Withdraw Event on a TopShot Contract located at address 0x04
+	// This variable specifies that there is a Deposit Event on a TopShot Contract located at address 0x04
 	EventDeposit = "TopShot.Deposit"
 )
 
