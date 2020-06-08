@@ -15,8 +15,10 @@ const (
 	shardedCollectionFile          = "TopShotShardedCollection.cdc"
 	shardedCollectionV1File        = "TopShotShardedCollectionV1.cdc"
 	adminReceiverFile              = "TopshotAdminReceiver.cdc"
-	defaultNonFungibleTokenAddress = "02"
-	defaultFungibleTokenAddress    = "04"
+	defaultNonFungibleTokenAddress = "NFTADDRESS"
+	defaultFungibleTokenAddress    = "FUNGIBLETOKENADDRESS"
+	defaultTopshotAddress          = "TOPSHOTADDRESS"
+	defaultShardedAddress          = "SHARDEDADDRESS"
 )
 
 // GenerateTopShotContract returns a copy
@@ -46,7 +48,7 @@ func GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr string) []byt
 
 	shardedCode := assets.MustAssetString(shardedCollectionFile)
 	codeWithNFTAddr := strings.ReplaceAll(shardedCode, defaultNonFungibleTokenAddress, nftAddr)
-	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, "03", topshotAddr)
+	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 
 	return []byte(codeWithTopshotAddr)
 }
@@ -57,7 +59,7 @@ func GenerateTopShotShardedCollectionV1Contract(nftAddr, topshotAddr string) []b
 
 	shardedCode := assets.MustAssetString(shardedCollectionV1File)
 	codeWithNFTAddr := strings.ReplaceAll(shardedCode, defaultNonFungibleTokenAddress, nftAddr)
-	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, "03", topshotAddr)
+	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 
 	return []byte(codeWithTopshotAddr)
 }
@@ -67,8 +69,8 @@ func GenerateTopShotShardedCollectionV1Contract(nftAddr, topshotAddr string) []b
 func GenerateTopshotAdminReceiverContract(topshotAddr, shardedAddr string) []byte {
 
 	adminReceiverCode := assets.MustAssetString(adminReceiverFile)
-	codeWithTopshotAddr := strings.ReplaceAll(adminReceiverCode, "03", topshotAddr)
-	codeWithShardedAddr := strings.ReplaceAll(codeWithTopshotAddr, "04", shardedAddr)
+	codeWithTopshotAddr := strings.ReplaceAll(adminReceiverCode, defaultTopshotAddress, topshotAddr)
+	codeWithShardedAddr := strings.ReplaceAll(codeWithTopshotAddr, defaultShardedAddress, shardedAddr)
 
 	return []byte(codeWithShardedAddr)
 }
@@ -79,9 +81,9 @@ func GenerateTopShotMarketContract(ftAddr, nftAddr, topshotAddr, ducTokenAddr st
 
 	marketCode := assets.MustAssetString(marketFile)
 	codeWithNFTAddr := strings.ReplaceAll(marketCode, defaultNonFungibleTokenAddress, nftAddr)
-	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, "03", topshotAddr)
+	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 	codeWithFTAddr := strings.ReplaceAll(codeWithTopshotAddr, defaultFungibleTokenAddress, ftAddr)
-	codeWithFlowTokenAddr := strings.ReplaceAll(codeWithFTAddr, "05", ducTokenAddr)
+	codeWithTokenAddr := strings.ReplaceAll(codeWithFTAddr, "DUCADDRESS", ducTokenAddr)
 
-	return []byte(codeWithFlowTokenAddr)
+	return []byte(codeWithTokenAddr)
 }

@@ -47,7 +47,7 @@
 
 */
 
-import NonFungibleToken from 0x02
+import NonFungibleToken from 0xNFTADDRESS
 
 pub contract TopShot: NonFungibleToken {
 
