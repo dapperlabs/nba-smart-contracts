@@ -354,4 +354,17 @@ func TestMarket(t *testing.T) {
 		)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 0), false)
 	})
+
+	t.Run("Can use the create and start sale to start a sale even if there is already sale in storage", func(t *testing.T) {
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateCreateAndStartSaleScript(topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .15, 2, 50),
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			false,
+		)
+		// Make sure that moment id 2 is for sale for 50 tokens and the data is correct
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), false)
+	})
 }

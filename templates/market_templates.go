@@ -61,21 +61,36 @@ func GenerateCreateAndStartSaleScript(topshotAddr, marketAddr, beneficiaryAddr f
 
 		transaction {
 			prepare(acct: AuthAccount) {
-				let ownerCapability = acct.getCapability(/public/%[3]sReceiver)!
-				let beneficiaryCapability = getAccount(0x%[2]s).getCapability(/public/%[3]sReceiver)!
+				// check to see if a sale collection already exists
+				if acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection) == nil {
+					// get the fungible token capabilities for the owner and beneficiary
+					let ownerCapability = acct.getCapability(/public/%[3]sReceiver)!
+					let beneficiaryCapability = getAccount(0x%[2]s).getCapability(/public/%[3]sReceiver)!
 
-				let topshotSaleCollection <- Market.createSaleCollection(ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: %[4]f)
-
+					// create a new sale collection
+					let topshotSaleCollection <- Market.createSaleCollection(ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: %[4]f)
+					
+					// save it to storage
+					acct.save(<-topshotSaleCollection, to: /storage/topshotSaleCollection)
+				
+					// create a public link to the sale collection
+					acct.link<&Market.SaleCollection{Market.SalePublic}>(/public/topshotSaleCollection, target: /storage/topshotSaleCollection)
+				}
+				
+				// borrow a reference to the seller's moment collection
 				let nftCollection = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
 					?? panic("Could not borrow from MomentCollection in storage")
 
+				// withdraw the moment to put up for sale
 				let token <- nftCollection.withdraw(withdrawID: %[5]d) as! @TopShot.NFT
+
+				// borrow a reference to the sale
+				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+					?? panic("Could not borrow from sale in storage")
 				
+				// the the moment for sale
 				topshotSaleCollection.listForSale(token: <-token, price: %[6]d.0)
 				
-				acct.save(<-topshotSaleCollection, to: /storage/topshotSaleCollection)
-				
-				acct.link<&Market.SaleCollection{Market.SalePublic}>(/public/topshotSaleCollection, target: /storage/topshotSaleCollection)
 			}
 		}`
 	return []byte(fmt.Sprintf(template, marketAddr, beneficiaryAddr, tokenStorageName, cutPercentage, tokenID, price, topshotAddr))
