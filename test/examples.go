@@ -5,15 +5,20 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/onflow/cadence/runtime/cmd"
-	"github.com/onflow/flow-go-sdk"
 
 	emulator "github.com/dapperlabs/flow-emulator"
 )
+
+type BlockchainAPI interface {
+	emulator.BlockchainAPI
+	CreateAccount(publicKeys []*flow.AccountKey, code []byte) (flow.Address, error)
+}
 
 // ReadFile reads a file from the file system
 func ReadFile(path string) []byte {
@@ -38,7 +43,7 @@ func DownloadFile(url string) ([]byte, error) {
 }
 
 // NewEmulator returns a emulator object for testing
-func NewEmulator() *emulator.Blockchain {
+func NewEmulator() BlockchainAPI {
 	b, err := emulator.NewBlockchain()
 	if err != nil {
 		panic(err)
@@ -49,7 +54,7 @@ func NewEmulator() *emulator.Blockchain {
 // createSignAndSubmit creates a new transaction and submits it
 func createSignAndSubmit(
 	t *testing.T,
-	b *emulator.Blockchain,
+	b emulator.BlockchainAPI,
 	template []byte,
 	signerAddresses []flow.Address,
 	signers []crypto.Signer,
@@ -77,7 +82,7 @@ func createSignAndSubmit(
 // This function asserts the correct result and commits the block if it passed
 func SignAndSubmit(
 	t *testing.T,
-	b *emulator.Blockchain,
+	b emulator.BlockchainAPI,
 	tx *flow.Transaction,
 	signerAddresses []flow.Address,
 	signers []crypto.Signer,
@@ -104,7 +109,7 @@ func SignAndSubmit(
 // if it fails or not
 func Submit(
 	t *testing.T,
-	b *emulator.Blockchain,
+	b emulator.BlockchainAPI,
 	tx *flow.Transaction,
 	shouldRevert bool,
 ) {
@@ -130,8 +135,11 @@ func Submit(
 
 // ExecuteScriptAndCheck executes a script and checks to make sure
 // that it succeeded
-func ExecuteScriptAndCheck(t *testing.T, b *emulator.Blockchain, script []byte, shouldRevert bool) {
+func ExecuteScriptAndCheck(t *testing.T, b emulator.BlockchainAPI, script []byte, shouldRevert bool) {
 	result, err := b.ExecuteScript(script)
+	if err != nil {
+		t.Log(string(script))
+	}
 	require.NoError(t, err)
 	if shouldRevert {
 		assert.True(t, result.Reverted())
