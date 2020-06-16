@@ -366,12 +366,14 @@ func TestUpgradeTopshot(t *testing.T) {
 	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
 	nftAddr, err := b.CreateAccount(nil, nftCode)
 	require.NoError(t, err, "Could not create nft interface")
+	t.Logf("NFT Address: %s", nftAddr)
 
 	// First, deploy the original version of the topshot contract
 	topshotCode := contracts.GenerateTopShotV1Contract(nftAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, err := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
 	require.NoError(t, err, "Could not create topshot contract")
+	t.Logf("TopShot Address: %s", topshotAddr)
 
 	// check the contract fields initialization
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "currentSeries", "UInt32", 0), false)
@@ -727,7 +729,7 @@ func TestUpgradeTopshot(t *testing.T) {
 			false,
 		)
 
-		// reture an invalid play which should fail
+		// return an invalid play which should fail
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateRetirePlayScript(topshotAddr, 2, 9),

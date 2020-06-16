@@ -72,11 +72,18 @@ func (c *Client) ExecuteNextTransaction() (*types.TransactionResult, error) {
 	ctx := context.Background()
 	tx := c.txQueue[0]
 	c.txQueue = c.txQueue[1:]
+
 	err := c.flowClient.SendTransaction(ctx, tx)
 	if err != nil {
 		return nil, err
 	}
 	txResp := examples.WaitForSeal(ctx, c.flowClient, tx.ID())
+
+	// If service account was the proposer, we have to manage the sequence number here
+	if tx.ProposalKey.Address == c.serviceKey.Address && tx.ProposalKey.KeyID == c.serviceKey.ID {
+		c.serviceKey.SequenceNumber++
+	}
+
 	return &types.TransactionResult{
 		TransactionID: tx.ID(),
 		Error:         txResp.Error,
@@ -85,9 +92,15 @@ func (c *Client) ExecuteNextTransaction() (*types.TransactionResult, error) {
 }
 func (c *Client) CreateAccount(publicKeys []*flow.AccountKey, code []byte) (flow.Address, error) {
 	ctx := context.Background()
+
+	for _, key := range publicKeys {
+		// Reset IDs and Sequence Numbers
+		key.ID = 0
+		key.SequenceNumber = 0
+	}
+
 	accountScript, err := templates.CreateAccount(publicKeys, code)
 	addr := flow.Address{}
-
 	if err != nil {
 		return addr, err
 	}
@@ -145,10 +158,12 @@ func (c *Client) GetLatestBlock() (*sdk.Block, error) {
 	return c.flowClient.GetLatestBlock(ctx, true)
 }
 func (c *Client) GetBlockByID(id sdk.Identifier) (*sdk.Block, error) {
-	panic("not implemented")
+	ctx := context.Background()
+	return c.flowClient.GetBlockByID(ctx, id)
 }
 func (c *Client) GetBlockByHeight(height uint64) (*sdk.Block, error) {
-	panic("not implemented")
+	ctx := context.Background()
+	return c.flowClient.GetBlockByHeight(ctx, height)
 }
 func (c *Client) GetCollection(colID sdk.Identifier) (*sdk.Collection, error) {
 	panic("not implemented")

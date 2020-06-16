@@ -60,9 +60,14 @@ func createSignAndSubmit(
 	signers []crypto.Signer,
 	shouldRevert bool,
 ) {
+
+	latestBlock, err := b.GetLatestBlock()
+	require.NoError(t, err)
+
 	tx := flow.NewTransaction().
 		SetScript(template).
-		SetGasLimit(99999).
+		SetGasLimit(9999).
+		SetReferenceBlockID(latestBlock.ID).
 		SetProposalKey(b.ServiceKey().Address, b.ServiceKey().ID, b.ServiceKey().SequenceNumber).
 		SetPayer(b.ServiceKey().Address).
 		AddAuthorizer(signerAddresses[1])

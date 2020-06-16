@@ -16,9 +16,9 @@ func GenerateInspectTopshotFieldScript(nftAddr, tokenAddr flow.Address, fieldNam
 
 		pub fun main() {
 			assert(
-                TopShot.%s == %s(%d),
-                message: "incorrect %s"
-            )
+				TopShot.%s == %s(%d),
+				message: "incorrect %s"
+			)
 		}
 	`
 
@@ -38,9 +38,9 @@ func GenerateInspectCollectionScript(nftAddr, tokenAddr, ownerAddr flow.Address,
 				?? panic("Could not get public moment collection reference")
 
 			assert(
-                collectionRef.borrowNFT(id: %d).id == UInt64(%d),
-                message: "ID %d does not exist in the collection"
-            )
+				collectionRef.borrowNFT(id: %d).id == UInt64(%d),
+				message: "ID %d does not exist in the collection"
+			)
 		}
 	`
 
@@ -65,9 +65,9 @@ func GenerateInspectCollectionDataScript(nftAddr, tokenAddr, ownerAddr flow.Addr
 			let data = token.data
 
 			assert(
-                data.setID == UInt32(%d),
-                message: "ID %d does not have the expected Set ID %d"
-            )
+				data.setID == UInt32(%d),
+				message: "ID %d does not have the expected Set ID %d"
+			)
 		}
 	`
 
