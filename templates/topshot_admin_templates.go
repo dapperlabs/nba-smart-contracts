@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"github.com/dapperlabs/nba-smart-contracts/templates/data"
+
 	"github.com/onflow/flow-go-sdk"
+
+	"github.com/dapperlabs/nba-smart-contracts/templates/data"
 )
 
 func uint32ToCadenceArr(nums []uint32) []byte {
@@ -298,7 +300,7 @@ func GenerateUnsafeNotInitializingSetCodeScript(newCode []byte) []byte {
 	template := `
 		
 		transaction {
-			prepare(acct: AuthAccount) {
+			prepare(acct: AuthAccount, admin: AuthAccount) {
 				acct.unsafeNotInitializingSetCode("%s".decodeHex())
 			}
 		}`

@@ -80,7 +80,9 @@ func (c *Client) ExecuteNextTransaction() (*types.TransactionResult, error) {
 	txResp := examples.WaitForSeal(ctx, c.flowClient, tx.ID())
 
 	// If service account was the proposer, we have to manage the sequence number here
-	if tx.ProposalKey.Address == c.serviceKey.Address && tx.ProposalKey.KeyID == c.serviceKey.ID {
+	if txResp.Error == nil && // TODO: remove once https://github.com/dapperlabs/flow-go/issues/4107 is done
+		tx.ProposalKey.Address == c.serviceKey.Address &&
+		tx.ProposalKey.KeyID == c.serviceKey.ID {
 		c.serviceKey.SequenceNumber++
 	}
 
@@ -189,7 +191,7 @@ func (c *Client) ExecuteScript(script []byte) (*types.ScriptResult, error) {
 	return &types.ScriptResult{
 		Value: res,
 		Error: err,
-	}, err
+	}, nil
 }
 func (c *Client) ExecuteScriptAtBlock(script []byte, blockHeight uint64) (*types.ScriptResult, error) {
 	panic("not implemented")

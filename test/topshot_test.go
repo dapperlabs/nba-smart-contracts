@@ -522,7 +522,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateUnsafeNotInitializingSetCodeScript(topshotCode),
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr, b.ServiceKey().Address}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
@@ -532,7 +532,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateUnsafeNotInitializingSetCodeScript(shardedCollectionCode),
-			[]flow.Address{b.ServiceKey().Address, shardedAddr}, []crypto.Signer{b.ServiceKey().Signer(), shardedCollectionSigner},
+			[]flow.Address{b.ServiceKey().Address, shardedAddr, b.ServiceKey().Address}, []crypto.Signer{b.ServiceKey().Signer(), shardedCollectionSigner},
 			false,
 		)
 

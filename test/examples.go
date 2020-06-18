@@ -69,8 +69,10 @@ func createSignAndSubmit(
 		SetGasLimit(9999).
 		SetReferenceBlockID(latestBlock.ID).
 		SetProposalKey(b.ServiceKey().Address, b.ServiceKey().ID, b.ServiceKey().SequenceNumber).
-		SetPayer(b.ServiceKey().Address).
-		AddAuthorizer(signerAddresses[1])
+		SetPayer(b.ServiceKey().Address)
+	for _, addr := range signerAddresses[1:] {
+		tx = tx.AddAuthorizer(addr)
+	}
 
 	SignAndSubmit(
 		t, b, tx,
@@ -93,19 +95,14 @@ func SignAndSubmit(
 	signers []crypto.Signer,
 	shouldRevert bool,
 ) {
-	// sign transaction with each signer
-	for i := len(signerAddresses) - 1; i >= 0; i-- {
-		signerAddress := signerAddresses[i]
-		signer := signers[i]
-
-		if i == 0 {
-			err := tx.SignEnvelope(signerAddress, 0, signer)
-			assert.NoError(t, err)
-		} else {
-			err := tx.SignPayload(signerAddress, 0, signer)
-			assert.NoError(t, err)
-		}
+	// sign transaction playload with each signer other than the first
+	for i, signer := range signers[1:] {
+		err := tx.SignPayload(signerAddresses[i+1], 0, signer)
+		assert.NoError(t, err)
 	}
+	// sing transaction envelope with the first signer
+	err := tx.SignEnvelope(signerAddresses[0], 0, signers[0])
+	assert.NoError(t, err)
 
 	Submit(t, b, tx, shouldRevert)
 }
