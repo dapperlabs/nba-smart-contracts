@@ -47,7 +47,7 @@ func TestMarketDeployment(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should be able to deploy a token contract
-	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
+	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage, "1000.0")
 	tokenAddr, err := b.CreateAccount(nil, []byte(tokenCode))
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
@@ -92,7 +92,7 @@ func TestMarket(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should be able to deploy the token contract
-	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
+	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage, "1000.0")
 	tokenAccountKey, tokenSigner := accountKeys.NewWithSigner()
 	tokenAddr, err := b.CreateAccount([]*flow.AccountKey{tokenAccountKey}, []byte(tokenCode))
 	if !assert.NoError(t, err) {
@@ -110,6 +110,15 @@ func TestMarket(t *testing.T) {
 	_, err = b.CommitBlock()
 	require.NoError(t, err)
 
+	// Should be able to deploy the token forwarding contract
+	forwardingCode := fungibleToken.CustomTokenForwarding(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
+	forwardingAddr, err := b.CreateAccount(nil, forwardingCode)
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
 	// create two new accounts
 	bastianAccountKey, bastianSigner := accountKeys.NewWithSigner()
 	bastianAddress, err := b.CreateAccount([]*flow.AccountKey{bastianAccountKey}, nil)
@@ -123,7 +132,7 @@ func TestMarket(t *testing.T) {
 		// create a Vault for bastian
 		createSignAndSubmit(
 			t, b,
-			fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName, defaultTokenStorage),
+			fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
@@ -131,7 +140,7 @@ func TestMarket(t *testing.T) {
 		// create a Vault for Josh
 		createSignAndSubmit(
 			t, b,
-			fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName, defaultTokenStorage),
+			fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName),
 			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
 			false,
 		)
@@ -139,7 +148,7 @@ func TestMarket(t *testing.T) {
 		// Mint tokens to bastian's vault
 		createSignAndSubmit(
 			t, b,
-			fungibleTokenTemplates.GenerateMintTokensScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, bastianAddress, defaultTokenName, defaultTokenStorage, 80),
+			fungibleTokenTemplates.GenerateMintTokensScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, bastianAddress, defaultTokenName, 80),
 			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
 			false,
 		)
@@ -275,8 +284,8 @@ func TestMarket(t *testing.T) {
 		)
 
 		// make sure that the cut was taken correctly and that josh receied the purchasing tokens
-		ExecuteScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, bastianAddress, defaultTokenName, defaultTokenStorage, 12), false)
-		ExecuteScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, joshAddress, defaultTokenName, defaultTokenStorage, 68), false)
+		ExecuteScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, bastianAddress, defaultTokenName, 12), false)
+		ExecuteScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, joshAddress, defaultTokenName, 68), false)
 
 		// make sure bastian received the purchase's moment
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, bastianAddress, 1), false)
@@ -352,19 +361,63 @@ func TestMarket(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), true)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 0), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), true)
 	})
 
 	t.Run("Can use the create and start sale to start a sale even if there is already sale in storage", func(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateCreateAndStartSaleScript(topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .15, 2, 50),
+			templates.GenerateCreateAndStartSaleScript(topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .10, 2, 100),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
 		// Make sure that moment id 2 is for sale for 50 tokens and the data is correct
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 100), false)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), false)
 		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), false)
+
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSalePercentageScript(marketAddr, bastianAddress, .10), false)
+	})
+
+	t.Run("Can create a forwarder resource to forward tokens to a different account", func(t *testing.T) {
+		createSignAndSubmit(
+			t, b,
+			fungibleTokenTemplates.GenerateCreateForwarderScript(flow.HexToAddress(defaultfungibleTokenAddr), forwardingAddr, tokenAddr, "DapperUtilityCoin"),
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			false,
+		)
+	})
+
+	t.Run("Can change the owner capability of a sale", func(t *testing.T) {
+		// change the price of the moment
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateChangeOwnerReceiverScript(topshotAddr, marketAddr, "dapperUtilityCoinReceiver"),
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			false,
+		)
+
+		ExecuteScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, tokenAddr, defaultTokenName, 1000.0), false)
+	})
+
+	t.Run("Can mint tokens and buy a moment with them so the tokens are forwarded", func(t *testing.T) {
+
+		// mint tokens and buy the moment in the same tx
+
+		template := templates.GenerateMintTokensAndBuyScript(tokenAddr, topshotAddr, marketAddr, bastianAddress, joshAddress, defaultTokenName, defaultTokenStorage, 2, 100)
+
+		createSignAndSubmit(
+			t, b,
+			template,
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			false,
+		)
+
+		// make sure josh received the purchase's moment
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, joshAddress, 2), false)
+
+		ExecuteScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, tokenAddr, defaultTokenName, 1100.0), false)
 	})
 }
