@@ -87,9 +87,12 @@ func GenerateCreateAndStartSaleScript(topshotAddr, marketAddr, beneficiaryAddr f
 				// borrow a reference to the sale
 				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
 					?? panic("Could not borrow from sale in storage")
+
+				// set the new cut percentage
+				topshotSaleCollection.changePercentage(%[4]f)
 				
 				// the the moment for sale
-				topshotSaleCollection.listForSale(token: <-token, price: %[6]d.0)
+				topshotSaleCollection.listForSale(token: <-token, price: UFix64(%[6]d))
 				
 			}
 		}`
@@ -149,10 +152,30 @@ func GenerateChangePercentageScript(topshotAddr, marketAddr flow.Address, percen
 				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
 					?? panic("Could not borrow from sale in storage")
 
-				topshotSaleCollection.changePercentage(newPercent: %[3]f)
+				topshotSaleCollection.changePercentage(%[3]f)
 			}
 		}`
 	return []byte(fmt.Sprintf(template, topshotAddr, marketAddr, percentage))
+}
+
+// GenerateChangeOwnerReceiverScript creates a cadence transaction
+// that changes the sellers receiver capability
+func GenerateChangeOwnerReceiverScript(topshotAddr, marketAddr flow.Address, receiverName string) []byte {
+	template := `
+		import FungibleToken from 0xee82856bf20e2aa6
+		import TopShot from 0x%[1]s
+		import Market from 0x%[2]s
+
+		transaction {
+			prepare(acct: AuthAccount) {
+
+				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+					?? panic("Could not borrow from sale in storage")
+
+				topshotSaleCollection.changeOwnerReceiver(acct.getCapability(/public/%[3]s)!)
+			}
+		}`
+	return []byte(fmt.Sprintf(template, topshotAddr, marketAddr, receiverName))
 }
 
 // GenerateBuySaleScript creates a cadence transaction that makes a purchase of
@@ -188,9 +211,53 @@ func GenerateBuySaleScript(tokenAddr, topshotAddr, marketAddr, sellerAddr flow.A
 	return []byte(fmt.Sprintf(template, tokenName, tokenAddr, marketAddr, sellerAddr, tokenStorageName, amount, id, topshotAddr))
 }
 
+// GenerateMintTokensAndBuyScript creates a script that uses the admin resource
+// from the admin accountto mint new tokens and use them to purchase a topshot
+// moment from a market collection
+func GenerateMintTokensAndBuyScript(tokenAddr, topshotAddr, marketAddr, sellerAddr, receiverAddr flow.Address, tokenName, storageName string, tokenID, amount int) []byte {
+	template := `
+		import FungibleToken from 0xee82856bf20e2aa6
+		import %[1]s from 0x%[2]s
+		import TopShot from 0x%[3]s
+		import Market from 0x%[4]s
+	
+		transaction {
+	
+			prepare(signer: AuthAccount) {
+
+			  	let tokenAdmin = signer
+					.borrow<&%[1]s.Administrator>(from: /storage/%[5]sAdmin) 
+					?? panic("Signer is not the token admin")
+
+				let minter <- tokenAdmin.createNewMinter(allowedAmount: UFix64(%[6]d))
+				let mintedVault <- minter.mintTokens(amount: UFix64(%[6]d)) as! @%[1]s.Vault
+
+				destroy minter
+	
+				let seller = getAccount(0x%[7]s)
+				let topshotSaleCollection = seller.getCapability(/public/topshotSaleCollection)!
+					.borrow<&{Market.SalePublic}>()
+					?? panic("Could not borrow public sale reference")
+	
+			  	let boughtToken <- topshotSaleCollection.purchase(tokenID: %[8]d, buyTokens: <-mintedVault)
+
+			  	// get the recipient's public account object and borrow a reference to their moment receiver
+			  	let recipient = getAccount(0x%[9]s)
+			  		.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()
+					?? panic("Could not borrow a reference to the moment collection")
+	
+			  	// deposit the NFT in the receivers collection
+			  	recipient.deposit(token: <-boughtToken)
+			}
+		}
+	`
+
+	return []byte(fmt.Sprintf(template, tokenName, tokenAddr, topshotAddr, marketAddr, storageName, amount, sellerAddr, tokenID, receiverAddr))
+}
+
 // GenerateInspectSaleScript creates a script that retrieves a sale collection
 // from storage and checks that the price is correct
-func GenerateInspectSaleScript(saleCodeAddr, userAddr flow.Address, nftID int, price int) []byte {
+func GenerateInspectSaleScript(saleCodeAddr, userAddr flow.Address, nftID int, expectedPrice int) []byte {
 	template := `
 		import Market from 0x%s
 
@@ -199,13 +266,13 @@ func GenerateInspectSaleScript(saleCodeAddr, userAddr flow.Address, nftID int, p
 			let collectionRef = acct.getCapability(/public/topshotSaleCollection)!.borrow<&{Market.SalePublic}>()
 				?? panic("Could not borrow capability from public collection")
 			
-			if collectionRef.getPrice(tokenID: UInt64(%d)) != UFix64(%d) {
+			if collectionRef.getPrice(tokenID: UInt64(%d))! != UFix64(%d) {
 				panic("Price for token ID is not correct")
 			}
 		}
 	`
 
-	return []byte(fmt.Sprintf(template, saleCodeAddr, userAddr, nftID, price))
+	return []byte(fmt.Sprintf(template, saleCodeAddr, userAddr, nftID, expectedPrice))
 }
 
 // GenerateInspectSalePercentageScript creates a script that retrieves a sale collection
