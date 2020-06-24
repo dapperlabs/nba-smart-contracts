@@ -1,4 +1,4 @@
-module github.com/dapperlabs/nba-smart-contracts/events
+module github.com/dapperlabs/nba-smart-contracts/lib/go/events
 
 go 1.14
 

@@ -6,9 +6,9 @@ import (
 	fungibleToken "github.com/onflow/flow-ft/contracts"
 	fungibleTokenTemplates "github.com/onflow/flow-ft/test"
 
-	"github.com/dapperlabs/nba-smart-contracts/contracts"
-	"github.com/dapperlabs/nba-smart-contracts/templates"
-	"github.com/dapperlabs/nba-smart-contracts/templates/data"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates/data"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 	"github.com/onflow/flow-go-sdk/test"

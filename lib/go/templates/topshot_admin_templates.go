@@ -1,5 +1,7 @@
 package templates
 
+//go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../../../transactions -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../../../transactions
+
 import (
 	"encoding/hex"
 	"encoding/json"
@@ -8,7 +10,7 @@ import (
 
 	"github.com/onflow/flow-go-sdk"
 
-	"github.com/dapperlabs/nba-smart-contracts/templates/data"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates/data"
 )
 
 func uint32ToCadenceArr(nums []uint32) []byte {
