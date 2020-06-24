@@ -11,6 +11,7 @@ require (
 	github.com/onflow/flow-ft/test v0.0.0-20200619173914-64c953134397
 	github.com/onflow/flow-go-sdk v0.4.0
 	github.com/stretchr/testify v1.5.1
+	google.golang.org/grpc v1.28.0
 )
 
 replace github.com/dapperlabs/nba-smart-contracts/templates => ../templates

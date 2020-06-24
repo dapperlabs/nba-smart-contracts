@@ -5,15 +5,20 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/onflow/cadence/runtime/cmd"
-	"github.com/onflow/flow-go-sdk"
 
 	emulator "github.com/dapperlabs/flow-emulator"
 )
+
+type BlockchainAPI interface {
+	emulator.BlockchainAPI
+	CreateAccount(publicKeys []*flow.AccountKey, code []byte) (flow.Address, error)
+}
 
 // ReadFile reads a file from the file system
 func ReadFile(path string) []byte {
@@ -38,7 +43,7 @@ func DownloadFile(url string) ([]byte, error) {
 }
 
 // NewEmulator returns a emulator object for testing
-func NewEmulator() *emulator.Blockchain {
+func NewEmulator() BlockchainAPI {
 	b, err := emulator.NewBlockchain()
 	if err != nil {
 		panic(err)
@@ -49,18 +54,25 @@ func NewEmulator() *emulator.Blockchain {
 // createSignAndSubmit creates a new transaction and submits it
 func createSignAndSubmit(
 	t *testing.T,
-	b *emulator.Blockchain,
+	b emulator.BlockchainAPI,
 	template []byte,
 	signerAddresses []flow.Address,
 	signers []crypto.Signer,
 	shouldRevert bool,
 ) {
+
+	latestBlock, err := b.GetLatestBlock()
+	require.NoError(t, err)
+
 	tx := flow.NewTransaction().
 		SetScript(template).
-		SetGasLimit(99999).
+		SetGasLimit(9999).
+		SetReferenceBlockID(latestBlock.ID).
 		SetProposalKey(b.ServiceKey().Address, b.ServiceKey().ID, b.ServiceKey().SequenceNumber).
-		SetPayer(b.ServiceKey().Address).
-		AddAuthorizer(signerAddresses[1])
+		SetPayer(b.ServiceKey().Address)
+	for _, addr := range signerAddresses[1:] {
+		tx = tx.AddAuthorizer(addr)
+	}
 
 	SignAndSubmit(
 		t, b, tx,
@@ -77,25 +89,20 @@ func createSignAndSubmit(
 // This function asserts the correct result and commits the block if it passed
 func SignAndSubmit(
 	t *testing.T,
-	b *emulator.Blockchain,
+	b emulator.BlockchainAPI,
 	tx *flow.Transaction,
 	signerAddresses []flow.Address,
 	signers []crypto.Signer,
 	shouldRevert bool,
 ) {
-	// sign transaction with each signer
-	for i := len(signerAddresses) - 1; i >= 0; i-- {
-		signerAddress := signerAddresses[i]
-		signer := signers[i]
-
-		if i == 0 {
-			err := tx.SignEnvelope(signerAddress, 0, signer)
-			assert.NoError(t, err)
-		} else {
-			err := tx.SignPayload(signerAddress, 0, signer)
-			assert.NoError(t, err)
-		}
+	// sign transaction playload with each signer other than the first
+	for i, signer := range signers[1:] {
+		err := tx.SignPayload(signerAddresses[i+1], 0, signer)
+		assert.NoError(t, err)
 	}
+	// sing transaction envelope with the first signer
+	err := tx.SignEnvelope(signerAddresses[0], 0, signers[0])
+	assert.NoError(t, err)
 
 	Submit(t, b, tx, shouldRevert)
 }
@@ -104,7 +111,7 @@ func SignAndSubmit(
 // if it fails or not
 func Submit(
 	t *testing.T,
-	b *emulator.Blockchain,
+	b emulator.BlockchainAPI,
 	tx *flow.Transaction,
 	shouldRevert bool,
 ) {
@@ -130,8 +137,11 @@ func Submit(
 
 // ExecuteScriptAndCheck executes a script and checks to make sure
 // that it succeeded
-func ExecuteScriptAndCheck(t *testing.T, b *emulator.Blockchain, script []byte, shouldRevert bool) {
+func ExecuteScriptAndCheck(t *testing.T, b emulator.BlockchainAPI, script []byte, shouldRevert bool) {
 	result, err := b.ExecuteScript(script)
+	if err != nil {
+		t.Log(string(script))
+	}
 	require.NoError(t, err)
 	if shouldRevert {
 		assert.True(t, result.Reverted())

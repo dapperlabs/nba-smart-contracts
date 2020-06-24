@@ -3,6 +3,8 @@ package test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/dapperlabs/nba-smart-contracts/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/templates"
 	"github.com/dapperlabs/nba-smart-contracts/templates/data"
@@ -353,18 +355,25 @@ func TestMintNFTs(t *testing.T) {
 // but it upgrades the topshot contract after
 // and checks if the normal actions are still possible
 func TestUpgradeTopshot(t *testing.T) {
-	b := NewEmulator()
+	// b := NewEmulator()
+	b, err := NewClient("access-001.devnet7.nodes.onflow.org:9000", "d1aa781aaf47d6b8cc8e2510e8e18ab12b7356bee944b84e6dfa578b1bcaac64")
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
 
 	accountKeys := test.AccountKeyGenerator()
-
 	// Should be able to deploy a contract as a new account with no keys.
 	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, _ := b.CreateAccount(nil, nftCode)
+	nftAddr, err := b.CreateAccount(nil, nftCode)
+	require.NoError(t, err, "Could not create nft interface")
+	t.Logf("NFT Address: %s", nftAddr)
 
 	// First, deploy the original version of the topshot contract
 	topshotCode := contracts.GenerateTopShotV1Contract(nftAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
-	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
+	topshotAddr, err := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
+	require.NoError(t, err, "Could not create topshot contract")
+	t.Logf("TopShot Address: %s", topshotAddr)
 
 	// check the contract fields initialization
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "currentSeries", "UInt32", 0), false)
@@ -513,7 +522,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateUnsafeNotInitializingSetCodeScript(topshotCode),
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr, b.ServiceKey().Address}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
 
@@ -523,7 +532,7 @@ func TestUpgradeTopshot(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateUnsafeNotInitializingSetCodeScript(shardedCollectionCode),
-			[]flow.Address{b.ServiceKey().Address, shardedAddr}, []crypto.Signer{b.ServiceKey().Signer(), shardedCollectionSigner},
+			[]flow.Address{b.ServiceKey().Address, shardedAddr, b.ServiceKey().Address}, []crypto.Signer{b.ServiceKey().Signer(), shardedCollectionSigner},
 			false,
 		)
 
@@ -720,7 +729,7 @@ func TestUpgradeTopshot(t *testing.T) {
 			false,
 		)
 
-		// reture an invalid play which should fail
+		// return an invalid play which should fail
 		createSignAndSubmit(
 			t, b,
 			templates.GenerateRetirePlayScript(topshotAddr, 2, 9),
