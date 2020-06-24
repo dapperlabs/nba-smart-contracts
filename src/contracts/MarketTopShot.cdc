@@ -97,11 +97,11 @@ pub contract Market {
         // The fungible token vault of the seller
         // so that when someone buys a token, the tokens are deposited
         // to this Vault
-        access(self) let ownerCapability: Capability
+        access(self) var ownerCapability: Capability
 
         // The capability that is used for depositing 
         // the beneficiary's cut of every sale
-        access(self) let beneficiaryCapability: Capability
+        access(self) var beneficiaryCapability: Capability
 
         // the percentage that is taken from every purchase for the beneficiary
         // This is a literal percentage
@@ -114,7 +114,7 @@ pub contract Market {
                 // for dapper utility coin
                 ownerCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
                     "Owner's Receiver Capability is invalid!"
-                beneficiaryCapability.borrow<&DapperUtilityCoin.Vault{FungibleToken.Receiver}>() != nil: 
+                beneficiaryCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
                     "Beneficiary's Receiver Capability is invalid!" 
             }
             
@@ -123,6 +123,22 @@ pub contract Market {
             self.beneficiaryCapability = beneficiaryCapability
             self.prices = {}
             self.cutPercentage = cutPercentage
+        }
+
+        // listForSale lists an NFT for sale in this sale collection
+        // at the specified price
+        pub fun listForSale(token: @TopShot.NFT, price: UFix64) {
+
+            // get the ID of the token
+            let id = token.id
+
+            // Set the token's price
+            self.prices[token.id] = price
+
+            // Deposit the token into the collection
+            self.forSale.deposit(token: <-token)
+
+            emit MomentListed(id: id, price: price, seller: self.owner?.address)
         }
 
         // Withdraw removes a moment that was listed for sale
@@ -134,43 +150,15 @@ pub contract Market {
 
             // Remove the price from the prices dictionary
             self.prices.remove(key: tokenID)
+
+            // set prices to nil for the withdrawn ID
+            self.prices[tokenID] = nil
             
             // Emit the event for withdrawing a moment from the Sale
             emit MomentWithdrawn(id: token.id, owner: self.owner?.address)
 
             // Return the withdrawn token
             return <-token
-        }
-
-        // listForSale lists an NFT for sale in this sale collection
-        // at the specified price
-        pub fun listForSale(token: @TopShot.NFT, price: UFix64) {
-
-            // Set the token's price
-            self.prices[token.id] = price
-
-            // Deposit the token into the collection
-            self.forSale.deposit(token: <-token)
-
-            emit MomentListed(id: id, price: price, seller: self.owner?.address)
-        }
-
-        // changePrice changes the price of a token that is currently for sale
-        pub fun changePrice(tokenID: UInt64, newPrice: UFix64) {
-            pre {
-                self.prices[tokenID] != nil: "Cannot change the price for a token that is not for sale"
-            }
-            // set the new price
-            self.prices[tokenID] = newPrice
-
-            emit MomentPriceChanged(id: tokenID, newPrice: newPrice, seller: self.owner?.address)
-        }
-
-        // changePercentage changes the cut percentage of the tokens that are for sale
-        pub fun changePercentage(newPercent: UFix64) {
-            self.cutPercentage = newPercent
-
-            emit CutPercentageChanged(newPercent: newPercent, seller: self.owner?.address)
         }
 
         // purchase lets a user send tokens to purchase an NFT that is for sale
@@ -200,16 +188,51 @@ pub contract Market {
             self.ownerCapability.borrow<&{FungibleToken.Receiver}>()!
                 .deposit(from: <-buyTokens)
 
-            emit TokenPurchased(id: tokenID, price: price, seller: self.owner?.address)
+            emit MomentPurchased(id: tokenID, price: price, seller: self.owner?.address)
 
             // return the purchased token
             return <-self.withdraw(tokenID: tokenID)
         }
 
-        // idPrice returns the price of a specific token in the sale
+        // changePrice changes the price of a token that is currently for sale
+        pub fun changePrice(tokenID: UInt64, newPrice: UFix64) {
+            pre {
+                self.prices[tokenID] != nil: "Cannot change the price for a token that is not for sale"
+            }
+            // set the new price
+            self.prices[tokenID] = newPrice
+
+            emit MomentPriceChanged(id: tokenID, newPrice: newPrice, seller: self.owner?.address)
+        }
+
+        // changePercentage changes the cut percentage of the tokens that are for sale
+        pub fun changePercentage(_ newPercent: UFix64) {
+            self.cutPercentage = newPercent
+
+            emit CutPercentageChanged(newPercent: newPercent, seller: self.owner?.address)
+        }
+
+        // changeOwnerReceiver updates the capability for the sellers fungible token Vault
+        pub fun changeOwnerReceiver(_ newOwnerCapability: Capability) {
+            pre {
+                newOwnerCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
+                    "Owner's Receiver Capability is invalid!"
+            }
+            self.ownerCapability = newOwnerCapability
+        }
+
+        // changeBeneficiaryReceiver updates the capability for the beneficiary of the cut of the sale
+        pub fun changeBeneficiaryReceiver(_ newBeneficiaryCapability: Capability) {
+            pre {
+                newBeneficiaryCapability.borrow<&DapperUtilityCoin.Vault{FungibleToken.Receiver}>() != nil: 
+                    "Beneficiary's Receiver Capability is invalid!" 
+            }
+            self.beneficiaryCapability = newBeneficiaryCapability
+        }
+
+        // getPrice returns the price of a specific token in the sale
         pub fun getPrice(tokenID: UInt64): UFix64? {
-            let price = self.prices[tokenID]
-            return price
+            return self.prices[tokenID]
         }
 
         // getIDs returns an array of token IDs that are for sale
