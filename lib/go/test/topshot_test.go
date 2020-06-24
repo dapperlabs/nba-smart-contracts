@@ -5,9 +5,9 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/dapperlabs/nba-smart-contracts/contracts"
-	"github.com/dapperlabs/nba-smart-contracts/templates"
-	"github.com/dapperlabs/nba-smart-contracts/templates/data"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates/data"
 
 	"github.com/onflow/flow-go-sdk/crypto"
 	"github.com/onflow/flow-go-sdk/test"
@@ -355,11 +355,11 @@ func TestMintNFTs(t *testing.T) {
 // but it upgrades the topshot contract after
 // and checks if the normal actions are still possible
 func TestUpgradeTopshot(t *testing.T) {
-	// b := NewEmulator()
-	b, err := NewClient("access-001.devnet7.nodes.onflow.org:9000", "d1aa781aaf47d6b8cc8e2510e8e18ab12b7356bee944b84e6dfa578b1bcaac64")
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
+	b := NewEmulator()
+	// b, err := NewClient("access-001.devnet7.nodes.onflow.org:9000", "d1aa781aaf47d6b8cc8e2510e8e18ab12b7356bee944b84e6dfa578b1bcaac64")
+	// if !assert.NoError(t, err) {
+	// 	t.Log(err.Error())
+	// }
 
 	accountKeys := test.AccountKeyGenerator()
 	// Should be able to deploy a contract as a new account with no keys.

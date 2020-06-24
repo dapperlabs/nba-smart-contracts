@@ -1,11 +1,11 @@
 package contracts
 
-//go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../src/contracts -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../src/contracts
+//go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../../../contracts -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../../../contracts
 
 import (
 	"strings"
 
-	"github.com/dapperlabs/nba-smart-contracts/contracts/internal/assets"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts/internal/assets"
 )
 
 const (

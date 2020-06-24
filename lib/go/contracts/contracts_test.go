@@ -6,7 +6,7 @@ import (
 	"github.com/onflow/flow-go-sdk"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/dapperlabs/nba-smart-contracts/contracts"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 )
 
 var addrA = flow.HexToAddress("0A")
