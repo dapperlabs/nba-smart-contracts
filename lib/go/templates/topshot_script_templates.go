@@ -351,7 +351,7 @@ func GenerateChallengeCompletedScript(tokenAddr, userAddress flow.Address, setID
 	template := `
 		import TopShot from 0x%s
 		
-		pub fun main(): Int {
+		pub fun main(): Bool {
 			let setIDs = [%s]
 			let playIDs = [%s]
 			assert(
@@ -382,7 +382,7 @@ func GenerateChallengeCompletedScript(tokenAddr, userAddress flow.Address, setID
 				i = i + 1
 			}
 			
-			return numMatchingMoments
+			return numMatchingMoments == setIDs.length
 }`
 	return []byte(fmt.Sprintf(template, tokenAddr, stringifyUint32Slice(setIDs), stringifyUint32Slice(playIDs), userAddress)), nil
 }
