@@ -3,6 +3,7 @@ package templates
 //go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../../../scripts -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../../../scripts
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
