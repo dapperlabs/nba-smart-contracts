@@ -344,11 +344,14 @@ func GenerateChallengeCompletedScript(tokenAddr, userAddress flow.Address, setID
 	if len(setIDs) != len(playIDs) {
 		return nil, errors.New("set and play ID arrays have mismatched lengths")
 	}
+	if len(setIDs) == 0 {
+		return nil, errors.New("no SetPlays specified")
+	}
 
 	template := `
 		import TopShot from 0x%s
 		
-		fun main(): Int {
+		pub fun main(): Int {
 			let setIDs = [%s]
 			let playIDs = [%s]
 			assert(
@@ -365,9 +368,12 @@ func GenerateChallengeCompletedScript(tokenAddr, userAddress flow.Address, setID
 			var i = 0
 			while i < setIDs.length {
 				for momentID in momentIDs {
-					let moment = collectionRef.borrowNFT(id: momentID)
-					let setID = moment.data.setID
-					let playID = moment.data.playID
+					let token = collectionRef.borrowMoment(id: momentID)
+						?? panic("Could not borrow a reference to the specified moment")
+
+					let momentData = token.data
+					let setID = momentData.setID
+					let playID = momentData.playID
 					if setID == setIDs[i] && playID == playIDs[i] {
 						numMatchingMoments = numMatchingMoments + 1
 						break
@@ -375,6 +381,8 @@ func GenerateChallengeCompletedScript(tokenAddr, userAddress flow.Address, setID
 				}
 				i = i + 1
 			}
+			
+			return numMatchingMoments
 }`
 	return []byte(fmt.Sprintf(template, tokenAddr, stringifyUint32Slice(setIDs), stringifyUint32Slice(playIDs), userAddress)), nil
 }
