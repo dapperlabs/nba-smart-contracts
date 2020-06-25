@@ -58,22 +58,18 @@ The first step for using any smart contract is deploying it to the blockchain,
 or emulator in our case. Do these commands in vscode
 
  1. Start the emulator with the `Run emulator` vscode command.
- 2. Open the `NonFungibleToken.cdc` file and the `TopShot.cdc` file.  Feel free to read as much as you want to
+ 2. Open the `NonFungibleToken.cdc` file from the [flow-nft repo](https://github.com/onflow/flow-nft/blob/master/src/contracts/NonFungibleToken.cdc) and the `TopShot.cdc` file.  Feel free to read as much as you want to
     familiarize yourself with the contract
- 3. The Marketplace smart contract implements the fungible token interface in `fungible-token.cdc`, so you need
-    to open that first and click the `deploy contract to account 0x01` button 
-    that appears above the `FlowToken` contract. This will deploy the interface definition and contract
-    to account 1.
- 4. Run the `switch account` command from the vscode comman palette.  Switch to account 2.
- 5. In `NonFungibleToken.cdc`, click the `deploy contract to account` to deploy to account 2.
- 6. Switch to account 3.
- 6. In `topshot.cdc`, click the `deploy contract to account` button that appears over the 
-    `TopShot` contract declaration to deploy to account 3.
+ 3. In `NonFungibleToken.cdc`, click the `deploy contract to account` to deploy it.
+ 4. Switch to a different account
+ 5. In `TopShot.cdc`, make sure it imports `NonFungibleToken` from the account you deployed it to
+ 6. click the `deploy contract to account` button that appears over the 
+    `TopShot` contract declaration to deploy it to a new account
 
-This deploys the contract code to account 3. It also runs the contracts
+This deploys the contract code. It also runs the contracts
 `init` function, which initializes the contract storage variables,
 stores the `Collection` and `Admin` resources 
-in account storage, and stores references to `Collection`.
+in account storage, and creates links to the `Collection`.
 
 As you can see, whenever we want to call a function, read a field,
 or use a type that is defined in a smart contract, we simply import
@@ -133,7 +129,9 @@ is a list of events that can be emitted, and what each event means.
 
 ## Directory Structure
 
-The directories here are organized into scripts and transactions.
+The directories here are organized into contrats, scripts, and transactions.
+
+Contracts contain the source code for the topshot contracts that are deployed to Flow.
 
 Scripts contain read-only transactions to get information about
 the state of someones Collection or about the state of the TopShot contract.
@@ -146,35 +144,13 @@ minting moments, and transfering moments.
  - `scripts/`  : This contains all the read-only Cadence scripts 
  that are used to read information from the smart contract
  or from a resource in account storage
-   - `collections/`: Used to read information about a user's Moment collection
-   - `market/`: Used to read information about the market smart contract and about a user's Moment sales.
-   - `plays/`: Used to read information related to play data and IDs.
-   - `sets/`: Used to read various information about set names and IDs
- - `test/`  : This contains special transactions and scripts that are used
- to quickly test the functionality of the smart contracts. They are not all 
- working now and will be updated to be extensive when the contracts
- are updated with the new storage interface changes.
  - `transactions/` : This directory contains all the state-changing transactions
  that are associated with the TopShot smart contracts.
-   - `collections/`: Transactions for a user to interact with their Moment collection
-   - `market/`: Transactions for users to buy and sell moments using
-   the market smart contract.
-   - `plays/`: Transactions for an Admin to add and modify play data and IDs.
-   - `sets/`: Transactions for an Admin to take all 
-   the actions associated wit sets, like adding plays, minting moments,
-   locking sets, and more.
+
 
 ### Marketplace
 
-The `topshot_market.cdc` contract allows users to create a marketplace object in their account to sell their moments.
-
-1. Make sure you have followed the steps to get topshot set up.
-2. Deploy `fungible-token.cdc` to account 1
-3. Deploy `NonFungibleToken.cdc` to account 2 and `TopShot.cdc` to account 3.
-4. Deploy `MarketTopShot.cdc` to account 4. Feel free to look at the various 
-   fields and functions in the smart contract.
-
-There currently aren't many example transactions for the market but they will be added soon once we have a better idea of exactly how it will function.
+The `MarketTopShot.cdc` contract allows users to create a marketplace object in their account to sell their moments.
 
 #### Events for Market-related actions
 
@@ -182,15 +158,15 @@ There currently aren't many example transactions for the market but they will be
    
    Emitted when a user lists a moment for sale in their SaleCollection.
 
-- `pub event PriceChanged(id: UInt64, newPrice: UFix64, seller: Address?)`
+- `pub event MomentPriceChanged(id: UInt64, newPrice: UFix64, seller: Address?)`
 
    Emitted when a user changes the price of their moment.
 
-- `pub event TokenPurchased(id: UInt64, price: UFix64, seller: Address?)`
+- `pub event MomentPurchased(id: UInt64, price: UFix64, seller: Address?)`
 
    Emitted when a user purchases a moment that is for sale.
 
-- `pub event SaleWithdrawn(id: UInt64, owner: Address?)`
+- `pub event MomentWithdrawn(id: UInt64, owner: Address?)`
 
    Emitted when a seller withdraws their moment from their SaleCollection
 

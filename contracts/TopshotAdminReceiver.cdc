@@ -8,8 +8,8 @@
 
  */
 
-import TopShot from 0x03
-import TopShotShardedCollection from 0x04
+import TopShot from 0xTOPSHOTADDRESS
+import TopShotShardedCollection from 0xSHARDEDADDRESS
 
 pub contract TopshotAdminReceiver {
 

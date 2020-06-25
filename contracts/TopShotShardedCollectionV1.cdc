@@ -1,6 +1,10 @@
 /*
-    Description: Central Collection for a large number of topshot
+    Description: ORIGINAL Central Collection for a large number of topshot
                  NFTs
+                 THIS is an exact copy of the contract that is
+                 currently deployed to beta-mainnet for TopShot
+                 It is for testing purposes and for testing contract
+                 upgradability. There is no need to review because nothing has changed.
 
     authors: Joshua Hannan joshua.hannan@dapperlabs.com
              Bastian Muller bastian@dapperlabs.com
@@ -141,24 +145,6 @@ pub contract TopShotShardedCollection {
 
             // find NFT in the collections and borrow a reference
             return self.collections[bucket]?.borrowNFT(id: id)!
-        }
-
-        // borrowMoment Returns a borrowed reference to a Moment in the collection
-        // so that the caller can read data and call methods from it
-        // They can use this to read its setID, playID, serialNumber,
-        // or any of the setData or Play Data associated with it by
-        // getting the setID or playID and reading those fields from
-        // the smart contract
-        //
-        // Parameters: id: The ID of the NFT to get the reference for
-        //
-        // Returns: A reference to the NFT
-        pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
-
-            // get the bucket of the nft to be borrowed
-            let bucket = id % self.numBuckets
-
-            return self.collections[bucket]?.borrowMoment(id: id) ?? nil
         }
 
         // If a transaction destroys the Collection object,
