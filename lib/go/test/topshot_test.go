@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	NonFungibleTokenContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/master/src/contracts/"
+	NonFungibleTokenContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/master/contracts/"
 	NonFungibleTokenInterfaceFile    = "NonFungibleToken.cdc"
 )
 
