@@ -1,16 +1,34 @@
 package templates
 
-//go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../../../transactions -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../../../transactions
+//go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../../../transactions/admin -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../../../transactions/admin
 
 import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/onflow/flow-go-sdk"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates/data"
+
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates/internal/assets"
+)
+
+const (
+	defaultTopShotAddress   = "TOPSHOTADDRESS"
+	createPlayFilename      = "create_play.cdc"
+	createSetFilename       = "create_set.cdc"
+	addPlayFilename         = "add_play_to_set.cdc"
+	addPlaysFilename        = "add_plays_to_set.cdc"
+	lockSetFilename         = "lock_set.cdc"
+	retirePlayFilename      = "retire_play.cdc"
+	retireAllFilename       = "retire_all.cdc"
+	newSeriesFilename       = "start_new_series.cdc"
+	mintMomentFilename      = "mint_moment.cdc"
+	batchMintMomentFilename = "batch_mint_moment.cdc"
+	fulfillPackFilname      = "fulfill_pack.cdc"
 )
 
 func uint32ToCadenceArr(nums []uint32) []byte {
@@ -29,17 +47,15 @@ func GenerateMintPlayScript(tokenCodeAddr flow.Address, metadata data.PlayMetada
 	if err != nil {
 		return nil
 	}
-	template := `
-		import TopShot from 0x%s
-		
-		transaction {
-			prepare(acct: AuthAccount) {
-				let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
-					?? panic("No admin resource in storage")
-				admin.createPlay(metadata: %s)
-			}
-		}`
-	return []byte(fmt.Sprintf(template, tokenCodeAddr.String(), string(md)))
+	code := assets.MustAssetString(createPlayFilename)
+
+	code = strings.ReplaceAll(
+		code,
+		"0x"+defaultTopShotAddress,
+		"0x"+tokenCodeAddr.String(),
+	)
+
+	return []byte(fmt.Sprintf(code, string(md)))
 }
 
 // GenerateMintSetScript creates a new Set struct and initializes its metadata
