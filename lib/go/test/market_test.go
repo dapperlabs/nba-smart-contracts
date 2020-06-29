@@ -248,7 +248,7 @@ func TestMarket(t *testing.T) {
 		// bastian tries to buy the moment for only 9 tokens
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateBuySaleScript(tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 9),
+			templates.GenerateBuySaleScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 9),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			true,
 		)
@@ -258,7 +258,7 @@ func TestMarket(t *testing.T) {
 		// bastian tries to buy the moment for too many tokens
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateBuySaleScript(tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 90),
+			templates.GenerateBuySaleScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 90),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			true,
 		)
@@ -268,7 +268,7 @@ func TestMarket(t *testing.T) {
 		// bastian tries to buy the wrong moment
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateBuySaleScript(tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 2, 80),
+			templates.GenerateBuySaleScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 2, 80),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			true,
 		)
@@ -278,7 +278,7 @@ func TestMarket(t *testing.T) {
 		// bastian sends the correct amount of tokens to buy it
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateBuySaleScript(tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 80),
+			templates.GenerateBuySaleScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 80),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
@@ -394,7 +394,7 @@ func TestMarket(t *testing.T) {
 		// change the price of the moment
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateChangeOwnerReceiverScript(topshotAddr, marketAddr, "dapperUtilityCoinReceiver"),
+			templates.GenerateChangeOwnerReceiverScript(flow.HexToAddress(defaultfungibleTokenAddr), topshotAddr, marketAddr, "dapperUtilityCoinReceiver"),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
@@ -406,7 +406,7 @@ func TestMarket(t *testing.T) {
 
 		// mint tokens and buy the moment in the same tx
 
-		template := templates.GenerateMintTokensAndBuyScript(tokenAddr, topshotAddr, marketAddr, bastianAddress, joshAddress, defaultTokenName, defaultTokenStorage, 2, 100)
+		template := templates.GenerateMintTokensAndBuyScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, bastianAddress, joshAddress, defaultTokenName, defaultTokenStorage, 2, 100)
 
 		createSignAndSubmit(
 			t, b,
