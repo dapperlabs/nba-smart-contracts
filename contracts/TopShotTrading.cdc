@@ -1,10 +1,19 @@
 /*
-    MarketTopShot.cdc
+    TopShotTrading.cdc
 
-    Description: Contract definitions for users to sell their moments
+    Description: Contract definitions for users to trade their moments
 
     Authors: Joshua Hannan joshua.hannan@dapperlabs.com
-             Dieter Shirley dete@axiomzen.com
+
+    TopShotTrading defines a resource object similar to the market that
+    allows a user to put their moments up for trading.
+
+    When a user specifies that they want to trade a moment, they say 
+    what their requirements are for a trade by indicating which range of 
+    moment ID, set ID, play ID, and serial number they want. 
+
+    They specify a min and a max for each one, in case they are ok with
+    multiple moments that meet the same criteria
 */
 
 import TopShot from 0x179b6b1cb6755e31
@@ -12,14 +21,14 @@ import TopShot from 0x179b6b1cb6755e31
 pub contract TopShotTrading {
 
     // -----------------------------------------------------------------------
-    // TopShot Market contract Event definitions
+    // TopShot Trading contract Event definitions
     // -----------------------------------------------------------------------
 
-    // emitted when a TopShot moment is listed for sale
+    // emitted when a TopShot moment is listed for trading
     pub event MomentListed(id: UInt64, seller: Address?)
-    // emitted when the price of a listed moment has changed
+    // emitted when the requirements of a listed moment has changed
     pub event MomentRequirementChanged(id: UInt64, seller: Address?)
-    // emitted when a token is purchased from the market
+    // emitted when a token is traded from a trading center
     pub event MomentTraded(id: UInt64, seller: Address?)
     // emitted when a moment has been removed from this trade
     pub event MomentWithdrawn(id: UInt64, owner: Address?)
@@ -47,6 +56,10 @@ pub contract TopShotTrading {
         }
     }
 
+    // Indicates what kind of moment the user wants to trade for
+    // The user specifies a min and max for what they are comfortable
+    // with each ID. Set them as the same to only choose one id, set, play
+    // or serial number
     pub struct TradeRequirement {
         pub(set) var idMin: UInt64
         pub(set) var idMax: UInt64
@@ -90,7 +103,7 @@ pub contract TopShotTrading {
         // The user's main moment collection
         access(self) var ownerCollection: Capability
 
-        // Dictionary of the prices for each NFT by ID
+        // Dictionary of the requirements for each NFT trade by ID
         access(self) var requirements: {UInt64: TradeRequirement}
 
         init (collectionCapability: Capability) {
@@ -116,7 +129,7 @@ pub contract TopShotTrading {
                 self.ownerCollection.borrow<&TopShot.Collection>()!.borrowMoment(id: tokenID) != nil: "Cannot list a moment that you don't own"
             }
 
-            // Set the token's price
+            // Set the token's requirements
             self.requirements[tokenID] = TradeRequirement(idMin: idMin, idMax: idMax,
                                                           setIDMin: setIDMin, setIDMax: setIDMax,
                                                           playIDMin: playIDMin, playIDMax: playIDMax,
@@ -125,7 +138,7 @@ pub contract TopShotTrading {
             emit MomentListed(id: tokenID, seller: self.owner?.address)
         }
 
-        // 
+        // remove the moment from trading eligibility
         pub fun deListMoment(tokenID: UInt64) {
 
             // Remove the price from the prices dictionary
@@ -145,27 +158,34 @@ pub contract TopShotTrading {
             pre {
                 self.requirements[tokenID] != nil:
                     "No token matching this ID for trade!"
+                // Make sure the metadata for the moment matches the trading requirements
                 tokenToTrade.id >= self.requirements[tokenID]!.idMin && tokenToTrade.id <= self.requirements[tokenID]!.idMax
                 tokenToTrade.data.setID >= self.requirements[tokenID]!.setIDMin && tokenToTrade.data.setID <= self.requirements[tokenID]!.setIDMax
                 tokenToTrade.data.playID >= self.requirements[tokenID]!.playIDMin && tokenToTrade.data.playID <= self.requirements[tokenID]!.playIDMax
             }
 
+            // get the requirements
             let requirements = self.requirements[tokenID]
 
+            // remove the record of the trade offer
             self.requirements[tokenID] = nil
 
             emit MomentTraded(id: tokenID, seller: self.owner?.address)
 
+            // get a reference to the owner's collection
             let collectionRef = self.ownerCollection.borrow<&TopShot.Collection>()!
 
+            // deposit the new token into the owner's account
             collectionRef.deposit(token: <-tokenToTrade)
 
-            // return the purchased token
+            // withdraw the offered token from the original owner's collection
             let tradedNFT <-collectionRef.withdraw(withdrawID: tokenID) as! @TopShot.NFT
 
+            // return the token
             return <-tradedNFT
         }
 
+        // getTradesOffered returns the dicionary of all the offered trades in the object
         pub fun getTradesOffered(): {UInt64: TradeRequirement} {
             return self.requirements
         }
@@ -175,7 +195,7 @@ pub contract TopShotTrading {
             return self.requirements.keys
         }
 
-        // getPrice returns the price of a specific token in the sale
+        // getRequirementes returns the trade requirements of a specific token up for trade
         pub fun getRequirements(tokenID: UInt64): TradeRequirement? {
             return self.requirements[tokenID]
         }
