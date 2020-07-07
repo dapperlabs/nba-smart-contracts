@@ -28,7 +28,7 @@
     to store 10x as many Moments (or ~1M).
 
     When Cadence is updated to allow larger dictionaries, 
-    then this class can be retired.
+    then this contract can be retired.
 
 */
 
@@ -78,6 +78,11 @@ pub contract TopShotShardedCollection {
         }
 
         // batchWithdraw withdraws multiple tokens and returns them as a Collection
+        //
+        // parameters: ids: an array fo the IDs to be withdrawn from the collection
+        //
+        // returns: @NonFungibleToken.Collection a collection containing the moments
+        //          that were withdrawn
         pub fun batchWithdraw(ids: [UInt64]): @NonFungibleToken.Collection {
             var batchCollection <- TopShot.createEmptyCollection()
             
