@@ -7,7 +7,7 @@
     Authors: Joshua Hannan joshua.hannan@dapperlabs.com
              Dieter Shirley dete@axiomzen.com
 
-    Marketplace is where users can create a sale collectio that they
+    Marketplace is where users can create a sale collection that they
     store in their account storage. In the sale collection, 
     they can put their NFTs up for sale with a price and publish a 
     reference so that others can see the sale.
@@ -56,7 +56,7 @@ pub contract Market {
 
     // SalePublic 
     //
-    // The interface that a user can publish their sale as 
+    // The interface that a user can publish a capability to their sale
     // to allow others to access their sale
     pub resource interface SalePublic {
         pub var cutPercentage: UFix64
@@ -86,12 +86,15 @@ pub contract Market {
     // 
     // When a token is purchased, a cut is taken from the tokens that are used to
     // purchase and sent to the beneficiary, then the rest are sent to the seller
+    //
+    // The seller chooses who the beneficiary is and what percentage
+    // of the tokens gets taken from the purchase
     pub resource SaleCollection: SalePublic {
 
         // A collection of the moments that the user has for sale
         access(self) var forSale: @TopShot.Collection
 
-        // Dictionary of the prices for each NFT by ID
+        // Dictionary of the low low prices for each NFT by ID
         access(self) var prices: {UInt64: UFix64}
 
         // The fungible token vault of the seller
@@ -103,7 +106,7 @@ pub contract Market {
         // the beneficiary's cut of every sale
         access(self) var beneficiaryCapability: Capability
 
-        // the percentage that is taken from every purchase for the beneficiary
+        // The percentage that is taken from every purchase for the beneficiary
         // This is a literal percentage
         // For example, if the percentage is 15%, cutPercentage = 0.15
         pub var cutPercentage: UFix64
@@ -118,15 +121,20 @@ pub contract Market {
                     "Beneficiary's Receiver Capability is invalid!" 
             }
             
+            // create an empty collection to store the moments that are for sale
             self.forSale <- TopShot.createEmptyCollection() as! @TopShot.Collection
             self.ownerCapability = ownerCapability
             self.beneficiaryCapability = beneficiaryCapability
+            // prices are initially empty because there are no moments for sale
             self.prices = {}
             self.cutPercentage = cutPercentage
         }
 
         // listForSale lists an NFT for sale in this sale collection
         // at the specified price
+        //
+        // Parameters: token: The NFT to be put up for sale
+        //             price: The price of the NFT
         pub fun listForSale(token: @TopShot.NFT, price: UFix64) {
 
             // get the ID of the token
@@ -135,13 +143,18 @@ pub contract Market {
             // Set the token's price
             self.prices[token.id] = price
 
-            // Deposit the token into the collection
+            // Deposit the token into the salencollection
             self.forSale.deposit(token: <-token)
 
             emit MomentListed(id: id, price: price, seller: self.owner?.address)
         }
 
         // Withdraw removes a moment that was listed for sale
+        // and clears its price
+        //
+        // parameters: tokenID: the ID of the token to withdraw from the sale
+        //
+        // returns: @TopShot.NFT: The nft that was withdrawn from the sale
         pub fun withdraw(tokenID: UInt64): @TopShot.NFT {
 
             // remove and return the token
@@ -163,6 +176,11 @@ pub contract Market {
 
         // purchase lets a user send tokens to purchase an NFT that is for sale
         // the purchased NFT is returned to the transaction context that called it
+        //
+        // parameters: tokenID: the ID of the NFT to purchase
+        //             butTokens: the fungible tokens that are used to buy the NFT
+        //
+        // returns: @TopShot.NFT: the purchased NFT
         pub fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
             pre {
                 self.forSale.ownedNFTs[tokenID] != nil && self.prices[tokenID] != nil:
@@ -195,6 +213,9 @@ pub contract Market {
         }
 
         // changePrice changes the price of a token that is currently for sale
+        //
+        // parameters: tokenID: the ID of the NFT's price that is changing
+        //             newPrice: The new price for the NFT
         pub fun changePrice(tokenID: UInt64, newPrice: UFix64) {
             pre {
                 self.prices[tokenID] != nil: "Cannot change the price for a token that is not for sale"
@@ -206,6 +227,8 @@ pub contract Market {
         }
 
         // changePercentage changes the cut percentage of the tokens that are for sale
+        //
+        // parameters: newPercent: The new cut percentage for the sale
         pub fun changePercentage(_ newPercent: UFix64) {
             self.cutPercentage = newPercent
 
@@ -213,6 +236,9 @@ pub contract Market {
         }
 
         // changeOwnerReceiver updates the capability for the sellers fungible token Vault
+        //
+        // parameters: newOwnerCapability: the new fungible token capability for the account 
+        //                                 who received tokens for purchases
         pub fun changeOwnerReceiver(_ newOwnerCapability: Capability) {
             pre {
                 newOwnerCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
@@ -222,6 +248,9 @@ pub contract Market {
         }
 
         // changeBeneficiaryReceiver updates the capability for the beneficiary of the cut of the sale
+        //
+        // parameters: newBeneficiaryCapability the new capability for the beneficiary of the cut of the sale
+        //
         pub fun changeBeneficiaryReceiver(_ newBeneficiaryCapability: Capability) {
             pre {
                 newBeneficiaryCapability.borrow<&DapperUtilityCoin.Vault{FungibleToken.Receiver}>() != nil: 
@@ -231,6 +260,10 @@ pub contract Market {
         }
 
         // getPrice returns the price of a specific token in the sale
+        // 
+        // parameters: tokenID: the ID of the NFT whose price to get
+        //
+        // returns: UFix64: The price of the token
         pub fun getPrice(tokenID: UInt64): UFix64? {
             return self.prices[tokenID]
         }
@@ -242,11 +275,19 @@ pub contract Market {
 
         // borrowMoment Returns a borrowed reference to a Moment in the collection
         // so that the caller can read data from it
+        //
+        // parameters: id: the ID of the moment to borrow a reference to
+        //
+        // returns: &TopShot.NFT? Optional reference to a moment for sale 
+        //                        so that the caller can read its data
+        //
         pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
             let ref = self.forSale.borrowMoment(id: id)
             return ref
         }
 
+        // If the sale collection is destroyed, 
+        // destroy the tokens that are for sale inside of it
         destroy() {
             destroy self.forSale
         }

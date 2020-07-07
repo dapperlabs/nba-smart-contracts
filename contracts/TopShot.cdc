@@ -7,7 +7,7 @@
     This smart contract contains the core functionality for 
     NBA Top Shot, created by Dapper Labs
 
-    The contract manages the metadata associated with all the plays
+    The contract manages the data associated with all the plays and sets
     that are used as templates for the Moment NFTs
 
     When a new Play wants to be added to the records, an Admin creates
@@ -166,12 +166,13 @@ pub contract TopShot: NonFungibleToken {
 
     // A Set is a grouping of plays that have occured in the real world
     // that make up a related group of collectibles, like sets of baseball
-    // or Magic cards.
+    // or Magic cards. A play can exist in multiple different sets
     // 
-    // SetData is a struct that is stored in a public field of the contract.
-    // This is to allow anyone to be able to query the constant information
-    // about a set but not have the ability to modify any data in the 
-    // private set resource
+    // SetData is a struct that is stored in a field of the contract.
+    // Anyone can query the constant information
+    // about a set by calling various getters located 
+    // at the end of the contract but only the admin has the ability 
+    // to modify any data in the private set resource
     //
     pub struct SetData {
 
@@ -403,7 +404,7 @@ pub contract TopShot: NonFungibleToken {
         // the ID of the Play that the moment references
         pub let playID: UInt32
 
-        // the place in the play that this moment was minted
+        // the place in the edition that this moment was minted
         // Otherwise know as the serial number
         pub let serialNumber: UInt32
 
@@ -437,6 +438,8 @@ pub contract TopShot: NonFungibleToken {
             emit MomentMinted(momentID: self.id, playID: playID, setID: self.data.setID, serialNumber: self.data.serialNumber)
         }
 
+        // if the moment is destroyed, emit an event to indicate 
+        // to outside ovbservers that it has been destroyed
         destroy() {
             emit MomentDestroyed(id: self.id)
         }
@@ -456,6 +459,7 @@ pub contract TopShot: NonFungibleToken {
         //                               (because we all know Kevin Durant is not 6'9")
         //
         // Returns: the ID of the new Play object
+        //
         pub fun createPlay(metadata: {String: String}): UInt32 {
             // Create the new Play
             var newPlay = Play(metadata: metadata)
@@ -467,16 +471,16 @@ pub contract TopShot: NonFungibleToken {
             return newID
         }
 
-        // createSet creates a new Set resource and returns it
-        // so that the caller can store it in their account
+        // createSet creates a new Set resource and stores it
+        // in the sets mapping in the topshot contract
         //
         // Parameters: name: The name of the set
-        //             series: The series that the set belongs to
         //
         pub fun createSet(name: String) {
             // Create the new Set
             var newSet <- create Set(name: name)
 
+            // store it in the sets mapping field
             TopShot.sets[newSet.setID] <-! newSet
         }
 
@@ -493,12 +497,15 @@ pub contract TopShot: NonFungibleToken {
             pre {
                 TopShot.sets[setID] != nil: "Cannot borrow Set: The Set doesn't exist"
             }
+            
+            // Get a reference to the set and return it
+            // use `&` to indicate the reference to the object and type
             return &TopShot.sets[setID] as &Set
         }
 
         // startNewSeries ends the current series by incrementing
-        // the series number, meaning that moments will be using the 
-        // new series number from now on
+        // the series number, meaning that moments minted after this
+        // will use the new series number from now on
         //
         // Returns: The new series number
         //
@@ -520,7 +527,8 @@ pub contract TopShot: NonFungibleToken {
     }
 
     // This is the interface that users can cast their moment Collection as
-    // to allow others to deposit moments into their collection
+    // to allow others to deposit moments into their collection 
+    // and get information about it
     pub resource interface MomentCollectionPublic {
         pub fun deposit(token: @NonFungibleToken.NFT)
         pub fun batchDeposit(tokens: @NonFungibleToken.Collection)
@@ -549,50 +557,82 @@ pub contract TopShot: NonFungibleToken {
         }
 
         // withdraw removes an Moment from the collection and moves it to the caller
+        //
+        // parameters: withdrawID: The ID of the NFT 
+        // that is to be removed from the collection
+        //
+        // returns: @NonFungibleToken.NFT the token that was withdrawn
         pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT {
+
+            // remove the nft from the collection
             let token <- self.ownedNFTs.remove(key: withdrawID) 
                 ?? panic("Cannot withdraw: Moment does not exist in the collection")
 
             emit Withdraw(id: token.id, from: self.owner?.address)
             
+            // return the withdrawn token
             return <-token
         }
 
         // batchWithdraw withdraws multiple tokens and returns them as a Collection
+        //
+        // parameters: ids: An array of IDs to withdraw
+        //
+        // Returns: @NonFungibleToken.Collection: A collection that contains
+        //                                        the withdrawn moments
+        //
         pub fun batchWithdraw(ids: [UInt64]): @NonFungibleToken.Collection {
+            // create a new empty collection
             var batchCollection <- create Collection()
             
             // iterate through the ids and withdraw them from the collection
             for id in ids {
                 batchCollection.deposit(token: <-self.withdraw(withdrawID: id))
             }
+            
+            // return the withdrawn tokens
             return <-batchCollection
         }
 
         // deposit takes a Moment and adds it to the collections dictionary
+        //
+        // Paramters: token: the NFT to be deposited in the collection
+        //
         pub fun deposit(token: @NonFungibleToken.NFT) {
+            
+            // cast the deposited token as a topshot NFT to make sure
+            // it is the correct type
             let token <- token as! @TopShot.NFT
 
+            // get the token's ID
             let id = token.id
+
             // add the new token to the dictionary
             let oldToken <- self.ownedNFTs[id] <- token
 
+            // Only emit a deposit event if the collection 
+            // is in an account's storage 
             if self.owner?.address != nil {
                 emit Deposit(id: id, to: self.owner?.address)
             }
 
+            // destroy the empty old token that was "removed"
             destroy oldToken
         }
 
         // batchDeposit takes a Collection object as an argument
         // and deposits each contained NFT into this collection
         pub fun batchDeposit(tokens: @NonFungibleToken.Collection) {
+
+            // get an array of the IDs to be deposited
             let keys = tokens.getIDs()
 
             // iterate through the keys in the collection and deposit each one
             for key in keys {
                 self.deposit(token: <-tokens.withdraw(withdrawID: key))
             }
+
+            // destroy the empty collection
             destroy tokens
         }
 
@@ -607,6 +647,11 @@ pub contract TopShot: NonFungibleToken {
         // Parameters: id: The ID of the NFT to get the reference for
         //
         // Returns: A reference to the NFT
+        //
+        // Note: This only allows the caller to read the ID of the NFT,
+        // not any topshot specific data. Please use borrowMoment to 
+        // read Moment data
+        //
         pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
             return &self.ownedNFTs[id] as &NonFungibleToken.NFT
         }
@@ -756,15 +801,20 @@ pub contract TopShot: NonFungibleToken {
     // Returns: Boolean indicating if the edition is retired or not
     pub fun isEditionRetired(setID: UInt32, playID: UInt32): Bool? {
         // Don't force a revert if the set or play ID is invalid
-        // remove the set from the dictionary to ket its field
+        // remove the set from the dictionary to get its field
         if let setToRead <- TopShot.sets.remove(key: setID) {
 
+            // see if the play is retired from this set
             let retired = setToRead.retired[playID]
 
+            // put the set back in the contract storage
             TopShot.sets[setID] <-! setToRead
 
+            // return the retired status
             return retired
         } else {
+
+            // if the set wasn't found, return nil
             return nil
         }
     }
@@ -804,6 +854,7 @@ pub contract TopShot: NonFungibleToken {
 
             return amount
         } else {
+            // if the set wasn't found return nil
             return nil
         }
     }

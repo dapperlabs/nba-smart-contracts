@@ -13,11 +13,15 @@ import TopShotShardedCollection from 0xSHARDEDADDRESS
 
 pub contract TopshotAdminReceiver {
 
+    // storeAdmin takes a topshot Admin resource and 
+    // saves it to the account storage of the account
+    // where the contract is deployed
     pub fun storeAdmin(newAdmin: @TopShot.Admin) {
         self.account.save(<-newAdmin, to: /storage/TopShotAdmin)
     }
     
     init() {
+        // also save a copy of the sharded moment collection to the account storage
         if self.account.borrow<&TopShotShardedCollection.ShardedCollection>(from: /storage/ShardedMomentCollection) == nil {
             let collection <- TopShotShardedCollection.createEmptyCollection(numBuckets: 32)
             // Put a new Collection in storage
