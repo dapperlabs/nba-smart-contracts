@@ -1,6 +1,6 @@
 package templates
 
-//go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../../../transactions/admin -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../../../transactions/admin
+//go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../../../transactions/... -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../../../transactions/...
 
 import (
 	"encoding/hex"
@@ -17,6 +17,7 @@ import (
 )
 
 const (
+	transactionsPath        = "../../../transactions/admin/"
 	defaultTopShotAddress   = "TOPSHOTADDRESS"
 	createPlayFilename      = "create_play.cdc"
 	createSetFilename       = "create_set.cdc"
@@ -47,7 +48,7 @@ func GenerateMintPlayScript(tokenCodeAddr flow.Address, metadata data.PlayMetada
 	if err != nil {
 		return nil
 	}
-	code := assets.MustAssetString(createPlayFilename)
+	code := assets.MustAssetString(transactionsPath + createPlayFilename)
 
 	code = strings.ReplaceAll(
 		code,

@@ -1,22 +1,17 @@
-import TopShot from 0x03
-
+import TopShot from 0xTOPSHOTADDRESS
 
 transaction {
 
-    // The field that will hold the NFT as it is being
-    // transfered to the other account
-    let transferToken: @TopShot.NFT
-	
+    let transferToken: @NonFungibleToken.NFT
+    
     prepare(acct: AuthAccount) {
 
-        // call the withdraw function on the sender's Collection
-        // to move the NFT out of the collection
-        self.transferToken <- acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)!.withdraw(withdrawID: 0)
+        self.transferToken <- acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)!.withdraw(withdrawID: %d)
     }
 
     execute {
         // get the recipient's public account object
-        let recipient = getAccount(0x01)
+        let recipient = getAccount(0x%s)
 
         // get the Collection reference for the receiver
         let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
@@ -25,4 +20,3 @@ transaction {
         receiverRef.deposit(token: <-self.transferToken)
     }
 }
- 

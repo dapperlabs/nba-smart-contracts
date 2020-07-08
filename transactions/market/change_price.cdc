@@ -1,30 +1,12 @@
-import Market from 0x04
+import TopShot from 0xTOPSHOTADDRESS
+import Market from 0xMARKETADDRESS
 
-// this is the transacion a user would run if they want
-// to change the price of one of their tokens that is for sale
-
-// values that would be configurable are
-// id of the token for sale 
-// new price of the token
-transaction {
-
+transaction(tokenID: UInt64, newPrice: UFix64) {
     prepare(acct: AuthAccount) {
 
-        // remove the sale collection from storage
-        if acct.borrow<&Market.SaleCollection>(from: /storage/MomentSale) != nil {
+        let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+            ?? panic("Could not borrow from sale in storage")
 
-            // create a temporary reference to the sale
-            let saleRef = acct.borrow<&Market.SaleCollection>(from: /storage/MomentSale)!
-
-            // put the token up for sale
-            saleRef.changePrice(tokenID: 0, newPrice: 40.00)
-
-            log("Token price changed")
-            log(0)
-
-        } else {
-            panic("No sale!")
-        }
+        topshotSaleCollection.changePrice(tokenID: tokenID, newPrice: newPrice)
     }
 }
- 
