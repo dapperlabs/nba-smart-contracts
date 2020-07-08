@@ -1,6 +1,6 @@
-import TopShot from 0x%s
+import TopShot from 0xTOPSHOTADDRESS
 
-transaction {
+transaction(setID: UInt32, playID: UInt32) {
     let adminRef: &TopShot.Admin
 
     prepare(acct: AuthAccount) {
@@ -9,9 +9,9 @@ transaction {
     }
 
     execute {
-        let setRef = self.adminRef.borrowSet(setID: %d)
+        let setRef = self.adminRef.borrowSet(setID: setID)
 
-        setRef.retirePlay(playID: UInt32(%d))
+        setRef.retirePlay(playID: playID)
     }
 }
  
