@@ -1,13 +1,13 @@
-import TopShot from 0x03
+import TopShot from 0xTOPSHOTADDRESS
 
 // This script reads the next Set ID from the TopShot contract and 
 // returns that number to the caller
-pub fun main(): String {
-    log(TopShot.setDatas[UInt32(0)]!.name)
-    return TopShot.setDatas[UInt32(0)]!.name
+
+pub fun main(setID: UInt32): String {
+    let name = TopShot.getSetName(setID: setID)!
+
+    return name
 }
-
-
 
 
 

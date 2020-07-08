@@ -1,10 +1,10 @@
-import TopShot from 0x03
+import TopShot from 0xTOPSHOTADDRESS
 
 // This script returns the full metadata associated with a play
 // in the TopShot smart contract
 //
-pub fun main(): String {
-    let field = TopShot.getPlayMetaDataByField(playID: 0, field: "Name") ?? panic("Play doesn't exist")
+pub fun main(playID: UInt32, field: String): String {
+    let field = TopShot.getPlayMetaDataByField(playID: playID, field: field) ?? panic("Play doesn't exist")
 
     log(field)
 

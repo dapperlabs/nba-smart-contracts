@@ -1,22 +1,19 @@
-import TopShot from 0x03
+import TopShot from 0xTOPSHOTADDRESS
 
 // This transaction gets the playID associated with a moment
 // in a collection by geting a reference to the moment
 // and then looking up its playID 
 
-pub fun main(): UInt32 {
 
-    // get the Address of the account with the Moment
-    let acct = getAccount(0x01)
+pub fun main(account: Address, id: UInt64): UInt32 {
+    let collectionRef = getAccount(account).getCapability(/public/MomentCollection)!
+        .borrow<&{TopShot.MomentCollectionPublic}>()
+        ?? panic("Could not get public moment collection reference")
 
-    // Get that account's published collectionRef
-    let collectionRef = acct.getCapability(/public/MomentCollection)!
-                            .borrow<&{TopShot.MomentCollectionPublic}>()!
+    let token = collectionRef.borrowMoment(id: id)
+        ?? panic("Could not borrow a reference to the specified moment")
 
-    // Get a reference to a specific NFT in the collection
-    let ref = collectionRef.borrowNFT(id: 1)
+    let data = token.data
 
-    log(ref.data.playID)
-
-    return ref.data.playID
+    return data.playID
 }

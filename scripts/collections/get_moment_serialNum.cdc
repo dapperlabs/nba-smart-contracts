@@ -1,11 +1,10 @@
 import TopShot from 0xTOPSHOTADDRESS
 
-// This script gets the metadata associated with a moment
-// in a collection by looking up its playID and then searching
-// for that play's metadata in the TopShot contract
+// This transaction gets the serial number of a moment
+// by borrowing a reference to the moment 
+// and returning its serial number
 
-pub fun main(account: Address, fieldToSearch: String): String {
-
+pub fun main(account: Address, id: UInt64): UInt32 {
     let collectionRef = getAccount(account).getCapability(/public/MomentCollection)!
         .borrow<&{TopShot.MomentCollectionPublic}>()
         ?? panic("Could not get public moment collection reference")
@@ -15,9 +14,5 @@ pub fun main(account: Address, fieldToSearch: String): String {
 
     let data = token.data
 
-    let field = TopShot.getPlayMetaDataByField(playID: data.playID, field: fieldToSearch) ?? panic("Play doesn't exist")
-
-    log(field)
-
-    return field
+    return data.serialNumber
 }

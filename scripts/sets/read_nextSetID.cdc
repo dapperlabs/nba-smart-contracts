@@ -1,4 +1,4 @@
-import TopShot from 0x03
+import TopShot from 0xTOPSHOTADDRESS
 
 // This script reads the next Set ID from the TopShot contract and 
 // returns that number to the caller
