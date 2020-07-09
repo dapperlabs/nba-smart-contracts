@@ -33,7 +33,6 @@
 */
 
 import FungibleToken from 0xFUNGIBLETOKENADDRESS
-import DapperUtilityCoin from 0xDUCADDRESS
 import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 
@@ -60,7 +59,7 @@ pub contract Market {
     // to allow others to access their sale
     pub resource interface SalePublic {
         pub var cutPercentage: UFix64
-        pub fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
+        pub fun purchase(tokenID: UInt64, buyTokens: @FungibleToken.Vault): @TopShot.NFT {
             post {
                 result.id == tokenID: "The ID of the withdrawn token must be the same as the requested ID"
             }
@@ -114,7 +113,6 @@ pub contract Market {
         init (ownerCapability: Capability, beneficiaryCapability: Capability, cutPercentage: UFix64) {
             pre {
                 // Check that both capabilities are for fungible token Vault receivers
-                // for dapper utility coin
                 ownerCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
                     "Owner's Receiver Capability is invalid!"
                 beneficiaryCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
@@ -181,7 +179,7 @@ pub contract Market {
         //             butTokens: the fungible tokens that are used to buy the NFT
         //
         // returns: @TopShot.NFT: the purchased NFT
-        pub fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
+        pub fun purchase(tokenID: UInt64, buyTokens: @FungibleToken.Vault): @TopShot.NFT {
             pre {
                 self.forSale.ownedNFTs[tokenID] != nil && self.prices[tokenID] != nil:
                     "No token matching this ID for sale!"
@@ -253,7 +251,7 @@ pub contract Market {
         //
         pub fun changeBeneficiaryReceiver(_ newBeneficiaryCapability: Capability) {
             pre {
-                newBeneficiaryCapability.borrow<&DapperUtilityCoin.Vault{FungibleToken.Receiver}>() != nil: 
+                newBeneficiaryCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
                     "Beneficiary's Receiver Capability is invalid!" 
             }
             self.beneficiaryCapability = newBeneficiaryCapability
