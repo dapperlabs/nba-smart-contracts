@@ -48,7 +48,7 @@ func TestMarketDeployment(t *testing.T) {
 
 	// Should be able to deploy a token contract
 	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage, "1000.0")
-	tokenAddr, err := b.CreateAccount(nil, []byte(tokenCode))
+	_, err = b.CreateAccount(nil, []byte(tokenCode))
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -56,7 +56,7 @@ func TestMarketDeployment(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should be able to deploy the market contract
-	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), tokenAddr.String())
+	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
 	_, err = b.CreateAccount(nil, marketCode)
 	if !assert.Nil(t, err) {
 		t.Log(err.Error())
@@ -102,7 +102,7 @@ func TestMarket(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should be able to deploy the token contract
-	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), tokenAddr.String())
+	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
 	marketAddr, err := b.CreateAccount(nil, marketCode)
 	if !assert.Nil(t, err) {
 		t.Log(err.Error())
