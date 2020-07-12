@@ -7,6 +7,41 @@ import (
 	"github.com/onflow/flow-go-sdk"
 )
 
+const (
+	scriptsPath = "../../../transactions/scripts/"
+
+	// Topshot contract scripts
+	currentSeriesFilename = "read_currentSeries.cdc"
+	totalSupplyFilename   = "read_totalSupply.cdc"
+
+	// Play related scripts
+	getAllPlaysFilename = "plays/get_all_plays.cdc"
+	nextPlayIDFilename  = "read_nextPlayID.cdc"
+	playMetadata        = "plays/read_play_metadata.cdc"
+	playMetadataField   = "plays/read_play_metadata_field.cdc"
+
+	// Set related scripts
+	editionRetiredFilename      = "sets/read_edition_retired.cdc"
+	numMomentsInEditionFilename = "sets/read_numMoments_in_edition.cdc"
+	setIDsByNameFilename        = "sets/read_setIDs_by_name.cdc"
+	setSeriesFilename           = "sets/read_setSeries.cdc"
+	nextSetIDFilename           = "sets/read_nextSetID.cdc"
+	playsInSetFilename          = "sets/read_plays_in_set.cdc"
+	setNameFilename             = "sets/read_setName.cdc"
+	setLockedFilename           = "sets/read_set_locked.cdc"
+
+	// collections scripts
+	collectionIDsFilename   = "collections/get_collection_ids.cdc"
+	metadataFieldFilename   = "collections/get_metadata_field.cdc"
+	momentSeriesFilename    = "collections/get_moment_series.cdc"
+	idInCollectionFilename  = "collections/get_id_in_Collection.cdc"
+	momentPlayIDFilename    = "collections/get_moment_playID.cdc"
+	momentSetIDFilename     = "collections/get_moment_setID.cdc"
+	metadataFilename        = "collections/get_metadata.cdc"
+	momentSerialNumFilename = "collections/get_moment_serialNum.cdc"
+	momentSetNameFilename   = "collections/get_moment_setName.cdc"
+)
+
 // GenerateInspectTopshotFieldScript creates a script that checks
 // a field of the topshot contract
 func GenerateInspectTopshotFieldScript(nftAddr, tokenAddr flow.Address, fieldName, fieldType string, expectedValue int) []byte {

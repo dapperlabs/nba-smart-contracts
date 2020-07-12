@@ -138,7 +138,7 @@ func Submit(
 // ExecuteScriptAndCheck executes a script and checks to make sure
 // that it succeeded
 func ExecuteScriptAndCheck(t *testing.T, b emulator.BlockchainAPI, script []byte, shouldRevert bool) {
-	result, err := b.ExecuteScript(script)
+	result, err := b.ExecuteScript(script, nil)
 	if err != nil {
 		t.Log(string(script))
 	}
