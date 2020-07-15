@@ -17,7 +17,7 @@ const (
 func uint32ToCadenceArr(nums []uint32) []byte {
 	var s string
 	for _, n := range nums {
-		s += fmt.Sprintf("UInt32(%d), ", n)
+		s += fmt.Sprintf("%d as UInt32, ", n)
 	}
 	// slice the last 2 characters off as that's the comma and the whitespace
 	return []byte("[" + s[:len(s)-2] + "]")

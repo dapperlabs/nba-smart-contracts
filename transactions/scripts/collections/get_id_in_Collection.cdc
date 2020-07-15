@@ -8,8 +8,5 @@ pub fun main(account: Address, id: UInt64): Bool {
         .borrow<&{TopShot.MomentCollectionPublic}>()
         ?? panic("Could not get public moment collection reference")
 
-    if collectionRef.borrowNFT(id: id) != nil {
-        return true
-    }
-    return false
+    return collectionRef.borrowNFT(id: id) != nil
 }

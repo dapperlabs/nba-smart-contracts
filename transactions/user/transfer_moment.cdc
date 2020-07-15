@@ -1,17 +1,34 @@
 import TopShot from 0xTOPSHOTADDRESS
 
-transaction {
+// This transaction is how a topshot user would transfer a moment
+// from their account to another account
+// The recipient must have a TopShot Collection object stored
+// and a public MomentCollectionPublic capability stored at
+// `/public/MomentCollection`
 
+// Parameters:
+//
+// recipient: The Flow address of the account to receive the moment.
+// withdrawID: The id of the moment to be transferred
+
+transaction(recipient: Address, withdrawID: UFix64) {
+
+    // local variable for storing the transferred token
     let transferToken: @NonFungibleToken.NFT
     
     prepare(acct: AuthAccount) {
 
-        self.transferToken <- acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)!.withdraw(withdrawID: %d)
+        // borrow a reference to the owner's collection
+        let collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
+            ?? panic("Could not borrow a reference to the stored Moment collection")
+        
+        // withdraw the NFT
+        self.transferToken <- collectionRef.withdraw(withdrawID: withdrawID)
     }
 
     execute {
         // get the recipient's public account object
-        let recipient = getAccount(0x%s)
+        let recipient = getAccount(recipient)
 
         // get the Collection reference for the receiver
         let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!

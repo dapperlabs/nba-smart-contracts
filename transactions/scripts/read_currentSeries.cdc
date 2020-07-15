@@ -5,8 +5,3 @@ import TopShot from 0xTOPSHOTADDRESS
 pub fun main(): UInt32 {
     return TopShot.currentSeries
 }
-
-
-
-
-

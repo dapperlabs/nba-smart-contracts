@@ -4,10 +4,8 @@ import TopShot from 0xTOPSHOTADDRESS
 // returns that number to the caller
 
 pub fun main(setID: UInt32): String {
-    let name = TopShot.getSetName(setID: setID)!
-
+    let name = TopShot.getSetName(setID: setID)
+        ?? panic("Could not find the specified set")
+        
     return name
 }
-
-
-
