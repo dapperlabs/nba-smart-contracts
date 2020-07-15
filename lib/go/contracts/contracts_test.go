@@ -18,19 +18,8 @@ func TestTopShotContract(t *testing.T) {
 	assert.NotNil(t, contract)
 }
 
-func TestTopShotV1Contract(t *testing.T) {
-	contract := contracts.GenerateTopShotV1Contract(addrA.Hex())
-	assert.NotNil(t, contract)
-}
-
 func TestTopShotShardedCollectionContract(t *testing.T) {
 	contract := contracts.GenerateTopShotShardedCollectionContract(addrA.Hex(), addrB.Hex())
-	assert.NotNil(t, contract)
-	assert.Contains(t, string(contract), addrA.Hex())
-}
-
-func TestTopShotShardedCollectionV1Contract(t *testing.T) {
-	contract := contracts.GenerateTopShotShardedCollectionV1Contract(addrA.Hex(), addrB.Hex())
 	assert.NotNil(t, contract)
 	assert.Contains(t, string(contract), addrA.Hex())
 }

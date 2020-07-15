@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/onflow/cadence"
 	"github.com/onflow/cadence/runtime/cmd"
 
 	emulator "github.com/dapperlabs/flow-emulator"
@@ -138,7 +139,7 @@ func Submit(
 // ExecuteScriptAndCheck executes a script and checks to make sure
 // that it succeeded
 func ExecuteScriptAndCheck(t *testing.T, b emulator.BlockchainAPI, script []byte, shouldRevert bool) {
-	result, err := b.ExecuteScript(script)
+	result, err := b.ExecuteScript(script, nil)
 	if err != nil {
 		t.Log(string(script))
 	}
@@ -151,4 +152,15 @@ func ExecuteScriptAndCheck(t *testing.T, b emulator.BlockchainAPI, script []byte
 			cmd.PrettyPrintError(result.Error, "", map[string]string{"": ""})
 		}
 	}
+}
+
+// CadenceUFix64 returns a UFix64 value
+func CadenceUFix64(value string) cadence.Value {
+	newValue, err := cadence.NewUFix64(value)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return newValue
 }

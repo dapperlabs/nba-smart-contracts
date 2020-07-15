@@ -3,8 +3,8 @@ package test
 import (
 	"testing"
 
-	fungibleToken "github.com/onflow/flow-ft/contracts"
-	fungibleTokenTemplates "github.com/onflow/flow-ft/test"
+	fungibleToken "github.com/onflow/flow-ft/lib/go/contracts"
+	fungibleTokenTemplates "github.com/onflow/flow-ft/lib/go/templates"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"

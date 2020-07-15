@@ -3,14 +3,14 @@
 ## Introduction
 
 This repository contains the smart contracts and transactions that implement
-the core functionality of NBA Topshot.
+the core functionality of NBA Top Shot.
 
 The smart contracts are written in Cadence, a new resource oriented
 smart contract programming language designed for the Flow Blockchain.
 
-### What is NBA Topshot
+### What is NBA Top Shot
 
-NBA Topshot is the official digital collecitibles
+NBA Top Shot is the official digital collecitibles
 game for the National Basketball Association. Players collect and trade
 digital collectibles that represent highlights from the best players 
 in the world. See more at nbatopshot.com
@@ -33,13 +33,20 @@ Resource-oriented programming, and by extension Cadence,
 is the perfect programming environment for Non-Fungible Tokens (NFTs), because users are able
 to store their NFT objects directly in their accounts and transact
 peer-to-peer. Please see the [blog post about resources](https://medium.com/dapperlabs/resource-oriented-programming-bee4d69c8f8e)
-to understand why they are perfect for digital assets like NBA topshot moments.
+to understand why they are perfect for digital assets like NBA Top Shot moments.
+
+### Contributing
+
+If you see an issue with the code for the contracts, the transactions, scripts,
+documentation, or anything else, please do not hesitate to make an issue or
+a pull request with your desired changes. This is an open source project
+and we welcome all assistance from the community!
 
 ## Directory Structure
 
 The directories here are organized into contrats, scripts, and transactions.
 
-Contracts contain the source code for the topshot contracts that are deployed to Flow.
+Contracts contain the source code for the Top Shot contracts that are deployed to Flow.
 
 Scripts contain read-only transactions to get information about
 the state of someones Collection or about the state of the TopShot contract.
@@ -48,17 +55,22 @@ Transactions contain the transactions that various admins and users can use
 to performa actions in the smart contract like creating plays and sets,
 minting moments, and transfering moments.
 
- - `contracts/` : Where the TopShot related smart contracts live
+ - `contracts/` : Where the Top Shot related smart contracts live
  - `scripts/`  : This contains all the read-only Cadence scripts 
  that are used to read information from the smart contract
  or from a resource in account storage
  - `transactions/` : This directory contains all the state-changing transactions
- that are associated with the TopShot smart contracts.
+ that are associated with the Top Shot smart contracts.
+ - `lib/` : This directory contains packages for specific programming languages
+ to be able to read copies of the topshot smart contracts, transaction templates,
+ and scripts. Also contains automated tests written in those languages. Currently,
+ Go is the only language that is supported, but are hoping to add javascript
+ and other languages soon.
 
 
-## Topshot Smart Contract Features:
+## NBA Top Shot Smart Contract Features:
 
-Each Topshot moment NFT represents a play from a game in the NBA season.
+Each Top Shot moment NFT represents a play from a game in the NBA season.
 Plays are grouped into sets which usually have some overarching theme,
 like rarity or the type of the play. 
 
@@ -93,7 +105,7 @@ pub resource Moment {
 Metadata associated with plays and sets are stored in the main smart contract
 and can be queried by anyone. For example, If a player wanted to find out the 
 name of the team that the player represented in their moment plays for, they
-would call a public function in the TopShot smart contract 
+would call a public function in the `TopShot` smart contract 
 called `getPlayMetaDataByField`, providing, from their owned moment,
 the play and field that they want to query. 
 They can do the same with information about sets.
@@ -126,11 +138,11 @@ to move them in and out and to read data about the collection and its moments.
 All core functionality and type definitions 
 are included in the `contracts/TopShot.cdc` contract.
 
-The TopShot contract defines  types.
+The `TopShot` contract defines types.
 
  - `Play`: A struct type that holds most of the metadata for the moments.
     All plays in Top Shot will be stored and modified in the main contract.
- - `SetData`: A struct that contains constant information about sets in topshot
+ - `SetData`: A struct that contains constant information about sets in Top Shot
     like the name, the series, the id, and such.
  - `Set`: A resource that contains functionality to modify sets,
     like adding and removing plays, locking the set, and minting moments from
@@ -147,7 +159,7 @@ The TopShot contract defines  types.
     various acitions in the smart contract like starting a new series, 
     creating a new play or set, and getting a reference to an existing set.
 
-## How to Deploy and Test the TopShot Contract
+## How to Deploy and Test the Top Shot Contract
 
 The first step for using any smart contract is deploying it to the blockchain,
 or emulator in our case. Do these commands in vscode. 
@@ -172,7 +184,7 @@ or use a type that is defined in a smart contract, we simply import
 that contract from the address it is defined in and then use the imported
 contract to access those type definitions and fields.
 
-## TopShot Events
+## NBA Top Shot Events
 
 The smart contract and its various resources will emit certain events
 that show when specific actions are taken, like transferring an NFT. This
@@ -182,7 +194,7 @@ the `lib/go/events` package.
     
 - `pub event ContractInitialized()`
     
-    This event is emitted when the TopShot contract is created
+    This event is emitted when the `TopShot` contract is created
 
 #### Events for plays
 - `pub event PlayCreated(id: UInt32, metadata: {String:String})`
@@ -212,7 +224,7 @@ the `lib/go/events` package.
     
 - `pub event MomentMinted(momentID: UInt64, playID: UInt32, setID: UInt32, serialNumber: UInt32)`
 
-    Emitted when a moment is minted from a set. The `momentID` is the global unique identifier that differentiates a moment from all other TopShot moments in existence. The `serialNumber` is the identifier that differentiates the moment within an Edition. It corresponds to the place in that edition where it was minted. 
+    Emitted when a moment is minted from a set. The `momentID` is the global unique identifier that differentiates a moment from all other Top Shot moments in existence. The `serialNumber` is the identifier that differentiates the moment within an Edition. It corresponds to the place in that edition where it was minted. 
 
 #### Events for Collection-related actions
     
@@ -224,7 +236,7 @@ the `lib/go/events` package.
 
     Emitted when a moment is deposited into a collection. `id` refers to the global moment ID. If the collection was in an account's storage when it was deposited, `to` will show the address of the account that it was deposited to. If the collection was not in storage when the Moment was deposited, `to` will be `nil`
 
-## Topshot Marketplace
+## NBA Top Shot Marketplace
 
 The `contracts/MarketTopShot.cdc` contract allows users to create a sale object
 in their account to sell their moments.
@@ -232,7 +244,7 @@ in their account to sell their moments.
 When a user wants to sell their moment, they create a sale collection
 in their account and specify a beneficiary of a cut of the sale if they wish.
 
-A Topshot Sale Collection functions similarly to a regular moment collection,
+A Top Shot Sale Collection functions similarly to a regular moment collection,
 but instead of a regular deposit function, the user has function to set a 
 price for their moment when they deposit it.
 
@@ -264,7 +276,16 @@ and if they sent the correct amount, they get the moment back.
    from their sales and sent to a beneficiary.
 
 
+## License 
 
+The works in these folders 
+/dapperlabs/nba-smart-contracts/blob/master/contracts/TopShot.cdc 
+/dapperlabs/nba-smart-contracts/blob/master/contracts/MarketTopShot.cdc 
+/dapperlabs/nba-smart-contracts/blob/master/contracts/TopShotAdminReceiver.cdc 
+/dapperlabs/nba-smart-contracts/blob/master/contracts/TopShotShardedCollection.cdc 
+
+are under the Unlicense
+https://github.com/onflow/flow-NFT/blob/master/LICENSE
 
 
 
