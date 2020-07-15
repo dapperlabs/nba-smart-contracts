@@ -54,13 +54,12 @@ func GenerateTopshotAdminReceiverContract(topshotAddr, shardedAddr string) []byt
 
 // GenerateTopShotMarketContract returns a copy
 // of the TopShotMarketContract with the import addresses updated
-func GenerateTopShotMarketContract(ftAddr, nftAddr, topshotAddr, ducTokenAddr string) []byte {
+func GenerateTopShotMarketContract(ftAddr, nftAddr, topshotAddr string) []byte {
 
 	marketCode := assets.MustAssetString(marketFile)
 	codeWithNFTAddr := strings.ReplaceAll(marketCode, defaultNonFungibleTokenAddress, nftAddr)
 	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 	codeWithFTAddr := strings.ReplaceAll(codeWithTopshotAddr, defaultFungibleTokenAddress, ftAddr)
-	codeWithTokenAddr := strings.ReplaceAll(codeWithFTAddr, "DUCADDRESS", ducTokenAddr)
 
-	return []byte(codeWithTokenAddr)
+	return []byte(codeWithFTAddr)
 }
