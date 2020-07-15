@@ -24,29 +24,13 @@ func uint32ToCadenceArr(nums []uint32) []byte {
 }
 
 func replaceAddresses(code string, topShotAddr, nftAddr, marketAddr, shardedAddr string) string {
-	code = strings.ReplaceAll(
-		code,
-		"0x"+defaultTopShotAddress,
-		"0x"+topShotAddr,
-	)
 
-	code = strings.ReplaceAll(
-		code,
-		"0x"+defaultNFTAddress,
-		"0x"+nftAddr,
-	)
+	replacer := strings.NewReplacer("0x"+defaultTopShotAddress, "0x"+topShotAddr,
+		"0x"+defaultNFTAddress, "0x"+nftAddr,
+		"0x"+defaultMarketAddress, "0x"+nftAddr,
+		"0x"+defaultShardedAddress, "0x"+shardedAddr)
 
-	code = strings.ReplaceAll(
-		code,
-		"0x"+defaultMarketAddress,
-		"0x"+marketAddr,
-	)
-
-	code = strings.ReplaceAll(
-		code,
-		"0x"+defaultShardedAddress,
-		"0x"+shardedAddr,
-	)
+	code = replacer.Replace(code)
 
 	return code
 }
