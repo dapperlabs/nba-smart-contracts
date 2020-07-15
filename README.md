@@ -35,6 +35,13 @@ to store their NFT objects directly in their accounts and transact
 peer-to-peer. Please see the [blog post about resources](https://medium.com/dapperlabs/resource-oriented-programming-bee4d69c8f8e)
 to understand why they are perfect for digital assets like NBA Top Shot moments.
 
+### Contributing
+
+If you see an issue with the code for the contracts, the transactions, scripts,
+documentation, or anything else, please do not hesitate to make an issue or
+a pull request with your desired changes. This is an open source project
+and we welcome all assistance from the community!
+
 ## Directory Structure
 
 The directories here are organized into contrats, scripts, and transactions.
