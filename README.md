@@ -1,4 +1,4 @@
-# NBA Top Shot Smart Contracts
+# NBA Top Shot
 
 ## Introduction
 
@@ -56,21 +56,21 @@ to performa actions in the smart contract like creating plays and sets,
 minting moments, and transfering moments.
 
  - `contracts/` : Where the Top Shot related smart contracts live
- - `scripts/`  : This contains all the read-only Cadence scripts 
- that are used to read information from the smart contract
- or from a resource in account storage
  - `transactions/` : This directory contains all the state-changing transactions
  that are associated with the Top Shot smart contracts.
+ - `transactions/scripts/`  : This contains all the read-only Cadence scripts 
+ that are used to read information from the smart contract
+ or from a resource in account storage
  - `lib/` : This directory contains packages for specific programming languages
  to be able to read copies of the topshot smart contracts, transaction templates,
  and scripts. Also contains automated tests written in those languages. Currently,
  Go is the only language that is supported, but are hoping to add javascript
  and other languages soon.
 
+## Contract Overview
 
-## NBA Top Shot Smart Contract Features:
-
-Each Top Shot moment NFT represents a play from a game in the NBA season.
+Each Top Shot moment NFT represents a copy of 
+a play from a game in the NBA season.
 Plays are grouped into sets which usually have some overarching theme,
 like rarity or the type of the play. 
 
@@ -81,7 +81,7 @@ otherwise known as an edition, is unique and is what classifies an individual mo
 Multiple moments can be minted from the same edition and each receives a 
 serial number that indicates where in the edition it was minted.
 
-Therefore each moment is a resource object 
+Each moment is a resource object 
 with roughly the following structure:
 
 ```cadence
@@ -102,7 +102,30 @@ pub resource Moment {
 }
 ```
 
-Metadata associated with plays and sets are stored in the main smart contract
+The other types that are defined in `TopShot` are as follows:
+
+ - `Play`: A struct type that holds most of the metadata for the moments.
+    All plays in Top Shot will be stored and modified in the main contract.
+ - `SetData`: A struct that contains constant information about sets in Top Shot
+    like the name, the series, the id, and such.
+ - `Set`: A resource that contains variable data for sets 
+    and the functionality to modify sets,
+    like adding and removing plays, locking the set, and minting moments from
+    the set.
+ - `MomentData`: A struct that contains the metadata associated with a moment.
+    instances of it will be stored in each moment.
+ - `NFT`: A resource type that is the NFT that represents the Moment
+    highlight a user owns. It stores its unique ID and other metadata. This
+    is the collectible object that the users store in their accounts.
+ - `Collection`: Similar to the `NFTCollection` resource from the NFT
+    example, this resource is a repository for a user's moments.  Users can
+    withdraw and deposit from this collection and get information about the 
+    contained moments.
+ - `Admin`: This is a resource type that can be used by admins to perform
+    various acitions in the smart contract like starting a new series, 
+    creating a new play or set, and getting a reference to an existing set.
+
+Metadata structs associated with plays and sets are stored in the main smart contract
 and can be queried by anyone. For example, If a player wanted to find out the 
 name of the team that the player represented in their moment plays for, they
 would call a public function in the `TopShot` smart contract 
@@ -133,32 +156,6 @@ in their account storage via their `Collection` object. The collection object
 contains a dictionary that stores the moments and gives utility functions
 to move them in and out and to read data about the collection and its moments.
 
-## Contract Overview
-
-All core functionality and type definitions 
-are included in the `contracts/TopShot.cdc` contract.
-
-The `TopShot` contract defines types.
-
- - `Play`: A struct type that holds most of the metadata for the moments.
-    All plays in Top Shot will be stored and modified in the main contract.
- - `SetData`: A struct that contains constant information about sets in Top Shot
-    like the name, the series, the id, and such.
- - `Set`: A resource that contains functionality to modify sets,
-    like adding and removing plays, locking the set, and minting moments from
-    the set.
- - `MomentData`: A struct that contains the metadata associated with a moment.
-    instances of it will be stored in each moment.
- - `NFT`: A resource type that is the NFT that represents the Moment
-    highlight a user owns. It stores its unique ID and other metadata.
- - `Collection`: Similar to the `NFTCollection` resource from the NFT
-    example, this resource is a repository for a user's moments.  Users can
-    withdraw and deposit from this collection and get information about the 
-    contained moments.
- - `Admin`: This is a resource type that can be used by admins to perform
-    various acitions in the smart contract like starting a new series, 
-    creating a new play or set, and getting a reference to an existing set.
-
 ## How to Deploy and Test the Top Shot Contract
 
 The first step for using any smart contract is deploying it to the blockchain,
@@ -184,12 +181,35 @@ or use a type that is defined in a smart contract, we simply import
 that contract from the address it is defined in and then use the imported
 contract to access those type definitions and fields.
 
+After the contracts have been deployed, you can run the sample transactions
+to interact with the contracts. A common order of creating new moments would be
+
+1. Creating new plays with `transactions/admin/create_play.cdc`
+2. Creating new sets with `transactions/admin/create_set.cdc`
+3. Adding plays to the sets to create editions
+   with `transactions/admin/add_plays_to_set.cdc`
+4. Minting moments from those editions with 
+   `transactions/admin/batch_mint_moment.cdc`
+
+You can also see the scripts in `transactions/scripts` to see how information
+can be read from the real Top Shot smart contract deployed on the
+Flow Beta Mainnet. 
+
+### Accessing the NBA Top Shot smart contract on Flow Beta Mainnet
+
+The Flow Beta mainnet is still a work in progress and still has
+a limited number of accounts that can run nodes and submit transactions.
+This means that the real Top Shot smart contract deployed on chain 
+is still not accessible by the public. This is only temporary and can be expected
+to open up to the public when the Flow mainnet is released to the public in Q3-Q4
+2020. Stay tuned in the NBA Top Shot and Flow discord channels for more info.
+
 ## NBA Top Shot Events
 
 The smart contract and its various resources will emit certain events
 that show when specific actions are taken, like transferring an NFT. This
 is a list of events that can be emitted, and what each event means.
-You can find definitions for interpreting these events in golang by seeing
+You can find definitions for interpreting these events in Go by seeing
 the `lib/go/events` package.
     
 - `pub event ContractInitialized()`
