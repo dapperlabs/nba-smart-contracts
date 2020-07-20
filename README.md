@@ -163,7 +163,7 @@ See the [vscode extension instructions](https://docs.onflow.org/docs/visual-stud
 to learn how to use it.
 
  1. Start the emulator with the `Run emulator` vscode command.
- 2. Open the `NonFungibleToken.cdc` file from the [flow-nft repo](https://github.com/onflow/flow-nft/blob/master/src/contracts/NonFungibleToken.cdc) and the `TopShot.cdc` file.  Feel free to read as much as you want to familiarize yourself with the contracts.
+ 2. Open the `NonFungibleToken.cdc` file from the [flow-nft repo](https://github.com/onflow/flow-nft/blob/master/contracts/NonFungibleToken.cdc) and the `TopShot.cdc` file.  Feel free to read as much as you want to familiarize yourself with the contracts.
  3. In `NonFungibleToken.cdc`, click the `deploy contract to account` to deploy it.
  4. Switch to a different account
  5. In `TopShot.cdc`, make sure it imports `NonFungibleToken` from the account you deployed it to
