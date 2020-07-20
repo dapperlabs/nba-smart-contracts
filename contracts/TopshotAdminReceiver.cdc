@@ -2,9 +2,9 @@
 
   AdminReceiver.cdc
 
-  This contract defines a function that takes a TopShot admin
+  This contract defines a function that takes a TopShot Admin
   object and stores it in the storage of the contract account
-  so it can be used normally
+  so it can be used.
 
  */
 
@@ -13,7 +13,7 @@ import TopShotShardedCollection from 0xSHARDEDADDRESS
 
 pub contract TopshotAdminReceiver {
 
-    // storeAdmin takes a topshot Admin resource and 
+    // storeAdmin takes a TopShot Admin resource and 
     // saves it to the account storage of the account
     // where the contract is deployed
     pub fun storeAdmin(newAdmin: @TopShot.Admin) {
@@ -21,7 +21,7 @@ pub contract TopshotAdminReceiver {
     }
     
     init() {
-        // also save a copy of the sharded moment collection to the account storage
+        // Save a copy of the sharded Moment Collection to the account storage
         if self.account.borrow<&TopShotShardedCollection.ShardedCollection>(from: /storage/ShardedMomentCollection) == nil {
             let collection <- TopShotShardedCollection.createEmptyCollection(numBuckets: 32)
             // Put a new Collection in storage
