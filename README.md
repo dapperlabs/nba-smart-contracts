@@ -55,12 +55,12 @@ Transactions contain the transactions that various admins and users can use
 to perform actions in the smart contract like creating plays and sets,
 minting Moments, and transfering Moments.
 
- - `contracts/` : Where the Top Shot related smart contracts live
+ - `contracts/` : Where the Top Shot related smart contracts live.
  - `transactions/` : This directory contains all the state-changing transactions
  that are associated with the Top Shot smart contracts.
  - `transactions/scripts/`  : This contains all the read-only Cadence scripts 
  that are used to read information from the smart contract
- or from a resource in account storage
+ or from a resource in account storage.
  - `lib/` : This directory contains packages for specific programming languages
  to be able to read copies of the Top Shot smart contracts, transaction templates,
  and scripts. Also contains automated tests written in those languages. Currently,
@@ -165,10 +165,10 @@ to learn how to use it.
  1. Start the emulator with the `Run emulator` vscode command.
  2. Open the `NonFungibleToken.cdc` file from the [flow-nft repo](https://github.com/onflow/flow-nft/blob/master/contracts/NonFungibleToken.cdc) and the `TopShot.cdc` file.  Feel free to read as much as you want to familiarize yourself with the contracts.
  3. In `NonFungibleToken.cdc`, click the `deploy contract to account` to deploy it.
- 4. Switch to a different account
- 5. In `TopShot.cdc`, make sure it imports `NonFungibleToken` from the account you deployed it to
+ 4. Switch to a different account.
+ 5. In `TopShot.cdc`, make sure it imports `NonFungibleToken` from the account you deployed it to.
  6. Click the `deploy contract to account` button that appears over the 
-    `TopShot` contract declaration to deploy it to a new account
+    `TopShot` contract declaration to deploy it to a new account.
 
 This deploys the contract code. It also runs the contract's
 `init` function, which initializes the contract storage variables,
@@ -183,12 +183,12 @@ contract to access those type definitions and fields.
 After the contracts have been deployed, you can run the sample transactions
 to interact with the contracts. A common order of creating new Moments would be
 
-1. Creating new plays with `transactions/admin/create_play.cdc`
-2. Creating new sets with `transactions/admin/create_set.cdc`
+1. Creating new plays with `transactions/admin/create_play.cdc`.
+2. Creating new sets with `transactions/admin/create_set.cdc`.
 3. Adding plays to the sets to create editions
-   with `transactions/admin/add_plays_to_set.cdc`
+   with `transactions/admin/add_plays_to_set.cdc`.
 4. Minting Moments from those editions with 
-   `transactions/admin/batch_mint_moment.cdc`
+   `transactions/admin/batch_mint_moment.cdc`.
 
 You can also see the scripts in `transactions/scripts` to see how information
 can be read from the real Top Shot smart contract deployed on the
@@ -213,7 +213,7 @@ the `lib/go/events` package.
     
 - `pub event ContractInitialized()`
     
-    This event is emitted when the `TopShot` contract is created
+    This event is emitted when the `TopShot` contract is created.
 
 #### Events for plays
 - `pub event PlayCreated(id: UInt32, metadata: {String:String})`
@@ -222,13 +222,14 @@ the `lib/go/events` package.
 
 - `pub event NewSeriesStarted(newCurrentSeries: UInt32)`
     
-    Emitted when a new series has been triggered by an admin
+    Emitted when a new series has been triggered by an admin.
 
 #### Events for set-Related actions
 
 - `pub event SetCreated(setID: UInt32, series: UInt32)`
     
-    Emitted when a new set is created
+    Emitted when a new set is created.
+    
 - `pub event PlayAddedToSet(setID: UInt32, playID: UInt32)`
     
     Emitted when a new play is added to a set.
@@ -240,7 +241,7 @@ the `lib/go/events` package.
     
 - `pub event SetLocked(setID: UInt32)`
 
-    Emitted when a set is locked, meaning plays cannot be added
+    Emitted when a set is locked, meaning plays cannot be added.
     
 - `pub event MomentMinted(momentID: UInt64, playID: UInt32, setID: UInt32, serialNumber: UInt32)`
 
@@ -250,11 +251,11 @@ the `lib/go/events` package.
     
 - `pub event Withdraw(id: UInt64, from: Address?)`
 
-    Emitted when a Moment is withdrawn from a collection. `id` refers to the global Moment ID. If the collection was in an account's storage when it was withdrawn, `from` will show the address of the account that it was withdrawn from. If the collection was not in storage when the Moment was withdrawn, `from` will be `nil`
+    Emitted when a Moment is withdrawn from a collection. `id` refers to the global Moment ID. If the collection was in an account's storage when it was withdrawn, `from` will show the address of the account that it was withdrawn from. If the collection was not in storage when the Moment was withdrawn, `from` will be `nil`.
 
 - `pub event Deposit(id: UInt64, to: Address?)`
 
-    Emitted when a Moment is deposited into a collection. `id` refers to the global Moment ID. If the collection was in an account's storage when it was deposited, `to` will show the address of the account that it was deposited to. If the collection was not in storage when the Moment was deposited, `to` will be `nil`
+    Emitted when a Moment is deposited into a collection. `id` refers to the global Moment ID. If the collection was in an account's storage when it was deposited, `to` will show the address of the account that it was deposited to. If the collection was not in storage when the Moment was deposited, `to` will be `nil`.
 
 ## NBA Top Shot Marketplace
 
@@ -288,7 +289,7 @@ and if they sent the correct amount, they get the Moment back.
 
 - `pub event MomentWithdrawn(id: UInt64, owner: Address?)`
 
-   Emitted when a seller withdraws their Moment from their SaleCollection
+   Emitted when a seller withdraws their Moment from their SaleCollection.
 
 - `pub event CutPercentageChanged(newPercent: UFix64, seller: Address?)`
 
