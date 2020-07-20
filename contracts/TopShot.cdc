@@ -249,7 +249,7 @@ pub contract TopShot: NonFungibleToken {
         // Mapping of Play IDs that indicates the number of Moments 
         // that have been minted for specific Plays in this Set.
         // When a Moment is minted, this value is stored in the Moment to
-        // show it's place in the Set, eg. 13 of 60.
+        // show its place in the Set, eg. 13 of 60.
         pub var numberMintedPerPlay: {UInt32: UInt32}
 
         init(name: String) {
