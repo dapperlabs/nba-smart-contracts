@@ -1,6 +1,7 @@
 package test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
@@ -342,10 +343,37 @@ func TestMintNFTs(t *testing.T) {
 	})
 
 	// TODO
+	// Test cases:
+	// - Mismatched set + play array lengths
+	// - 0-length set + plays
+	t.Run("Should fail with mismatched Set and Play slice lengths", func(t *testing.T) {
+		_, err := templates.GenerateSetPlaysOwnedByAddressScript(topshotAddr, joshAddress, []uint32{1, 2}, []uint32{1})
+		assert.Error(t, err)
+		assert.True(t, strings.Contains(err.Error(), "mismatched lengths"))
+	})
+
+	// - 2/2
 	t.Run("Should be able check how many of a user's moments contribute towards a set Challenge", func(t *testing.T) {
-		challengeScript, err := templates.GenerateChallengeCompletedScript(topshotAddr, joshAddress, []uint32{1, 2}, []uint32{1, 2})
+		challengeScript, err := templates.GenerateSetPlaysOwnedByAddressScript(topshotAddr, joshAddress, []uint32{1, 2}, []uint32{1, 2})
 		assert.NoError(t, err)
-		ExecuteScriptAndCheck(t, b, challengeScript, false)
+
+		result, err := b.ExecuteScript(challengeScript, nil)
+		assert.NoError(t, err)
+		boolResult, ok := result.Value.ToGoValue().(bool)
+		assert.True(t, ok)
+		assert.True(t, boolResult)
+	})
+
+	// - 2/3
+	t.Run("Should be able check how many of a user's moments contribute towards a set Challenge", func(t *testing.T) {
+		challengeScript, err := templates.GenerateSetPlaysOwnedByAddressScript(topshotAddr, joshAddress, []uint32{1, 2, 3}, []uint32{1, 2, 3})
+		assert.NoError(t, err)
+
+		result, err := b.ExecuteScript(challengeScript, nil)
+		assert.NoError(t, err)
+		boolResult, ok := result.Value.ToGoValue().(bool)
+		assert.True(t, ok)
+		assert.False(t, boolResult)
 	})
 
 	// Make sure the contract fields are correct
