@@ -12,26 +12,14 @@ import (
 var addrA = flow.HexToAddress("0A")
 var addrB = flow.HexToAddress("0B")
 var addrC = flow.HexToAddress("0C")
-var addrD = flow.HexToAddress("0D")
 
 func TestTopShotContract(t *testing.T) {
 	contract := contracts.GenerateTopShotContract(addrA.Hex())
 	assert.NotNil(t, contract)
 }
 
-func TestTopShotV1Contract(t *testing.T) {
-	contract := contracts.GenerateTopShotV1Contract(addrA.Hex())
-	assert.NotNil(t, contract)
-}
-
 func TestTopShotShardedCollectionContract(t *testing.T) {
 	contract := contracts.GenerateTopShotShardedCollectionContract(addrA.Hex(), addrB.Hex())
-	assert.NotNil(t, contract)
-	assert.Contains(t, string(contract), addrA.Hex())
-}
-
-func TestTopShotShardedCollectionV1Contract(t *testing.T) {
-	contract := contracts.GenerateTopShotShardedCollectionV1Contract(addrA.Hex(), addrB.Hex())
 	assert.NotNil(t, contract)
 	assert.Contains(t, string(contract), addrA.Hex())
 }
@@ -43,7 +31,7 @@ func TestTopShotAdminReceiverContract(t *testing.T) {
 }
 
 func TestTopShotMarketContract(t *testing.T) {
-	contract := contracts.GenerateTopShotMarketContract(addrA.Hex(), addrB.Hex(), addrC.Hex(), addrD.Hex())
+	contract := contracts.GenerateTopShotMarketContract(addrA.Hex(), addrB.Hex(), addrC.Hex())
 	assert.NotNil(t, contract)
 	assert.Contains(t, string(contract), addrA.Hex())
 }

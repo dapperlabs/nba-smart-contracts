@@ -160,9 +160,9 @@ func GenerateChangePercentageScript(topshotAddr, marketAddr flow.Address, percen
 
 // GenerateChangeOwnerReceiverScript creates a cadence transaction
 // that changes the sellers receiver capability
-func GenerateChangeOwnerReceiverScript(topshotAddr, marketAddr flow.Address, receiverName string) []byte {
+func GenerateChangeOwnerReceiverScript(fungibleTokenAddr, topshotAddr, marketAddr flow.Address, receiverName string) []byte {
 	template := `
-		import FungibleToken from 0xee82856bf20e2aa6
+		import FungibleToken from 0x%[4]s
 		import TopShot from 0x%[1]s
 		import Market from 0x%[2]s
 
@@ -175,14 +175,14 @@ func GenerateChangeOwnerReceiverScript(topshotAddr, marketAddr flow.Address, rec
 				topshotSaleCollection.changeOwnerReceiver(acct.getCapability(/public/%[3]s)!)
 			}
 		}`
-	return []byte(fmt.Sprintf(template, topshotAddr, marketAddr, receiverName))
+	return []byte(fmt.Sprintf(template, topshotAddr, marketAddr, receiverName, fungibleTokenAddr))
 }
 
 // GenerateBuySaleScript creates a cadence transaction that makes a purchase of
 // an existing sale
-func GenerateBuySaleScript(tokenAddr, topshotAddr, marketAddr, sellerAddr flow.Address, tokenName, tokenStorageName string, id, amount int) []byte {
+func GenerateBuySaleScript(fungibleTokenAddr, tokenAddr, topshotAddr, marketAddr, sellerAddr flow.Address, tokenName, tokenStorageName string, id, amount int) []byte {
 	template := `
-		import FungibleToken from 0xee82856bf20e2aa6
+		import FungibleToken from 0x%[9]s
 		import %[1]s from 0x%[2]s
 		import TopShot from 0x%[8]s
 		import Market from 0x%[3]s
@@ -208,15 +208,15 @@ func GenerateBuySaleScript(tokenAddr, topshotAddr, marketAddr, sellerAddr flow.A
 
 			}
 		}`
-	return []byte(fmt.Sprintf(template, tokenName, tokenAddr, marketAddr, sellerAddr, tokenStorageName, amount, id, topshotAddr))
+	return []byte(fmt.Sprintf(template, tokenName, tokenAddr, marketAddr, sellerAddr, tokenStorageName, amount, id, topshotAddr, fungibleTokenAddr))
 }
 
 // GenerateMintTokensAndBuyScript creates a script that uses the admin resource
 // from the admin accountto mint new tokens and use them to purchase a topshot
 // moment from a market collection
-func GenerateMintTokensAndBuyScript(tokenAddr, topshotAddr, marketAddr, sellerAddr, receiverAddr flow.Address, tokenName, storageName string, tokenID, amount int) []byte {
+func GenerateMintTokensAndBuyScript(fungibleTokenAddr, tokenAddr, topshotAddr, marketAddr, sellerAddr, receiverAddr flow.Address, tokenName, storageName string, tokenID, amount int) []byte {
 	template := `
-		import FungibleToken from 0xee82856bf20e2aa6
+		import FungibleToken from 0x%[10]s
 		import %[1]s from 0x%[2]s
 		import TopShot from 0x%[3]s
 		import Market from 0x%[4]s
@@ -252,7 +252,7 @@ func GenerateMintTokensAndBuyScript(tokenAddr, topshotAddr, marketAddr, sellerAd
 		}
 	`
 
-	return []byte(fmt.Sprintf(template, tokenName, tokenAddr, topshotAddr, marketAddr, storageName, amount, sellerAddr, tokenID, receiverAddr))
+	return []byte(fmt.Sprintf(template, tokenName, tokenAddr, topshotAddr, marketAddr, storageName, amount, sellerAddr, tokenID, receiverAddr, fungibleTokenAddr))
 }
 
 // GenerateInspectSaleScript creates a script that retrieves a sale collection

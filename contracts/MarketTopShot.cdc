@@ -7,7 +7,7 @@
     Authors: Joshua Hannan joshua.hannan@dapperlabs.com
              Dieter Shirley dete@axiomzen.com
 
-    Marketplace is where users can create a sale collectio that they
+    Marketplace is where users can create a sale collection that they
     store in their account storage. In the sale collection, 
     they can put their NFTs up for sale with a price and publish a 
     reference so that others can see the sale.
@@ -23,17 +23,18 @@
     They can give a reference to this collection to a central contract
     so that it can list the sales in a central place
 
-    When a user creates a sale, they will specify a fungible token capability
-    as the place where the payment for the token goes, and they also give
-    another fungible token capability for where a cut of the purchase
-    gets sent. The cut can be set to zero if the user desires and they 
-    will receive the entirety of the purchase. Topshot will initialize sales 
-    for users with the topshot admin vault as the vault where cuts get 
+    When a user creates a sale, they will supply three arguments:
+    - A FungibleToken.Receiver capability as the place where the payment for the token goes.
+    - A FungibleToken.Receiver capability specifying a beneficiary, where a cut of the purchase gets sent. 
+    - A cut percentage, specifying how much the beneficiary will recieve.
+    
+    The cut percentage can be set to zero if the user desires and they 
+    will receive the entirety of the purchase. TopShot will initialize sales 
+    for users with the TopShot admin vault as the vault where cuts get 
     deposited to.
 */
 
 import FungibleToken from 0xFUNGIBLETOKENADDRESS
-import DapperUtilityCoin from 0xDUCADDRESS
 import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 
@@ -56,11 +57,11 @@ pub contract Market {
 
     // SalePublic 
     //
-    // The interface that a user can publish their sale as 
+    // The interface that a user can publish a capability to their sale
     // to allow others to access their sale
     pub resource interface SalePublic {
         pub var cutPercentage: UFix64
-        pub fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
+        pub fun purchase(tokenID: UInt64, buyTokens: @FungibleToken.Vault): @TopShot.NFT {
             post {
                 result.id == tokenID: "The ID of the withdrawn token must be the same as the requested ID"
             }
@@ -81,17 +82,20 @@ pub contract Market {
     //
     // This is the main resource that token sellers will store in their account
     // to manage the NFTs that they are selling. The SaleCollection
-    // holds a TopShot Collection resource to store the moments that are for sale
+    // holds a TopShot Collection resource to store the moments that are for sale.
     // The SaleCollection also keeps track of the price of each token.
     // 
-    // When a token is purchased, a cut is taken from the tokens that are used to
-    // purchase and sent to the beneficiary, then the rest are sent to the seller
+    // When a token is purchased, a cut is taken from the tokens
+    // and sent to the beneficiary, then the rest are sent to the seller.
+    //
+    // The seller chooses who the beneficiary is and what percentage
+    // of the tokens gets taken from the purchase
     pub resource SaleCollection: SalePublic {
 
         // A collection of the moments that the user has for sale
         access(self) var forSale: @TopShot.Collection
 
-        // Dictionary of the prices for each NFT by ID
+        // Dictionary of the low low prices for each NFT by ID
         access(self) var prices: {UInt64: UFix64}
 
         // The fungible token vault of the seller
@@ -103,30 +107,33 @@ pub contract Market {
         // the beneficiary's cut of every sale
         access(self) var beneficiaryCapability: Capability
 
-        // the percentage that is taken from every purchase for the beneficiary
-        // This is a literal percentage
+        // The percentage that is taken from every purchase for the beneficiary
         // For example, if the percentage is 15%, cutPercentage = 0.15
         pub var cutPercentage: UFix64
 
         init (ownerCapability: Capability, beneficiaryCapability: Capability, cutPercentage: UFix64) {
             pre {
                 // Check that both capabilities are for fungible token Vault receivers
-                // for dapper utility coin
                 ownerCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
                     "Owner's Receiver Capability is invalid!"
                 beneficiaryCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
                     "Beneficiary's Receiver Capability is invalid!" 
             }
             
+            // create an empty collection to store the moments that are for sale
             self.forSale <- TopShot.createEmptyCollection() as! @TopShot.Collection
             self.ownerCapability = ownerCapability
             self.beneficiaryCapability = beneficiaryCapability
+            // prices are initially empty because there are no moments for sale
             self.prices = {}
             self.cutPercentage = cutPercentage
         }
 
         // listForSale lists an NFT for sale in this sale collection
         // at the specified price
+        //
+        // Parameters: token: The NFT to be put up for sale
+        //             price: The price of the NFT
         pub fun listForSale(token: @TopShot.NFT, price: UFix64) {
 
             // get the ID of the token
@@ -135,23 +142,28 @@ pub contract Market {
             // Set the token's price
             self.prices[token.id] = price
 
-            // Deposit the token into the collection
+            // Deposit the token into the sale collection
             self.forSale.deposit(token: <-token)
 
             emit MomentListed(id: id, price: price, seller: self.owner?.address)
         }
 
         // Withdraw removes a moment that was listed for sale
+        // and clears its price
+        //
+        // Parameters: tokenID: the ID of the token to withdraw from the sale
+        //
+        // Returns: @TopShot.NFT: The nft that was withdrawn from the sale
         pub fun withdraw(tokenID: UInt64): @TopShot.NFT {
 
-            // remove and return the token
-            // will revert if the token doesn't exist
+            // Remove and return the token.
+            // Will revert if the token doesn't exist
             let token <- self.forSale.withdraw(withdrawID: tokenID) as! @TopShot.NFT
 
             // Remove the price from the prices dictionary
             self.prices.remove(key: tokenID)
 
-            // set prices to nil for the withdrawn ID
+            // Set prices to nil for the withdrawn ID
             self.prices[tokenID] = nil
             
             // Emit the event for withdrawing a moment from the Sale
@@ -163,10 +175,15 @@ pub contract Market {
 
         // purchase lets a user send tokens to purchase an NFT that is for sale
         // the purchased NFT is returned to the transaction context that called it
-        pub fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
+        //
+        // Parameters: tokenID: the ID of the NFT to purchase
+        //             butTokens: the fungible tokens that are used to buy the NFT
+        //
+        // Returns: @TopShot.NFT: the purchased NFT
+        pub fun purchase(tokenID: UInt64, buyTokens: @FungibleToken.Vault): @TopShot.NFT {
             pre {
                 self.forSale.ownedNFTs[tokenID] != nil && self.prices[tokenID] != nil:
-                    "No token matching this ID for sale!"
+                    "No token matching this ID for sale!"           
                 buyTokens.balance == (self.prices[tokenID] ?? UFix64(0)):
                     "Not enough tokens to buy the NFT!"
             }
@@ -177,35 +194,40 @@ pub contract Market {
             // Set the price for the token to nil
             self.prices[tokenID] = nil
 
-            // take the cut of the tokens that the beneficiary gets from the sent tokens
+            // Take the cut of the tokens that the beneficiary gets from the sent tokens
             let beneficiaryCut <- buyTokens.withdraw(amount: price*self.cutPercentage)
 
-            // deposit it into the beneficiary's Vault
+            // Deposit it into the beneficiary's Vault
             self.beneficiaryCapability.borrow<&{FungibleToken.Receiver}>()!
                 .deposit(from: <-beneficiaryCut)
             
-            // deposit the remaining tokens into the owners vault
+            // Deposit the remaining tokens into the owners vault
             self.ownerCapability.borrow<&{FungibleToken.Receiver}>()!
                 .deposit(from: <-buyTokens)
 
             emit MomentPurchased(id: tokenID, price: price, seller: self.owner?.address)
 
-            // return the purchased token
+            // Return the purchased token
             return <-self.withdraw(tokenID: tokenID)
         }
 
         // changePrice changes the price of a token that is currently for sale
+        //
+        // Parameters: tokenID: The ID of the NFT's price that is changing
+        //             newPrice: The new price for the NFT
         pub fun changePrice(tokenID: UInt64, newPrice: UFix64) {
             pre {
                 self.prices[tokenID] != nil: "Cannot change the price for a token that is not for sale"
             }
-            // set the new price
+            // Set the new price
             self.prices[tokenID] = newPrice
 
             emit MomentPriceChanged(id: tokenID, newPrice: newPrice, seller: self.owner?.address)
         }
 
         // changePercentage changes the cut percentage of the tokens that are for sale
+        //
+        // Parameters: newPercent: The new cut percentage for the sale
         pub fun changePercentage(_ newPercent: UFix64) {
             self.cutPercentage = newPercent
 
@@ -213,6 +235,9 @@ pub contract Market {
         }
 
         // changeOwnerReceiver updates the capability for the sellers fungible token Vault
+        //
+        // Parameters: newOwnerCapability: The new fungible token capability for the account 
+        //                                 who received tokens for purchases
         pub fun changeOwnerReceiver(_ newOwnerCapability: Capability) {
             pre {
                 newOwnerCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
@@ -222,15 +247,22 @@ pub contract Market {
         }
 
         // changeBeneficiaryReceiver updates the capability for the beneficiary of the cut of the sale
+        //
+        // Parameters: newBeneficiaryCapability the new capability for the beneficiary of the cut of the sale
+        //
         pub fun changeBeneficiaryReceiver(_ newBeneficiaryCapability: Capability) {
             pre {
-                newBeneficiaryCapability.borrow<&DapperUtilityCoin.Vault{FungibleToken.Receiver}>() != nil: 
+                newBeneficiaryCapability.borrow<&{FungibleToken.Receiver}>() != nil: 
                     "Beneficiary's Receiver Capability is invalid!" 
             }
             self.beneficiaryCapability = newBeneficiaryCapability
         }
 
         // getPrice returns the price of a specific token in the sale
+        // 
+        // Parameters: tokenID: The ID of the NFT whose price to get
+        //
+        // Returns: UFix64: The price of the token
         pub fun getPrice(tokenID: UInt64): UFix64? {
             return self.prices[tokenID]
         }
@@ -242,11 +274,19 @@ pub contract Market {
 
         // borrowMoment Returns a borrowed reference to a Moment in the collection
         // so that the caller can read data from it
+        //
+        // Parameters: id: The ID of the moment to borrow a reference to
+        //
+        // Returns: &TopShot.NFT? Optional reference to a moment for sale 
+        //                        so that the caller can read its data
+        //
         pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
             let ref = self.forSale.borrowMoment(id: id)
             return ref
         }
 
+        // If the sale collection is destroyed, 
+        // destroy the tokens that are for sale inside of it
         destroy() {
             destroy self.forSale
         }
