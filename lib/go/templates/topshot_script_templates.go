@@ -373,7 +373,11 @@ func GenerateGetNumMomentsInEditionScript(tokenAddr flow.Address, setID, playID 
 	return []byte(fmt.Sprintf(template, tokenAddr, setID, playID, expectedMoments))
 }
 
-func GenerateChallengeCompletedScript(tokenAddr, userAddress flow.Address, setIDs []uint32, playIDs []uint32) ([]byte, error) {
+// GenerateSetPlaysOwnedByAddressScript generates a script that returns true if each of the SetPlays corresponding to
+// the passed Set and Play IDs are owned by the passed flow.Address.
+//
+// Set and Play IDs are matched up by index in the passed slices.
+func GenerateSetPlaysOwnedByAddressScript(tokenAddr, userAddress flow.Address, setIDs []uint32, playIDs []uint32) ([]byte, error) {
 	if len(setIDs) != len(playIDs) {
 		return nil, errors.New("set and play ID arrays have mismatched lengths")
 	}
