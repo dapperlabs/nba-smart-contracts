@@ -377,7 +377,6 @@ func GenerateGetNumMomentsInEditionScript(tokenAddr flow.Address, setID, playID 
 // the passed Set and Play IDs are owned by the passed flow.Address.
 //
 // Set and Play IDs are matched up by index in the passed slices.
-// TODO: update logic to return early if a setPlay was not found.
 func GenerateSetPlaysOwnedByAddressScript(tokenAddr, userAddress flow.Address, setIDs []uint32, playIDs []uint32) ([]byte, error) {
 	if len(setIDs) != len(playIDs) {
 		return nil, errors.New("set and play ID arrays have mismatched lengths")
@@ -404,25 +403,26 @@ func GenerateSetPlaysOwnedByAddressScript(tokenAddr, userAddress flow.Address, s
 		
 			// For each SetID/PlayID combo, loop over each moment in the account
 			// to see if they own a moment matching that SetPlay.
-			var numMatchingMoments = 0
 			var i = 0
 			while i < setIDs.length {
+				var hasMatchingMoment = false
 				for momentID in momentIDs {
 					let token = collectionRef.borrowMoment(id: momentID)
 						?? panic("Could not borrow a reference to the specified moment")
 
 					let momentData = token.data
-					let setID = momentData.setID
-					let playID = momentData.playID
-					if setID == setIDs[i] && playID == playIDs[i] {
-						numMatchingMoments = numMatchingMoments + 1
+					if momentData.setID == setIDs[i] && momentData.playID == playIDs[i] {
+						hasMatchingMoment = true
 						break
 					}
+				}
+				if !hasMatchingMoment {
+					return false
 				}
 				i = i + 1
 			}
 			
-			return numMatchingMoments == setIDs.length
+			return true
 }`
 	return []byte(fmt.Sprintf(template, tokenAddr, stringifyUint32Slice(setIDs), stringifyUint32Slice(playIDs), userAddress)), nil
 }
