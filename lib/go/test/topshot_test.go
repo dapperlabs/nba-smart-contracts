@@ -96,9 +96,6 @@ func TestMintNFTs(t *testing.T) {
 	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
 	joshAddress, _ := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
 
-	// Track the PlayID that will be assigned to the next minted play
-	nextPlayID := uint32(1)
-
 	// Admin sends a transaction to create a play
 	t.Run("Should be able to create a new Play", func(t *testing.T) {
 		createSignAndSubmit(
@@ -107,7 +104,6 @@ func TestMintNFTs(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
-		nextPlayID++
 	})
 
 	// Admin sends transactions to create multiple plays
@@ -132,7 +128,6 @@ func TestMintNFTs(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
-		nextPlayID += 3
 
 		// Check that the return all plays script doesn't fail
 		// and that we can return metadata about the plays
