@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -370,4 +371,71 @@ func GenerateGetNumMomentsInEditionScript(tokenAddr flow.Address, setID, playID 
 	`
 
 	return []byte(fmt.Sprintf(template, tokenAddr, setID, playID, expectedMoments))
+}
+
+// GenerateSetPlaysOwnedByAddressScript generates a script that returns true if each of the SetPlays corresponding to
+// the passed Set and Play IDs are owned by the passed flow.Address.
+//
+// Set and Play IDs are matched up by index in the passed slices.
+func GenerateSetPlaysOwnedByAddressScript(tokenAddr, userAddress flow.Address, setIDs []uint32, playIDs []uint32) ([]byte, error) {
+	if len(setIDs) != len(playIDs) {
+		return nil, errors.New("set and play ID arrays have mismatched lengths")
+	}
+	if len(setIDs) == 0 {
+		return nil, errors.New("no SetPlays specified")
+	}
+
+	template := `
+		import TopShot from 0x%s
+		
+		pub fun main(): Bool {
+			let setIDs = [%s]
+			let playIDs = [%s]
+			assert(
+				setIDs.length == playIDs.length,
+				message: "set and play ID arrays have mismatched lengths"
+			)
+		
+			let collectionRef = getAccount(0x%s).getCapability(/public/MomentCollection)!
+						.borrow<&{TopShot.MomentCollectionPublic}>()
+						?? panic("Could not get public moment collection reference")
+			let momentIDs = collectionRef.getIDs()
+		
+			// For each SetID/PlayID combo, loop over each moment in the account
+			// to see if they own a moment matching that SetPlay.
+			var i = 0
+			while i < setIDs.length {
+				var hasMatchingMoment = false
+				for momentID in momentIDs {
+					let token = collectionRef.borrowMoment(id: momentID)
+						?? panic("Could not borrow a reference to the specified moment")
+
+					let momentData = token.data
+					if momentData.setID == setIDs[i] && momentData.playID == playIDs[i] {
+						hasMatchingMoment = true
+						break
+					}
+				}
+				if !hasMatchingMoment {
+					return false
+				}
+				i = i + 1
+			}
+			
+			return true
+}`
+	return []byte(fmt.Sprintf(template, tokenAddr, stringifyUint32Slice(setIDs), stringifyUint32Slice(playIDs), userAddress)), nil
+}
+
+func stringifyUint32Slice(ints []uint32) string {
+	intArrayStr := ""
+	for _, i := range ints {
+		intStr := strconv.Itoa(int(i))
+		intArrayStr = intArrayStr + `UInt32(` + intStr + `), `
+	}
+	// Remove comma and space from last entry
+	if arrayLen := len(intArrayStr); arrayLen > 2 {
+		intArrayStr = intArrayStr[:len(intArrayStr)-2]
+	}
+	return intArrayStr
 }

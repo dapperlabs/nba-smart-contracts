@@ -1,6 +1,8 @@
 package test
 
 import (
+	"github.com/stretchr/testify/require"
+	"strings"
 	"testing"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
@@ -407,5 +409,129 @@ func TestTransferAdmin(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, adminAddr}, []crypto.Signer{b.ServiceKey().Signer(), adminSigner},
 			false,
 		)
+	})
+}
+
+func TestSetPlaysOwnedByAddressScript(t *testing.T) {
+	// Setup
+	b := NewEmulator()
+
+	accountKeys := test.AccountKeyGenerator()
+
+	// Should be able to deploy a contract as a new account with no keys.
+	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
+	nftAddr, _ := b.CreateAccount(nil, nftCode)
+
+	// First, deploy the topshot contract
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
+	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
+	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
+
+	// Create a new user account
+	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
+	joshAddress, _ := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
+
+	// Create moment collection
+	createSignAndSubmit(
+		t, b,
+		templates.GenerateSetupAccountScript(nftAddr, topshotAddr),
+		[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+		false,
+	)
+
+	// Create plays
+	lebronPlayID := uint32(1)
+	createSignAndSubmit(
+		t, b,
+		templates.GenerateMintPlayScript(topshotAddr, data.GenerateEmptyPlay("Lebron")),
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+	haywardPlayID := uint32(2)
+	createSignAndSubmit(
+		t, b,
+		templates.GenerateMintPlayScript(topshotAddr, data.GenerateEmptyPlay("Hayward")),
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+	antetokounmpoPlayID := uint32(3)
+	createSignAndSubmit(
+		t, b,
+		templates.GenerateMintPlayScript(topshotAddr, data.GenerateEmptyPlay("Antetokounmpo")),
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+
+	// Create Set
+	genesisSetID := uint32(1)
+	createSignAndSubmit(
+		t, b,
+		templates.GenerateMintSetScript(topshotAddr, "Genesis"),
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+
+	// Add plays to Set
+	createSignAndSubmit(
+		t, b,
+		templates.GenerateAddPlaysToSetScript(topshotAddr, genesisSetID, []uint32{lebronPlayID, haywardPlayID, antetokounmpoPlayID}),
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+
+	// Mint two moments to joshAddress
+	createSignAndSubmit(
+		t, b,
+		templates.GenerateMintMomentScript(topshotAddr, joshAddress, genesisSetID, lebronPlayID),
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+	createSignAndSubmit(
+		t, b,
+		templates.GenerateMintMomentScript(topshotAddr, joshAddress, genesisSetID, haywardPlayID),
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+
+	// Mint one moment to topshotAddress
+	createSignAndSubmit(
+		t, b,
+		templates.GenerateMintMomentScript(topshotAddr, topshotAddr, genesisSetID, lebronPlayID),
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+
+	t.Run("Should return true if the address owns moments corresponding to each SetPlay", func(t *testing.T) {
+		script, err := templates.GenerateSetPlaysOwnedByAddressScript(topshotAddr, joshAddress, []uint32{genesisSetID, genesisSetID}, []uint32{lebronPlayID, haywardPlayID})
+		require.NoError(t, err)
+
+		result, err := b.ExecuteScript(script, nil)
+		require.NoError(t, err)
+		boolResult, ok := result.Value.ToGoValue().(bool)
+		assert.True(t, ok)
+		assert.True(t, boolResult)
+	})
+
+	t.Run("Should return false if the address does not own moments corresponding to each SetPlay", func(t *testing.T) {
+		script, err := templates.GenerateSetPlaysOwnedByAddressScript(topshotAddr, joshAddress, []uint32{genesisSetID, genesisSetID, genesisSetID}, []uint32{lebronPlayID, haywardPlayID, antetokounmpoPlayID})
+		require.NoError(t, err)
+
+		result, err := b.ExecuteScript(script, nil)
+		require.NoError(t, err)
+		boolResult, ok := result.Value.ToGoValue().(bool)
+		assert.True(t, ok)
+		assert.False(t, boolResult)
+	})
+
+	t.Run("Should fail with mismatched Set and Play slice lengths", func(t *testing.T) {
+		_, err := templates.GenerateSetPlaysOwnedByAddressScript(topshotAddr, joshAddress, []uint32{1, 2}, []uint32{1})
+		assert.Error(t, err)
+		assert.True(t, strings.Contains(err.Error(), "mismatched lengths"))
+	})
+
+	t.Run("Should fail with empty SetPlays", func(t *testing.T) {
+		_, err := templates.GenerateSetPlaysOwnedByAddressScript(topshotAddr, joshAddress, []uint32{}, []uint32{})
+		assert.Error(t, err)
+		assert.True(t, strings.Contains(err.Error(), "no SetPlays"))
 	})
 }
