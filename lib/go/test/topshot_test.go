@@ -508,7 +508,7 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 
 	t.Run("Should return true if the address owns moments corresponding to each SetPlay", func(t *testing.T) {
 		script, err := templates.GenerateSetPlaysOwnedByAddressScript(topshotAddr, joshAddress, []uint32{genesisSetID, genesisSetID}, []uint32{lebronPlayID, haywardPlayID})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		result, err := b.ExecuteScript(script, nil)
 		require.NoError(t, err)
@@ -519,7 +519,7 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 
 	t.Run("Should return false if the address does not own moments corresponding to each SetPlay", func(t *testing.T) {
 		script, err := templates.GenerateSetPlaysOwnedByAddressScript(topshotAddr, joshAddress, []uint32{genesisSetID, genesisSetID, genesisSetID}, []uint32{lebronPlayID, haywardPlayID, antetokounmpoPlayID})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		result, err := b.ExecuteScript(script, nil)
 		require.NoError(t, err)
