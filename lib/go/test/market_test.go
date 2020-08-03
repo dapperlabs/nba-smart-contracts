@@ -152,15 +152,6 @@ func TestMarket(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
 			false,
 		)
-
-		// Create a sale collection for josh's account, setting bastian as the beneficiary
-		// and with a 15% cut
-		createSignAndSubmit(
-			t, b,
-			templates.GenerateCreateSaleScript(marketAddr, bastianAddress, defaultTokenStorage, .15),
-			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
-			false,
-		)
 	})
 
 	// Admin sends transactions to create a play, set, and moments
@@ -231,6 +222,16 @@ func TestMarket(t *testing.T) {
 	})
 
 	t.Run("Can put an NFT up for sale", func(t *testing.T) {
+
+		// Create a sale collection for josh's account, setting bastian as the beneficiary
+		// and with a 15% cut
+		createSignAndSubmit(
+			t, b,
+			templates.GenerateCreateSaleScript(flow.HexToAddress(defaultfungibleTokenAddr), topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .15),
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			false,
+		)
+
 		// start a sale with the moment josh owns, setting its price to 80
 		createSignAndSubmit(
 			t, b,
@@ -296,7 +297,7 @@ func TestMarket(t *testing.T) {
 		// setting himself as the beneficiary with a 15% cut
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateCreateAndStartSaleScript(topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .15, 2, 50),
+			templates.GenerateCreateAndStartSaleScript(flow.HexToAddress(defaultfungibleTokenAddr), topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .15, 50.0, 2),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
@@ -369,7 +370,7 @@ func TestMarket(t *testing.T) {
 	t.Run("Can use the create and start sale to start a sale even if there is already sale in storage", func(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateCreateAndStartSaleScript(topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .10, 2, 100),
+			templates.GenerateCreateAndStartSaleScript(flow.HexToAddress(defaultfungibleTokenAddr), topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .10, 100, 2),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)

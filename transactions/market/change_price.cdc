@@ -11,6 +11,6 @@ transaction(tokenID: UInt64, newPrice: UFix64) {
             ?? panic("Could not borrow from sale in storage")
 
         // Change the price of the moment
-        topshotSaleCollection.changePrice(tokenID: tokenID, newPrice: newPrice)
+        topshotSaleCollection.listForSale(tokenID: tokenID, price: newPrice)
     }
 }
