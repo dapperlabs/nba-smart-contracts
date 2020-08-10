@@ -2,7 +2,7 @@ import TopShot from 0xTOPSHOTADDRESS
 import Market from 0xMARKETADDRESS
 
 // This transaction is for a user to put a new moment up for sale
-// They must have TopShot Collection and a Market Sale Collection
+// They must have TopShot Collection and a Market Sale Collection already
 // stored in their account
 
 transaction(momentID: UInt64, price: UFix64) {

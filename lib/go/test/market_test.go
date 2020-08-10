@@ -227,7 +227,7 @@ func TestMarket(t *testing.T) {
 		// and with a 15% cut
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateCreateSaleScript(flow.HexToAddress(defaultfungibleTokenAddr), topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .15),
+			templates.GenerateCreateSaleV2Script(flow.HexToAddress(defaultfungibleTokenAddr), topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .15),
 			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
 			false,
 		)
@@ -235,7 +235,7 @@ func TestMarket(t *testing.T) {
 		// start a sale with the moment josh owns, setting its price to 80
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateStartSaleScript(topshotAddr, marketAddr, 1, 80),
+			templates.GenerateStartSaleV2Script(topshotAddr, marketAddr, 1, 80),
 			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
 			false,
 		)
@@ -297,7 +297,7 @@ func TestMarket(t *testing.T) {
 		// setting himself as the beneficiary with a 15% cut
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateCreateAndStartSaleScript(flow.HexToAddress(defaultfungibleTokenAddr), topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .15, 50.0, 2),
+			templates.GenerateCreateAndStartSaleV2Script(flow.HexToAddress(defaultfungibleTokenAddr), topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .15, 50.0, 2),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
@@ -311,7 +311,7 @@ func TestMarket(t *testing.T) {
 		// try to change the price of the wrong moment
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateChangePriceScript(topshotAddr, marketAddr, 5, 40),
+			templates.GenerateChangePriceV2Script(topshotAddr, marketAddr, 5, 40),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			true,
 		)
@@ -322,7 +322,7 @@ func TestMarket(t *testing.T) {
 		// change the price of the moment
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateChangePriceScript(topshotAddr, marketAddr, 2, 40),
+			templates.GenerateChangePriceV2Script(topshotAddr, marketAddr, 2, 40),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
@@ -346,7 +346,7 @@ func TestMarket(t *testing.T) {
 		// bastian tries to withdraw the wrong moment
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateWithdrawFromSaleScript(topshotAddr, marketAddr, 7),
+			templates.GenerateCancelSaleV2Script(topshotAddr, marketAddr, 7),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			true,
 		)
@@ -358,7 +358,7 @@ func TestMarket(t *testing.T) {
 		// bastian withdraws the correct moment
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateWithdrawFromSaleScript(topshotAddr, marketAddr, 2),
+			templates.GenerateCancelSaleV2Script(topshotAddr, marketAddr, 2),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
@@ -370,7 +370,7 @@ func TestMarket(t *testing.T) {
 	t.Run("Can use the create and start sale to start a sale even if there is already sale in storage", func(t *testing.T) {
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateCreateAndStartSaleScript(flow.HexToAddress(defaultfungibleTokenAddr), topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .10, 100, 2),
+			templates.GenerateCreateAndStartSaleV2Script(flow.HexToAddress(defaultfungibleTokenAddr), topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .10, 100, 2),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
@@ -395,7 +395,7 @@ func TestMarket(t *testing.T) {
 		// change the price of the moment
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateChangeOwnerReceiverScript(flow.HexToAddress(defaultfungibleTokenAddr), topshotAddr, marketAddr, "dapperUtilityCoinReceiver"),
+			templates.GenerateChangeOwnerReceiverV2Script(flow.HexToAddress(defaultfungibleTokenAddr), topshotAddr, marketAddr, "dapperUtilityCoinReceiver"),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)

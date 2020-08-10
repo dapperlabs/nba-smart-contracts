@@ -12,6 +12,6 @@ transaction(tokenID: UInt64) {
             ?? panic("Could not borrow from sale in storage")
 
         // cancel the moment from the sale, thereby de-listing it
-        let token <- topshotSaleCollection.cancelSale(tokenID: tokenID)
+        topshotSaleCollection.cancelSale(tokenID: tokenID)
     }
 }

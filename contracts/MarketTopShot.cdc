@@ -25,7 +25,9 @@
     They can give a reference to this collection to a central contract
     so that it can list the sales in a central place
 
-    When a user creates a sale, they will supply three arguments:
+    When a user creates a sale, they will supply four arguments:
+    - A TopShot.Collection capability that allows their sale to withdraw
+      a moment when it is purchased.
     - A FungibleToken.Receiver capability as the place where the payment for the token goes.
     - A FungibleToken.Receiver capability specifying a beneficiary, where a cut of the purchase gets sent. 
     - A cut percentage, specifying how much the beneficiary will recieve.
@@ -138,7 +140,7 @@ pub contract Market {
         // listForSale lists an NFT for sale in this sale collection
         // at the specified price
         //
-        // Parameters: token: The NFT to be put up for sale
+        // Parameters: tokenID: The id of the NFT to be put up for sale
         //             price: The price of the NFT
         pub fun listForSale(tokenID: UInt64, price: UFix64) {
             pre {
