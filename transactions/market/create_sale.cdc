@@ -15,8 +15,8 @@ transaction(beneficiaryAccount: Address, cutPercentage: UFix64) {
 
         let collection <- Market.createSaleCollection(ownerCollection: ownerCollection, ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: cutPercentage)
         
-        acct.save(<-collection, to: /storage/topshotSaleCollection)
+        acct.save(<-collection, to: Market.marketStoragePath)
         
-        acct.link<&Market.SaleCollection{Market.SalePublic}>(/public/topshotSaleCollection, target: /storage/topshotSaleCollection)
+        acct.link<&Market.SaleCollection{Market.SalePublic}>(Market.marketPublicPath, target: Market.marketStoragePath)
     }
 }

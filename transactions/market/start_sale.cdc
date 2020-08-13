@@ -9,7 +9,7 @@ transaction(momentID: UInt64, price: UFix64) {
     prepare(acct: AuthAccount) {
 
         // borrow a reference to the topshot Sale Collection
-        let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+        let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: Market.marketStoragePath)
             ?? panic("Could not borrow from sale in storage")
 
         // List the specified moment for sale

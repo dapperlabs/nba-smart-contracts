@@ -13,7 +13,7 @@ transaction() {
             ?? panic("No admin resource in storage")
 
         // Create a play with specified metadata
-        // %s is a string template field, so if you are running this manually,
+        // The argument is a string template field, so if you are running this manually,
         // you can replace it with a {String: String} mapping
         // Example: {"Name": "TJ Warren", "Position": "Superstar"}
         admin.createPlay(metadata: %s)

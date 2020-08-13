@@ -59,6 +59,10 @@ pub contract Market {
     // emitted when the cut percentage of the sale has been changed by the owner
     pub event CutPercentageChanged(newPercent: UFix64, seller: Address?)
 
+    pub let marketStoragePath: Path
+
+    pub let marketPublicPath: Path
+
     // SalePublic 
     //
     // The interface that a user can publish a capability to their sale
@@ -281,6 +285,11 @@ pub contract Market {
     // createCollection returns a new collection resource to the caller
     pub fun createSaleCollection(ownerCollection: Capability<&TopShot.Collection>, ownerCapability: Capability<&{FungibleToken.Receiver}>, beneficiaryCapability: Capability<&{FungibleToken.Receiver}>, cutPercentage: UFix64): @SaleCollection {
         return <- create SaleCollection(ownerCollection: ownerCollection, ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: cutPercentage)
+    }
+
+    init() {
+        self.marketStoragePath = /storage/topshotSaleCollection
+        self.marketPublicPath = /public/topshotSaleCollection
     }
 }
  

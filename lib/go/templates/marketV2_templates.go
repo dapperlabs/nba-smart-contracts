@@ -28,9 +28,9 @@ func GenerateCreateSaleV2Script(ftAddr, topshotAddr, marketAddr, beneficiaryAddr
 
 				let collection <- Market.createSaleCollection(ownerCollection: ownerCollection, ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: %[4]f)
 				
-				acct.save(<-collection, to: /storage/topshotSaleCollection)
+				acct.save(<-collection, to: Market.marketStoragePath)
 				
-				acct.link<&Market.SaleCollection{Market.SalePublic}>(/public/topshotSaleCollection, target: /storage/topshotSaleCollection)
+				acct.link<&Market.SaleCollection{Market.SalePublic}>(Market.marketPublicPath, target: Market.marketStoragePath)
 			}
 		}`
 	return []byte(fmt.Sprintf(template, marketAddr, beneficiaryAddr, tokenStorageName, cutPercentage, ftAddr, topshotAddr))
@@ -46,7 +46,7 @@ func GenerateStartSaleV2Script(topshotAddr, marketAddr flow.Address, id, price i
 		transaction {
 			prepare(acct: AuthAccount) {
 
-				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: Market.marketStoragePath)
 					?? panic("Could not borrow from sale in storage")
 
 				topshotSaleCollection.listForSale(tokenID: %[3]d, price: %[4]d.0)
@@ -67,7 +67,7 @@ func GenerateCreateAndStartSaleV2Script(ftAddr, topshotAddr, marketAddr, benefic
 		transaction {
 			prepare(acct: AuthAccount) {
 				// check to see if a sale collection already exists
-				if acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection) == nil {
+				if acct.borrow<&Market.SaleCollection>(from: Market.marketStoragePath) == nil {
 					// get the fungible token capabilities for the owner and beneficiary
 					let ownerCapability = acct.getCapability<&{FungibleToken.Receiver}>(/public/%[3]sReceiver)!
 					let beneficiaryCapability = getAccount(0x%[2]s).getCapability<&{FungibleToken.Receiver}>(/public/%[3]sReceiver)!
@@ -78,14 +78,14 @@ func GenerateCreateAndStartSaleV2Script(ftAddr, topshotAddr, marketAddr, benefic
 					let topshotSaleCollection <- Market.createSaleCollection(ownerCollection: ownerCollection, ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: %[4]f)
 					
 					// save it to storage
-					acct.save(<-topshotSaleCollection, to: /storage/topshotSaleCollection)
+					acct.save(<-topshotSaleCollection, to: Market.marketStoragePath)
 				
 					// create a public link to the sale collection
-					acct.link<&Market.SaleCollection{Market.SalePublic}>(/public/topshotSaleCollection, target: /storage/topshotSaleCollection)
+					acct.link<&Market.SaleCollection{Market.SalePublic}>(Market.marketPublicPath, target: Market.marketStoragePath)
 				}
 
 				// borrow a reference to the sale
-				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: Market.marketStoragePath)
 					?? panic("Could not borrow from sale in storage")
 
 				// set the new cut percentage
@@ -109,7 +109,7 @@ func GenerateCancelSaleV2Script(topshotAddr, marketAddr flow.Address, id int) []
 		transaction {
 			prepare(acct: AuthAccount) {
 
-				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: Market.marketStoragePath)
 					?? panic("Could not borrow from sale in storage")
 
 				// cancel the moment from the sale, thereby de-listing it
@@ -128,7 +128,7 @@ func GenerateChangePriceV2Script(topshotAddr, marketAddr flow.Address, id, price
 		transaction {
 			prepare(acct: AuthAccount) {
 
-				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: Market.marketStoragePath)
 					?? panic("Could not borrow from sale in storage")
 
 				// Change the price of the moment
@@ -149,7 +149,7 @@ func GenerateChangeOwnerReceiverV2Script(fungibleTokenAddr, topshotAddr, marketA
 		transaction {
 			prepare(acct: AuthAccount) {
 
-				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+				let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: Market.marketStoragePath)
 					?? panic("Could not borrow from sale in storage")
 
 				topshotSaleCollection.changeOwnerReceiver(acct.getCapability<&{FungibleToken.Receiver}>(/public/%[3]s)!)

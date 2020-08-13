@@ -6,7 +6,7 @@ import Market from 0xf3fcd2c1a78f5eee
 transaction {
     prepare(acct: AuthAccount) {
         // check to see if a sale collection already exists
-        if acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection) == nil {
+        if acct.borrow<&Market.SaleCollection>(from: Market.marketStoragePath) == nil {
             // get the fungible token capabilities for the owner and beneficiary
             let ownerCapability = acct.getCapability<&{FungibleToken.Receiver}>(/public/sReceiver)!
             let beneficiaryCapability = getAccount(0x01).getCapability<&{FungibleToken.Receiver}>(/public/sReceiver)!
@@ -17,14 +17,14 @@ transaction {
             let topshotSaleCollection <- Market.createSaleCollection(ownerCollection: ownerCollection, ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: 0.25)
             
             // save it to storage
-            acct.save(<-topshotSaleCollection, to: /storage/topshotSaleCollection)
+            acct.save(<-topshotSaleCollection, to: Market.marketStoragePath)
         
             // create a public link to the sale collection
-            acct.link<&Market.SaleCollection{Market.SalePublic}>(/public/topshotSaleCollection, target: /storage/topshotSaleCollection)
+            acct.link<&Market.SaleCollection{Market.SalePublic}>(Market.marketPublicPath, target: Market.marketStoragePath)
         }
 
         // borrow a reference to the sale
-        let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+        let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: Market.marketStoragePath)
             ?? panic("Could not borrow from sale in storage")
 
         // set the new cut percentage

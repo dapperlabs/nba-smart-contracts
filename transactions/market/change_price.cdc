@@ -7,7 +7,7 @@ transaction(tokenID: UInt64, newPrice: UFix64) {
     prepare(acct: AuthAccount) {
 
         // borrow a reference to the owner's sale collection
-        let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+        let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: Market.marketStoragePath)
             ?? panic("Could not borrow from sale in storage")
 
         // Change the price of the moment
