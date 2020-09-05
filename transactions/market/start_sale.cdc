@@ -5,6 +5,11 @@ import Market from 0xMARKETADDRESS
 // They must have TopShot Collection and a Market Sale Collection
 // stored in their account
 
+// Parameters
+//
+// momentId: the ID of the moment to be listed for sale
+// price: the sell price of the moment
+
 transaction(momentID: UInt64, price: UFix64) {
     prepare(acct: AuthAccount) {
 
