@@ -3,6 +3,12 @@ import TopShot from 0xTOPSHOTADDRESS
 // This transaction is what an admin would use to mint a single new moment
 // and deposit it in a user's collection
 
+// Parameters
+//
+// setID: the ID of a set containing the target play
+// playID: the ID of a play from which a new moment is minted
+// recipientAddr: the Flow address of the account receiving the newly minted moment
+
 transaction(setID: UInt32, playID: UInt32, recipientAddr: Address) {
     // local variable for the admin reference
     let adminRef: &TopShot.Admin

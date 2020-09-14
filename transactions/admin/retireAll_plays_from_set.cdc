@@ -4,6 +4,10 @@ import TopShot from 0xTOPSHOTADDRESS
 // makes it so that moments can no longer be minted
 // from all the editions with that set
 
+// Parameters
+//
+// setID: the ID of the set to be retired entirely
+
 transaction(setID: UInt32) {
     let adminRef: &TopShot.Admin
 

@@ -3,6 +3,10 @@ import TopShot from 0xTOPSHOTADDRESS
 // This transaction is for the admin to create a new set resource
 // and store it in the top shot smart contract
 
+// Parameters
+//
+// setName: the name of a new Set to be created
+
 transaction(setName: String) {
     prepare(acct: AuthAccount) {
         // borrow a reference to the Admin resource in storage

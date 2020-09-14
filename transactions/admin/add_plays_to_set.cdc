@@ -2,6 +2,11 @@ import TopShot from 0xTOPSHOTADDRESS
 
 // This transaction adds multiple plays to a set
 		
+// Parameters
+//
+// setID: the ID of the set to which multiple plays are added
+// plays: an array of play IDs being added to the set
+
 transaction(setID: UInt32, plays: [UInt32]) {
 
     // Local variable for the topshot Admin object

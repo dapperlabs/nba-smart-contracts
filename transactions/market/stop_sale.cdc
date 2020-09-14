@@ -5,6 +5,10 @@ import Market from 0xMARKETADDRESS
 // by withdrawing that moment from their sale collection and depositing
 // it into their normal moment collection
 
+// Parameters
+//
+// tokenID: the ID of the moment whose sale is to be delisted
+
 transaction(tokenID: UInt64) {
 
     prepare(acct: AuthAccount) {

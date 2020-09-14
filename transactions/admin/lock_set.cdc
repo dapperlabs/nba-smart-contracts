@@ -2,6 +2,10 @@ import TopShot from 0xTOPSHOTADDRESS
 
 // This transaction locks a set so that new plays can no longer be added to it
 
+// Parameters
+//
+// setID: the ID of the set to be locked
+
 transaction(setID: UInt32) {
 
     // local variable for the admin resource
