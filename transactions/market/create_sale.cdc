@@ -6,6 +6,11 @@ import Market from 0xf3fcd2c1a78f5eee
 // This transaction creates a sale collection and stores it in the signer's account
 // It does not put an NFT up for sale
 
+// Parameters
+// 
+// beneficiaryAccount: the Flow address of the account where a cut of the purchase will be sent
+// cutPercentage: how much in percentage the beneficiary will receive from the sale
+
 transaction(beneficiaryAccount: Address, cutPercentage: UFix64) {
     prepare(acct: AuthAccount) {
         let ownerCapability = acct.getCapability<&{FungibleToken.Receiver}>(/public/%sReceiver)!

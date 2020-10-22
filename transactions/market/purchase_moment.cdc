@@ -6,6 +6,12 @@ import Market from 0xMARKETADDRESS
 // This transaction is for a user to purchase a moment that another user
 // has for sale in their sale collection
 
+// Parameters
+//
+// sellerAddress: the Flow address of the account issuing the sale of a moment
+// tokenID: the ID of the moment being purchased
+// purchaseAmount: the amount for which the user is paying for the moment; must not be less than the moment's price
+
 transaction(sellerAddress: Address, tokenID: UInt64, purchaseAmount: UFix64) {
     prepare(acct: AuthAccount) {
 

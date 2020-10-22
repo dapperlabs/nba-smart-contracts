@@ -3,6 +3,10 @@ import Market from 0xMARKETADDRESS
 
 // This transaction is for a user to stop a moment sale in their account
 
+// Parameters
+//
+// tokenID: the ID of the moment whose sale is to be delisted
+
 transaction(tokenID: UInt64) {
 
     prepare(acct: AuthAccount) {
