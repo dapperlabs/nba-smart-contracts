@@ -10,7 +10,7 @@ import (
 
 const (
 	topshotFile                    = "TopShot.cdc"
-	marketV1File                   = "MarketTopShotv1.cdc"
+	marketV2File                   = "TopShotMarketV2.cdc"
 	marketFile                     = "MarketTopShot.cdc"
 	shardedCollectionFile          = "TopShotShardedCollection.cdc"
 	adminReceiverFile              = "TopshotAdminReceiver.cdc"
@@ -65,11 +65,11 @@ func GenerateTopShotMarketContract(ftAddr, nftAddr, topshotAddr string) []byte {
 	return []byte(codeWithFTAddr)
 }
 
-// GenerateTopShotMarketV1Contract returns a copy
+// GenerateTopShotMarketV2Contract returns a copy
 // of the first version TopShotMarketContract with the import addresses updated
-func GenerateTopShotMarketV1Contract(ftAddr, nftAddr, topshotAddr string) []byte {
+func GenerateTopShotMarketV2Contract(ftAddr, nftAddr, topshotAddr string) []byte {
 
-	marketCode := assets.MustAssetString(marketFile)
+	marketCode := assets.MustAssetString(marketV2File)
 	codeWithNFTAddr := strings.ReplaceAll(marketCode, defaultNonFungibleTokenAddress, nftAddr)
 	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 	codeWithFTAddr := strings.ReplaceAll(codeWithTopshotAddr, defaultFungibleTokenAddress, ftAddr)

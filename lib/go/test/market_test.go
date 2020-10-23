@@ -56,7 +56,7 @@ func TestMarketDeployment(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should be able to deploy the market contract
-	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
+	marketCode := contracts.GenerateTopShotMarketV2Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
 	_, err = b.CreateAccount(nil, marketCode)
 	if !assert.Nil(t, err) {
 		t.Log(err.Error())
@@ -102,7 +102,7 @@ func TestMarket(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should be able to deploy the token contract
-	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
+	marketCode := contracts.GenerateTopShotMarketV2Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
 	marketAddr, err := b.CreateAccount(nil, marketCode)
 	if !assert.Nil(t, err) {
 		t.Log(err.Error())
@@ -240,16 +240,16 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		// check the price, sale length, and the sale's data
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, joshAddress, 1, 80), false)
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, joshAddress, 1), false)
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, joshAddress, 1, 1), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleV2Script(marketAddr, joshAddress, 1, 80), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenV2Script(marketAddr, joshAddress, 1), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataV2Script(nftAddr, topshotAddr, marketAddr, joshAddress, 1, 1), false)
 	})
 
 	t.Run("Cannot buy an NFT for less than the sale price", func(t *testing.T) {
 		// bastian tries to buy the moment for only 9 tokens
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateBuySaleScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 9),
+			templates.GenerateBuySaleV2Script(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 9),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			true,
 		)
@@ -259,7 +259,7 @@ func TestMarket(t *testing.T) {
 		// bastian tries to buy the moment for too many tokens
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateBuySaleScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 90),
+			templates.GenerateBuySaleV2Script(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 90),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			true,
 		)
@@ -269,7 +269,7 @@ func TestMarket(t *testing.T) {
 		// bastian tries to buy the wrong moment
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateBuySaleScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 2, 80),
+			templates.GenerateBuySaleV2Script(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 2, 80),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			true,
 		)
@@ -279,7 +279,7 @@ func TestMarket(t *testing.T) {
 		// bastian sends the correct amount of tokens to buy it
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateBuySaleScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 80),
+			templates.GenerateBuySaleV2Script(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 80),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
@@ -302,9 +302,9 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		// Make sure that moment id 2 is for sale for 50 tokens and the data is correct
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), false)
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), false)
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleV2Script(marketAddr, bastianAddress, 2, 50), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenV2Script(marketAddr, bastianAddress, 1), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataV2Script(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), false)
 	})
 
 	t.Run("Cannot change the price of a moment that isn't for sale", func(t *testing.T) {
@@ -315,7 +315,7 @@ func TestMarket(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			true,
 		)
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleV2Script(marketAddr, bastianAddress, 2, 50), false)
 	})
 
 	t.Run("Can change the price of a sale", func(t *testing.T) {
@@ -327,19 +327,19 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		// make sure the price has been changed
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 40), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleV2Script(marketAddr, bastianAddress, 2, 40), false)
 	})
 
 	t.Run("Can change the cut percentage of a sale", func(t *testing.T) {
 		// change the cut percentage for the sale collection to 18%
 		createSignAndSubmit(
 			t, b,
-			templates.GenerateChangePercentageScript(topshotAddr, marketAddr, .18),
+			templates.GenerateChangePercentageV2Script(topshotAddr, marketAddr, .18),
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
 		// make sure the percentage was changed correctly
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSalePercentageScript(marketAddr, bastianAddress, .18), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSalePercentageV2Script(marketAddr, bastianAddress, .18), false)
 	})
 
 	t.Run("Cannot withdraw a moment that doesn't exist from a sale", func(t *testing.T) {
@@ -351,7 +351,7 @@ func TestMarket(t *testing.T) {
 			true,
 		)
 		// make sure nothing was withdrawn
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenV2Script(marketAddr, bastianAddress, 1), false)
 	})
 
 	t.Run("Can withdraw a moment from a sale", func(t *testing.T) {
@@ -362,9 +362,9 @@ func TestMarket(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), true)
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 0), false)
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), true)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleV2Script(marketAddr, bastianAddress, 2, 50), true)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenV2Script(marketAddr, bastianAddress, 0), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataV2Script(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), true)
 	})
 
 	t.Run("Can use the create and start sale to start a sale even if there is already sale in storage", func(t *testing.T) {
@@ -375,11 +375,11 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		// Make sure that moment id 2 is for sale for 50 tokens and the data is correct
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 100), false)
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), false)
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleV2Script(marketAddr, bastianAddress, 2, 100), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleLenV2Script(marketAddr, bastianAddress, 1), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataV2Script(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), false)
 
-		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSalePercentageScript(marketAddr, bastianAddress, .10), false)
+		ExecuteScriptAndCheck(t, b, templates.GenerateInspectSalePercentageV2Script(marketAddr, bastianAddress, .10), false)
 	})
 
 	t.Run("Can create a forwarder resource to forward tokens to a different account", func(t *testing.T) {
@@ -407,7 +407,7 @@ func TestMarket(t *testing.T) {
 
 		// mint tokens and buy the moment in the same tx
 
-		template := templates.GenerateMintTokensAndBuyScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, bastianAddress, joshAddress, defaultTokenName, defaultTokenStorage, 2, 100)
+		template := templates.GenerateMintTokensAndBuyV2Script(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, bastianAddress, joshAddress, defaultTokenName, defaultTokenStorage, 2, 100)
 
 		createSignAndSubmit(
 			t, b,

@@ -10,9 +10,9 @@ import (
 // which actually stored moments that were for sale in the sale collections
 // in the seller's accounts
 
-// GenerateCreateSaleV1Script creates a cadence transaction that creates a Sale collection
+// GenerateCreateSaleScript creates a cadence transaction that creates a Sale collection
 // and stores in in the callers account published
-func GenerateCreateSaleV1Script(marketAddr, beneficiaryAddr flow.Address, tokenStorageName string, cutPercentage float64) []byte {
+func GenerateCreateSaleScript(marketAddr, beneficiaryAddr flow.Address, tokenStorageName string, cutPercentage float64) []byte {
 
 	template := `
 		import Market from 0x%[1]s
@@ -32,9 +32,9 @@ func GenerateCreateSaleV1Script(marketAddr, beneficiaryAddr flow.Address, tokenS
 	return []byte(fmt.Sprintf(template, marketAddr, beneficiaryAddr, tokenStorageName, cutPercentage))
 }
 
-// GenerateStartSaleV1Script creates a cadence transaction that starts a sale by depositing
+// GenerateStartSaleScript creates a cadence transaction that starts a sale by depositing
 // an NFT into the Sale Collection with an associated price
-func GenerateStartSaleV1Script(topshotAddr, marketAddr flow.Address, id, price int) []byte {
+func GenerateStartSaleScript(topshotAddr, marketAddr flow.Address, id, price int) []byte {
 	template := `
 		import TopShot from 0x%[1]s
 		import Market from 0x%[2]s
@@ -55,9 +55,9 @@ func GenerateStartSaleV1Script(topshotAddr, marketAddr flow.Address, id, price i
 	return []byte(fmt.Sprintf(template, topshotAddr, marketAddr, id, price))
 }
 
-// GenerateCreateAndStartSaleV1Script creates a cadence transaction that creates a Sale collection
+// GenerateCreateAndStartSaleScript creates a cadence transaction that creates a Sale collection
 // and stores in in the callers account, and also puts an NFT up for sale in it
-func GenerateCreateAndStartSaleV1Script(topshotAddr, marketAddr, beneficiaryAddr flow.Address, tokenStorageName string, cutPercentage float64, tokenID, price int) []byte {
+func GenerateCreateAndStartSaleScript(topshotAddr, marketAddr, beneficiaryAddr flow.Address, tokenStorageName string, cutPercentage float64, tokenID, price int) []byte {
 
 	template := `
 		import Market from 0x%[1]s
@@ -103,9 +103,9 @@ func GenerateCreateAndStartSaleV1Script(topshotAddr, marketAddr, beneficiaryAddr
 	return []byte(fmt.Sprintf(template, marketAddr, beneficiaryAddr, tokenStorageName, cutPercentage, tokenID, price, topshotAddr))
 }
 
-// GenerateWithdrawFromSaleV1Script creates a cadence transaction that starts a sale by depositing
+// GenerateWithdrawFromSaleScript creates a cadence transaction that starts a sale by depositing
 // an NFT into the Sale Collection with an associated price
-func GenerateWithdrawFromSaleV1Script(topshotAddr, marketAddr flow.Address, id int) []byte {
+func GenerateWithdrawFromSaleScript(topshotAddr, marketAddr flow.Address, id int) []byte {
 	template := `
 		import TopShot from 0x%[1]s
 		import Market from 0x%[2]s
@@ -126,8 +126,8 @@ func GenerateWithdrawFromSaleV1Script(topshotAddr, marketAddr flow.Address, id i
 	return []byte(fmt.Sprintf(template, topshotAddr, marketAddr, id))
 }
 
-// GenerateChangePriceV1Script creates a cadence transaction that changes the price on an existing sale
-func GenerateChangePriceV1Script(topshotAddr, marketAddr flow.Address, id, price int) []byte {
+// GenerateChangePriceScript creates a cadence transaction that changes the price on an existing sale
+func GenerateChangePriceScript(topshotAddr, marketAddr flow.Address, id, price int) []byte {
 	template := `
 		import TopShot from 0x%[1]s
 		import Market from 0x%[2]s
@@ -162,9 +162,9 @@ func GenerateChangePercentageScript(topshotAddr, marketAddr flow.Address, percen
 	return []byte(fmt.Sprintf(template, topshotAddr, marketAddr, percentage))
 }
 
-// GenerateChangeOwnerReceiverV1Script creates a cadence transaction
+// GenerateChangeOwnerReceiverScript creates a cadence transaction
 // that changes the sellers receiver capability
-func GenerateChangeOwnerReceiverV1Script(fungibleTokenAddr, topshotAddr, marketAddr flow.Address, receiverName string) []byte {
+func GenerateChangeOwnerReceiverScript(fungibleTokenAddr, topshotAddr, marketAddr flow.Address, receiverName string) []byte {
 	template := `
 		import FungibleToken from 0x%[4]s
 		import TopShot from 0x%[1]s
