@@ -15,9 +15,7 @@ type PlayMetadata struct {
 	DraftSelection       string `json:",omitempty"`        // Not all plays have draft information. Can be blank
 	DraftRound           string `json:",omitempty"`        // Not all plays have draft information. Can be blank
 	TeamAtMomentNBAID    string
-	CurrentTeamID        string
 	TeamAtMoment         string
-	CurrentTeam          string
 	PrimaryPosition      string
 	PlayerPosition       string
 	Height               *int32 `json:",string"`
@@ -44,9 +42,7 @@ func GenerateEmptyPlay(fullName string) PlayMetadata {
 		Birthplace:           "",
 		JerseyNumber:         "",
 		TeamAtMomentNBAID:    "",
-		CurrentTeamID:        "",
 		TeamAtMoment:         "",
-		CurrentTeam:          "",
 		PrimaryPosition:      "",
 		PlayerPosition:       "",
 		Height:               &num,
