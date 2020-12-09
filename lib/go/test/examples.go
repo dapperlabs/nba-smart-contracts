@@ -13,7 +13,7 @@ import (
 	"github.com/onflow/cadence"
 	"github.com/onflow/cadence/runtime/cmd"
 
-	emulator "github.com/dapperlabs/flow-emulator"
+	emulator "github.com/onflow/flow-emulator"
 )
 
 type BlockchainAPI interface {

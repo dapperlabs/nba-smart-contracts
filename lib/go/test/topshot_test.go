@@ -1,9 +1,10 @@
 package test
 
 import (
-	"github.com/stretchr/testify/require"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
@@ -29,7 +30,12 @@ func TestNFTDeployment(t *testing.T) {
 	// Should be able to deploy the NFT contract
 	// as a new account with no keys.
 	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, err := b.CreateAccount(nil, nftCode)
+	nftAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "NonFungibleToken",
+			Source: string(nftCode),
+		},
+	})
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -39,7 +45,12 @@ func TestNFTDeployment(t *testing.T) {
 	// Should be able to deploy the topshot contract
 	// as a new account with no keys.
 	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
-	topshotAddr, err := b.CreateAccount(nil, topshotCode)
+	topshotAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShot",
+			Source: string(topshotCode),
+		},
+	})
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -48,7 +59,12 @@ func TestNFTDeployment(t *testing.T) {
 
 	// deploy the sharded collection contract
 	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr.String(), topshotAddr.String())
-	shardedAddr, err := b.CreateAccount(nil, shardedCollectionCode)
+	shardedAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotShardedCollection",
+			Source: string(shardedCollectionCode),
+		},
+	})
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -58,7 +74,12 @@ func TestNFTDeployment(t *testing.T) {
 	// Should be able to deploy the admin receiver contract
 	// as a new account with no keys.
 	adminReceiverCode := contracts.GenerateTopshotAdminReceiverContract(topshotAddr.String(), shardedAddr.String())
-	_, err = b.CreateAccount(nil, adminReceiverCode)
+	_, err = b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotAdminReceiver",
+			Source: string(adminReceiverCode),
+		},
+	})
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -74,12 +95,22 @@ func TestMintNFTs(t *testing.T) {
 
 	// Should be able to deploy a contract as a new account with no keys.
 	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, _ := b.CreateAccount(nil, nftCode)
+	nftAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "NonFungibleToken",
+			Source: string(nftCode),
+		},
+	})
 
 	// Deploy the topshot contract
 	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
-	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
+	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
+		{
+			Name:   "TopShot",
+			Source: string(topshotCode),
+		},
+	})
 
 	// Check that that main contract fields were initialized correctly
 	ExecuteScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "currentSeries", "UInt32", 0), false)
@@ -89,7 +120,12 @@ func TestMintNFTs(t *testing.T) {
 
 	// Deploy the sharded collection contract
 	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr.String(), topshotAddr.String())
-	shardedAddr, _ := b.CreateAccount(nil, shardedCollectionCode)
+	shardedAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotShardedCollection",
+			Source: string(shardedCollectionCode),
+		},
+	})
 	_, _ = b.CommitBlock()
 
 	// Create a new user account
@@ -359,21 +395,41 @@ func TestTransferAdmin(t *testing.T) {
 
 	// Should be able to deploy a contract as a new account with no keys.
 	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, _ := b.CreateAccount(nil, nftCode)
+	nftAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "NonFungibleToken",
+			Source: string(nftCode),
+		},
+	})
 
 	// First, deploy the topshot contract
 	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
-	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
+	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
+		{
+			Name:   "TopShot",
+			Source: string(topshotCode),
+		},
+	})
 
 	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr.String(), topshotAddr.String())
-	shardedAddr, _ := b.CreateAccount(nil, shardedCollectionCode)
+	shardedAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotShardedCollection",
+			Source: string(shardedCollectionCode),
+		},
+	})
 	_, _ = b.CommitBlock()
 
 	// Should be able to deploy the admin receiver contract
 	adminReceiverCode := contracts.GenerateTopshotAdminReceiverContract(topshotAddr.String(), shardedAddr.String())
 	adminAccountKey, adminSigner := accountKeys.NewWithSigner()
-	adminAddr, _ := b.CreateAccount([]*flow.AccountKey{adminAccountKey}, adminReceiverCode)
+	adminAddr, _ := b.CreateAccount([]*flow.AccountKey{adminAccountKey}, []sdktemplates.Contract{
+		{
+			Name:   "TopShotAdminReceiver",
+			Source: string(adminReceiverCode),
+		},
+	})
 	b.CommitBlock()
 
 	// create a new Collection
@@ -420,12 +476,22 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 
 	// Should be able to deploy a contract as a new account with no keys.
 	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, _ := b.CreateAccount(nil, nftCode)
+	nftAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "NonFungibleToken",
+			Source: string(nftCode),
+		},
+	})
 
 	// First, deploy the topshot contract
 	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
-	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
+	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
+		{
+			Name:   "TopShot",
+			Source: string(topshotCode),
+		},
+	})
 
 	// Create a new user account
 	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
