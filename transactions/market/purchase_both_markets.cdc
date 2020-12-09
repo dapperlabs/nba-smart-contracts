@@ -1,8 +1,8 @@
-import FungibleToken from 0xee82856bf20e2aa6
-import FlowToken from 0x0ae53cb6e3f42a79
-import TopShot from 0x01cf0e2f2f715450
-import Market from 0x179b6b1cb6755e31
-import TopShotMarketV2 from 0xf3fcd2c1a78f5eee
+import FungibleToken from 0xFUNGIBLETOKENADDRESS
+import FlowToken from 0xFLOWTOKENADDRESS
+import TopShot from 0xTOPSHOTADDRESS
+import Market from 0xMARKETADDRESS
+import TopShotMarketV2 from 0xMARKETV2ADDRESS
 
 // This transaction purchases a moment by first checking if it is in the first version of the market collecion
 // If it isn't in the first version, it checks if it is in the second and purchases it there
