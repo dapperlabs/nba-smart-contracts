@@ -294,10 +294,10 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"MarketTopShot.cdc":            &bintree{markettopshotCdc, map[string]*bintree{}},
-	"TopShot.cdc":                  &bintree{topshotCdc, map[string]*bintree{}},
-	"TopShotShardedCollection.cdc": &bintree{topshotshardedcollectionCdc, map[string]*bintree{}},
-	"TopshotAdminReceiver.cdc":     &bintree{topshotadminreceiverCdc, map[string]*bintree{}},
+	"MarketTopShot.cdc": {markettopshotCdc, map[string]*bintree{}},
+	"TopShot.cdc": {topshotCdc, map[string]*bintree{}},
+	"TopShotShardedCollection.cdc": {topshotshardedcollectionCdc, map[string]*bintree{}},
+	"TopshotAdminReceiver.cdc": {topshotadminreceiverCdc, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory.
