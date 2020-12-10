@@ -3,6 +3,7 @@ package test
 import (
 	"io/ioutil"
 	"net/http"
+	"os"
 	"testing"
 
 	"github.com/onflow/flow-go-sdk"
@@ -13,13 +14,8 @@ import (
 	"github.com/onflow/cadence"
 	"github.com/onflow/cadence/runtime/cmd"
 
-	emulator "github.com/dapperlabs/flow-emulator"
+	emulator "github.com/onflow/flow-emulator"
 )
-
-type BlockchainAPI interface {
-	emulator.BlockchainAPI
-	CreateAccount(publicKeys []*flow.AccountKey, code []byte) (flow.Address, error)
-}
 
 // ReadFile reads a file from the file system
 func ReadFile(path string) []byte {
@@ -43,8 +39,8 @@ func DownloadFile(url string) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
-// NewEmulator returns a emulator object for testing
-func NewEmulator() BlockchainAPI {
+// newEmulator returns a emulator object for testing.
+func NewEmulator() *emulator.Blockchain {
 	b, err := emulator.NewBlockchain()
 	if err != nil {
 		panic(err)
@@ -55,21 +51,17 @@ func NewEmulator() BlockchainAPI {
 // createSignAndSubmit creates a new transaction and submits it
 func createSignAndSubmit(
 	t *testing.T,
-	b emulator.BlockchainAPI,
+	b *emulator.Blockchain,
 	template []byte,
 	signerAddresses []flow.Address,
 	signers []crypto.Signer,
 	shouldRevert bool,
 ) {
 
-	latestBlock, err := b.GetLatestBlock()
-	require.NoError(t, err)
-
 	tx := flow.NewTransaction().
 		SetScript(template).
 		SetGasLimit(9999).
-		SetReferenceBlockID(latestBlock.ID).
-		SetProposalKey(b.ServiceKey().Address, b.ServiceKey().ID, b.ServiceKey().SequenceNumber).
+		SetProposalKey(b.ServiceKey().Address, b.ServiceKey().Index, b.ServiceKey().SequenceNumber).
 		SetPayer(b.ServiceKey().Address)
 	for _, addr := range signerAddresses[1:] {
 		tx = tx.AddAuthorizer(addr)
@@ -90,7 +82,7 @@ func createSignAndSubmit(
 // This function asserts the correct result and commits the block if it passed
 func SignAndSubmit(
 	t *testing.T,
-	b emulator.BlockchainAPI,
+	b *emulator.Blockchain,
 	tx *flow.Transaction,
 	signerAddresses []flow.Address,
 	signers []crypto.Signer,
@@ -112,7 +104,7 @@ func SignAndSubmit(
 // if it fails or not
 func Submit(
 	t *testing.T,
-	b emulator.BlockchainAPI,
+	b *emulator.Blockchain,
 	tx *flow.Transaction,
 	shouldRevert bool,
 ) {
@@ -128,7 +120,7 @@ func Submit(
 	} else {
 		if !assert.True(t, result.Succeeded()) {
 			t.Log(result.Error.Error())
-			cmd.PrettyPrintError(result.Error, "", map[string]string{"": ""})
+			cmd.PrettyPrintError(os.Stdout, result.Error, "", map[string]string{"": ""})
 		}
 	}
 
@@ -138,7 +130,7 @@ func Submit(
 
 // ExecuteScriptAndCheck executes a script and checks to make sure
 // that it succeeded
-func ExecuteScriptAndCheck(t *testing.T, b emulator.BlockchainAPI, script []byte, shouldRevert bool) {
+func ExecuteScriptAndCheck(t *testing.T, b *emulator.Blockchain, script []byte, shouldRevert bool) {
 	result, err := b.ExecuteScript(script, nil)
 	if err != nil {
 		t.Log(string(script))
@@ -149,7 +141,7 @@ func ExecuteScriptAndCheck(t *testing.T, b emulator.BlockchainAPI, script []byte
 	} else {
 		if !assert.True(t, result.Succeeded()) {
 			t.Log(result.Error.Error())
-			cmd.PrettyPrintError(result.Error, "", map[string]string{"": ""})
+			cmd.PrettyPrintError(os.Stdout, result.Error, "", map[string]string{"": ""})
 		}
 	}
 }
