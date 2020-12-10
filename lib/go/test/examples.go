@@ -14,7 +14,7 @@ import (
 	"github.com/onflow/cadence"
 	"github.com/onflow/cadence/runtime/cmd"
 
-	emulator "github.com/dapperlabs/flow-emulator"
+	emulator "github.com/onflow/flow-emulator"
 )
 
 // ReadFile reads a file from the file system
@@ -39,7 +39,7 @@ func DownloadFile(url string) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
-// NewEmulator returns a emulator object for testing
+// NewEmulator returns a emulator object for testing.
 func NewEmulator() *emulator.Blockchain {
 	b, err := emulator.NewBlockchain()
 	if err != nil {

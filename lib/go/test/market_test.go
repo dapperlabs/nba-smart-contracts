@@ -11,6 +11,7 @@ import (
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates/data"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
+	sdktemplates "github.com/onflow/flow-go-sdk/templates"
 	"github.com/onflow/flow-go-sdk/test"
 
 	"github.com/stretchr/testify/assert"
@@ -29,7 +30,12 @@ func TestMarketDeployment(t *testing.T) {
 	// Should be able to deploy the NFT contract
 	// as a new account with no keys.
 	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, err := b.CreateAccount(nil, nftCode)
+	nftAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "NonFungibleToken",
+			Source: string(nftCode),
+		},
+	})
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -39,7 +45,12 @@ func TestMarketDeployment(t *testing.T) {
 	// Should be able to deploy the topshot contract
 	// as a new account with no keys.
 	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
-	topshotAddr, err := b.CreateAccount(nil, topshotCode)
+	topshotAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShot",
+			Source: string(topshotCode),
+		},
+	})
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -48,7 +59,12 @@ func TestMarketDeployment(t *testing.T) {
 
 	// Should be able to deploy a token contract
 	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage, "1000.0")
-	_, err = b.CreateAccount(nil, []byte(tokenCode))
+	_, err = b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "DapperUtilityCoin",
+			Source: string(tokenCode),
+		},
+	})
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -57,7 +73,12 @@ func TestMarketDeployment(t *testing.T) {
 
 	// Should be able to deploy the market contract
 	marketCode := contracts.GenerateTopShotMarketV2Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
-	_, err = b.CreateAccount(nil, marketCode)
+	_, err = b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotMarketV2",
+			Source: string(marketCode),
+		},
+	})
 	if !assert.Nil(t, err) {
 		t.Log(err.Error())
 	}
@@ -74,7 +95,12 @@ func TestMarket(t *testing.T) {
 	// Should be able to deploy the NFT contract
 	// as a new account with no keys.
 	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, err := b.CreateAccount(nil, nftCode)
+	nftAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "NonFungibleToken",
+			Source: string(nftCode),
+		},
+	})
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -84,7 +110,12 @@ func TestMarket(t *testing.T) {
 	// Should be able to deploy the topshot contract
 	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
-	topshotAddr, err := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, topshotCode)
+	topshotAddr, err := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
+		{
+			Name:   "TopShot",
+			Source: string(topshotCode),
+		},
+	})
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -94,7 +125,12 @@ func TestMarket(t *testing.T) {
 	// Should be able to deploy the token contract
 	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage, "1000.0")
 	tokenAccountKey, tokenSigner := accountKeys.NewWithSigner()
-	tokenAddr, err := b.CreateAccount([]*flow.AccountKey{tokenAccountKey}, []byte(tokenCode))
+	tokenAddr, err := b.CreateAccount([]*flow.AccountKey{tokenAccountKey}, []sdktemplates.Contract{
+		{
+			Name:   "DapperUtilityCoin",
+			Source: string(tokenCode),
+		},
+	})
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
@@ -103,7 +139,12 @@ func TestMarket(t *testing.T) {
 
 	// Should be able to deploy the token contract
 	marketCode := contracts.GenerateTopShotMarketV2Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
-	marketAddr, err := b.CreateAccount(nil, marketCode)
+	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotMarketV2",
+			Source: string(marketCode),
+		},
+	})
 	if !assert.Nil(t, err) {
 		t.Log(err.Error())
 	}
@@ -112,7 +153,12 @@ func TestMarket(t *testing.T) {
 
 	// Should be able to deploy the token forwarding contract
 	forwardingCode := fungibleToken.CustomTokenForwarding(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
-	forwardingAddr, err := b.CreateAccount(nil, forwardingCode)
+	forwardingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TokenForwarding",
+			Source: string(forwardingCode),
+		},
+	})
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}

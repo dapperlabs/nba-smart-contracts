@@ -2,6 +2,14 @@
 test:
 	go test ./...
 
+.PHONY: generate
+generate:
+	go generate
+
+.PHONY: check-tidy
+check-tidy: generate
+	go mod tidy
+	git diff --exit-code
+
 .PHONY: ci
-ci:
-	echo "TODO: enable unit tests once flow-emulator is public" 
+ci: check-tidy test
