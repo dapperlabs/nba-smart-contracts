@@ -11,6 +11,7 @@ import (
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates/data"
 
 	"github.com/onflow/flow-go-sdk/crypto"
+	sdktemplates "github.com/onflow/flow-go-sdk/templates"
 	"github.com/onflow/flow-go-sdk/test"
 
 	"github.com/stretchr/testify/assert"
@@ -76,7 +77,7 @@ func TestNFTDeployment(t *testing.T) {
 	adminReceiverCode := contracts.GenerateTopshotAdminReceiverContract(topshotAddr.String(), shardedAddr.String())
 	_, err = b.CreateAccount(nil, []sdktemplates.Contract{
 		{
-			Name:   "TopShotAdminReceiver",
+			Name:   "TopshotAdminReceiver",
 			Source: string(adminReceiverCode),
 		},
 	})
@@ -426,7 +427,7 @@ func TestTransferAdmin(t *testing.T) {
 	adminAccountKey, adminSigner := accountKeys.NewWithSigner()
 	adminAddr, _ := b.CreateAccount([]*flow.AccountKey{adminAccountKey}, []sdktemplates.Contract{
 		{
-			Name:   "TopShotAdminReceiver",
+			Name:   "TopshotAdminReceiver",
 			Source: string(adminReceiverCode),
 		},
 	})
@@ -440,18 +441,6 @@ func TestTransferAdmin(t *testing.T) {
 			templates.GenerateTransferAdminScript(topshotAddr, adminAddr),
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
-		)
-	})
-
-	// cannot create a new play with the old admin
-	t.Run("Shouldn't be able to create a new Play with the old admin account", func(t *testing.T) {
-		metadata := data.GenerateEmptyPlay("Lebron")
-
-		createSignAndSubmit(
-			t, b,
-			templates.GenerateMintPlayScript(topshotAddr, metadata),
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
-			true,
 		)
 	})
 

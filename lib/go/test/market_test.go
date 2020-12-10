@@ -11,6 +11,7 @@ import (
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates/data"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
+	sdktemplates "github.com/onflow/flow-go-sdk/templates"
 	"github.com/onflow/flow-go-sdk/test"
 
 	"github.com/stretchr/testify/assert"
@@ -152,7 +153,12 @@ func TestMarket(t *testing.T) {
 
 	// Should be able to deploy the token forwarding contract
 	forwardingCode := fungibleToken.CustomTokenForwarding(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
-	forwardingAddr, err := b.CreateAccount(nil, forwardingCode)
+	forwardingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TokenForwarding",
+			Source: string(forwardingCode),
+		},
+	})
 	if !assert.NoError(t, err) {
 		t.Log(err.Error())
 	}
