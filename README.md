@@ -42,6 +42,24 @@ documentation, or anything else, please do not hesitate to make an issue or
 a pull request with your desired changes. This is an open source project
 and we welcome all assistance from the community!
 
+## Top Shot Contract Addresses
+
+`TopShot.cdc`: This is the main Top Shot smart contract that defines
+the core functionality of the NFT.
+
+| Network | Contract Address     |
+|---------|----------------------|
+| Testnet | `0x877931736ee77cff` |
+| Mainnet | `0x0b2a3299cc857e29` |
+
+`MarketTopShot.cdc`: This is the top shot marketplace contract that allows users
+to buy and sell their NFTs.
+
+| Network | Contract Address     |
+|---------|----------------------|
+| Testnet | `0x547f177b243b4d80` |
+| Mainnet | `0xc1e4f4f4c4257510` |
+
 ## Directory Structure
 
 The directories here are organized into contracts, scripts, and transactions.
@@ -156,7 +174,7 @@ in their account storage via their `Collection` object. The collection object
 contains a dictionary that stores the Moments and gives utility functions
 to move them in and out and to read data about the collection and its Moments.
 
-## How to Deploy and Test the Top Shot Contract
+## How to Deploy and Test the Top Shot Contract in VSCode
 
 The first step for using any smart contract is deploying it to the blockchain,
 or emulator in our case. Do these commands in vscode. 
@@ -194,6 +212,12 @@ hard code the values that they are used for.
 You also need to replace the `ADDRESS` placeholders with the actual Flow 
 addresses that you want to import from.
 
+## How to run the automated tests for the contracts
+
+See the `lib/go` README for instructions about how to run the automated tests.
+
+## Instructions for creating plays and minting moments
+
 A common order of creating new Moments would be
 
 1. Creating new plays with `transactions/admin/create_play.cdc`.
@@ -206,15 +230,6 @@ A common order of creating new Moments would be
 You can also see the scripts in `transactions/scripts` to see how information
 can be read from the real Top Shot smart contract deployed on the
 Flow Beta Mainnet. 
-
-### Accessing the NBA Top Shot smart contract on Flow Beta Mainnet
-
-The Flow Beta mainnet is still a work in progress and still has
-a limited number of accounts that can run nodes and submit transactions.
-This means that the real Top Shot smart contract deployed on chain 
-is still not accessible by the public. This is only temporary and can be expected
-to open up to the public when the Flow mainnet is released to the public in Q3-Q4
-2020. Stay tuned in the NBA Top Shot and Flow discord channels for more info.
 
 ## NBA Top Shot Events
 
@@ -311,9 +326,9 @@ and if they sent the correct amount, they get the Moment back.
 ### Different Versions of the Market Contract
 
 There are two versions of the Top Shot Market Contract.
-`MarketTopShotv1.cdc` is the original version of the contract that was used
+`TopShotMarket.cdc` is the original version of the contract that was used
 for the first set of sales in the p2p marketplace, but we made improvements
-to it which are now in `MarketTopShot.cdc`.
+to it which are now in `TopShotMarketV2.cdc`.
 
 Both versions define a `SaleCollection` resource that users store in their account.
 The resource manages the logic of the sale like listings, de-listing, prices, and 
@@ -331,7 +346,7 @@ returns it to the buyer.
 The works in these folders 
 /dapperlabs/nba-smart-contracts/blob/master/contracts/TopShot.cdc 
 /dapperlabs/nba-smart-contracts/blob/master/contracts/MarketTopShot.cdc 
-/dapperlabs/nba-smart-contracts/blob/master/contracts/MarketTopShotv1.cdc 
+/dapperlabs/nba-smart-contracts/blob/master/contracts/MarketTopShotV2.cdc 
 /dapperlabs/nba-smart-contracts/blob/master/contracts/TopShotAdminReceiver.cdc 
 /dapperlabs/nba-smart-contracts/blob/master/contracts/TopShotShardedCollection.cdc 
 
