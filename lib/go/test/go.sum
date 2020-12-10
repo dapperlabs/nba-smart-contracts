@@ -118,8 +118,6 @@ github.com/coreos/pkg v0.0.0-20180928190104-399ea9e2e55f/go.mod h1:E3G3o1h8I7cfc
 github.com/cpuguy83/go-md2man v1.0.10/go.mod h1:SmD6nW6nTyfqj6ABTjUi3V3JVMnlJmwcJI5acqYI6dE=
 github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsrgA7czyZG/E6dU=
 github.com/cpuguy83/go-md2man/v2 v2.0.0/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsrgA7czyZG/E6dU=
-github.com/dapperlabs/nba-smart-contracts/contracts v0.1.9/go.mod h1:IfJM8GfN/DiN39E0B8VZE/nlKe/ITUlASFUa1UEWDRY=
-github.com/dapperlabs/nba-smart-contracts/templates v0.1.10/go.mod h1:fnX9SVlV+1pguQZ5wNMP8Tm0aRSkbaP6pv6iOEJdR0c=
 github.com/davecgh/go-spew v0.0.0-20171005155431-ecdeabc65495/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
@@ -586,8 +584,6 @@ github.com/onflow/flow-core-contracts/lib/go/contracts v0.5.0 h1:Mn18B/cfEpS/rNa
 github.com/onflow/flow-core-contracts/lib/go/contracts v0.5.0/go.mod h1:yuFiT2+dZm42smG7XZQlMgZyb31hn5dvLrIDq0/PVc8=
 github.com/onflow/flow-emulator v0.12.5 h1:gAUEXWNbepNFM2/ca9RJLseXqAoc93xydsclvrLnhGg=
 github.com/onflow/flow-emulator v0.12.5/go.mod h1:WcjB25JJGsK5h68zl5TfXhDljssbYNNIpqrB0SZvEAc=
-github.com/onflow/flow-ft v0.1.2 h1:DlnffFsNNSuK6bTwmQwIeutFKds0XIf8JYQ1TDd6bc8=
-github.com/onflow/flow-ft v0.1.2/go.mod h1:Sh/PKMT0mzGM5Zqb5tL/4wolfQis8KjXNiskkOSWdpU=
 github.com/onflow/flow-ft/contracts v0.1.3 h1:KLszm8wQE1is92NYro76nGaQKfHw20G9H404cLn4uP4=
 github.com/onflow/flow-ft/contracts v0.1.3/go.mod h1:IKe3yEurEKpg/J15q5WBlHkuMmt1iRECSHgnIa1gvRw=
 github.com/onflow/flow-ft/lib/go/contracts v0.0.0-20200625213016-c4c920e336d5/go.mod h1:Mf//HSOJUSzr4Z7QmW4BZGSweoqlrJJJ92KvKnqGGQk=
