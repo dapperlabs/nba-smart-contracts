@@ -1130,65 +1130,65 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"..": &bintree{nil, map[string]*bintree{
-		"..": &bintree{nil, map[string]*bintree{
-			"..": &bintree{nil, map[string]*bintree{
-				"transactions": &bintree{nil, map[string]*bintree{
-					"admin": &bintree{nil, map[string]*bintree{
-						"add_play_to_set.cdc":          &bintree{TransactionsAdminAdd_play_to_setCdc, map[string]*bintree{}},
-						"add_plays_to_set.cdc":         &bintree{TransactionsAdminAdd_plays_to_setCdc, map[string]*bintree{}},
-						"batch_mint_moment.cdc":        &bintree{TransactionsAdminBatch_mint_momentCdc, map[string]*bintree{}},
-						"create_play.cdc":              &bintree{TransactionsAdminCreate_playCdc, map[string]*bintree{}},
-						"create_set.cdc":               &bintree{TransactionsAdminCreate_setCdc, map[string]*bintree{}},
-						"fulfill_pack.cdc":             &bintree{TransactionsAdminFulfill_packCdc, map[string]*bintree{}},
-						"lock_set.cdc":                 &bintree{TransactionsAdminLock_setCdc, map[string]*bintree{}},
-						"mint_moment.cdc":              &bintree{TransactionsAdminMint_momentCdc, map[string]*bintree{}},
-						"retireAll_plays_from_set.cdc": &bintree{TransactionsAdminRetireall_plays_from_setCdc, map[string]*bintree{}},
-						"retire_all.cdc":               &bintree{TransactionsAdminRetire_allCdc, map[string]*bintree{}},
-						"retire_play_from_set.cdc":     &bintree{TransactionsAdminRetire_play_from_setCdc, map[string]*bintree{}},
-						"start_new_series.cdc":         &bintree{TransactionsAdminStart_new_seriesCdc, map[string]*bintree{}},
+	"..": {nil, map[string]*bintree{
+		"..": {nil, map[string]*bintree{
+			"..": {nil, map[string]*bintree{
+				"transactions": {nil, map[string]*bintree{
+					"admin": {nil, map[string]*bintree{
+						"add_play_to_set.cdc": {TransactionsAdminAdd_play_to_setCdc, map[string]*bintree{}},
+						"add_plays_to_set.cdc": {TransactionsAdminAdd_plays_to_setCdc, map[string]*bintree{}},
+						"batch_mint_moment.cdc": {TransactionsAdminBatch_mint_momentCdc, map[string]*bintree{}},
+						"create_play.cdc": {TransactionsAdminCreate_playCdc, map[string]*bintree{}},
+						"create_set.cdc": {TransactionsAdminCreate_setCdc, map[string]*bintree{}},
+						"fulfill_pack.cdc": {TransactionsAdminFulfill_packCdc, map[string]*bintree{}},
+						"lock_set.cdc": {TransactionsAdminLock_setCdc, map[string]*bintree{}},
+						"mint_moment.cdc": {TransactionsAdminMint_momentCdc, map[string]*bintree{}},
+						"retireAll_plays_from_set.cdc": {TransactionsAdminRetireall_plays_from_setCdc, map[string]*bintree{}},
+						"retire_all.cdc": {TransactionsAdminRetire_allCdc, map[string]*bintree{}},
+						"retire_play_from_set.cdc": {TransactionsAdminRetire_play_from_setCdc, map[string]*bintree{}},
+						"start_new_series.cdc": {TransactionsAdminStart_new_seriesCdc, map[string]*bintree{}},
 					}},
-					"market": &bintree{nil, map[string]*bintree{
-						"change_price.cdc":    &bintree{TransactionsMarketChange_priceCdc, map[string]*bintree{}},
-						"create_sale.cdc":     &bintree{TransactionsMarketCreate_saleCdc, map[string]*bintree{}},
-						"purchase_moment.cdc": &bintree{TransactionsMarketPurchase_momentCdc, map[string]*bintree{}},
-						"start_sale.cdc":      &bintree{TransactionsMarketStart_saleCdc, map[string]*bintree{}},
-						"stop_sale.cdc":       &bintree{TransactionsMarketStop_saleCdc, map[string]*bintree{}},
+					"market": {nil, map[string]*bintree{
+						"change_price.cdc": {TransactionsMarketChange_priceCdc, map[string]*bintree{}},
+						"create_sale.cdc": {TransactionsMarketCreate_saleCdc, map[string]*bintree{}},
+						"purchase_moment.cdc": {TransactionsMarketPurchase_momentCdc, map[string]*bintree{}},
+						"start_sale.cdc": {TransactionsMarketStart_saleCdc, map[string]*bintree{}},
+						"stop_sale.cdc": {TransactionsMarketStop_saleCdc, map[string]*bintree{}},
 					}},
-					"scripts": &bintree{nil, map[string]*bintree{
-						"collections": &bintree{nil, map[string]*bintree{
-							"get_collection_ids.cdc":   &bintree{TransactionsScriptsCollectionsGet_collection_idsCdc, map[string]*bintree{}},
-							"get_id_in_Collection.cdc": &bintree{TransactionsScriptsCollectionsGet_id_in_collectionCdc, map[string]*bintree{}},
-							"get_metadata.cdc":         &bintree{TransactionsScriptsCollectionsGet_metadataCdc, map[string]*bintree{}},
-							"get_metadata_field.cdc":   &bintree{TransactionsScriptsCollectionsGet_metadata_fieldCdc, map[string]*bintree{}},
-							"get_moment_playID.cdc":    &bintree{TransactionsScriptsCollectionsGet_moment_playidCdc, map[string]*bintree{}},
-							"get_moment_serialNum.cdc": &bintree{TransactionsScriptsCollectionsGet_moment_serialnumCdc, map[string]*bintree{}},
-							"get_moment_series.cdc":    &bintree{TransactionsScriptsCollectionsGet_moment_seriesCdc, map[string]*bintree{}},
-							"get_moment_setID.cdc":     &bintree{TransactionsScriptsCollectionsGet_moment_setidCdc, map[string]*bintree{}},
-							"get_moment_setName.cdc":   &bintree{TransactionsScriptsCollectionsGet_moment_setnameCdc, map[string]*bintree{}},
+					"scripts": {nil, map[string]*bintree{
+						"collections": {nil, map[string]*bintree{
+							"get_collection_ids.cdc": {TransactionsScriptsCollectionsGet_collection_idsCdc, map[string]*bintree{}},
+							"get_id_in_Collection.cdc": {TransactionsScriptsCollectionsGet_id_in_collectionCdc, map[string]*bintree{}},
+							"get_metadata.cdc": {TransactionsScriptsCollectionsGet_metadataCdc, map[string]*bintree{}},
+							"get_metadata_field.cdc": {TransactionsScriptsCollectionsGet_metadata_fieldCdc, map[string]*bintree{}},
+							"get_moment_playID.cdc": {TransactionsScriptsCollectionsGet_moment_playidCdc, map[string]*bintree{}},
+							"get_moment_serialNum.cdc": {TransactionsScriptsCollectionsGet_moment_serialnumCdc, map[string]*bintree{}},
+							"get_moment_series.cdc": {TransactionsScriptsCollectionsGet_moment_seriesCdc, map[string]*bintree{}},
+							"get_moment_setID.cdc": {TransactionsScriptsCollectionsGet_moment_setidCdc, map[string]*bintree{}},
+							"get_moment_setName.cdc": {TransactionsScriptsCollectionsGet_moment_setnameCdc, map[string]*bintree{}},
 						}},
-						"plays": &bintree{nil, map[string]*bintree{
-							"get_all_plays.cdc":            &bintree{TransactionsScriptsPlaysGet_all_playsCdc, map[string]*bintree{}},
-							"read_nextPlayID.cdc":          &bintree{TransactionsScriptsPlaysRead_nextplayidCdc, map[string]*bintree{}},
-							"read_play_metadata.cdc":       &bintree{TransactionsScriptsPlaysRead_play_metadataCdc, map[string]*bintree{}},
-							"read_play_metadata_field.cdc": &bintree{TransactionsScriptsPlaysRead_play_metadata_fieldCdc, map[string]*bintree{}},
+						"plays": {nil, map[string]*bintree{
+							"get_all_plays.cdc": {TransactionsScriptsPlaysGet_all_playsCdc, map[string]*bintree{}},
+							"read_nextPlayID.cdc": {TransactionsScriptsPlaysRead_nextplayidCdc, map[string]*bintree{}},
+							"read_play_metadata.cdc": {TransactionsScriptsPlaysRead_play_metadataCdc, map[string]*bintree{}},
+							"read_play_metadata_field.cdc": {TransactionsScriptsPlaysRead_play_metadata_fieldCdc, map[string]*bintree{}},
 						}},
-						"read_currentSeries.cdc": &bintree{TransactionsScriptsRead_currentseriesCdc, map[string]*bintree{}},
-						"read_totalSupply.cdc":   &bintree{TransactionsScriptsRead_totalsupplyCdc, map[string]*bintree{}},
-						"sets": &bintree{nil, map[string]*bintree{
-							"read_edition_retired.cdc":       &bintree{TransactionsScriptsSetsRead_edition_retiredCdc, map[string]*bintree{}},
-							"read_nextSetID.cdc":             &bintree{TransactionsScriptsSetsRead_nextsetidCdc, map[string]*bintree{}},
-							"read_numMoments_in_edition.cdc": &bintree{TransactionsScriptsSetsRead_nummoments_in_editionCdc, map[string]*bintree{}},
-							"read_plays_in_set.cdc":          &bintree{TransactionsScriptsSetsRead_plays_in_setCdc, map[string]*bintree{}},
-							"read_setIDs_by_name.cdc":        &bintree{TransactionsScriptsSetsRead_setids_by_nameCdc, map[string]*bintree{}},
-							"read_setName.cdc":               &bintree{TransactionsScriptsSetsRead_setnameCdc, map[string]*bintree{}},
-							"read_setSeries.cdc":             &bintree{TransactionsScriptsSetsRead_setseriesCdc, map[string]*bintree{}},
-							"read_set_locked.cdc":            &bintree{TransactionsScriptsSetsRead_set_lockedCdc, map[string]*bintree{}},
+						"read_currentSeries.cdc": {TransactionsScriptsRead_currentseriesCdc, map[string]*bintree{}},
+						"read_totalSupply.cdc": {TransactionsScriptsRead_totalsupplyCdc, map[string]*bintree{}},
+						"sets": {nil, map[string]*bintree{
+							"read_edition_retired.cdc": {TransactionsScriptsSetsRead_edition_retiredCdc, map[string]*bintree{}},
+							"read_nextSetID.cdc": {TransactionsScriptsSetsRead_nextsetidCdc, map[string]*bintree{}},
+							"read_numMoments_in_edition.cdc": {TransactionsScriptsSetsRead_nummoments_in_editionCdc, map[string]*bintree{}},
+							"read_plays_in_set.cdc": {TransactionsScriptsSetsRead_plays_in_setCdc, map[string]*bintree{}},
+							"read_setIDs_by_name.cdc": {TransactionsScriptsSetsRead_setids_by_nameCdc, map[string]*bintree{}},
+							"read_setName.cdc": {TransactionsScriptsSetsRead_setnameCdc, map[string]*bintree{}},
+							"read_setSeries.cdc": {TransactionsScriptsSetsRead_setseriesCdc, map[string]*bintree{}},
+							"read_set_locked.cdc": {TransactionsScriptsSetsRead_set_lockedCdc, map[string]*bintree{}},
 						}},
 					}},
-					"user": &bintree{nil, map[string]*bintree{
-						"setup_account.cdc":   &bintree{TransactionsUserSetup_accountCdc, map[string]*bintree{}},
-						"transfer_moment.cdc": &bintree{TransactionsUserTransfer_momentCdc, map[string]*bintree{}},
+					"user": {nil, map[string]*bintree{
+						"setup_account.cdc": {TransactionsUserSetup_accountCdc, map[string]*bintree{}},
+						"transfer_moment.cdc": {TransactionsUserTransfer_momentCdc, map[string]*bintree{}},
 					}},
 				}},
 			}},
