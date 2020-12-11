@@ -2,6 +2,7 @@ package templates
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/onflow/flow-go-sdk"
 )
@@ -294,6 +295,87 @@ func GenerateMintTokensAndBuyV2Script(fungibleTokenAddr, tokenAddr, topshotAddr,
 	`
 
 	return []byte(fmt.Sprintf(template, tokenName, tokenAddr, topshotAddr, marketAddr, storageName, amount, sellerAddr, tokenID, receiverAddr, fungibleTokenAddr))
+}
+
+func GenerateMultiContractP2PPurchaseScript(ftInterfaceAddr, topshotAddr, marketV2Addr, marketAddr, sellerAccount, p2pTokenAddr flow.Address, momentID uint64, tokenName, storageName string) []byte {
+	template := `
+		import FungibleToken from 0x{{.FTInterfaceAddress}}
+		import {{.P2PTokenName}} from 0x{{.P2PTokenAddress}}
+		import TopShot from 0x{{.TopShotAddress}}
+		import Market from 0x{{.P2PMarketAddress}}
+		import MarketV2 from 0x{{.P2PMarketV2Address}}
+
+		// This transaction purchases a moment by first checking if it is in the first version of the market collecion
+		// If it isn't in the first version, it checks if it is in the second and purchases it there
+
+		transaction(seller: Address, recipient: Address, momentID: UInt64, purchaseAmount: UFix64) {
+
+			let purchaseTokens: @{{.P2PTokenName}}.Vault
+
+			prepare(acct: AuthAccount) {
+
+				// Borrow a provider reference to the buyers vault
+				let provider = acct.borrow<&{{.P2PTokenName}}.Vault{FungibleToken.Provider}>(from: /storage/{{.P2PTokenName}}Vault)
+					?? panic("Could not borrow a reference to the buyers {{.P2PTokenName}} Vault")
+
+				// withdraw the purchase tokens from the vault
+				self.purchaseTokens <- provider.withdraw(amount: purchaseAmount) as! @{{.P2PTokenName}}.Vault
+			}
+
+			execute {
+
+				// get the accounts for the seller and recipient
+				let seller = getAccount(0x{{.SellerAccountAddress}})
+				let recipient = getAccount(0x{{.Recipient}})
+
+				// Get the reference for the recipient's nft receiver
+				let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()
+					?? panic("Could not borrow a reference to the recipients moment collection")
+
+				// Check if the V1 market collection exists
+				if let marketCollection = seller.getCapability(/public/topshotSaleCollection)!
+					.borrow<&{Market.SalePublic}>() {
+
+					// Check if the V1 market has the moment for sale
+					if marketCollection.borrowMoment(id: momentID) != nil {
+						// purchase from the V1 market
+						let purchasedToken <- marketCollection.purchase(tokenID: momentID, buyTokens: <-tokens)
+						receiverRef.deposit(token: <-purchasedToken)
+					}
+
+				// Check if the V2 market collection exists
+				} else if let marketV2Collection = seller.getCapability(/public/topshotSalev2Collection)!
+						.borrow<&{MarketV2.SalePublic}>() {
+
+					// Check if the V2 market has the moment for sale
+					if marketV2Collection.borrowMoment(id: momentID) != nil {
+
+						// Purchase from the V2 market
+						let purchasedToken <- marketV2Collection.purchase(tokenID: momentID, buyTokens: <-tokens)
+						receiverRef.deposit(token: <-purchasedToken)
+
+					} else {
+						panic("Could not find the moment sale in either collection")
+					}
+
+				} else {
+					panic("Could not find either sale collection")
+				}
+			}
+		}`
+	oldNew := []string{
+		"{{.FTInterfaceAddress}}", ftInterfaceAddr.String(),
+		"{{.P2PTokenName}}", tokenName,
+		"{{.P2PTokenAddress}}", p2pTokenAddr.String(),
+		"{{.TopShotAddress}}", topshotAddr.String(),
+		"{{.P2PMarketAddress}}", marketAddr.String(),
+		"{{.P2PMarketV2Address}}", marketV2Addr.String(),
+		"{{.SellerAccountAddress}}", sellerAccount.String(),
+		"{{.P2PTokenStorageName}}", storageName,
+		"{{.MomentFlowID}}", fmt.Sprintf("%d", momentID),
+	}
+	replacer := strings.NewReplacer(oldNew...)
+	return []byte(replacer.Replace(template))
 }
 
 // GenerateInspectSaleV2Script creates a script that retrieves a sale collection
