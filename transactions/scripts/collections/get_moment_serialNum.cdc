@@ -5,7 +5,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // and returning its serial number
 
 pub fun main(account: Address, id: UInt64): UInt32 {
-    let collectionRef = getAccount(account).getCapability(/public/MomentCollection)!
+    let collectionRef = getAccount(account).getCapability(/public/MomentCollection)
         .borrow<&{TopShot.MomentCollectionPublic}>()
         ?? panic("Could not get public moment collection reference")
 

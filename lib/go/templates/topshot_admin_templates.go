@@ -109,7 +109,7 @@ func GenerateMintMomentScript(topShotAddr, recipientAddress flow.Address, setID,
 				let moment1 <- setRef.mintMoment(playID: %d)
 				let recipient = getAccount(0x%s)
 				// get the Collection reference for the receiver
-				let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
+				let receiverRef = recipient.getCapability(/public/MomentCollection).borrow<&{TopShot.MomentCollectionPublic}>()!
 				// deposit the NFT in the receivers collection
 				receiverRef.deposit(token: <-moment1)
 			}
@@ -136,7 +136,7 @@ func GenerateBatchMintMomentScript(topShotAddr flow.Address, destinationAccount 
 				let collection <- setRef.batchMintMoment(playID: %d, quantity: %d)
 				let recipient = getAccount(0x%s)
 				// get the Collection reference for the receiver
-				let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
+				let receiverRef = recipient.getCapability(/public/MomentCollection).borrow<&{TopShot.MomentCollectionPublic}>()!
 				// deposit the NFT in the receivers collection
 				receiverRef.batchDeposit(tokens: <-collection)
 			}
@@ -220,7 +220,7 @@ func GenerateFulfillPackScript(topShotAddr, shardedAddr, destinationAccount flow
 		transaction {
 			prepare(acct: AuthAccount) {
 				let recipient = getAccount(0x%s)
-				let receiverRef = recipient.getCapability(/public/MomentCollection)!
+				let receiverRef = recipient.getCapability(/public/MomentCollection)
 					.borrow<&{TopShot.MomentCollectionPublic}>()
 					?? panic("Could not borrow reference to receiver's collection")
 

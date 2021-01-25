@@ -60,7 +60,7 @@ func GenerateTransferMomentfromShardedCollectionScript(nftAddr, tokenCodeAddr, s
 				let recipient = getAccount(0x%s)
 		
 				// get the Collection reference for the receiver
-				let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
+				let receiverRef = recipient.getCapability(/public/MomentCollection).borrow<&{TopShot.MomentCollectionPublic}>()!
 		
 				// deposit the NFT in the receivers collection
 				receiverRef.deposit(token: <-self.transferToken)
@@ -91,7 +91,7 @@ func GenerateBatchTransferMomentfromShardedCollectionScript(nftAddr, tokenCodeAd
 				let recipient = getAccount(0x%s)
 		
 				// get the Collection reference for the receiver
-				let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
+				let receiverRef = recipient.getCapability(/public/MomentCollection).borrow<&{TopShot.MomentCollectionPublic}>()!
 		
 				// deposit the NFT in the receivers collection
 				receiverRef.batchDeposit(tokens: <-self.transferTokens)

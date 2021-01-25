@@ -8,7 +8,7 @@ import TopShot from 0xTOPSHOTADDRESS
 pub fun main(account: Address, fieldToSearch: String): String {
 
     // borrow a public reference to the owner's moment collection 
-    let collectionRef = getAccount(account).getCapability(/public/MomentCollection)!
+    let collectionRef = getAccount(account).getCapability(/public/MomentCollection)
         .borrow<&{TopShot.MomentCollectionPublic}>()
         ?? panic("Could not get public moment collection reference")
 
