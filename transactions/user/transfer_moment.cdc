@@ -31,7 +31,7 @@ transaction(recipient: Address, withdrawID: UFix64) {
         let recipient = getAccount(recipient)
 
         // get the Collection reference for the receiver
-        let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()!
+        let receiverRef = recipient.getCapability(/public/MomentCollection).borrow<&{TopShot.MomentCollectionPublic}>()!
 
         // deposit the NFT in the receivers collection
         receiverRef.deposit(token: <-self.transferToken)

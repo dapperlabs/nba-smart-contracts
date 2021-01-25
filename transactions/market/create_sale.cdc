@@ -7,8 +7,8 @@ import Market from 0xMARKETADDRESS
 
 transaction(beneficiaryAccount: Address, cutPercentage: UFix64) {
     prepare(acct: AuthAccount) {
-        let ownerCapability = acct.getCapability(/public/%sReceiver)!
-        let beneficiaryCapability = getAccount(beneficiaryAccount).getCapability(/public/%sReceiver)!
+        let ownerCapability = acct.getCapability(/public/%sReceiver)
+        let beneficiaryCapability = getAccount(beneficiaryAccount).getCapability(/public/%sReceiver)
 
         let collection <- Market.createSaleCollection(ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: cutPercentage)
         

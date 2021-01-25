@@ -69,7 +69,7 @@ func GenerateInspectCollectionScript(nftAddr, tokenAddr, ownerAddr flow.Address,
 		import TopShot from 0x%s
 
 		pub fun main() {
-			let collectionRef = getAccount(0x%s).getCapability(/public/MomentCollection)!
+			let collectionRef = getAccount(0x%s).getCapability(/public/MomentCollection)
 				.borrow<&{TopShot.MomentCollectionPublic}>()
 				?? panic("Could not get public moment collection reference")
 
@@ -91,7 +91,7 @@ func GenerateInspectCollectionDataScript(nftAddr, tokenAddr, ownerAddr flow.Addr
 		import TopShot from 0x%s
 
 		pub fun main() {
-			let collectionRef = getAccount(0x%s).getCapability(/public/MomentCollection)!
+			let collectionRef = getAccount(0x%s).getCapability(/public/MomentCollection)
 				.borrow<&{TopShot.MomentCollectionPublic}>()
 				?? panic("Could not get public moment collection reference")
 
@@ -118,7 +118,7 @@ func GenerateInspectCollectionIDsScript(nftAddr, tokenAddr, ownerAddr flow.Addre
 		import TopShot from 0x%s
 
 		pub fun main() {
-			let collectionRef = getAccount(0x%s).getCapability(/public/MomentCollection)!
+			let collectionRef = getAccount(0x%s).getCapability(/public/MomentCollection)
 				.borrow<&{TopShot.MomentCollectionPublic}>()
 				?? panic("Could not get public moment collection reference")
 
@@ -396,7 +396,7 @@ func GenerateSetPlaysOwnedByAddressScript(tokenAddr, userAddress flow.Address, s
 				message: "set and play ID arrays have mismatched lengths"
 			)
 		
-			let collectionRef = getAccount(0x%s).getCapability(/public/MomentCollection)!
+			let collectionRef = getAccount(0x%s).getCapability(/public/MomentCollection)
 						.borrow<&{TopShot.MomentCollectionPublic}>()
 						?? panic("Could not get public moment collection reference")
 			let momentIDs = collectionRef.getIDs()
