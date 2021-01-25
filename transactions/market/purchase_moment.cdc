@@ -29,7 +29,7 @@ transaction(sellerAddress: Address, tokenID: UInt64, purchaseAmount: UFix64) {
         let seller = getAccount(sellerAddress)
 
         // borrow a public reference to the seller's sale collection
-        let topshotSaleCollection = seller.getCapability(Market.marketPublicPath)!
+        let topshotSaleCollection = seller.getCapability(Market.marketPublicPath)
             .borrow<&{Market.SalePublic}>()
             ?? panic("Could not borrow public sale reference")
     

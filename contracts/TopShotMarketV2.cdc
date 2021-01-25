@@ -59,9 +59,9 @@ pub contract TopShotMarketV2 {
     // emitted when the cut percentage of the sale has been changed by the owner
     pub event CutPercentageChanged(newPercent: UFix64, seller: Address?)
 
-    pub let marketStoragePath: Path
+    pub let marketStoragePath: StoragePath
 
-    pub let marketPublicPath: Path
+    pub let marketPublicPath: PublicPath
 
     // SalePublic 
     //

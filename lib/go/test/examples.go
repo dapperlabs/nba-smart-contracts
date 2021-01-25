@@ -3,7 +3,6 @@ package test
 import (
 	"io/ioutil"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/onflow/flow-go-sdk"
@@ -12,7 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/onflow/cadence"
-	"github.com/onflow/cadence/runtime/cmd"
 
 	emulator "github.com/onflow/flow-emulator"
 )
@@ -120,7 +118,6 @@ func Submit(
 	} else {
 		if !assert.True(t, result.Succeeded()) {
 			t.Log(result.Error.Error())
-			cmd.PrettyPrintError(os.Stdout, result.Error, "", map[string]string{"": ""})
 		}
 	}
 
@@ -141,7 +138,6 @@ func ExecuteScriptAndCheck(t *testing.T, b *emulator.Blockchain, script []byte, 
 	} else {
 		if !assert.True(t, result.Succeeded()) {
 			t.Log(result.Error.Error())
-			cmd.PrettyPrintError(os.Stdout, result.Error, "", map[string]string{"": ""})
 		}
 	}
 }

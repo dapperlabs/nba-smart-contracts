@@ -520,20 +520,6 @@ func TestBothMarkets(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should be able to deploy the token contract
-	marketV1Code := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
-	marketV1Addr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "Market",
-			Source: string(marketV1Code),
-		},
-	})
-	if !assert.Nil(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	require.NoError(t, err)
-
-	// Should be able to deploy the token contract
 	marketCode := contracts.GenerateTopShotMarketV2Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
 	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
@@ -549,7 +535,7 @@ func TestBothMarkets(t *testing.T) {
 
 	// Should be able to deploy the token forwarding contract
 	forwardingCode := fungibleToken.CustomTokenForwarding(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
-	forwardingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+	_, err = b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TokenForwarding",
 			Source: string(forwardingCode),
