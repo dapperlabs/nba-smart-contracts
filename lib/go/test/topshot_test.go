@@ -114,10 +114,10 @@ func TestMintNFTs(t *testing.T) {
 	})
 
 	// Check that that main contract fields were initialized correctly
-	ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "currentSeries", "UInt32", 0), false)
-	ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "nextPlayID", "UInt32", 1), false)
-	ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "nextSetID", "UInt32", 1), false)
-	ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "totalSupply", "UInt64", 0), false)
+	executeScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "currentSeries", "UInt32", 0), nil)
+	executeScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "nextPlayID", "UInt32", 1), nil)
+	executeScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "nextSetID", "UInt32", 1), nil)
+	executeScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "totalSupply", "UInt64", 0), nil)
 
 	// Deploy the sharded collection contract
 	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr.String(), topshotAddr.String())
@@ -168,8 +168,8 @@ func TestMintNFTs(t *testing.T) {
 
 		// Check that the return all plays script doesn't fail
 		// and that we can return metadata about the plays
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateReturnAllPlaysScript(topshotAddr), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateReturnPlayMetadataScript(topshotAddr, 1, "FullName", "Lebron"), false)
+		executeScriptAndCheck(t, b, templates.GenerateReturnAllPlaysScript(topshotAddr), nil)
+		executeScriptAndCheck(t, b, templates.GenerateReturnPlayMetadataScript(topshotAddr, 1, "FullName", "Lebron"), nil)
 
 		// These should fail becuase an argument is wrong for each of them
 		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateReturnPlayMetadataScript(topshotAddr, 1, "Favorite Food", "Lebron"), true)
@@ -187,9 +187,9 @@ func TestMintNFTs(t *testing.T) {
 		)
 
 		// Check that the set name, ID, and series were initialized correctly.
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateReturnSetNameScript(topshotAddr, 1, "Genesis"), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateReturnSetIDsByNameScript(topshotAddr, "Genesis", 1), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateReturnSetSeriesScript(topshotAddr, 1, 0), false)
+		executeScriptAndCheck(t, b, templates.GenerateReturnSetNameScript(topshotAddr, 1, "Genesis"), nil)
+		executeScriptAndCheck(t, b, templates.GenerateReturnSetIDsByNameScript(topshotAddr, "Genesis", 1), nil)
+		executeScriptAndCheck(t, b, templates.GenerateReturnSetSeriesScript(topshotAddr, 1, 0), nil)
 
 		// These should fail becuase an argument is wrong
 		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateReturnSetNameScript(topshotAddr, 5, "Genesis"), true)
@@ -216,9 +216,9 @@ func TestMintNFTs(t *testing.T) {
 			false,
 		)
 		// Make sure the plays were added correctly and the edition isn't retired or locked
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateReturnPlaysInSetScript(topshotAddr, 1, []int{1, 2, 3}), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateReturnIsEditionRetiredScript(topshotAddr, 1, 1, "false"), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateReturnIsSetLockedScript(topshotAddr, 1, "false"), false)
+		executeScriptAndCheck(t, b, templates.GenerateReturnPlaysInSetScript(topshotAddr, 1, []int{1, 2, 3}), nil)
+		executeScriptAndCheck(t, b, templates.GenerateReturnIsEditionRetiredScript(topshotAddr, 1, 1, "false"), nil)
+		executeScriptAndCheck(t, b, templates.GenerateReturnIsSetLockedScript(topshotAddr, 1, "false"), nil)
 
 		// These should fail becuase an argument is wrong
 		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateReturnPlaysInSetScript(topshotAddr, 3, []int{1, 2, 3}), true)
@@ -247,9 +247,9 @@ func TestMintNFTs(t *testing.T) {
 		)
 
 		// make sure the moment was minted correctly and is stored in the collection with the correct data
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, topshotAddr, 1), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectCollectionIDsScript(nftAddr, topshotAddr, topshotAddr, []uint64{1}), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, topshotAddr, 1, 1), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, topshotAddr, 1), nil)
+		executeScriptAndCheck(t, b, templates.GenerateInspectCollectionIDsScript(nftAddr, topshotAddr, topshotAddr, []uint64{1}), nil)
+		executeScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, topshotAddr, 1, 1), nil)
 	})
 
 	// Admin sends a transaction that locks the set
@@ -270,7 +270,7 @@ func TestMintNFTs(t *testing.T) {
 		)
 
 		// Script should return that the set is locked
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateReturnIsSetLockedScript(topshotAddr, 1, "true"), false)
+		executeScriptAndCheck(t, b, templates.GenerateReturnIsSetLockedScript(topshotAddr, 1, "true"), nil)
 	})
 
 	// Admin sends a transaction that mints a batch of moments
@@ -283,13 +283,13 @@ func TestMintNFTs(t *testing.T) {
 		)
 
 		// Ensure that the correct number of moments have been minted for each edition
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 1, 1, 1), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 1, 3, 5), false)
+		executeScriptAndCheck(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 1, 1, 1), nil)
+		executeScriptAndCheck(t, b, templates.GenerateGetNumMomentsInEditionScript(topshotAddr, 1, 3, 5), nil)
 
 		// Ensure that the admin's collection and data is correct
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, topshotAddr, 1), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectCollectionIDsScript(nftAddr, topshotAddr, topshotAddr, []uint64{1, 2, 3, 4, 5, 6}), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, topshotAddr, 1, 1), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, topshotAddr, 1), nil)
+		executeScriptAndCheck(t, b, templates.GenerateInspectCollectionIDsScript(nftAddr, topshotAddr, topshotAddr, []uint64{1, 2, 3, 4, 5, 6}), nil)
+		executeScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, topshotAddr, 1, 1), nil)
 
 		// These should fail because an argument is wrong
 		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, topshotAddr, 10, 1), true)
@@ -315,7 +315,7 @@ func TestMintNFTs(t *testing.T) {
 		)
 
 		// Make sure this edition is retired
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateReturnIsEditionRetiredScript(topshotAddr, 1, 1, "true"), false)
+		executeScriptAndCheck(t, b, templates.GenerateReturnIsEditionRetiredScript(topshotAddr, 1, 1, "true"), nil)
 	})
 
 	// Admin sends a transaction that retires all the plays in a set
@@ -355,7 +355,7 @@ func TestMintNFTs(t *testing.T) {
 			false,
 		)
 		// make sure the user received it
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, joshAddress, 1), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, joshAddress, 1), nil)
 	})
 
 	// Admin sends a transaction to transfer a batch of moments to a user
@@ -367,7 +367,7 @@ func TestMintNFTs(t *testing.T) {
 			false,
 		)
 		// make sure the user received them
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, joshAddress, 2, 1), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectCollectionDataScript(nftAddr, topshotAddr, joshAddress, 2, 1), nil)
 	})
 
 	// Admin sends a transaction to update the current series
@@ -381,10 +381,10 @@ func TestMintNFTs(t *testing.T) {
 	})
 
 	// Make sure the contract fields are correct
-	ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "currentSeries", "UInt32", 1), false)
-	ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "nextPlayID", "UInt32", 5), false)
-	ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "nextSetID", "UInt32", 2), false)
-	ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "totalSupply", "UInt64", 6), false)
+	executeScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "currentSeries", "UInt32", 1), nil)
+	executeScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "nextPlayID", "UInt32", 5), nil)
+	executeScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "nextSetID", "UInt32", 2), nil)
+	executeScriptAndCheck(t, b, templates.GenerateInspectTopshotFieldScript(nftAddr, topshotAddr, "totalSupply", "UInt64", 6), nil)
 
 }
 

@@ -148,7 +148,7 @@ func readFile(path string) []byte {
 	return contents
 }
 
-// ExecuteScriptAndCheck executes a script and checks to make sure
+// ExecuteScriptAndCheckShouldFail executes a script and checks to make sure
 // that it succeeded
 func ExecuteScriptAndCheckShouldFail(t *testing.T, b *emulator.Blockchain, script []byte, shouldRevert bool) {
 	result, err := b.ExecuteScript(script, nil)

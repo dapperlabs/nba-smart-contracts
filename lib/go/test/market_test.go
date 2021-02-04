@@ -298,9 +298,9 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		// check the price, sale length, and the sale's data
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleScript(marketAddr, joshAddress, 1, 80), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleLenScript(marketAddr, joshAddress, 1), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, joshAddress, 1, 1), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, joshAddress, 1, 80), nil)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, joshAddress, 1), nil)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, joshAddress, 1, 1), nil)
 	})
 
 	t.Run("Cannot buy an NFT for less than the sale price", func(t *testing.T) {
@@ -347,11 +347,11 @@ func TestMarket(t *testing.T) {
 		)
 
 		// make sure that the cut was taken correctly and that josh receied the purchasing tokens
-		ExecuteScriptAndCheckShouldFail(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, bastianAddress, defaultTokenName, 12), false)
-		ExecuteScriptAndCheckShouldFail(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, joshAddress, defaultTokenName, 68), false)
+		executeScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, bastianAddress, defaultTokenName, 12), nil)
+		executeScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, joshAddress, defaultTokenName, 68), nil)
 
 		// make sure bastian received the purchase's moment
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, bastianAddress, 1), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, bastianAddress, 1), nil)
 	})
 
 	t.Run("Can create a sale and put an NFT up for sale in one transaction", func(t *testing.T) {
@@ -365,9 +365,9 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		// Make sure that moment id 2 is for sale for 50 tokens and the data is correct
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), nil)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), nil)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), nil)
 	})
 
 	t.Run("Cannot change the price of a moment that isn't for sale", func(t *testing.T) {
@@ -379,7 +379,7 @@ func TestMarket(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			true,
 		)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), nil)
 	})
 
 	t.Run("Can change the price of a sale", func(t *testing.T) {
@@ -392,7 +392,7 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		// make sure the price has been changed
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 40), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 40), nil)
 	})
 
 	t.Run("Can change the cut percentage of a sale", func(t *testing.T) {
@@ -405,7 +405,7 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		// make sure the percentage was changed correctly
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSalePercentageScript(marketAddr, bastianAddress, .18), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSalePercentageScript(marketAddr, bastianAddress, .18), nil)
 	})
 
 	t.Run("Cannot withdraw a moment that doesn't exist from a sale", func(t *testing.T) {
@@ -418,7 +418,7 @@ func TestMarket(t *testing.T) {
 			true,
 		)
 		// make sure nothing was withdrawn
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), nil)
 	})
 
 	t.Run("Can withdraw a moment from a sale", func(t *testing.T) {
@@ -431,7 +431,7 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), true)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 0), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 0), nil)
 		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), true)
 	})
 
@@ -443,11 +443,11 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		// Make sure that moment id 2 is for sale for 50 tokens and the data is correct
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 100), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), false)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 100), nil)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), nil)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), nil)
 
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSalePercentageScript(marketAddr, bastianAddress, .10), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectSalePercentageScript(marketAddr, bastianAddress, .10), nil)
 	})
 
 	t.Run("Can create a forwarder resource to forward tokens to a different account", func(t *testing.T) {
@@ -468,7 +468,7 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 
-		ExecuteScriptAndCheckShouldFail(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, tokenAddr, defaultTokenName, 1000.0), false)
+		executeScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, tokenAddr, defaultTokenName, 1000.0), nil)
 	})
 
 	t.Run("Can mint tokens and buy a moment with them so the tokens are forwarded", func(t *testing.T) {
@@ -485,8 +485,8 @@ func TestMarket(t *testing.T) {
 		)
 
 		// make sure josh received the purchase's moment
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, joshAddress, 2), false)
+		executeScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, joshAddress, 2), nil)
 
-		ExecuteScriptAndCheckShouldFail(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, tokenAddr, defaultTokenName, 1100.0), false)
+		executeScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, tokenAddr, defaultTokenName, 1100.0), nil)
 	})
 }
