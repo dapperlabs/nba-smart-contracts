@@ -85,7 +85,7 @@ func GenerateBatchTransferMomentScript(nftAddr, tokenCodeAddr, recipientAddr flo
 				let receiverRef = recipient.getCapability(/public/MomentCollection).borrow<&{TopShot.MomentCollectionPublic}>()!
 		
 				// deposit the NFT in the receivers collection
-				receiverRef.batchDeposit(token: <-self.transferTokens)
+				receiverRef.batchDeposit(tokens: <-self.transferTokens)
 			}
 		}`
 
