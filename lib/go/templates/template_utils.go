@@ -8,11 +8,29 @@ import (
 //go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../../../transactions/... -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../../../transactions/...
 
 const (
-	defaultTopShotAddress = "TOPSHOTADDRESS"
-	defaultNFTAddress     = "NFTADDRESS"
-	defaultMarketAddress  = "MARKETADDRESS"
-	defaultShardedAddress = "SHARDEDADDRESS"
+	placeholderFungibleTokenAddress = "0xFUNGIBLETOKENADDRESS"
+	placeholderFlowTokenAddress     = "0xFLOWTOKENADDRESS"
+	placeholderNFTAddress           = "0xNFTADDRESS"
+	placeholderTopShotAddress       = "0xTOPSHOTADDRESS"
+	placeholderTopShotMarketAddress = "0xMARKETADDRESS"
+	placeholderShardedAddress       = "0xSHARDEDADDRESS"
+	placeholderAdminReceiverAddress = "0xADMINRECEIVERADDRESS"
+	placeholderDUCAddress           = "0xDUCADDRESS"
+	placeholderForwardingAddress    = "0xFORWARDINGADDRESS"
 )
+
+type Environment struct {
+	Network              string
+	FungibleTokenAddress string
+	FlowTokenAddress     string
+	NFTAddress           string
+	TopShotAddress       string
+	TopShotMarketAddress string
+	ShardedAddress       string
+	AdminReceiverAddress string
+	DUCAddress           string
+	ForwardingAddress    string
+}
 
 func uint32ToCadenceArr(nums []uint32) []byte {
 	var s string
@@ -23,14 +41,73 @@ func uint32ToCadenceArr(nums []uint32) []byte {
 	return []byte("[" + s[:len(s)-2] + "]")
 }
 
-func replaceAddresses(code string, topShotAddr, nftAddr, marketAddr, shardedAddr string) string {
+func withHexPrefix(address string) string {
+	if address == "" {
+		return ""
+	}
 
-	replacer := strings.NewReplacer("0x"+defaultTopShotAddress, "0x"+topShotAddr,
-		"0x"+defaultNFTAddress, "0x"+nftAddr,
-		"0x"+defaultMarketAddress, "0x"+nftAddr,
-		"0x"+defaultShardedAddress, "0x"+shardedAddr)
+	if address[0:2] == "0x" {
+		return address
+	}
 
-	code = replacer.Replace(code)
+	return fmt.Sprintf("0x%s", address)
+}
+
+func replaceAddresses(code string, env Environment) string {
+
+	code = strings.ReplaceAll(
+		code,
+		placeholderFungibleTokenAddress,
+		withHexPrefix(env.FungibleTokenAddress),
+	)
+
+	code = strings.ReplaceAll(
+		code,
+		placeholderFlowTokenAddress,
+		withHexPrefix(env.FlowTokenAddress),
+	)
+
+	code = strings.ReplaceAll(
+		code,
+		placeholderNFTAddress,
+		withHexPrefix(env.NFTAddress),
+	)
+
+	code = strings.ReplaceAll(
+		code,
+		placeholderTopShotAddress,
+		withHexPrefix(env.TopShotAddress),
+	)
+
+	code = strings.ReplaceAll(
+		code,
+		placeholderTopShotMarketAddress,
+		withHexPrefix(env.TopShotMarketAddress),
+	)
+
+	code = strings.ReplaceAll(
+		code,
+		placeholderShardedAddress,
+		withHexPrefix(env.ShardedAddress),
+	)
+
+	code = strings.ReplaceAll(
+		code,
+		placeholderAdminReceiverAddress,
+		withHexPrefix(env.AdminReceiverAddress),
+	)
+
+	code = strings.ReplaceAll(
+		code,
+		placeholderDUCAddress,
+		withHexPrefix(env.DUCAddress),
+	)
+
+	code = strings.ReplaceAll(
+		code,
+		placeholderForwardingAddress,
+		withHexPrefix(env.ForwardingAddress),
+	)
 
 	return code
 }
