@@ -18,7 +18,7 @@
 // ../../../transactions/market/start_sale.cdc (1.156kB)
 // ../../../transactions/market/stop_sale.cdc (1.135kB)
 // ../../../transactions/scripts/collections/get_collection_ids.cdc (573B)
-// ../../../transactions/scripts/collections/get_id_in_Collection.cdc (443B)
+// ../../../transactions/scripts/collections/get_id_in_collection.cdc (443B)
 // ../../../transactions/scripts/collections/get_metadata.cdc (1.345kB)
 // ../../../transactions/scripts/collections/get_metadata_field.cdc (1.076kB)
 // ../../../transactions/scripts/collections/get_moment_playID.cdc (627B)
@@ -476,7 +476,7 @@ var _TransactionsScriptsCollectionsGet_id_in_collectionCdc = "\x1f\x8b\x08\x00\x
 func TransactionsScriptsCollectionsGet_id_in_collectionCdcBytes() ([]byte, error) {
 	return bindataRead(
 		_TransactionsScriptsCollectionsGet_id_in_collectionCdc,
-		"../../../transactions/scripts/collections/get_id_in_Collection.cdc",
+		"../../../transactions/scripts/collections/get_id_in_collection.cdc",
 	)
 }
 
@@ -486,7 +486,7 @@ func TransactionsScriptsCollectionsGet_id_in_collectionCdc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "../../../transactions/scripts/collections/get_id_in_Collection.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	info := bindataFileInfo{name: "../../../transactions/scripts/collections/get_id_in_collection.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xc6, 0x35, 0x5, 0xd9, 0x54, 0x3b, 0xfb, 0xd1, 0x7b, 0x97, 0xf3, 0x7d, 0x41, 0x1a, 0x9a, 0xd3, 0xed, 0xb0, 0xf6, 0x2e, 0x4a, 0x50, 0x6b, 0xc2, 0xa8, 0xeb, 0x93, 0xbe, 0x61, 0x13, 0xd3, 0x51}}
 	return a, nil
 }
@@ -1060,7 +1060,7 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/market/start_sale.cdc":                        TransactionsMarketStart_saleCdc,
 	"../../../transactions/market/stop_sale.cdc":                         TransactionsMarketStop_saleCdc,
 	"../../../transactions/scripts/collections/get_collection_ids.cdc":   TransactionsScriptsCollectionsGet_collection_idsCdc,
-	"../../../transactions/scripts/collections/get_id_in_Collection.cdc": TransactionsScriptsCollectionsGet_id_in_collectionCdc,
+	"../../../transactions/scripts/collections/get_id_in_collection.cdc": TransactionsScriptsCollectionsGet_id_in_collectionCdc,
 	"../../../transactions/scripts/collections/get_metadata.cdc":         TransactionsScriptsCollectionsGet_metadataCdc,
 	"../../../transactions/scripts/collections/get_metadata_field.cdc":   TransactionsScriptsCollectionsGet_metadata_fieldCdc,
 	"../../../transactions/scripts/collections/get_moment_playID.cdc":    TransactionsScriptsCollectionsGet_moment_playidCdc,
@@ -1158,7 +1158,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 					"scripts": {nil, map[string]*bintree{
 						"collections": {nil, map[string]*bintree{
 							"get_collection_ids.cdc": {TransactionsScriptsCollectionsGet_collection_idsCdc, map[string]*bintree{}},
-							"get_id_in_Collection.cdc": {TransactionsScriptsCollectionsGet_id_in_collectionCdc, map[string]*bintree{}},
+							"get_id_in_collection.cdc": {TransactionsScriptsCollectionsGet_id_in_collectionCdc, map[string]*bintree{}},
 							"get_metadata.cdc": {TransactionsScriptsCollectionsGet_metadataCdc, map[string]*bintree{}},
 							"get_metadata_field.cdc": {TransactionsScriptsCollectionsGet_metadata_fieldCdc, map[string]*bintree{}},
 							"get_moment_playID.cdc": {TransactionsScriptsCollectionsGet_moment_playidCdc, map[string]*bintree{}},
