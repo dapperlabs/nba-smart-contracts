@@ -385,6 +385,35 @@ func TestMintNFTs(t *testing.T) {
 
 	})
 
+	t.Run("Should be able to mint a batch of moments and fulfill a pack", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchMintMomentScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewUInt32(3))
+		_ = tx.AddArgument(cadence.NewUInt64(5))
+		_ = tx.AddArgument(cadence.NewAddress(topshotAddr))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			false,
+		)
+
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateFulfillPackScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(topshotAddr))
+
+		ids := []cadence.Value{cadence.NewUInt64(6), cadence.NewUInt64(7), cadence.NewUInt64(8)}
+		_ = tx.AddArgument(cadence.NewArray(ids))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			false,
+		)
+
+	})
+
 	// Admin sends a transaction to retire a play
 	t.Run("Should be able to retire a Play which stops minting", func(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateRetirePlayScript(env), topshotAddr)
@@ -500,7 +529,7 @@ func TestMintNFTs(t *testing.T) {
 	assert.Equal(t, cadence.NewUInt32(2), result)
 
 	result = executeScriptAndCheck(t, b, templates.GenerateGetSupplyScript(env), nil)
-	assert.Equal(t, cadence.NewUInt64(6), result)
+	assert.Equal(t, cadence.NewUInt64(11), result)
 
 }
 
