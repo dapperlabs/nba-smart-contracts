@@ -288,7 +288,10 @@ func TestMintNFTs(t *testing.T) {
 
 	// Admin sends a transaction that creates a new sharded collection for the admin
 	t.Run("Should be able to create new sharded moment collection and store it", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupShardedCollectionScript(topshotAddr, shardedAddr, 32), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupShardedCollectionScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewUInt64(32))
+
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
@@ -483,7 +486,11 @@ func TestMintNFTs(t *testing.T) {
 
 	// Admin sends a transaction to transfer a moment to a user
 	t.Run("Should be able to transfer a moment", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateTransferMomentfromShardedCollectionScript(nftAddr, topshotAddr, shardedAddr, joshAddress, 1), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateTransferMomentfromShardedCollectionScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(1))
+
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
@@ -496,7 +503,13 @@ func TestMintNFTs(t *testing.T) {
 
 	// Admin sends a transaction to transfer a batch of moments to a user
 	t.Run("Should be able to batch transfer moments from a sharded collection", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchTransferMomentfromShardedCollectionScript(nftAddr, topshotAddr, shardedAddr, joshAddress, []uint64{2, 3, 4}), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchTransferMomentfromShardedCollectionScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+
+		ids := []cadence.Value{cadence.NewUInt64(2), cadence.NewUInt64(3), cadence.NewUInt64(4)}
+		_ = tx.AddArgument(cadence.NewArray(ids))
+
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
