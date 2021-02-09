@@ -31,7 +31,7 @@ const (
 	collectionIDsFilename       = "collections/get_collection_ids.cdc"
 	metadataFieldFilename       = "collections/get_metadata_field.cdc"
 	momentSeriesFilename        = "collections/get_moment_series.cdc"
-	idInCollectionFilename      = "collections/get_id_in_collection.cdc"
+	idInCollectionFilename      = "collections/get_id_in_Collection.cdc"
 	momentPlayIDFilename        = "collections/get_moment_playID.cdc"
 	momentSetIDFilename         = "collections/get_moment_setID.cdc"
 	metadataFilename            = "collections/get_metadata.cdc"
@@ -98,7 +98,7 @@ func GenerateGetNumMomentsInEditionScript(env Environment) []byte {
 }
 
 // GenerateGetSetIDsByNameScript creates a script that returns setIDs that share a name
-func GenerateReturnSetIDsByNameScript(env Environment) []byte {
+func GenerateGetSetIDsByNameScript(env Environment) []byte {
 	code := assets.MustAssetString(scriptsPath + setIDsByNameFilename)
 
 	return []byte(replaceAddresses(code, env))
