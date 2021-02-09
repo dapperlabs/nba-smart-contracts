@@ -3,12 +3,13 @@ package test
 import (
 	"testing"
 
+	"github.com/onflow/cadence"
+	jsoncdc "github.com/onflow/cadence/encoding/json"
 	fungibleToken "github.com/onflow/flow-ft/lib/go/contracts"
 	fungibleTokenTemplates "github.com/onflow/flow-ft/lib/go/templates"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
-	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates/data"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 	sdktemplates "github.com/onflow/flow-go-sdk/templates"
@@ -92,6 +93,11 @@ func TestMarket(t *testing.T) {
 
 	accountKeys := test.AccountKeyGenerator()
 
+	env := templates.Environment{
+		FungibleTokenAddress: emulatorFTAddress,
+		FlowTokenAddress:     emulatorFlowTokenAddress,
+	}
+
 	// Should be able to deploy the NFT contract
 	// as a new account with no keys.
 	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
@@ -106,6 +112,8 @@ func TestMarket(t *testing.T) {
 	}
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
+
+	env.NFTAddress = nftAddr.String()
 
 	// Should be able to deploy the topshot contract
 	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
@@ -122,6 +130,8 @@ func TestMarket(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
+	env.TopShotAddress = topshotAddr.String()
+
 	// Should be able to deploy the token contract
 	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage, "1000.0")
 	tokenAccountKey, tokenSigner := accountKeys.NewWithSigner()
@@ -137,6 +147,8 @@ func TestMarket(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
+	env.DUCAddress = tokenAddr.String()
+
 	// Should be able to deploy the token contract
 	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
 	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
@@ -150,6 +162,8 @@ func TestMarket(t *testing.T) {
 	}
 	_, err = b.CommitBlock()
 	require.NoError(t, err)
+
+	env.TopShotMarketAddress = marketAddr.String()
 
 	// Should be able to deploy the token forwarding contract
 	forwardingCode := fungibleToken.CustomTokenForwarding(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
@@ -165,12 +179,17 @@ func TestMarket(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
+	env.ForwardingAddress = forwardingAddr.String()
+
 	// create two new accounts
 	bastianAccountKey, bastianSigner := accountKeys.NewWithSigner()
 	bastianAddress, err := b.CreateAccount([]*flow.AccountKey{bastianAccountKey}, nil)
 
 	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
 	joshAddress, err := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
+
+	//ducStoragePath := cadence.Path{Domain: "storage", Identifier: "dapperUtilityCoinVault"}
+	ducPublicPath := cadence.Path{Domain: "public", Identifier: "dapperUtilityCoinReceiver"}
 
 	// Setup both accounts to have DUC and a sale collection
 	t.Run("Should be able to setup both users' accounts to use the market", func(t *testing.T) {
@@ -204,7 +223,11 @@ func TestMarket(t *testing.T) {
 
 		// Create a sale collection for josh's account, setting bastian as the beneficiary
 		// and with a 15% cut
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateSaleScript(marketAddr, bastianAddress, defaultTokenStorage, .15), joshAddress)
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateSaleScript(env), joshAddress)
+
+		_ = tx.AddArgument(ducPublicPath)
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(CadenceUFix64("0.15"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -213,10 +236,17 @@ func TestMarket(t *testing.T) {
 		)
 	})
 
+	firstName := cadence.NewString("FullName")
+	lebron := cadence.NewString("Lebron")
+
 	// Admin sends transactions to create a play, set, and moments
 	t.Run("Should be able to setup a play, set, and mint moment", func(t *testing.T) {
 		// create a new play
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(topshotAddr, data.GenerateEmptyPlay("Lebron")), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
+
+		metadata := []cadence.KeyValuePair{{Key: firstName, Value: lebron}}
+		play := cadence.NewDictionary(metadata)
+		_ = tx.AddArgument(play)
 
 		signAndSubmit(
 			t, b, tx,
@@ -225,7 +255,9 @@ func TestMarket(t *testing.T) {
 		)
 
 		// create a new set
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintSetScript(topshotAddr, "Genesis"), topshotAddr)
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintSetScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewString("Genesis"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -234,7 +266,10 @@ func TestMarket(t *testing.T) {
 		)
 
 		// add the play to the set
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateAddPlayToSetScript(topshotAddr, 1, 1), topshotAddr)
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateAddPlayToSetScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewUInt32(1))
 
 		signAndSubmit(
 			t, b, tx,
@@ -243,7 +278,12 @@ func TestMarket(t *testing.T) {
 		)
 
 		// mint a batch of moments
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchMintMomentScript(topshotAddr, topshotAddr, 1, 1, 6), topshotAddr)
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchMintMomentScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewUInt64(6))
+		_ = tx.AddArgument(cadence.NewAddress(topshotAddr))
 
 		signAndSubmit(
 			t, b, tx,
@@ -252,7 +292,7 @@ func TestMarket(t *testing.T) {
 		)
 
 		// setup bastian's account to hold topshot moments
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(nftAddr, topshotAddr), bastianAddress)
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(env), bastianAddress)
 
 		signAndSubmit(
 			t, b, tx,
@@ -261,7 +301,7 @@ func TestMarket(t *testing.T) {
 		)
 
 		// setup josh's account to hold topshot moments
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(nftAddr, topshotAddr), joshAddress)
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(env), joshAddress)
 
 		signAndSubmit(
 			t, b, tx,
@@ -270,7 +310,10 @@ func TestMarket(t *testing.T) {
 		)
 
 		// transfer a moment to josh's account
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateTransferMomentScript(nftAddr, topshotAddr, joshAddress, 1), topshotAddr)
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateTransferMomentScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(1))
 
 		signAndSubmit(
 			t, b, tx,
@@ -279,7 +322,10 @@ func TestMarket(t *testing.T) {
 		)
 
 		// transfer a moment to bastian's account
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateTransferMomentScript(nftAddr, topshotAddr, bastianAddress, 2), topshotAddr)
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateTransferMomentScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(2))
 
 		signAndSubmit(
 			t, b, tx,
@@ -290,7 +336,10 @@ func TestMarket(t *testing.T) {
 
 	t.Run("Can put an NFT up for sale", func(t *testing.T) {
 		// start a sale with the moment josh owns, setting its price to 80
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateStartSaleScript(topshotAddr, marketAddr, 1, 80), joshAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateStartSaleScript(env), joshAddress)
+
+		_ = tx.AddArgument(cadence.NewUInt64(1))
+		_ = tx.AddArgument(CadenceUFix64("80.0"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -298,14 +347,23 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		// check the price, sale length, and the sale's data
-		executeScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, joshAddress, 1, 80), nil)
-		executeScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, joshAddress, 1), nil)
-		executeScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, joshAddress, 1, 1), nil)
+		result := executeScriptAndCheck(t, b, templates.GenerateGetSalePriceScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
+		assertEqual(t, CadenceUFix64("80.0"), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSaleLenScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress))})
+		assertEqual(t, cadence.NewInt(1), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSaleSetIDScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
+		assertEqual(t, cadence.NewUInt32(1), result)
 	})
 
 	t.Run("Cannot buy an NFT for less than the sale price", func(t *testing.T) {
 		// bastian tries to buy the moment for only 9 tokens
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBuySaleScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 9), bastianAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBuySaleScript(env), bastianAddress)
+
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(1))
+		_ = tx.AddArgument(CadenceUFix64("9.0"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -316,7 +374,11 @@ func TestMarket(t *testing.T) {
 
 	t.Run("Cannot buy an NFT for more than the sale price", func(t *testing.T) {
 		// bastian tries to buy the moment for too many tokens
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBuySaleScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 90), bastianAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBuySaleScript(env), bastianAddress)
+
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(1))
+		_ = tx.AddArgument(CadenceUFix64("90.0"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -327,7 +389,11 @@ func TestMarket(t *testing.T) {
 
 	t.Run("Cannot buy an NFT that is not for sale", func(t *testing.T) {
 		// bastian tries to buy the wrong moment
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBuySaleScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 2, 80), bastianAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBuySaleScript(env), bastianAddress)
+
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(2))
+		_ = tx.AddArgument(CadenceUFix64("80.0"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -338,7 +404,11 @@ func TestMarket(t *testing.T) {
 
 	t.Run("Can buy an NFT that is for sale", func(t *testing.T) {
 		// bastian sends the correct amount of tokens to buy it
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBuySaleScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, joshAddress, defaultTokenName, defaultTokenStorage, 1, 80), bastianAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBuySaleScript(env), bastianAddress)
+
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(1))
+		_ = tx.AddArgument(CadenceUFix64("80.0"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -351,13 +421,20 @@ func TestMarket(t *testing.T) {
 		executeScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, joshAddress, defaultTokenName, 68), nil)
 
 		// make sure bastian received the purchase's moment
-		executeScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, bastianAddress, 1), nil)
+		result := executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
+		assert.Equal(t, cadence.NewBool(true), result)
 	})
 
 	t.Run("Can create a sale and put an NFT up for sale in one transaction", func(t *testing.T) {
 		// Bastian creates a new sale collection object and puts the moment for sale,
 		// setting himself as the beneficiary with a 15% cut
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateAndStartSaleScript(topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .15, 2, 50), bastianAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateAndStartSaleScript(env), bastianAddress)
+
+		_ = tx.AddArgument(ducPublicPath)
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(CadenceUFix64("0.15"))
+		_ = tx.AddArgument(cadence.NewUInt64(2))
+		_ = tx.AddArgument(CadenceUFix64("50.0"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -365,26 +442,36 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		// Make sure that moment id 2 is for sale for 50 tokens and the data is correct
-		executeScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), nil)
-		executeScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), nil)
-		executeScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), nil)
+		result := executeScriptAndCheck(t, b, templates.GenerateGetSalePriceScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		assertEqual(t, CadenceUFix64("50.0"), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSaleLenScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress))})
+		assertEqual(t, cadence.NewInt(1), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSaleSetIDScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		assertEqual(t, cadence.NewUInt32(1), result)
 	})
 
 	t.Run("Cannot change the price of a moment that isn't for sale", func(t *testing.T) {
 		// try to change the price of the wrong moment
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateChangePriceScript(topshotAddr, marketAddr, 5, 40), bastianAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateChangePriceScript(env), bastianAddress)
+
+		_ = tx.AddArgument(cadence.NewUInt64(5))
+		_ = tx.AddArgument(CadenceUFix64("40.0"))
 
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			true,
 		)
-		executeScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), nil)
 	})
 
 	t.Run("Can change the price of a sale", func(t *testing.T) {
 		// change the price of the moment
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateChangePriceScript(topshotAddr, marketAddr, 2, 40), bastianAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateChangePriceScript(env), bastianAddress)
+
+		_ = tx.AddArgument(cadence.NewUInt64(2))
+		_ = tx.AddArgument(CadenceUFix64("40.0"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -392,12 +479,15 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		// make sure the price has been changed
-		executeScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 40), nil)
+		result := executeScriptAndCheck(t, b, templates.GenerateGetSalePriceScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		assertEqual(t, CadenceUFix64("40.0"), result)
 	})
 
 	t.Run("Can change the cut percentage of a sale", func(t *testing.T) {
 		// change the cut percentage for the sale collection to 18%
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateChangePercentageScript(topshotAddr, marketAddr, .18), bastianAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateChangePercentageScript(env), bastianAddress)
+
+		_ = tx.AddArgument(CadenceUFix64("0.18"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -405,12 +495,15 @@ func TestMarket(t *testing.T) {
 			false,
 		)
 		// make sure the percentage was changed correctly
-		executeScriptAndCheck(t, b, templates.GenerateInspectSalePercentageScript(marketAddr, bastianAddress, .18), nil)
+		result := executeScriptAndCheck(t, b, templates.GenerateGetSalePercentageScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress))})
+		assertEqual(t, CadenceUFix64("0.18"), result)
 	})
 
 	t.Run("Cannot withdraw a moment that doesn't exist from a sale", func(t *testing.T) {
 		// bastian tries to withdraw the wrong moment
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateWithdrawFromSaleScript(topshotAddr, marketAddr, 7), bastianAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateWithdrawFromSaleScript(env), bastianAddress)
+
+		_ = tx.AddArgument(cadence.NewUInt64(7))
 
 		signAndSubmit(
 			t, b, tx,
@@ -418,36 +511,50 @@ func TestMarket(t *testing.T) {
 			true,
 		)
 		// make sure nothing was withdrawn
-		executeScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), nil)
+		result := executeScriptAndCheck(t, b, templates.GenerateGetSaleLenScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress))})
+		assertEqual(t, cadence.NewInt(1), result)
 	})
 
 	t.Run("Can withdraw a moment from a sale", func(t *testing.T) {
 		// bastian withdraws the correct moment
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateWithdrawFromSaleScript(topshotAddr, marketAddr, 2), bastianAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateWithdrawFromSaleScript(env), bastianAddress)
+		_ = tx.AddArgument(cadence.NewUInt64(2))
 
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 50), true)
-		executeScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 0), nil)
-		ExecuteScriptAndCheckShouldFail(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), true)
+
+		result := executeScriptAndCheck(t, b, templates.GenerateGetSaleLenScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress))})
+		assertEqual(t, cadence.NewInt(0), result)
 	})
 
 	t.Run("Can use the create and start sale to start a sale even if there is already sale in storage", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateAndStartSaleScript(topshotAddr, marketAddr, bastianAddress, defaultTokenStorage, .10, 2, 100), bastianAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateAndStartSaleScript(env), bastianAddress)
+		_ = tx.AddArgument(ducPublicPath)
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(CadenceUFix64("0.10"))
+		_ = tx.AddArgument(cadence.NewUInt64(2))
+		_ = tx.AddArgument(CadenceUFix64("100.0"))
+
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
 			false,
 		)
 		// Make sure that moment id 2 is for sale for 50 tokens and the data is correct
-		executeScriptAndCheck(t, b, templates.GenerateInspectSaleScript(marketAddr, bastianAddress, 2, 100), nil)
-		executeScriptAndCheck(t, b, templates.GenerateInspectSaleLenScript(marketAddr, bastianAddress, 1), nil)
-		executeScriptAndCheck(t, b, templates.GenerateInspectSaleMomentDataScript(nftAddr, topshotAddr, marketAddr, bastianAddress, 2, 1), nil)
+		result := executeScriptAndCheck(t, b, templates.GenerateGetSalePriceScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		assertEqual(t, CadenceUFix64("100.0"), result)
 
-		executeScriptAndCheck(t, b, templates.GenerateInspectSalePercentageScript(marketAddr, bastianAddress, .10), nil)
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSaleLenScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress))})
+		assertEqual(t, cadence.NewInt(1), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSaleSetIDScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		assertEqual(t, cadence.NewUInt32(1), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSalePercentageScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress))})
+		assertEqual(t, CadenceUFix64("0.18"), result)
 	})
 
 	t.Run("Can create a forwarder resource to forward tokens to a different account", func(t *testing.T) {
@@ -461,7 +568,8 @@ func TestMarket(t *testing.T) {
 
 	t.Run("Can change the owner capability of a sale", func(t *testing.T) {
 		// change the price of the moment
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateChangeOwnerReceiverScript(flow.HexToAddress(defaultfungibleTokenAddr), topshotAddr, marketAddr, "dapperUtilityCoinReceiver"), bastianAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateChangeOwnerReceiverScript(env), bastianAddress)
+		_ = tx.AddArgument(ducPublicPath)
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
@@ -475,9 +583,15 @@ func TestMarket(t *testing.T) {
 
 		// mint tokens and buy the moment in the same tx
 
-		template := templates.GenerateMintTokensAndBuyScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, topshotAddr, marketAddr, bastianAddress, joshAddress, defaultTokenName, defaultTokenStorage, 2, 100)
+		template := templates.GenerateMintTokensAndBuyScript(env)
 
 		tx := createTxWithTemplateAndAuthorizer(b, template, tokenAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(2))
+		_ = tx.AddArgument(CadenceUFix64("100.0"))
+
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
@@ -485,7 +599,8 @@ func TestMarket(t *testing.T) {
 		)
 
 		// make sure josh received the purchase's moment
-		executeScriptAndCheck(t, b, templates.GenerateInspectCollectionScript(nftAddr, topshotAddr, joshAddress, 2), nil)
+		result := executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		assert.Equal(t, cadence.NewBool(true), result)
 
 		executeScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, tokenAddr, defaultTokenName, 1100.0), nil)
 	})

@@ -18,7 +18,7 @@ transaction(setID: UInt32, plays: [UInt32]) {
         self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
     }
 
-    execute() {
+    execute {
 
         // borrow a reference to the set to be added to
         let setRef = self.adminRef.borrowSet(setID: setID)

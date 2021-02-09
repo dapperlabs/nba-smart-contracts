@@ -1,3 +1,4 @@
+import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 import TopShotShardedCollection from 0xSHARDEDADDRESS
 
@@ -21,12 +22,19 @@ transaction(recipientAddr: Address, momentIDs: [UInt64]) {
             .borrow<&{TopShot.MomentCollectionPublic}>()
             ?? panic("Could not borrow reference to receiver's collection")
 
+        
+
         // borrow a reference to the owner's moment collection
-        let collection <- acct.borrow<&TopShotShardedCollection.ShardedCollection>
-            (from: /storage/ShardedMomentCollection)!
-            .batchWithdraw(ids: momentIDs)
+        if let collection = acct.borrow<&TopShotShardedCollection.ShardedCollection>(from: /storage/ShardedMomentCollection) {
             
-        // Deposit the pack of moments to the recipient's collection
-        receiverRef.batchDeposit(tokens: <-collection)
+            receiverRef.batchDeposit(tokens: <-collection.batchWithdraw(ids: momentIDs))
+        } else {
+
+            let collection = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)! 
+
+            // Deposit the pack of moments to the recipient's collection
+            receiverRef.batchDeposit(tokens: <-collection.batchWithdraw(ids: momentIDs))
+
+        }
     }
 }
