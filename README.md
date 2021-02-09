@@ -42,6 +42,24 @@ documentation, or anything else, please do not hesitate to make an issue or
 a pull request with your desired changes. This is an open source project
 and we welcome all assistance from the community!
 
+## Top Shot Contract Addresses
+
+`TopShot.cdc`: This is the main Top Shot smart contract that defines
+the core functionality of the NFT.
+
+| Network | Contract Address     |
+|---------|----------------------|
+| Testnet | `0x877931736ee77cff` |
+| Mainnet | `0x0b2a3299cc857e29` |
+
+`MarketTopShot.cdc`: This is the top shot marketplace contract that allows users
+to buy and sell their NFTs.
+
+| Network | Contract Address     |
+|---------|----------------------|
+| Testnet | `0x547f177b243b4d80` |
+| Mainnet | `0xc1e4f4f4c4257510` |
+
 ### Non Fungible Token Standard
 
 The NBA Top Shot contracts utilize the [Flow NFT standard](https://github.com/onflow/flow-nft)
