@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"testing"
@@ -37,48 +38,47 @@ func DownloadFile(url string) ([]byte, error) {
 	return ioutil.ReadAll(resp.Body)
 }
 
-// newEmulator returns a emulator object for testing.
-func NewEmulator() *emulator.Blockchain {
-	b, err := emulator.NewBlockchain()
+// newBlockchain returns an emulator blockchain for testing.
+func newBlockchain(opts ...emulator.Option) *emulator.Blockchain {
+	b, err := emulator.NewBlockchain(
+		append(
+			[]emulator.Option{
+				emulator.WithStorageLimitEnabled(false),
+			},
+			opts...,
+		)...,
+	)
 	if err != nil {
 		panic(err)
 	}
 	return b
 }
 
-// createSignAndSubmit creates a new transaction and submits it
-func createSignAndSubmit(
-	t *testing.T,
+func createTxWithTemplateAndAuthorizer(
 	b *emulator.Blockchain,
-	template []byte,
-	signerAddresses []flow.Address,
-	signers []crypto.Signer,
-	shouldRevert bool,
-) {
+	script []byte,
+	authorizerAddress flow.Address,
+) *flow.Transaction {
 
 	tx := flow.NewTransaction().
-		SetScript(template).
+		SetScript(script).
 		SetGasLimit(9999).
 		SetProposalKey(b.ServiceKey().Address, b.ServiceKey().Index, b.ServiceKey().SequenceNumber).
-		SetPayer(b.ServiceKey().Address)
-	for _, addr := range signerAddresses[1:] {
-		tx = tx.AddAuthorizer(addr)
-	}
+		SetPayer(b.ServiceKey().Address).
+		AddAuthorizer(authorizerAddress)
 
-	SignAndSubmit(
-		t, b, tx,
-		signerAddresses,
-		signers,
-		shouldRevert,
-	)
+	return tx
 }
 
-// SignAndSubmit signs a transaction with an array of signers and adds their signatures to the transaction
-// Then submits the transaction to the emulator. If the private keys don't match up with the addresses,
-// the transaction will not succeed.
-// shouldRevert parameter indicates whether the transaction should fail or not
-// This function asserts the correct result and commits the block if it passed
-func SignAndSubmit(
+// signAndSubmit signs a transaction with an array of signers and adds their signatures to the transaction
+// before submitting it to the emulator.
+//
+// If the private keys do not match up with the addresses, the transaction will not succeed.
+//
+// The shouldRevert parameter indicates whether the transaction should fail or not.
+//
+// This function asserts the correct result and commits the block if it passed.
+func signAndSubmit(
 	t *testing.T,
 	b *emulator.Blockchain,
 	tx *flow.Transaction,
@@ -86,20 +86,24 @@ func SignAndSubmit(
 	signers []crypto.Signer,
 	shouldRevert bool,
 ) {
-	// sign transaction playload with each signer other than the first
-	for i, signer := range signers[1:] {
-		err := tx.SignPayload(signerAddresses[i+1], 0, signer)
-		assert.NoError(t, err)
+	// sign transaction with each signer
+	for i := len(signerAddresses) - 1; i >= 0; i-- {
+		signerAddress := signerAddresses[i]
+		signer := signers[i]
+
+		if i == 0 {
+			err := tx.SignEnvelope(signerAddress, 0, signer)
+			assert.NoError(t, err)
+		} else {
+			err := tx.SignPayload(signerAddress, 0, signer)
+			assert.NoError(t, err)
+		}
 	}
-	// sing transaction envelope with the first signer
-	err := tx.SignEnvelope(signerAddresses[0], 0, signers[0])
-	assert.NoError(t, err)
 
 	Submit(t, b, tx, shouldRevert)
 }
 
-// Submit submits a transaction and checks
-// if it fails or not
+// Submit submits a transaction and checks if it fails or not.
 func Submit(
 	t *testing.T,
 	b *emulator.Blockchain,
@@ -125,9 +129,28 @@ func Submit(
 	assert.NoError(t, err)
 }
 
-// ExecuteScriptAndCheck executes a script and checks to make sure
+// executeScriptAndCheck executes a script and checks to make sure that it succeeded.
+func executeScriptAndCheck(t *testing.T, b *emulator.Blockchain, script []byte, arguments [][]byte) cadence.Value {
+	result, err := b.ExecuteScript(script, arguments)
+	require.NoError(t, err)
+	if !assert.True(t, result.Succeeded()) {
+		t.Log(result.Error.Error())
+	}
+
+	return result.Value
+}
+
+func readFile(path string) []byte {
+	contents, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	return contents
+}
+
+// ExecuteScriptAndCheckShouldFail executes a script and checks to make sure
 // that it succeeded
-func ExecuteScriptAndCheck(t *testing.T, b *emulator.Blockchain, script []byte, shouldRevert bool) {
+func ExecuteScriptAndCheckShouldFail(t *testing.T, b *emulator.Blockchain, script []byte, shouldRevert bool) {
 	result, err := b.ExecuteScript(script, nil)
 	if err != nil {
 		t.Log(string(script))
@@ -151,4 +174,37 @@ func CadenceUFix64(value string) cadence.Value {
 	}
 
 	return newValue
+}
+
+func bytesToCadenceArray(b []byte) cadence.Array {
+	values := make([]cadence.Value, len(b))
+
+	for i, v := range b {
+		values[i] = cadence.NewUInt8(v)
+	}
+
+	return cadence.NewArray(values)
+}
+
+// assertEqual asserts that two objects are equal.
+//
+//    assertEqual(t, 123, 123)
+//
+// Pointer variable equality is determined based on the equality of the
+// referenced values (as opposed to the memory addresses). Function equality
+// cannot be determined and will always fail.
+//
+func assertEqual(t *testing.T, expected, actual interface{}) bool {
+
+	if assert.ObjectsAreEqual(expected, actual) {
+		return true
+	}
+
+	message := fmt.Sprintf(
+		"Not equal: \nexpected: %s\nactual  : %s",
+		expected,
+		actual,
+	)
+
+	return assert.Fail(t, message)
 }
