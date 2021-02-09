@@ -236,7 +236,7 @@ func TestMintNFTs(t *testing.T) {
 		result := executeScriptAndCheck(t, b, templates.GenerateGetSetNameScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1))})
 		assert.Equal(t, cadence.NewString("Genesis"), result)
 
-		result = executeScriptAndCheck(t, b, templates.GenerateReturnSetIDsByNameScript(env), [][]byte{jsoncdc.MustEncode(cadence.String("Genesis"))})
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSetIDsByNameScript(env), [][]byte{jsoncdc.MustEncode(cadence.String("Genesis"))})
 		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt32(1)})
 		assert.Equal(t, idsArray, result)
 
