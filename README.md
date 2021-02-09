@@ -26,7 +26,7 @@ for developing smart contracts for the Flow Blockchain.
 Read more about it [here](https://www.docs.onflow.org)
 
 We recommend that anyone who is reading this should have already
-completed the [Cadence Tutorials](https://docs.onflow.org/docs/getting-started-1) 
+completed the [Cadence Tutorials](https://docs.onflow.org/cadence) 
 so they can build a basic understanding of the programming language.
 
 Resource-oriented programming, and by extension Cadence, 
@@ -60,6 +60,28 @@ to buy and sell their NFTs.
 | Testnet | `0x547f177b243b4d80` |
 | Mainnet | `0xc1e4f4f4c4257510` |
 
+### Non Fungible Token Standard
+
+The NBA Top Shot contracts utilize the [Flow NFT standard](https://github.com/onflow/flow-nft)
+which is equivalent to ERC-721 or ERC-1155 on Ethereum. If you want to build an NFT contract,
+please familiarize yourself with the Flow NFT standard before starting and make sure you utilize it 
+in your project in order to be interoperable with other tokens and contracts that implement the standard.
+
+### Top Shot Marketplace contract
+
+The top shot marketplace contract was designed in the very early days of Cadence, and therefore
+uses some language features that are NOT RECCOMENDED to use by newer projects.
+For example, the marketplace contract stores the moments that are for sale in the sale collection.
+The correct way to manage this in cadence is to give a collection capability to the market collection
+so that the nfts do not have to leave the main collection when going up for sale. The sale collection
+would use this capability to withdraw moments from the main collection when they are purchased.
+
+This way, any other smart contracts that need to check a user's account for what they own only need to check
+the main collection and not all of the sale collections that could possibly be in their account.
+
+See the [kitty items marketplace contract](https://github.com/onflow/kitty-items/blob/master/kitty-items-cadence/cadence/kittyItemsMarket/contracts/KittyItemsMarket.cdc) for an example of the current best practices when
+it comes to marketplace contracts.
+
 ## Directory Structure
 
 The directories here are organized into contracts, scripts, and transactions.
@@ -74,7 +96,7 @@ to perform actions in the smart contract like creating plays and sets,
 minting Moments, and transfering Moments.
 
  - `contracts/` : Where the Top Shot related smart contracts live.
- - `transactions/` : This directory contains all the state-changing transactions
+ - `transactions/` : This directory contains all the transactions and scripts
  that are associated with the Top Shot smart contracts.
  - `transactions/scripts/`  : This contains all the read-only Cadence scripts 
  that are used to read information from the smart contract
@@ -230,6 +252,19 @@ A common order of creating new Moments would be
 You can also see the scripts in `transactions/scripts` to see how information
 can be read from the real Top Shot smart contract deployed on the
 Flow Beta Mainnet. 
+
+### Accessing the NBA Top Shot smart contract on Flow Beta Mainnet
+
+The Flow Beta mainnet is still a work in progress and still has
+a limited number of accounts that can run nodes and submit transactions.
+Anyone can read data from the contract by running any of the scripts in the 
+`transactions` directory using one of the public access nodes.
+
+For example, this is how you would query the total supply via the Flow CLI.
+
+`flow scripts execute transactions/scripts/get_totalSupply.cdc --host access.mainnet.nodes.onflow.org:9000`
+
+Make sure that the import address in the script is correct for mainnet.
 
 ## NBA Top Shot Events
 
