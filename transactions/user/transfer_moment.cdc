@@ -1,3 +1,4 @@
+import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 
 // This transaction is how a topshot user would transfer a moment
@@ -11,7 +12,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // recipient: The Flow address of the account to receive the moment.
 // withdrawID: The id of the moment to be transferred
 
-transaction(recipient: Address, withdrawID: UFix64) {
+transaction(recipient: Address, withdrawID: UInt64) {
 
     // local variable for storing the transferred token
     let transferToken: @NonFungibleToken.NFT

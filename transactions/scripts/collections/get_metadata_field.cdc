@@ -5,7 +5,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // for that play's metadata in the TopShot contract. It returns
 // the value for the specified metadata field
 
-pub fun main(account: Address, fieldToSearch: String): String {
+pub fun main(account: Address, momentID: UInt64, fieldToSearch: String): String {
 
     // borrow a public reference to the owner's moment collection 
     let collectionRef = getAccount(account).getCapability(/public/MomentCollection)
