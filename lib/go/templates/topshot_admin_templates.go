@@ -16,7 +16,7 @@ const (
 	newSeriesFilename       = "admin/start_new_series.cdc"
 	mintMomentFilename      = "admin/mint_moment.cdc"
 	batchMintMomentFilename = "admin/batch_mint_moment.cdc"
-	fulfillPackFilname      = "admin/fulfill_pack.cdc"
+	fulfillPackFilename      = "admin/fulfill_pack.cdc"
 
 	transferAdminFilename = "admin/transfer_admin.cdc"
 )
@@ -90,7 +90,7 @@ func GenerateLockSetScript(env Environment) []byte {
 
 // GenerateFulfillPackScript creates a script that fulfulls a pack
 func GenerateFulfillPackScript(env Environment) []byte {
-	code := assets.MustAssetString(transactionsPath + fulfillPackFilname)
+	code := assets.MustAssetString(transactionsPath + fulfillPackFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
