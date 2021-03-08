@@ -3,10 +3,18 @@ import TopshotAdminReceiver from 0xADMINRECEIVERADDRESS
 
 transaction {
 
-    prepare(acct: AuthAccount) {
-        let admin <- acct.load<@TopShot.Admin>(from: /storage/TopShotAdmin)
-            ?? panic("No topshot admin in storage")
+    // Local variable for the topshot Admin object
+    let adminRef: @TopShot.Admin
 
-        TopshotAdminReceiver.storeAdmin(newAdmin: <-admin)
+    prepare(acct: AuthAccount) {
+
+        self.adminRef <- acct.load<@TopShot.Admin>(from: /storage/TopShotAdmin)
+            ?? panic("No topshot admin in storage")
+    }
+
+    execute {
+
+        TopshotAdminReceiver.storeAdmin(newAdmin: <-self.adminRef)
+        
     }
 }
