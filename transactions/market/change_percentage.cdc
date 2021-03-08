@@ -1,11 +1,20 @@
 import Market from 0xMARKETADDRESS
 
 transaction(newPercentage: UFix64) {
+
+    // Local variable for the account's topshot sale collection
+    let topshotSaleCollectionRef: &Market.SaleCollection
+
     prepare(acct: AuthAccount) {
 
-        let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+        // borrow a reference to the owner's sale collection
+        self.topshotSaleCollectionRef = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
             ?? panic("Could not borrow from sale in storage")
+    }
 
-        topshotSaleCollection.changePercentage(newPercentage)
+    execute {
+
+        // Change the percentage of the moment
+        self.topshotSaleCollectionRef.changePercentage(newPercentage)
     }
 }
