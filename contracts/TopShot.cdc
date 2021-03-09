@@ -673,7 +673,7 @@ pub contract TopShot: NonFungibleToken {
 
         // If a transaction destroys the Collection object,
         // All the NFTs contained within are also destroyed!
-        // Much like when Damien Lillard destroys the hopes and
+        // Much like when Damian Lillard destroys the hopes and
         // dreams of the entire city of Houston.
         //
         destroy() {
