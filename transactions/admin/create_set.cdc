@@ -8,12 +8,20 @@ import TopShot from 0xTOPSHOTADDRESS
 // setName: the name of a new Set to be created
 
 transaction(setName: String) {
-    prepare(acct: AuthAccount) {
-        // borrow a reference to the Admin resource in storage
-        let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
-            ?? panic("Could not borrow a reference to the Admin resource")
+    
+    // Local variable for the topshot Admin object
+    let adminRef: &TopShot.Admin
 
+    prepare(acct: AuthAccount) {
+
+        // borrow a reference to the Admin resource in storage
+        self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+            ?? panic("Could not borrow a reference to the Admin resource")
+    }
+
+    execute {
+        
         // Create a set with the specified name
-        admin.createSet(name: setName)
+        self.adminRef.createSet(name: setName)
     }
 }

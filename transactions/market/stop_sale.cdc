@@ -11,20 +11,26 @@ import Market from 0xMARKETADDRESS
 
 transaction(tokenID: UInt64) {
 
+    let collectionRef: &TopShot.Collection
+    let saleCollectionRef: &Market.SaleCollection
+
     prepare(acct: AuthAccount) {
 
         // Borrow a reference to the NFT collection in the signers account
-        let nftCollection = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
+        self.collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
             ?? panic("Could not borrow from MomentCollection in storage")
 
         // borrow a reference to the owner's sale collection
-        let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+        self.saleCollectionRef = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
             ?? panic("Could not borrow from sale in storage")
+    }
 
+    execute{
+    
         // withdraw the moment from the sale, thereby de-listing it
-        let token <- topshotSaleCollection.withdraw(tokenID: tokenID)
+        let token <- self.saleCollectionRef.withdraw(tokenID: tokenID)
 
         // deposit the moment into the owner's collection
-        nftCollection.deposit(token: <-token)
+        self.collectionRef.deposit(token: <-token)
     }
-}
+}   

@@ -6,11 +6,20 @@ import TopShot from 0xTOPSHOTADDRESS
 // transaction string, but want to use transaction arguments soon
 
 transaction(metadata: {String: String}) {
+
+    // Local variable for the topshot Admin object
+    let adminRef: &TopShot.Admin
+
     prepare(acct: AuthAccount) {
 
         // borrow a reference to the admin resource
-        let admin = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+        self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("No admin resource in storage")
-        admin.createPlay(metadata: metadata)
+    }
+
+    execute {
+
+        // Create a play with the specified metadata
+        self.adminRef.createPlay(metadata: metadata)
     }
 }
