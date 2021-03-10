@@ -4,11 +4,13 @@ import TopShot from 0xTOPSHOTADDRESS
 // in a collection by looking up its playID and then searching
 // for that play's metadata in the TopShot contract
 
-// Paramters
+// Parameters:
+//
 // account: The Flow Address of the account whose moment data needs to be read
 // id: The unique ID for the moment whose data needs to be read
-//
-// Returns: {String: String} A dictionary of all the play metadata associated
+
+// Returns: {String: String} 
+// A dictionary of all the play metadata associated
 // with the specified moment
 
 pub fun main(account: Address, id: UInt64): {String: String} {

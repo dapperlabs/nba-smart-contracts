@@ -2,6 +2,13 @@ import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 import TopShotShardedCollection from 0xSHARDEDADDRESS
 
+// This transaction deposits an NFT to a recipient
+
+// Parameters
+//
+// recipient: the Flow address who will receive the NFT
+// momentID: moment ID of NFT that recipient will receive
+
 transaction(recipient: Address, momentID: UInt64) {
 
     let transferToken: @NonFungibleToken.NFT
@@ -12,6 +19,7 @@ transaction(recipient: Address, momentID: UInt64) {
     }
 
     execute {
+        
         // get the recipient's public account object
         let recipient = getAccount(recipient)
 

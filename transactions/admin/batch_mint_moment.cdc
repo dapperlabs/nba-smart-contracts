@@ -3,7 +3,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // This transaction mints multiple moments 
 // from a single set/play combination (otherwise known as edition)
 
-// Parameters
+// Parameters:
 //
 // setID: the ID of the set to be minted from
 // playID: the ID of the Play from which the Moments are minted 

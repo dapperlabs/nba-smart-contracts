@@ -2,8 +2,12 @@ import TopShot from 0xTOPSHOTADDRESS
 
 // This transaction creates a new play struct 
 // and stores it in the Top Shot smart contract
-// We currently stringify the metadata and instert it into the 
+// We currently stringify the metadata and insert it into the 
 // transaction string, but want to use transaction arguments soon
+
+// Parameters:
+//
+// metadata: A dictionary of all the play metadata associated
 
 transaction(metadata: {String: String}) {
 

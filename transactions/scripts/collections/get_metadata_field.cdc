@@ -5,6 +5,15 @@ import TopShot from 0xTOPSHOTADDRESS
 // for that play's metadata in the TopShot contract. It returns
 // the value for the specified metadata field
 
+// Parameters:
+//
+// account: The Flow Address of the account whose moment data needs to be read
+// momentID: The unique ID for the moment whose data needs to be read
+// fieldToSearch: The specified metadata field whose data needs to be read
+
+// Returns: String
+// Value of specified metadata field
+
 pub fun main(account: Address, momentID: UInt64, fieldToSearch: String): String {
 
     // borrow a public reference to the owner's moment collection 

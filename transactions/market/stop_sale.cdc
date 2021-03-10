@@ -25,7 +25,7 @@ transaction(tokenID: UInt64) {
             ?? panic("Could not borrow from sale in storage")
     }
 
-    execute{
+    execute {
     
         // withdraw the moment from the sale, thereby de-listing it
         let token <- self.saleCollectionRef.withdraw(tokenID: tokenID)

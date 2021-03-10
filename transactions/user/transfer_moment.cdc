@@ -1,6 +1,8 @@
 import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 
+// This transaction transfers a moment to a recipient
+
 // This transaction is how a topshot user would transfer a moment
 // from their account to another account
 // The recipient must have a TopShot Collection object stored
@@ -28,6 +30,7 @@ transaction(recipient: Address, withdrawID: UInt64) {
     }
 
     execute {
+        
         // get the recipient's public account object
         let recipient = getAccount(recipient)
 

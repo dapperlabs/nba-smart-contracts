@@ -1,6 +1,10 @@
 import TopShot from 0xTOPSHOTADDRESS
 import TopshotAdminReceiver from 0xADMINRECEIVERADDRESS
 
+// this transaction takes a TopShot Admin resource and 
+// saves it to the account storage of the account
+// where the contract is deployed
+
 transaction {
 
     // Local variable for the topshot Admin object
