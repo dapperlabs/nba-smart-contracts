@@ -1,5 +1,11 @@
 import Market from 0xMARKETADDRESS
 
+// This transaction changes the percentage cut of a moment's sale given to beneficiary
+
+// Parameters:
+//
+// newPercentage: new percentage of tokens the beneficiary will receive from the sale
+
 transaction(newPercentage: UFix64) {
 
     // Local variable for the account's topshot sale collection

@@ -1,6 +1,16 @@
 import Market from 0xMARKETADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 
+// This transaction puts a moment owned by the user up for sale
+
+// Parameters:
+//
+// tokenReceiverPath: token capability for the account who will receive tokens for purchase
+// beneficiaryAccount: the Flow address of the account where a cut of the purchase will be sent
+// cutPercentage: how much in percentage the beneficiary will receive from the sale
+// momentID: ID of moment to be put on sale
+// price: price of moment
+
 transaction(tokenReceiverPath: PublicPath, beneficiaryAccount: Address, cutPercentage: UFix64, momentID: UInt64, price: UFix64) {
 
     // Local variables for the topshot collection and market sale collection objects
@@ -11,8 +21,11 @@ transaction(tokenReceiverPath: PublicPath, beneficiaryAccount: Address, cutPerce
 
         // check to see if a sale collection already exists
         if acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection) == nil {
+
             // get the fungible token capabilities for the owner and beneficiary
+
             let ownerCapability = acct.getCapability(tokenReceiverPath)
+
             let beneficiaryCapability = getAccount(beneficiaryAccount).getCapability(tokenReceiverPath)
 
             // create a new sale collection
@@ -35,11 +48,11 @@ transaction(tokenReceiverPath: PublicPath, beneficiaryAccount: Address, cutPerce
     }
 
     execute {
+
         // withdraw the moment to put up for sale
         let token <- self.collectionRef.withdraw(withdrawID: momentID) as! @TopShot.NFT
         
         // the the moment for sale
         self.marketSaleCollectionRef.listForSale(token: <-token, price: UFix64(price))
-        
     }
 }

@@ -3,7 +3,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // This transaction is for retiring a play from a set, which
 // makes it so that moments can no longer be minted from that edition
 
-// Parameters
+// Parameters:
 // 
 // setID: the ID of the set in which a play is to be retired
 // playID: the ID of the play to be retired

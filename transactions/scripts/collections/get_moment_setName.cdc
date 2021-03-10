@@ -1,8 +1,16 @@
 import TopShot from 0xTOPSHOTADDRESS
 
-// This transaction gets the set name associated with a moment
-// in a collection by geting a reference to the moment
+// This script gets the set name associated with a moment
+// in a collection by getting a reference to the moment
 // and then looking up its name
+
+// Parameters:
+//
+// account: The Flow Address of the account whose moment data needs to be read
+// id: The unique ID for the moment whose data needs to be read
+
+// Returns: String
+// The set name associated with a moment with a specified ID
 
 pub fun main(account: Address, id: UInt64): String {
 

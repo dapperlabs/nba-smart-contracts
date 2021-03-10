@@ -3,7 +3,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // This transaction is for the admin to create a new set resource
 // and store it in the top shot smart contract
 
-// Parameters
+// Parameters:
 //
 // setName: the name of a new Set to be created
 

@@ -1,5 +1,11 @@
 import Market from 0xMARKETADDRESS
 
+// This transaction changes the path which receives tokens for purchases of an account
+
+// Parameters:
+//
+// receiverPath: The new fungible token capability for the account who receives tokens for purchases
+
 transaction(receiverPath: PublicPath) {
 
     // Local variables for the sale collection object and receiver

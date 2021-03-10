@@ -2,7 +2,7 @@ import TopShot from 0xTOPSHOTADDRESS
 
 // This transaction is how a Top Shot admin adds a created play to a set
 
-// Parameters
+// Parameters:
 //
 // setID: the ID of the set to which a created play is added
 // playID: the ID of the play being added
