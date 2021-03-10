@@ -13,17 +13,25 @@ import Market from 0xMARKETADDRESS
 // purchaseAmount: the amount for which the user is paying for the moment; must not be less than the moment's price
 
 transaction(sellerAddress: Address, tokenID: UInt64, purchaseAmount: UFix64) {
+
+    // Local variables for the topshot collection object and token provider
+    let collectionRef: &TopShot.Collection
+    let providerRef: &DapperUtilityCoin.Vault{FungibleToken.Provider}
+    
     prepare(acct: AuthAccount) {
 
         // borrow a reference to the signer's collection
-        let collection = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
+        self.collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
             ?? panic("Could not borrow reference to the Moment Collection")
 
         // borrow a reference to the signer's fungible token Vault
-        let provider = acct.borrow<&DapperUtilityCoin.Vault{FungibleToken.Provider}>(from: /storage/dapperUtilityCoinVault)!
-        
+        self.providerRef = acct.borrow<&DapperUtilityCoin.Vault{FungibleToken.Provider}>(from: /storage/dapperUtilityCoinVault)!   
+    }
+
+    execute {
+
         // withdraw tokens from the signer's vault
-        let tokens <- provider.withdraw(amount: purchaseAmount) as! @DapperUtilityCoin.Vault
+        let tokens <- self.providerRef.withdraw(amount: purchaseAmount) as! @DapperUtilityCoin.Vault
 
         // get the seller's public account object
         let seller = getAccount(sellerAddress)
@@ -37,6 +45,6 @@ transaction(sellerAddress: Address, tokenID: UInt64, purchaseAmount: UFix64) {
         let purchasedToken <- topshotSaleCollection.purchase(tokenID: tokenID, buyTokens: <-tokens)
 
         // deposit the purchased moment into the signer's collection
-        collection.deposit(token: <-purchasedToken)
+        self.collectionRef.deposit(token: <-purchasedToken)
     }
 }

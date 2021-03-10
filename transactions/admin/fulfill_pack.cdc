@@ -5,7 +5,7 @@ import TopShotShardedCollection from 0xSHARDEDADDRESS
 // This transaction is what Top Shot uses to send the moments in a "pack" to
 // a user's collection
 
-// Parameters
+// Parameters:
 //
 // recipientAddr: the Flow address of the account receiving a pack of moments
 // momentsIDs: an array of moment IDs to be withdrawn from the owner's moment collection

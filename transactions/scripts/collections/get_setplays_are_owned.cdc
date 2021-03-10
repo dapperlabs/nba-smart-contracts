@@ -1,5 +1,18 @@
 import TopShot from 0xTOPSHOTADDRESS
 
+// This script checks whether for each SetID/PlayID combo, 
+// they own a moment matching that SetPlay.
+
+// Parameters:
+//
+// account: The Flow Address of the account whose moment data needs to be read
+// setIDs: A list of unique IDs for the sets whose data needs to be read
+// playIDs: A list of unique IDs for the plays whose data needs to be read
+
+// Returns: Bool
+// Whether for each SetID/PlayID combo, 
+// account owns a moment matching that SetPlay.
+
 pub fun main(account: Address, setIDs: [UInt32], playIDs: [UInt32]): Bool {
 
     assert(
@@ -16,6 +29,7 @@ pub fun main(account: Address, setIDs: [UInt32], playIDs: [UInt32]): Bool {
     // For each SetID/PlayID combo, loop over each moment in the account
     // to see if they own a moment matching that SetPlay.
     var i = 0
+
     while i < setIDs.length {
         var hasMatchingMoment = false
         for momentID in momentIDs {

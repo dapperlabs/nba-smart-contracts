@@ -9,13 +9,20 @@ import Market from 0xMARKETADDRESS
 // newPrice: the new price of the moment
 
 transaction(tokenID: UInt64, newPrice: UFix64) {
+
+    // Local variable for the account's topshot sale collection
+    let topshotSaleCollectionRef: &Market.SaleCollection
+
     prepare(acct: AuthAccount) {
 
         // borrow a reference to the owner's sale collection
-        let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+        self.topshotSaleCollectionRef = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
             ?? panic("Could not borrow from sale in storage")
+    }
+
+    execute {
 
         // Change the price of the moment
-        topshotSaleCollection.changePrice(tokenID: tokenID, newPrice: newPrice)
+        self.topshotSaleCollectionRef.changePrice(tokenID: tokenID, newPrice: newPrice)
     }
 }
