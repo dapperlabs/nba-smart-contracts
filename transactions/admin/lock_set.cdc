@@ -24,4 +24,10 @@ transaction(setID: UInt32) {
         // lock the set permanently
         setRef.lock()
     }
+
+    post {
+        
+        TopShot.isSetLocked(setID: setID)!:
+            "Set did not lock"
+    }
 }

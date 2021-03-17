@@ -23,4 +23,11 @@ transaction(newPercentage: UFix64) {
         // Change the percentage of the moment
         self.topshotSaleCollectionRef.changePercentage(newPercentage)
     }
+
+    post {
+
+        self.topshotSaleCollectionRef.cutPercentage! == newPercentage: 
+            "cutPercentage not changed"
+    }
+    
 }
