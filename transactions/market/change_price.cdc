@@ -25,4 +25,6 @@ transaction(tokenID: UInt64, newPrice: UFix64) {
         // Change the price of the moment
         self.topshotSaleCollectionRef.changePrice(tokenID: tokenID, newPrice: newPrice)
     }
+
+    
 }
