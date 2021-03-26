@@ -70,7 +70,7 @@ in your project in order to be interoperable with other tokens and contracts tha
 ### Top Shot Marketplace contract
 
 The top shot marketplace contract was designed in the very early days of Cadence, and therefore
-uses some language features that are NOT RECCOMENDED to use by newer projects.
+uses some language features that are NOT RECOMMENDED to use by newer projects.
 For example, the marketplace contract stores the moments that are for sale in the sale collection.
 The correct way to manage this in cadence is to give a collection capability to the market collection
 so that the nfts do not have to leave the main collection when going up for sale. The sale collection
