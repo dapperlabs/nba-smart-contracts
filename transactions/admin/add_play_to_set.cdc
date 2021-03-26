@@ -27,4 +27,10 @@ transaction(setID: UInt32, playID: UInt32) {
         // Add the specified play ID
         setRef.addPlay(playID: playID)
     }
+
+    post {
+
+        TopShot.getPlaysInSet(setID: setID)!.contains(playID): 
+            "set does not contain playID"
+    }
 }
