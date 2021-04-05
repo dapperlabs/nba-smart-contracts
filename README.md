@@ -79,7 +79,7 @@ would use this capability to withdraw moments from the main collection when they
 This way, any other smart contracts that need to check a user's account for what they own only need to check
 the main collection and not all of the sale collections that could possibly be in their account.
 
-See the [kitty items marketplace contract](https://github.com/onflow/kitty-items/blob/master/kitty-items-cadence/contracts/KittyItemsMarket.cdc) for an example of the current best practices when
+See the [kitty items marketplace contract](https://github.com/onflow/kitty-items/blob/master/cadence/contracts/KittyItemsMarket.cdc) for an example of the current best practices when
 it comes to marketplace contracts.
 
 ## Directory Structure
