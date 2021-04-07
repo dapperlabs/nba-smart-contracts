@@ -70,7 +70,7 @@ in your project in order to be interoperable with other tokens and contracts tha
 ### Top Shot Marketplace contract
 
 The top shot marketplace contract was designed in the very early days of Cadence, and therefore
-uses some language features that are NOT RECCOMENDED to use by newer projects.
+uses some language features that are NOT RECOMMENDED to use by newer projects.
 For example, the marketplace contract stores the moments that are for sale in the sale collection.
 The correct way to manage this in cadence is to give a collection capability to the market collection
 so that the nfts do not have to leave the main collection when going up for sale. The sale collection
@@ -79,7 +79,7 @@ would use this capability to withdraw moments from the main collection when they
 This way, any other smart contracts that need to check a user's account for what they own only need to check
 the main collection and not all of the sale collections that could possibly be in their account.
 
-See the [kitty items marketplace contract](https://github.com/onflow/kitty-items/blob/master/kitty-items-cadence/contracts/KittyItemsMarket.cdc) for an example of the current best practices when
+See the [kitty items marketplace contract](https://github.com/onflow/kitty-items/blob/master/cadence/contracts/KittyItemsMarket.cdc) for an example of the current best practices when
 it comes to marketplace contracts.
 
 ## Directory Structure
@@ -375,6 +375,9 @@ that are for sale do not need to be removed from the main collection to be
 put up for sale. In this version, when a moment is purchased, the sale collection
 uses the capability to withdraw the moment from the main collection and 
 returns it to the buyer.
+
+The second version of the market contract is currently NOT DEPLOYED to mainnet,
+but it will be deployed and utilized in the near future.
 
 ## License 
 

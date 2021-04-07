@@ -13,10 +13,12 @@ transaction(metadata: {String: String}) {
 
     // Local variable for the topshot Admin object
     let adminRef: &TopShot.Admin
+    let currPlayID: UInt32
 
     prepare(acct: AuthAccount) {
 
         // borrow a reference to the admin resource
+        self.currPlayID = TopShot.nextPlayID;
         self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("No admin resource in storage")
     }
@@ -25,5 +27,11 @@ transaction(metadata: {String: String}) {
 
         // Create a play with the specified metadata
         self.adminRef.createPlay(metadata: metadata)
+    }
+
+    post {
+        
+        TopShot.getPlayMetaData(playID: self.currPlayID) != nil:
+            "playID doesnt exist"
     }
 }

@@ -1,5 +1,5 @@
 import FungibleToken from 0xFUNGIBLETOKENADDRESS
-import FlowToken from 0xFLOWTOKENADDRESS
+import DapperUtilityCoin from 0xDUCADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 import Market from 0xMARKETADDRESS
 import TopShotMarketV2 from 0xMARKETV2ADDRESS
@@ -9,16 +9,16 @@ import TopShotMarketV2 from 0xMARKETV2ADDRESS
 
 transaction(seller: Address, recipient: Address, momentID: UInt64, purchaseAmount: UFix64) {
 
-    let purchaseTokens: @FlowToken.Vault
+    let purchaseTokens: @DapperUtilityCoin.Vault
 
     prepare(acct: AuthAccount) {
 
         // Borrow a provider reference to the buyers vault
-        let provider = acct.borrow<&FlowToken.Vault{FungibleToken.Provider}>(from: /storage/FlowTokenVault)
+        let provider = acct.borrow<&DapperUtilityCoin.Vault{FungibleToken.Provider}>(from: /storage/dapperUtilityCoinVault)
             ?? panic("Could not borrow a reference to the buyers FlowToken Vault")
         
         // withdraw the purchase tokens from the vault
-        self.purchaseTokens <- provider.withdraw(amount: purchaseAmount) as! @FlowToken.Vault
+        self.purchaseTokens <- provider.withdraw(amount: purchaseAmount) as! @DapperUtilityCoin.Vault
         
     }
 
