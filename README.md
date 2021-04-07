@@ -105,9 +105,10 @@ minting Moments, and transfering Moments.
  to be able to read copies of the Top Shot smart contracts, transaction templates,
  and scripts. Also contains automated tests written in those languages. Currently,
  Go is the only language that is supported, but we are hoping to add javascript
- and other languages soon.
+ and other languages soon. See the README in `lib/go/` for more information
+ about how to use the Go packages.
 
-## Contract Overview
+## Top Shot Contract Overview
 
 Each Top Shot Moment NFT represents a play from a game in the NBA season.
 Plays are grouped into sets which usually have some overarching theme,
@@ -195,7 +196,7 @@ in their account storage via their `Collection` object. The collection object
 contains a dictionary that stores the Moments and gives utility functions
 to move them in and out and to read data about the collection and its Moments.
 
-## How to Deploy and Test the Top Shot Contract
+## How to Deploy and Test the Top Shot Contract in VSCode
 
 The first step for using any smart contract is deploying it to the blockchain,
 or emulator in our case. Do these commands in vscode. 
@@ -204,7 +205,9 @@ to learn how to use it.
 
  1. Start the emulator with the `Run emulator` vscode command.
  2. Open the `NonFungibleToken.cdc` file from the [flow-nft repo](https://github.com/onflow/flow-nft/blob/master/contracts/NonFungibleToken.cdc) and the `TopShot.cdc` file.  Feel free to read as much as you want to familiarize yourself with the contracts.
- 3. In `NonFungibleToken.cdc`, click the `deploy contract to account` to deploy it.
+ 3. In `NonFungibleToken.cdc`, click the `deploy contract to account` 
+ above the `Dummy` contract at the bottom of the file to deploy it.
+ This also deploys the `NonFungbleToken` interface.
  4. Switch to a different account.
  5. In `TopShot.cdc`, make sure it imports `NonFungibleToken` from the account you deployed it to.
  6. Click the `deploy contract to account` button that appears over the 
@@ -221,7 +224,23 @@ that contract from the address it is defined in and then use the imported
 contract to access those type definitions and fields.
 
 After the contracts have been deployed, you can run the sample transactions
-to interact with the contracts. A common order of creating new Moments would be
+to interact with the contracts. The sample transactions are meant to be used
+in an automated context, so they use transaction arguments and string template
+fields. These make it easier for a program to use and interact with them.
+If you are running these transactions manually in the Flow Playground or
+vscode extension, you will need to remove the transaction arguments and
+hard code the values that they are used for. 
+
+You also need to replace the `ADDRESS` placeholders with the actual Flow 
+addresses that you want to import from.
+
+## How to run the automated tests for the contracts
+
+See the `lib/go` README for instructions about how to run the automated tests.
+
+## Instructions for creating plays and minting moments
+
+A common order of creating new Moments would be
 
 1. Creating new plays with `transactions/admin/create_play.cdc`.
 2. Creating new sets with `transactions/admin/create_set.cdc`.
@@ -309,9 +328,8 @@ in their account to sell their Moments.
 When a user wants to sell their Moment, they create a sale collection
 in their account and specify a beneficiary of a cut of the sale if they wish.
 
-A Top Shot Sale Collection functions similarly to a regular Moment collection,
-but instead of a regular deposit function, the user has function to set a 
-price for their Moment when they deposit it.
+A Top Shot Sale Collection contains a capability to the owner's moment collection
+that allows the sale to withdraw the moment when it is purchased.
 
 When another user wants to buy the Moment that is for sale, they simply send 
 their fungible tokens to the `purchase` function 
@@ -340,12 +358,33 @@ and if they sent the correct amount, they get the Moment back.
    Emitted when a seller changes the percentage cut that is taken
    from their sales and sent to a beneficiary.
 
+### Different Versions of the Market Contract
+
+There are two versions of the Top Shot Market Contract.
+`TopShotMarket.cdc` is the original version of the contract that was used
+for the first set of sales in the p2p marketplace, but we made improvements
+to it which are now in `TopShotMarketV2.cdc`.
+
+Both versions define a `SaleCollection` resource that users store in their account.
+The resource manages the logic of the sale like listings, de-listing, prices, and 
+purchases. The first version actually stores the moments that are for sale, but 
+we realized that this causes issues if other contracts need to access a user's
+main collection to see what they own. We created the second version to simply
+store a capability to the owner's moment collection so that the moments 
+that are for sale do not need to be removed from the main collection to be
+put up for sale. In this version, when a moment is purchased, the sale collection
+uses the capability to withdraw the moment from the main collection and 
+returns it to the buyer.
+
+The second version of the market contract is currently NOT DEPLOYED to mainnet,
+but it will be deployed and utilized in the near future.
 
 ## License 
 
 The works in these folders 
 /dapperlabs/nba-smart-contracts/blob/master/contracts/TopShot.cdc 
 /dapperlabs/nba-smart-contracts/blob/master/contracts/MarketTopShot.cdc 
+/dapperlabs/nba-smart-contracts/blob/master/contracts/MarketTopShotV2.cdc 
 /dapperlabs/nba-smart-contracts/blob/master/contracts/TopShotAdminReceiver.cdc 
 /dapperlabs/nba-smart-contracts/blob/master/contracts/TopShotShardedCollection.cdc 
 

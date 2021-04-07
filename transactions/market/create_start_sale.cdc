@@ -1,3 +1,4 @@
+import FungibleToken from 0xFUNGIBLETOKENADDRESS
 import Market from 0xMARKETADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 

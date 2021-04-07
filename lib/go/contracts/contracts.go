@@ -10,6 +10,7 @@ import (
 
 const (
 	topshotFile                    = "TopShot.cdc"
+	marketV2File                   = "TopShotMarketV2.cdc"
 	marketFile                     = "MarketTopShot.cdc"
 	shardedCollectionFile          = "TopShotShardedCollection.cdc"
 	adminReceiverFile              = "TopshotAdminReceiver.cdc"
@@ -57,6 +58,18 @@ func GenerateTopshotAdminReceiverContract(topshotAddr, shardedAddr string) []byt
 func GenerateTopShotMarketContract(ftAddr, nftAddr, topshotAddr string) []byte {
 
 	marketCode := assets.MustAssetString(marketFile)
+	codeWithNFTAddr := strings.ReplaceAll(marketCode, defaultNonFungibleTokenAddress, nftAddr)
+	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
+	codeWithFTAddr := strings.ReplaceAll(codeWithTopshotAddr, defaultFungibleTokenAddress, ftAddr)
+
+	return []byte(codeWithFTAddr)
+}
+
+// GenerateTopShotMarketV2Contract returns a copy
+// of the first version TopShotMarketContract with the import addresses updated
+func GenerateTopShotMarketV2Contract(ftAddr, nftAddr, topshotAddr string) []byte {
+
+	marketCode := assets.MustAssetString(marketV2File)
 	codeWithNFTAddr := strings.ReplaceAll(marketCode, defaultNonFungibleTokenAddress, nftAddr)
 	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 	codeWithFTAddr := strings.ReplaceAll(codeWithTopshotAddr, defaultFungibleTokenAddress, ftAddr)

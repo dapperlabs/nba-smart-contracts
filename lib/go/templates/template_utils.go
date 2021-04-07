@@ -8,28 +8,30 @@ import (
 //go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../../../transactions/... -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../../../transactions/...
 
 const (
-	placeholderFungibleTokenAddress = "0xFUNGIBLETOKENADDRESS"
-	placeholderFlowTokenAddress     = "0xFLOWTOKENADDRESS"
-	placeholderNFTAddress           = "0xNFTADDRESS"
-	placeholderTopShotAddress       = "0xTOPSHOTADDRESS"
-	placeholderTopShotMarketAddress = "0xMARKETADDRESS"
-	placeholderShardedAddress       = "0xSHARDEDADDRESS"
-	placeholderAdminReceiverAddress = "0xADMINRECEIVERADDRESS"
-	placeholderDUCAddress           = "0xDUCADDRESS"
-	placeholderForwardingAddress    = "0xFORWARDINGADDRESS"
+	placeholderFungibleTokenAddress   = "0xFUNGIBLETOKENADDRESS"
+	placeholderFlowTokenAddress       = "0xFLOWTOKENADDRESS"
+	placeholderNFTAddress             = "0xNFTADDRESS"
+	placeholderTopShotAddress         = "0xTOPSHOTADDRESS"
+	placeholderTopShotMarketAddress   = "0xMARKETADDRESS"
+	placeholderTopShotMarketV2Address = "0xMARKETV2ADDRESS"
+	placeholderShardedAddress         = "0xSHARDEDADDRESS"
+	placeholderAdminReceiverAddress   = "0xADMINRECEIVERADDRESS"
+	placeholderDUCAddress             = "0xDUCADDRESS"
+	placeholderForwardingAddress      = "0xFORWARDINGADDRESS"
 )
 
 type Environment struct {
-	Network              string
-	FungibleTokenAddress string
-	FlowTokenAddress     string
-	NFTAddress           string
-	TopShotAddress       string
-	TopShotMarketAddress string
-	ShardedAddress       string
-	AdminReceiverAddress string
-	DUCAddress           string
-	ForwardingAddress    string
+	Network                string
+	FungibleTokenAddress   string
+	FlowTokenAddress       string
+	NFTAddress             string
+	TopShotAddress         string
+	TopShotMarketAddress   string
+	TopShotMarketV2Address string
+	ShardedAddress         string
+	AdminReceiverAddress   string
+	DUCAddress             string
+	ForwardingAddress      string
 }
 
 func uint32ToCadenceArr(nums []uint32) []byte {
@@ -83,6 +85,12 @@ func replaceAddresses(code string, env Environment) string {
 		code,
 		placeholderTopShotMarketAddress,
 		withHexPrefix(env.TopShotMarketAddress),
+	)
+
+	code = strings.ReplaceAll(
+		code,
+		placeholderTopShotMarketV2Address,
+		withHexPrefix(env.TopShotMarketV2Address),
 	)
 
 	code = strings.ReplaceAll(

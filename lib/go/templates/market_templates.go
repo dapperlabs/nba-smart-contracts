@@ -22,6 +22,10 @@ const (
 	getSaleSetIDFilename      = "market/scripts/get_sale_set_id.cdc"
 )
 
+// These templates are for the first version of the Top Shot marketplace
+// which actually stored moments that were for sale in the sale collections
+// in the seller's accounts
+
 // GenerateCreateSaleScript creates a cadence transaction that creates a Sale collection
 // and stores in in the callers account published
 func GenerateCreateSaleScript(env Environment) []byte {

@@ -85,9 +85,22 @@ func TestMarketDeployment(t *testing.T) {
 	}
 	_, err = b.CommitBlock()
 	require.NoError(t, err)
+
+	marketV2Code := contracts.GenerateTopShotMarketV2Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
+	_, err = b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotMarketV2",
+			Source: string(marketV2Code),
+		},
+	})
+	if !assert.Nil(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	require.NoError(t, err)
 }
 
-// Tests all the main functionality of Sale Collections
+// Tests all the main functionality of the V1 Market
 func TestMarket(t *testing.T) {
 	b := newBlockchain()
 
@@ -603,5 +616,268 @@ func TestMarket(t *testing.T) {
 		assert.Equal(t, cadence.NewBool(true), result)
 
 		executeScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, tokenAddr, defaultTokenName, 1100.0), nil)
+	})
+}
+
+func TestV2Market(t *testing.T) {
+	b := newBlockchain()
+
+	accountKeys := test.AccountKeyGenerator()
+
+	env := templates.Environment{
+		FungibleTokenAddress: emulatorFTAddress,
+		FlowTokenAddress:     emulatorFlowTokenAddress,
+	}
+
+	// Should be able to deploy the NFT contract
+	// as a new account with no keys.
+	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
+	nftAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "NonFungibleToken",
+			Source: string(nftCode),
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
+	env.NFTAddress = nftAddr.String()
+
+	// Should be able to deploy the topshot contract
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
+	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
+	topshotAddr, err := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
+		{
+			Name:   "TopShot",
+			Source: string(topshotCode),
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
+	env.TopShotAddress = topshotAddr.String()
+
+	// Should be able to deploy the token contract
+	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage, "1000.0")
+	tokenAccountKey, tokenSigner := accountKeys.NewWithSigner()
+	tokenAddr, err := b.CreateAccount([]*flow.AccountKey{tokenAccountKey}, []sdktemplates.Contract{
+		{
+			Name:   "DapperUtilityCoin",
+			Source: string(tokenCode),
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
+	env.DUCAddress = tokenAddr.String()
+
+	// Setup with the first market contract
+	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
+	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "Market",
+			Source: string(marketCode),
+		},
+	})
+	if !assert.Nil(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	require.NoError(t, err)
+
+	env.TopShotMarketAddress = marketAddr.String()
+
+	// Should be able to deploy the second market contract
+	marketV2Code := contracts.GenerateTopShotMarketV2Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
+	marketV2Addr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotMarketV2",
+			Source: string(marketV2Code),
+		},
+	})
+	if !assert.Nil(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	require.NoError(t, err)
+
+	env.TopShotMarketV2Address = marketV2Addr.String()
+
+	// Should be able to deploy the token forwarding contract
+	forwardingCode := fungibleToken.CustomTokenForwarding(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
+	forwardingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TokenForwarding",
+			Source: string(forwardingCode),
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
+	env.ForwardingAddress = forwardingAddr.String()
+
+	// create two new accounts
+	bastianAccountKey, bastianSigner := accountKeys.NewWithSigner()
+	bastianAddress, err := b.CreateAccount([]*flow.AccountKey{bastianAccountKey}, nil)
+
+	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
+	joshAddress, err := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
+
+	// Setup both accounts to have DUC and a sale collection
+	t.Run("Should be able to setup both users' accounts to use the market", func(t *testing.T) {
+
+		tx := createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName), bastianAddress)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			false,
+		)
+
+		// create a Vault for Josh
+		tx = createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName), joshAddress)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			false,
+		)
+
+		tx = createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateMintTokensScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, bastianAddress, defaultTokenName, 80), tokenAddr)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			false,
+		)
+	})
+
+	firstName := cadence.NewString("FullName")
+	lebron := cadence.NewString("Lebron")
+
+	// Admin sends transactions to create a play, set, and moments
+	t.Run("Should be able to setup a play, set, and mint moment", func(t *testing.T) {
+		// create a new play
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
+
+		metadata := []cadence.KeyValuePair{{Key: firstName, Value: lebron}}
+		play := cadence.NewDictionary(metadata)
+		_ = tx.AddArgument(play)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			false,
+		)
+
+		// create a new set
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintSetScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewString("Genesis"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			false,
+		)
+
+		// add the play to the set
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateAddPlayToSetScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			false,
+		)
+
+		// mint a batch of moments
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchMintMomentScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewUInt64(6))
+		_ = tx.AddArgument(cadence.NewAddress(topshotAddr))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			false,
+		)
+
+		// setup bastian's account to hold topshot moments
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(env), bastianAddress)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			false,
+		)
+
+		// setup josh's account to hold topshot moments
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(env), joshAddress)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			false,
+		)
+
+		// transfer a moment to josh's account
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateTransferMomentScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(1))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			false,
+		)
+
+		// transfer a moment to bastian's account
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateTransferMomentScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(2))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			false,
+		)
+	})
+
+	ducPublicPath := cadence.Path{Domain: "public", Identifier: "dapperUtilityCoinReceiver"}
+
+	t.Run("Should be able to create a V2 sale collection", func(t *testing.T) {
+
+		// Create a sale collection for josh's account, setting bastian as the beneficiary
+		// and with a 15% cut
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateSaleV2Script(env), joshAddress)
+
+		_ = tx.AddArgument(ducPublicPath)
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(CadenceUFix64("0.15"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			false,
+		)
 	})
 }
