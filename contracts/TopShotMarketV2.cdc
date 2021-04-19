@@ -221,6 +221,9 @@ pub contract TopShotMarketV2 {
         //
         // Parameters: newPercent: The new cut percentage for the sale
         pub fun changePercentage(_ newPercent: UFix64) {
+            pre {
+                newPercent <= 1.0: "Cannot set cut percentage to greater than 100%"
+            }
             self.cutPercentage = newPercent
 
             emit CutPercentageChanged(newPercent: newPercent, seller: self.owner?.address)
