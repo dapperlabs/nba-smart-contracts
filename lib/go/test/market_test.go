@@ -497,8 +497,19 @@ func TestMarketV1(t *testing.T) {
 	})
 
 	t.Run("Can change the cut percentage of a sale", func(t *testing.T) {
-		// change the cut percentage for the sale collection to 18%
+		// cannot change the cut percentage for the sale collection to greater than 100%
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateChangePercentageScript(env), bastianAddress)
+
+		_ = tx.AddArgument(CadenceUFix64("2.18"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			true,
+		)
+
+		// change the cut percentage for the sale collection to 18%
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateChangePercentageScript(env), bastianAddress)
 
 		_ = tx.AddArgument(CadenceUFix64("0.18"))
 
