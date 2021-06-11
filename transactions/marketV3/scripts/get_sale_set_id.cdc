@@ -1,8 +1,9 @@
-import TopShotMarketV2 from 0xMARKETV2ADDRESS
+import Market from 0xMARKETADDRESS
+import TopShotMarketV3 from 0xMARKETV3ADDRESS
 
 pub fun main(sellerAddress: Address, momentID: UInt64): UInt32 {
-    let saleRef = getAccount(sellerAddress).getCapability(/public/topshotSaleCollection)
-        .borrow<&{TopShotMarketV2.SalePublic}>()
+    let saleRef = getAccount(sellerAddress).getCapability(TopShotMarketV3.marketPublicPath)
+        .borrow<&{Market.SalePublic}>()
         ?? panic("Could not get public sale reference")
 
     let token = saleRef.borrowMoment(id: momentID)

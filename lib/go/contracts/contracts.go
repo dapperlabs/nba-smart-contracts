@@ -6,11 +6,12 @@ import (
 	"strings"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts/internal/assets"
+	_ "github.com/kevinburke/go-bindata"
 )
 
 const (
 	topshotFile                    = "TopShot.cdc"
-	marketV2File                   = "TopShotMarketV2.cdc"
+	marketV3File                   = "TopShotMarketV3.cdc"
 	marketFile                     = "MarketTopShot.cdc"
 	shardedCollectionFile          = "TopShotShardedCollection.cdc"
 	adminReceiverFile              = "TopshotAdminReceiver.cdc"
@@ -18,6 +19,7 @@ const (
 	defaultFungibleTokenAddress    = "FUNGIBLETOKENADDRESS"
 	defaultTopshotAddress          = "TOPSHOTADDRESS"
 	defaultShardedAddress          = "SHARDEDADDRESS"
+	defaultMarketAddress           = "MARKETADDRESS"
 )
 
 // GenerateTopShotContract returns a copy
@@ -65,14 +67,15 @@ func GenerateTopShotMarketContract(ftAddr, nftAddr, topshotAddr string) []byte {
 	return []byte(codeWithFTAddr)
 }
 
-// GenerateTopShotMarketV2Contract returns a copy
-// of the first version TopShotMarketContract with the import addresses updated
-func GenerateTopShotMarketV2Contract(ftAddr, nftAddr, topshotAddr string) []byte {
+// GenerateTopShotMarketV3Contract returns a copy
+// of the third version TopShotMarketContract with the import addresses updated
+func GenerateTopShotMarketV3Contract(ftAddr, nftAddr, topshotAddr, marketAddr string) []byte {
 
-	marketCode := assets.MustAssetString(marketV2File)
+	marketCode := assets.MustAssetString(marketV3File)
 	codeWithNFTAddr := strings.ReplaceAll(marketCode, defaultNonFungibleTokenAddress, nftAddr)
 	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 	codeWithFTAddr := strings.ReplaceAll(codeWithTopshotAddr, defaultFungibleTokenAddress, ftAddr)
+	codeWithMarketV2Addr := strings.ReplaceAll(codeWithFTAddr, defaultMarketAddress, marketAddr)
 
-	return []byte(codeWithFTAddr)
+	return []byte(codeWithMarketV2Addr)
 }

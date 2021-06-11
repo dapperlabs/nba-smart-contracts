@@ -74,7 +74,7 @@ func TestMarketDeployment(t *testing.T) {
 
 	// Should be able to deploy the market contract
 	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
-	_, err = b.CreateAccount(nil, []sdktemplates.Contract{
+	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "Market",
 			Source: string(marketCode),
@@ -86,11 +86,11 @@ func TestMarketDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	require.NoError(t, err)
 
-	marketV2Code := contracts.GenerateTopShotMarketV2Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String())
 	_, err = b.CreateAccount(nil, []sdktemplates.Contract{
 		{
-			Name:   "TopShotMarketV2",
-			Source: string(marketV2Code),
+			Name:   "TopShotMarketV3",
+			Source: string(marketV3Code),
 		},
 	})
 	if !assert.Nil(t, err) {
@@ -101,7 +101,7 @@ func TestMarketDeployment(t *testing.T) {
 }
 
 // Tests all the main functionality of the V1 Market
-func TestMarket(t *testing.T) {
+func TestMarketV1(t *testing.T) {
 	b := newBlockchain()
 
 	accountKeys := test.AccountKeyGenerator()
@@ -162,7 +162,7 @@ func TestMarket(t *testing.T) {
 
 	env.DUCAddress = tokenAddr.String()
 
-	// Should be able to deploy the token contract
+	// Should be able to deploy the market contract
 	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
 	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
@@ -619,7 +619,7 @@ func TestMarket(t *testing.T) {
 	})
 }
 
-func TestV2Market(t *testing.T) {
+func TestMarketV3(t *testing.T) {
 	b := newBlockchain()
 
 	accountKeys := test.AccountKeyGenerator()
@@ -696,12 +696,12 @@ func TestV2Market(t *testing.T) {
 
 	env.TopShotMarketAddress = marketAddr.String()
 
-	// Should be able to deploy the second market contract
-	marketV2Code := contracts.GenerateTopShotMarketV2Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
-	marketV2Addr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+	// Should be able to deploy the third market contract
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String())
+	marketV3Addr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
-			Name:   "TopShotMarketV2",
-			Source: string(marketV2Code),
+			Name:   "TopShotMarketV3",
+			Source: string(marketV3Code),
 		},
 	})
 	if !assert.Nil(t, err) {
@@ -710,7 +710,7 @@ func TestV2Market(t *testing.T) {
 	_, err = b.CommitBlock()
 	require.NoError(t, err)
 
-	env.TopShotMarketV2Address = marketV2Addr.String()
+	env.TopShotMarketV3Address = marketV3Addr.String()
 
 	// Should be able to deploy the token forwarding contract
 	forwardingCode := fungibleToken.CustomTokenForwarding(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
@@ -736,7 +736,7 @@ func TestV2Market(t *testing.T) {
 	joshAddress, err := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
 
 	// Setup both accounts to have DUC and a sale collection
-	t.Run("Should be able to setup both users' accounts to use the market", func(t *testing.T) {
+	t.Run("Should be able to setup both users' accounts to use DUC", func(t *testing.T) {
 
 		tx := createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName), bastianAddress)
 
@@ -837,6 +837,14 @@ func TestV2Market(t *testing.T) {
 			false,
 		)
 
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(env), tokenAddr)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			false,
+		)
+
 		// transfer a moment to josh's account
 		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateTransferMomentScript(env), topshotAddr)
 
@@ -860,23 +868,260 @@ func TestV2Market(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			false,
 		)
+
+		// transfer a moment to bastian's account
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateTransferMomentScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(3))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			false,
+		)
 	})
 
 	ducPublicPath := cadence.Path{Domain: "public", Identifier: "dapperUtilityCoinReceiver"}
 
-	t.Run("Should be able to create a V2 sale collection", func(t *testing.T) {
+	t.Run("Should be able to create a V1 sale collection and V3 sale collection in the same account", func(t *testing.T) {
 
-		// Create a sale collection for josh's account, setting bastian as the beneficiary
-		// and with a 15% cut
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateSaleV2Script(env), joshAddress)
+		// Bastian creates a new sale collection object and puts the moment for sale,
+		// setting himself as the beneficiary with a 15% cut
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateAndStartSaleScript(env), bastianAddress)
 
 		_ = tx.AddArgument(ducPublicPath)
 		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
 		_ = tx.AddArgument(CadenceUFix64("0.15"))
+		_ = tx.AddArgument(cadence.NewUInt64(2))
+		_ = tx.AddArgument(CadenceUFix64("50.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			false,
+		)
+
+		// Create a sale collection for josh's account, setting bastian as the beneficiary
+		// and with a 15% cut
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateAndStartSaleV3Script(env), bastianAddress)
+
+		_ = tx.AddArgument(ducPublicPath)
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(CadenceUFix64("0.15"))
+		_ = tx.AddArgument(cadence.NewUInt64(3))
+		_ = tx.AddArgument(CadenceUFix64("50.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			false,
+		)
+	})
+
+	t.Run("Should not be able to put a moment up for sale in v3 that isn't in the main collection", func(t *testing.T) {
+
+		// Should fail because the moment isn't in the user's collection
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateAndStartSaleV3Script(env), bastianAddress)
+
+		_ = tx.AddArgument(ducPublicPath)
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(CadenceUFix64("0.15"))
+		_ = tx.AddArgument(cadence.NewUInt64(4))
+		_ = tx.AddArgument(CadenceUFix64("50.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			true,
+		)
+	})
+
+	t.Run("Should be able to cancel sales in the v1 and v3 collections", func(t *testing.T) {
+
+		result := executeScriptAndCheck(t, b, templates.GenerateGetSalePriceV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		assertEqual(t, CadenceUFix64("50.0"), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSaleLenV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress))})
+		assertEqual(t, cadence.NewInt(2), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSaleSetIDV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		assertEqual(t, cadence.NewUInt32(1), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSalePercentageV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress))})
+		assertEqual(t, CadenceUFix64("0.15"), result)
+
+		// Should fail because this ID is not for sale
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCancelSaleV3Script(env), bastianAddress)
+
+		_ = tx.AddArgument(cadence.NewUInt64(4))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			true,
+		)
+
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCancelSaleV3Script(env), bastianAddress)
+
+		_ = tx.AddArgument(cadence.NewUInt64(3))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			false,
+		)
+
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCancelSaleV3Script(env), bastianAddress)
+
+		_ = tx.AddArgument(cadence.NewUInt64(2))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			false,
+		)
+	})
+
+	t.Run("Should start the sales again and purchase", func(t *testing.T) {
+
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateAndStartSaleScript(env), bastianAddress)
+
+		_ = tx.AddArgument(ducPublicPath)
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(CadenceUFix64("0.15"))
+		_ = tx.AddArgument(cadence.NewUInt64(2))
+		_ = tx.AddArgument(CadenceUFix64("50.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			false,
+		)
+
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateStartSaleV3Script(env), bastianAddress)
+
+		_ = tx.AddArgument(cadence.NewUInt64(3))
+		_ = tx.AddArgument(CadenceUFix64("50.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			false,
+		)
+
+		result := executeScriptAndCheck(t, b, templates.GenerateGetSalePriceV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		assertEqual(t, CadenceUFix64("50.0"), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSalePriceV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress)), jsoncdc.MustEncode(cadence.UInt64(3))})
+		assertEqual(t, CadenceUFix64("50.0"), result)
+
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintTokensAndBuyV3Script(env), tokenAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(3))
+		_ = tx.AddArgument(CadenceUFix64("50.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			false,
+		)
+
+		// Shoulf fail because the price is wrong
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMultiContractP2PPurchaseScript(env), tokenAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(2))
+		_ = tx.AddArgument(CadenceUFix64("40.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			true,
+		)
+
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMultiContractP2PPurchaseScript(env), tokenAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(2))
+		_ = tx.AddArgument(CadenceUFix64("50.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			false,
+		)
+
+	})
+
+	t.Run("Should fail purchases for tokens that don't exist in the collection", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMultiContractP2PPurchaseScript(env), tokenAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(5))
+		_ = tx.AddArgument(CadenceUFix64("50.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			true,
+		)
+	})
+
+	t.Run("V3 transactions should still work for V1", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateAndStartSaleScript(env), joshAddress)
+
+		_ = tx.AddArgument(ducPublicPath)
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(CadenceUFix64("0.15"))
+		_ = tx.AddArgument(cadence.NewUInt64(1))
+		_ = tx.AddArgument(CadenceUFix64("50.0"))
 
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			false,
+		)
+
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCancelSaleV3Script(env), joshAddress)
+
+		_ = tx.AddArgument(cadence.NewUInt64(1))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			false,
+		)
+
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateAndStartSaleScript(env), joshAddress)
+
+		_ = tx.AddArgument(ducPublicPath)
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(CadenceUFix64("0.15"))
+		_ = tx.AddArgument(cadence.NewUInt64(1))
+		_ = tx.AddArgument(CadenceUFix64("60.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			false,
+		)
+
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMultiContractP2PPurchaseScript(env), tokenAddr)
+
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(1))
+		_ = tx.AddArgument(CadenceUFix64("60.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
 			false,
 		)
 	})

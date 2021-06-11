@@ -1,9 +1,9 @@
 import TopShot from 0xTOPSHOTADDRESS
 import Market from 0xMARKETADDRESS
-import TopShotMarketV2 from 0xMARKETV2ADDRESS
+import TopShotMarketV3 from 0xMARKETV3ADDRESS
 
 // This transaction is for a user to change a moment sale from
-// the first version of the market contract to the second version
+// the first version of the market contract to the third version
 
 // Parameters
 //
@@ -21,7 +21,7 @@ transaction(tokenID: UInt64, price: UFix64) {
         let topshotSaleCollection = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
             ?? panic("Could not borrow from sale in storage")
 
-        let topshotSaleV2Collection = acct.borrow<&TopShotMarketV2.SaleCollection>(from: TopShotMarketV2.marketStoragePath)
+        let topshotSaleV3Collection = acct.borrow<&TopShotMarketV3.SaleCollection>(from: TopShotMarketV3.marketStoragePath)
             ?? panic("Could not borrow reference to sale V2 in storage")
 
         // withdraw the moment from the sale, thereby de-listing it
@@ -31,7 +31,7 @@ transaction(tokenID: UInt64, price: UFix64) {
         nftCollection.deposit(token: <-token)
 
         // List the specified moment for sale
-        topshotSaleV2Collection.listForSale(tokenID: tokenID, price: price)
+        topshotSaleV3Collection.listForSale(tokenID: tokenID, price: price)
 
     }
 }

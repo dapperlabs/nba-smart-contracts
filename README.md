@@ -363,7 +363,7 @@ and if they sent the correct amount, they get the Moment back.
 There are two versions of the Top Shot Market Contract.
 `TopShotMarket.cdc` is the original version of the contract that was used
 for the first set of sales in the p2p marketplace, but we made improvements
-to it which are now in `TopShotMarketV2.cdc`.
+to it which are now in `TopShotMarketV3.cdc`.
 
 Both versions define a `SaleCollection` resource that users store in their account.
 The resource manages the logic of the sale like listings, de-listing, prices, and 
@@ -376,7 +376,7 @@ put up for sale. In this version, when a moment is purchased, the sale collectio
 uses the capability to withdraw the moment from the main collection and 
 returns it to the buyer.
 
-The second version of the market contract is currently NOT DEPLOYED to mainnet,
+The new version of the market contract is currently NOT DEPLOYED to mainnet,
 but it will be deployed and utilized in the near future.
 
 ## License 
@@ -384,7 +384,7 @@ but it will be deployed and utilized in the near future.
 The works in these folders 
 /dapperlabs/nba-smart-contracts/blob/master/contracts/TopShot.cdc 
 /dapperlabs/nba-smart-contracts/blob/master/contracts/MarketTopShot.cdc 
-/dapperlabs/nba-smart-contracts/blob/master/contracts/MarketTopShotV2.cdc 
+/dapperlabs/nba-smart-contracts/blob/master/contracts/MarketTopShotV3.cdc 
 /dapperlabs/nba-smart-contracts/blob/master/contracts/TopShotAdminReceiver.cdc 
 /dapperlabs/nba-smart-contracts/blob/master/contracts/TopShotShardedCollection.cdc 
 
