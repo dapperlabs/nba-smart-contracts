@@ -37,8 +37,7 @@ func GenerateCreateSaleV3Script(env Environment) []byte {
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateStartSaleScript creates a cadence transaction that starts a sale by depositing
-// an NFT into the Sale Collection with an associated price
+// GenerateStartSaleScript creates a cadence transaction that starts a sale by setting the price for the NFT
 func GenerateStartSaleV3Script(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + startSaleV3Filename)
 
@@ -53,8 +52,7 @@ func GenerateCreateAndStartSaleV3Script(env Environment) []byte {
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateCancelSaleV3Script creates a cadence transaction that starts a sale by depositing
-// an NFT into the Sale Collection with an associated price
+// GenerateCancelSaleV3Script creates a cadence transaction that ends a sale by clearing its price
 func GenerateCancelSaleV3Script(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + withdrawSaleV3Filename)
 

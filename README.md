@@ -365,6 +365,8 @@ There are two versions of the Top Shot Market Contract.
 for the first set of sales in the p2p marketplace, but we made improvements
 to it which are now in `TopShotMarketV3.cdc`.
 
+There is also a V2 version that was deployed to mainnet, but will never be used.
+
 Both versions define a `SaleCollection` resource that users store in their account.
 The resource manages the logic of the sale like listings, de-listing, prices, and 
 purchases. The first version actually stores the moments that are for sale, but 
