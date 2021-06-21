@@ -1040,7 +1040,7 @@ func TestMarketV3(t *testing.T) {
 			false,
 		)
 
-		// Shoulf fail because the price is wrong
+		// Should fail because the price is wrong
 		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMultiContractP2PPurchaseScript(env), tokenAddr)
 
 		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))

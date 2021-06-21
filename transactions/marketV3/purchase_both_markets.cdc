@@ -48,7 +48,6 @@ transaction(seller: Address, recipient: Address, momentID: UInt64, purchaseAmoun
             receiverRef.deposit(token: <-purchasedToken)
 
         } else {
-            destroy self.purchaseTokens // REMOVE THIS
             panic("Could not borrow reference to either Sale collection")
         }
     }

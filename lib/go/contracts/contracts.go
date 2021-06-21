@@ -75,7 +75,7 @@ func GenerateTopShotMarketV3Contract(ftAddr, nftAddr, topshotAddr, marketAddr st
 	codeWithNFTAddr := strings.ReplaceAll(marketCode, defaultNonFungibleTokenAddress, nftAddr)
 	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 	codeWithFTAddr := strings.ReplaceAll(codeWithTopshotAddr, defaultFungibleTokenAddress, ftAddr)
-	codeWithMarketV2Addr := strings.ReplaceAll(codeWithFTAddr, defaultMarketAddress, marketAddr)
+	codeWithMarketV3Addr := strings.ReplaceAll(codeWithFTAddr, defaultMarketAddress, marketAddr)
 
-	return []byte(codeWithMarketV2Addr)
+	return []byte(codeWithMarketV3Addr)
 }

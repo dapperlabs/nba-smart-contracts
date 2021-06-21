@@ -234,7 +234,6 @@ pub contract TopShotMarketV3 {
                 return <-v1MarketRef.purchase(tokenID: tokenID, buyTokens: <-buyTokens)
             }
             
-            destroy buyTokens // THIS LINE NEEDS TO BE REMOVED ONCE THE BUG IN CADENCE IS FIXED
             panic("No token matching this ID for sale!")
         }
 
