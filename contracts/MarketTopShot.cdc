@@ -300,4 +300,4 @@ pub contract Market {
         return <- create SaleCollection(ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: cutPercentage)
     }
 }
- 
+  
