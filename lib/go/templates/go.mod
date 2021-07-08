@@ -1,6 +1,6 @@
 module github.com/dapperlabs/nba-smart-contracts/lib/go/templates
 
-go 1.14
+go 1.16
 
 replace github.com/dapperlabs/nba-smart-contracts/lib/go/templates => ../templates
 
