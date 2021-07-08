@@ -496,6 +496,33 @@ func TestMarketV1(t *testing.T) {
 		assertEqual(t, CadenceUFix64("40.0"), result)
 	})
 
+	t.Run("Can change the cut percentage of a sale", func(t *testing.T) {
+		// cannot change the cut percentage for the sale collection to greater than 100%
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateChangePercentageScript(env), bastianAddress)
+
+		_ = tx.AddArgument(CadenceUFix64("2.18"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			true,
+		)
+
+		// change the cut percentage for the sale collection to 18%
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateChangePercentageScript(env), bastianAddress)
+
+		_ = tx.AddArgument(CadenceUFix64("0.18"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			false,
+		)
+		// make sure the percentage was changed correctly
+		result := executeScriptAndCheck(t, b, templates.GenerateGetSalePercentageScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress))})
+		assertEqual(t, CadenceUFix64("0.18"), result)
+	})
+
 	t.Run("Cannot withdraw a moment that doesn't exist from a sale", func(t *testing.T) {
 		// bastian tries to withdraw the wrong moment
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateWithdrawFromSaleScript(env), bastianAddress)
