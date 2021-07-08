@@ -237,18 +237,6 @@ pub contract TopShotMarketV3 {
             panic("No token matching this ID for sale!")
         }
 
-        /// changePercentage changes the cut percentage of the tokens that are for sale
-        ///
-        /// Parameters: newPercent: The new cut percentage for the sale
-        pub fun changePercentage(_ newPercent: UFix64) {
-            pre {
-                newPercent <= 1.0: "Cannot set cut percentage to greater than 100%"
-            }
-            self.cutPercentage = newPercent
-
-            emit CutPercentageChanged(newPercent: newPercent, seller: self.owner?.address)
-        }
-
         /// changeOwnerReceiver updates the capability for the sellers fungible token Vault
         ///
         /// Parameters: newOwnerCapability: The new fungible token capability for the account 

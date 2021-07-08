@@ -26,7 +26,6 @@
 // ../../../transactions/market/scripts/get_sale_set_id.cdc (808B)
 // ../../../transactions/market/start_sale.cdc (1.276kB)
 // ../../../transactions/market/stop_sale.cdc (1.261kB)
-// ../../../transactions/marketV3/change_percentage.cdc (369B)
 // ../../../transactions/marketV3/change_price.cdc (737B)
 // ../../../transactions/marketV3/change_receiver.cdc (394B)
 // ../../../transactions/marketV3/create_sale.cdc (1.719kB)
@@ -658,26 +657,6 @@ func TransactionsMarketStop_saleCdc() (*asset, error) {
 
 	info := bindataFileInfo{name: "../../../transactions/market/stop_sale.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x7f, 0x2a, 0x4, 0x56, 0x74, 0x52, 0xae, 0x35, 0x84, 0xb9, 0x8d, 0x3c, 0xc, 0xf1, 0xe5, 0x27, 0x46, 0x28, 0x87, 0xcf, 0x9d, 0x4f, 0x6, 0xcc, 0x65, 0x49, 0x3f, 0x3f, 0x5b, 0x68, 0x5b, 0x91}}
-	return a, nil
-}
-
-var _TransactionsMarketv3Change_percentageCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x6c\x90\x41\x4b\xc3\x50\x10\x84\xef\xf9\x15\x43\x0f\x92\x5e\x52\xa1\xe2\x21\xa8\x25\xb4\xf5\x22\x05\x69\x6a\xef\xeb\x73\x4d\x82\xaf\x6f\x1f\x9b\x0d\x2d\x48\xff\xbb\xa4\x11\x4b\xa5\x73\x9e\xfd\x66\x76\x9a\x5d\x14\x35\x6c\x24\x96\xb5\xd8\x8a\xf4\x8b\x6d\x3b\xc5\xa7\xca\x0e\xb7\x87\x55\xb1\x7e\x59\x6e\xb6\xd3\x62\xb1\x58\x2f\xcb\x32\x49\x4c\x29\xb4\xe4\xac\x91\x90\x06\xde\xbf\xb2\x3a\x0e\x46\x15\xe7\x78\x7b\x6e\x0e\xf7\x77\x63\x7c\x27\x00\x10\x95\x23\x29\xa7\xe4\x9c\xe5\x28\x3a\xab\x0b\xe7\xa4\x0b\xd6\x1b\x4e\x8e\x5e\x9e\x0d\x26\xb1\xad\xc5\x4a\xf2\x3c\x17\xef\xf9\x04\xc7\x23\xfa\xcb\xec\x5d\x54\x65\xff\x70\xf3\xaf\x5f\x76\xe9\x7e\x4a\xfb\xbe\x39\x26\xad\x89\x52\xc5\x93\xab\xcc\xf1\x5f\x6c\xaf\xd9\x0c\x91\x42\xe3\xd2\xd1\x5c\x3a\xff\x81\x20\x86\x21\x6d\x78\xbe\x25\xcf\x68\x02\x7e\x91\xa3\xf1\xb9\xf5\x55\x7a\xe6\x6a\x0a\x15\x9f\x17\xb9\xdc\x67\x08\x3f\x26\xc7\x9f\x00\x00\x00\xff\xff\xdb\x0e\x20\x2f\x71\x01\x00\x00"
-
-func TransactionsMarketv3Change_percentageCdcBytes() ([]byte, error) {
-	return bindataRead(
-		_TransactionsMarketv3Change_percentageCdc,
-		"../../../transactions/marketV3/change_percentage.cdc",
-	)
-}
-
-func TransactionsMarketv3Change_percentageCdc() (*asset, error) {
-	bytes, err := TransactionsMarketv3Change_percentageCdcBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	info := bindataFileInfo{name: "../../../transactions/marketV3/change_percentage.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
-	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x9d, 0x5f, 0xc2, 0x88, 0x8, 0x9f, 0xa3, 0x98, 0xb4, 0xf9, 0xbd, 0x78, 0x3c, 0xa7, 0x43, 0x1d, 0x25, 0xfa, 0x83, 0xe8, 0xc4, 0x3d, 0x9a, 0x2e, 0xb6, 0x1c, 0xe6, 0x5b, 0x95, 0xf6, 0xb3, 0x8e}}
 	return a, nil
 }
 
@@ -1698,7 +1677,6 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/market/scripts/get_sale_set_id.cdc":             TransactionsMarketScriptsGet_sale_set_idCdc,
 	"../../../transactions/market/start_sale.cdc":                          TransactionsMarketStart_saleCdc,
 	"../../../transactions/market/stop_sale.cdc":                           TransactionsMarketStop_saleCdc,
-	"../../../transactions/marketV3/change_percentage.cdc":                 TransactionsMarketv3Change_percentageCdc,
 	"../../../transactions/marketV3/change_price.cdc":                      TransactionsMarketv3Change_priceCdc,
 	"../../../transactions/marketV3/change_receiver.cdc":                   TransactionsMarketv3Change_receiverCdc,
 	"../../../transactions/marketV3/create_sale.cdc":                       TransactionsMarketv3Create_saleCdc,
@@ -1827,7 +1805,6 @@ var _bintree = &bintree{nil, map[string]*bintree{
 						"stop_sale.cdc": {TransactionsMarketStop_saleCdc, map[string]*bintree{}},
 					}},
 					"marketV3": {nil, map[string]*bintree{
-						"change_percentage.cdc": {TransactionsMarketv3Change_percentageCdc, map[string]*bintree{}},
 						"change_price.cdc": {TransactionsMarketv3Change_priceCdc, map[string]*bintree{}},
 						"change_receiver.cdc": {TransactionsMarketv3Change_receiverCdc, map[string]*bintree{}},
 						"create_sale.cdc": {TransactionsMarketv3Create_saleCdc, map[string]*bintree{}},
