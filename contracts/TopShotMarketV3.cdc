@@ -10,7 +10,7 @@
     reference so that others can see the sale.
 
     If another user sees an NFT that they want to buy,
-    they can send fungible tokens that equal or exceed the buy price
+    they can send fungible tokens that equal the buy price
     to buy the NFT.  The NFT is transferred to them when
     they make the purchase.
 
