@@ -1,6 +1,6 @@
 module github.com/dapperlabs/nba-smart-contracts/lib/go/test
 
-go 1.13
+go 1.16
 
 require (
 	github.com/dapperlabs/nba-smart-contracts/lib/go/contracts v0.2.0
