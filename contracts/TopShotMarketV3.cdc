@@ -10,7 +10,7 @@
     reference so that others can see the sale.
 
     If another user sees an NFT that they want to buy,
-    they can send fungible tokens that equal or exceed the buy price
+    they can send fungible tokens that equal the buy price
     to buy the NFT.  The NFT is transferred to them when
     they make the purchase.
 
@@ -235,18 +235,6 @@ pub contract TopShotMarketV3 {
             }
             
             panic("No token matching this ID for sale!")
-        }
-
-        /// changePercentage changes the cut percentage of the tokens that are for sale
-        ///
-        /// Parameters: newPercent: The new cut percentage for the sale
-        pub fun changePercentage(_ newPercent: UFix64) {
-            pre {
-                newPercent <= 1.0: "Cannot set cut percentage to greater than 100%"
-            }
-            self.cutPercentage = newPercent
-
-            emit CutPercentageChanged(newPercent: newPercent, seller: self.owner?.address)
         }
 
         /// changeOwnerReceiver updates the capability for the sellers fungible token Vault

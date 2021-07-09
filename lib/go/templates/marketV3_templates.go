@@ -10,7 +10,6 @@ const (
 	createAndStartSaleV3Filename  = "marketV3/create_start_sale.cdc"
 	withdrawSaleV3Filename        = "marketV3/stop_sale.cdc"
 	changePriceV3Filename         = "marketV3/change_price.cdc"
-	changePercentageV3Filename    = "marketV3/change_percentage.cdc"
 	changeOwnerReceiverV3Filename = "marketV3/change_receiver.cdc"
 	purchaseV3Filename            = "marketV3/purchase_moment.cdc"
 	mintAndPurchaseV3Filename     = "marketV3/mint_and_purchase.cdc"
@@ -62,13 +61,6 @@ func GenerateCancelSaleV3Script(env Environment) []byte {
 // GenerateChangePriceScript creates a cadence transaction that changes the price on an existing sale
 func GenerateChangePriceV3Script(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + changePriceV3Filename)
-
-	return []byte(replaceAddresses(code, env))
-}
-
-// GenerateChangePercentageScript creates a cadence transaction that changes the cut percentage of an existing sale
-func GenerateChangePercentageV3Script(env Environment) []byte {
-	code := assets.MustAssetString(transactionsPath + changePercentageV3Filename)
 
 	return []byte(replaceAddresses(code, env))
 }
