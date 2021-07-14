@@ -8,6 +8,8 @@ const (
 	setupAccountFilename   = "user/setup_account.cdc"
 	transferMomentFilename = "user/transfer_moment.cdc"
 	batchTransferFilename  = "user/batch_transfer.cdc"
+
+	transferMomentV3Filename = "user/transfer_moment_v3_sale.cdc"
 )
 
 // GenerateSetupAccountScript creates a script that sets up an account to use topshot
@@ -27,6 +29,14 @@ func GenerateTransferMomentScript(env Environment) []byte {
 // GenerateBatchTransferMomentScript creates a script that transfers multiple moments
 func GenerateBatchTransferMomentScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + batchTransferFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateTransferMomentScript creates a script that transfers a moment
+// and cancels its sale if it is for sale
+func GenerateTransferMomentV3Script(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + transferMomentV3Filename)
 
 	return []byte(replaceAddresses(code, env))
 }

@@ -1,6 +1,7 @@
 import FungibleToken from 0xFUNGIBLETOKENADDRESS
 import TopShot from 0xTOPSHOTADDRESS
-import TopShotMarketV2 from 0xMARKETV2ADDRESS
+import Market from 0xMARKETADDRESS
+import TopShotMarketV3 from 0xMARKETV3ADDRESS
 
 // This transaction creates a sale collection and stores it in the signer's account
 // It does not put an NFT up for sale
@@ -18,10 +19,14 @@ transaction(tokenReceiverPath: PublicPath, beneficiaryAccount: Address, cutPerce
 
         let ownerCollection = acct.link<&TopShot.Collection>(/private/MomentCollection, target: /storage/MomentCollection)!
 
-        let collection <- TopShotMarketV2.createSaleCollection(ownerCollection: ownerCollection, ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: cutPercentage)
+        let collection <- TopShotMarketV3.createSaleCollection(ownerCollection: ownerCollection,
+                                                               ownerCapability: ownerCapability,
+                                                               beneficiaryCapability: beneficiaryCapability,
+                                                               cutPercentage: cutPercentage,
+                                                               marketV1Capability: nil)
         
-        acct.save(<-collection, to: TopShotMarketV2.marketStoragePath)
+        acct.save(<-collection, to: TopShotMarketV3.marketStoragePath)
         
-        acct.link<&TopShotMarketV2.SaleCollection{TopShotMarketV2.SalePublic}>(TopShotMarketV2.marketPublicPath, target: TopShotMarketV2.marketStoragePath)
+        acct.link<&TopShotMarketV3.SaleCollection{Market.SalePublic}>(TopShotMarketV3.marketPublicPath, target: TopShotMarketV3.marketStoragePath)
     }
 }

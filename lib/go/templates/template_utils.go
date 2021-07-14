@@ -3,6 +3,8 @@ package templates
 import (
 	"fmt"
 	"strings"
+
+	_ "github.com/kevinburke/go-bindata"
 )
 
 //go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../../../transactions/... -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../../../transactions/...
@@ -13,7 +15,7 @@ const (
 	placeholderNFTAddress             = "0xNFTADDRESS"
 	placeholderTopShotAddress         = "0xTOPSHOTADDRESS"
 	placeholderTopShotMarketAddress   = "0xMARKETADDRESS"
-	placeholderTopShotMarketV2Address = "0xMARKETV2ADDRESS"
+	placeholderTopShotMarketV3Address = "0xMARKETV3ADDRESS"
 	placeholderShardedAddress         = "0xSHARDEDADDRESS"
 	placeholderAdminReceiverAddress   = "0xADMINRECEIVERADDRESS"
 	placeholderDUCAddress             = "0xDUCADDRESS"
@@ -27,7 +29,7 @@ type Environment struct {
 	NFTAddress             string
 	TopShotAddress         string
 	TopShotMarketAddress   string
-	TopShotMarketV2Address string
+	TopShotMarketV3Address string
 	ShardedAddress         string
 	AdminReceiverAddress   string
 	DUCAddress             string
@@ -89,8 +91,8 @@ func replaceAddresses(code string, env Environment) string {
 
 	code = strings.ReplaceAll(
 		code,
-		placeholderTopShotMarketV2Address,
-		withHexPrefix(env.TopShotMarketV2Address),
+		placeholderTopShotMarketV3Address,
+		withHexPrefix(env.TopShotMarketV3Address),
 	)
 
 	code = strings.ReplaceAll(

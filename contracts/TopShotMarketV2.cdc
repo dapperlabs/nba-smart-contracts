@@ -4,9 +4,6 @@
 
     Description: Contract definitions for users to sell their moments
 
-    Authors: Joshua Hannan joshua.hannan@dapperlabs.com
-             Dieter Shirley dete@axiomzen.com
-
     Marketplace is where users can create a sale collection that they
     store in their account storage. In the sale collection, 
     they can put their NFTs up for sale with a price and publish a 

@@ -1,7 +1,7 @@
 import FungibleToken from 0xFUNGIBLETOKENADDRESS
 import DapperUtilityCoin from 0xDUCADDRESS
 import TopShot from 0xTOPSHOTADDRESS
-import TopShotMarketV2 from 0xMARKETV2ADDRESS
+import TopShotMarketV3 from 0xMARKETV3ADDRESS
 
 // This transaction is for a user to purchase a moment that another user
 // has for sale in their sale collection
@@ -29,8 +29,8 @@ transaction(sellerAddress: Address, tokenID: UInt64, purchaseAmount: UFix64) {
         let seller = getAccount(sellerAddress)
 
         // borrow a public reference to the seller's sale collection
-        let topshotSaleCollection = seller.getCapability(TopShotMarketV2.marketPublicPath)
-            .borrow<&{TopShotMarketV2.SalePublic}>()
+        let topshotSaleCollection = seller.getCapability(TopShotMarketV3.marketPublicPath)
+            .borrow<&{Market.SalePublic}>()
             ?? panic("Could not borrow public sale reference")
     
         // purchase the moment
