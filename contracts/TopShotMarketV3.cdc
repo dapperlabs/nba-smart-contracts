@@ -54,8 +54,6 @@ pub contract TopShotMarketV3 {
     pub event MomentPurchased(id: UInt64, price: UFix64, seller: Address?)
     /// emitted when a moment has been withdrawn from the sale
     pub event MomentWithdrawn(id: UInt64, owner: Address?)
-    /// emitted when the cut percentage of the sale has been changed by the owner
-    pub event CutPercentageChanged(newPercent: UFix64, seller: Address?)
 
     /// Path where the `SaleCollection` is stored
     pub let marketStoragePath: StoragePath
