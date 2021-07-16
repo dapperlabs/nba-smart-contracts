@@ -91,3 +91,5 @@ Please include the following details with your report:
 - A description of the location and potential impact of the finding(s);
 - A detailed description of the steps required to reproduce the issue; and
 - Any POC scripts, screenshots, and compressed screen captures, where feasible.
+
+
