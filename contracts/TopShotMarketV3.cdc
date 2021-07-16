@@ -231,7 +231,7 @@ pub contract TopShotMarketV3 {
 
                 return <-v1MarketRef.purchase(tokenID: tokenID, buyTokens: <-buyTokens)
             }
-            destroy buyTokens
+            destroy buyTokens // This line can be removed when this issue is released: https://github.com/onflow/cadence/pull/1000
             panic("No token matching this ID for sale!")
         }
 
