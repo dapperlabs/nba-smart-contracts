@@ -1,4 +1,4 @@
-/**
+/*
 
     TopShotMarketV3.cdc
 
@@ -10,7 +10,7 @@
     reference so that others can see the sale.
 
     If another user sees an NFT that they want to buy,
-    they can send fungible tokens that equal the buy price
+    they can send fungible tokens that equal or exceed the buy price
     to buy the NFT.  The NFT is transferred to them when
     they make the purchase.
 
@@ -33,7 +33,7 @@
     will receive the entirety of the purchase. TopShot will initialize sales 
     for users with the TopShot admin vault as the vault where cuts get 
     deposited to.
-**/
+*/
 
 import FungibleToken from 0xFUNGIBLETOKENADDRESS
 import NonFungibleToken from 0xNFTADDRESS
@@ -46,57 +46,54 @@ pub contract TopShotMarketV3 {
     // TopShot Market contract Event definitions
     // -----------------------------------------------------------------------
 
-    /// emitted when a TopShot moment is listed for sale
+    // emitted when a TopShot moment is listed for sale
     pub event MomentListed(id: UInt64, price: UFix64, seller: Address?)
-    /// emitted when the price of a listed moment has changed
+    // emitted when the price of a listed moment has changed
     pub event MomentPriceChanged(id: UInt64, newPrice: UFix64, seller: Address?)
-    /// emitted when a token is purchased from the market
+    // emitted when a token is purchased from the market
     pub event MomentPurchased(id: UInt64, price: UFix64, seller: Address?)
-    /// emitted when a moment has been withdrawn from the sale
+    // emitted when a moment has been withdrawn from the sale
     pub event MomentWithdrawn(id: UInt64, owner: Address?)
-    /// emitted when the cut percentage of the sale has been changed by the owner
+    // emitted when the cut percentage of the sale has been changed by the owner
     pub event CutPercentageChanged(newPercent: UFix64, seller: Address?)
 
-    /// Path where the `SaleCollection` is stored
     pub let marketStoragePath: StoragePath
-
-    /// Path where the public capability for the `SaleCollection` is
     pub let marketPublicPath: PublicPath
 
-    /// SaleCollection
-    ///
-    /// This is the main resource that token sellers will store in their account
-    /// to manage the NFTs that they are selling. The SaleCollection
-    /// holds a TopShot Collection resource to store the moments that are for sale.
-    /// The SaleCollection also keeps track of the price of each token.
-    /// 
-    /// When a token is purchased, a cut is taken from the tokens
-    /// and sent to the beneficiary, then the rest are sent to the seller.
-    ///
-    /// The seller chooses who the beneficiary is and what percentage
-    /// of the tokens gets taken from the purchase
+    // SaleCollection
+    //
+    // This is the main resource that token sellers will store in their account
+    // to manage the NFTs that they are selling. The SaleCollection
+    // holds a TopShot Collection resource to store the moments that are for sale.
+    // The SaleCollection also keeps track of the price of each token.
+    // 
+    // When a token is purchased, a cut is taken from the tokens
+    // and sent to the beneficiary, then the rest are sent to the seller.
+    //
+    // The seller chooses who the beneficiary is and what percentage
+    // of the tokens gets taken from the purchase
     pub resource SaleCollection: Market.SalePublic {
 
-        /// A collection of the moments that the user has for sale
+        // A collection of the moments that the user has for sale
         access(self) var ownerCollection: Capability<&TopShot.Collection>
 
-        /// Capability to point at the V1 sale collection
+        // Capability to point at the V1 sale collection
         access(self) var marketV1Capability: Capability<&Market.SaleCollection>?
 
-        /// Dictionary of the low low prices for each NFT by ID
+        // Dictionary of the low low prices for each NFT by ID
         access(self) var prices: {UInt64: UFix64}
 
-        /// The fungible token vault of the seller
-        /// so that when someone buys a token, the tokens are deposited
-        /// to this Vault
+        // The fungible token vault of the seller
+        // so that when someone buys a token, the tokens are deposited
+        // to this Vault
         access(self) var ownerCapability: Capability<&{FungibleToken.Receiver}>
 
-        /// The capability that is used for depositing 
-        /// the beneficiary's cut of every sale
+        // The capability that is used for depositing 
+        // the beneficiary's cut of every sale
         access(self) var beneficiaryCapability: Capability<&{FungibleToken.Receiver}>
 
-        /// The percentage that is taken from every purchase for the beneficiary
-        /// For example, if the percentage is 15%, cutPercentage = 0.15
+        // The percentage that is taken from every purchase for the beneficiary
+        // For example, if the percentage is 15%, cutPercentage = 0.15
         pub var cutPercentage: UFix64
 
         init (ownerCollection: Capability<&TopShot.Collection>,
@@ -130,11 +127,11 @@ pub contract TopShotMarketV3 {
             self.marketV1Capability = marketV1Capability
         }
 
-        /// listForSale lists an NFT for sale in this sale collection
-        /// at the specified price
-        ///
-        /// Parameters: tokenID: The id of the NFT to be put up for sale
-        ///             price: The price of the NFT
+        // listForSale lists an NFT for sale in this sale collection
+        // at the specified price
+        //
+        // Parameters: tokenID: The id of the NFT to be put up for sale
+        //             price: The price of the NFT
         pub fun listForSale(tokenID: UInt64, price: UFix64) {
             pre {
                 self.ownerCollection.borrow()!.borrowMoment(id: tokenID) != nil:
@@ -147,13 +144,12 @@ pub contract TopShotMarketV3 {
             emit MomentListed(id: tokenID, price: price, seller: self.owner?.address)
         }
 
-        /// cancelSale cancels a moment sale and clears its price
-        ///
-        /// Parameters: tokenID: the ID of the token to withdraw from the sale
-        ///
+        // cancelSale cancels a moment sale and clears its price
+        //
+        // Parameters: tokenID: the ID of the token to withdraw from the sale
+        //
         pub fun cancelSale(tokenID: UInt64) {
             
-            // First check this version of the sale
             if self.prices[tokenID] != nil {
                 // Remove the price from the prices dictionary
                 self.prices.remove(key: tokenID)
@@ -164,7 +160,6 @@ pub contract TopShotMarketV3 {
                 // Emit the event for withdrawing a moment from the Sale
                 emit MomentWithdrawn(id: tokenID, owner: self.owner?.address)
 
-            // If not found in this SaleCollection, check V1
             } else if let v1Market = self.marketV1Capability {
                 let v1MarketRef = v1Market.borrow()!
 
@@ -187,16 +182,15 @@ pub contract TopShotMarketV3 {
             }
         }
 
-        /// purchase lets a user send tokens to purchase an NFT that is for sale
-        /// the purchased NFT is returned to the transaction context that called it
-        ///
-        /// Parameters: tokenID: the ID of the NFT to purchase
-        ///             buyTokens: the fungible tokens that are used to buy the NFT
-        ///
-        /// Returns: @TopShot.NFT: the purchased NFT
+        // purchase lets a user send tokens to purchase an NFT that is for sale
+        // the purchased NFT is returned to the transaction context that called it
+        //
+        // Parameters: tokenID: the ID of the NFT to purchase
+        //             buyTokens: the fungible tokens that are used to buy the NFT
+        //
+        // Returns: @TopShot.NFT: the purchased NFT
         pub fun purchase(tokenID: UInt64, buyTokens: @FungibleToken.Vault): @TopShot.NFT {
 
-            // First check this sale collection for the NFT
             if self.prices[tokenID] != nil {
                 assert(
                     buyTokens.balance == self.prices[tokenID]!,
@@ -227,20 +221,37 @@ pub contract TopShotMarketV3 {
 
                 return <-boughtMoment
 
-            // If not found in this SaleCollection, check V1
-            } else if let v1Market = self.marketV1Capability {
-                let v1MarketRef = v1Market.borrow()!
+            } else {
 
-                return <-v1MarketRef.purchase(tokenID: tokenID, buyTokens: <-buyTokens)
+                if let v1Market = self.marketV1Capability {
+                    let v1MarketRef = v1Market.borrow()!
+
+                    return <-v1MarketRef.purchase(tokenID: tokenID, buyTokens: <-buyTokens)
+                } else {
+                    panic("No token matching this ID for sale!")
+                }
             }
             
+            destroy buyTokens // THIS LINE NEEDS TO BE REMOVED ONCE THE BUG IN CADENCE IS FIXED
             panic("No token matching this ID for sale!")
         }
 
-        /// changeOwnerReceiver updates the capability for the sellers fungible token Vault
-        ///
-        /// Parameters: newOwnerCapability: The new fungible token capability for the account 
-        ///                                 who received tokens for purchases
+        // changePercentage changes the cut percentage of the tokens that are for sale
+        //
+        // Parameters: newPercent: The new cut percentage for the sale
+        pub fun changePercentage(_ newPercent: UFix64) {
+            pre {
+                newPercent <= 1.0: "Cannot set cut percentage to greater than 100%"
+            }
+            self.cutPercentage = newPercent
+
+            emit CutPercentageChanged(newPercent: newPercent, seller: self.owner?.address)
+        }
+
+        // changeOwnerReceiver updates the capability for the sellers fungible token Vault
+        //
+        // Parameters: newOwnerCapability: The new fungible token capability for the account 
+        //                                 who received tokens for purchases
         pub fun changeOwnerReceiver(_ newOwnerCapability: Capability<&{FungibleToken.Receiver}>) {
             pre {
                 newOwnerCapability.borrow() != nil: 
@@ -249,10 +260,10 @@ pub contract TopShotMarketV3 {
             self.ownerCapability = newOwnerCapability
         }
 
-        /// changeBeneficiaryReceiver updates the capability for the beneficiary of the cut of the sale
-        ///
-        /// Parameters: newBeneficiaryCapability the new capability for the beneficiary of the cut of the sale
-        ///
+        // changeBeneficiaryReceiver updates the capability for the beneficiary of the cut of the sale
+        //
+        // Parameters: newBeneficiaryCapability the new capability for the beneficiary of the cut of the sale
+        //
         pub fun changeBeneficiaryReceiver(_ newBeneficiaryCapability: Capability<&{FungibleToken.Receiver}>) {
             pre {
                 newBeneficiaryCapability.borrow() != nil: 
@@ -261,11 +272,11 @@ pub contract TopShotMarketV3 {
             self.beneficiaryCapability = newBeneficiaryCapability
         }
 
-        /// getPrice returns the price of a specific token in the sale
-        /// 
-        /// Parameters: tokenID: The ID of the NFT whose price to get
-        ///
-        /// Returns: UFix64: The price of the token
+        // getPrice returns the price of a specific token in the sale
+        // 
+        // Parameters: tokenID: The ID of the NFT whose price to get
+        //
+        // Returns: UFix64: The price of the token
         pub fun getPrice(tokenID: UInt64): UFix64? {
             if let price = self.prices[tokenID] {
                 return price
@@ -275,11 +286,10 @@ pub contract TopShotMarketV3 {
             return nil
         }
 
-        /// getIDs returns an array of token IDs that are for sale
+        // getIDs returns an array of token IDs that are for sale
         pub fun getIDs(): [UInt64] {
             let v3Keys = self.prices.keys
 
-            // Add any V1 SaleCollection IDs if they exist
             if let marketV1 = self.marketV1Capability {
                 let v1Keys = marketV1.borrow()!.getIDs()
                 return v1Keys.concat(v3Keys)
@@ -288,21 +298,19 @@ pub contract TopShotMarketV3 {
             }
         }
 
-        /// borrowMoment Returns a borrowed reference to a Moment for sale
-        /// so that the caller can read data from it
-        ///
-        /// Parameters: id: The ID of the moment to borrow a reference to
-        ///
-        /// Returns: &TopShot.NFT? Optional reference to a moment for sale 
-        ///                        so that the caller can read its data
-        ///
+        // borrowMoment Returns a borrowed reference to a Moment for sale
+        // so that the caller can read data from it
+        //
+        // Parameters: id: The ID of the moment to borrow a reference to
+        //
+        // Returns: &TopShot.NFT? Optional reference to a moment for sale 
+        //                        so that the caller can read its data
+        //
         pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
-            // first check this collection
             if self.prices[id] != nil {
                 let ref = self.ownerCollection.borrow()!.borrowMoment(id: id)
                 return ref
             } else {
-                // If it wasn't found here, check the V1 SaleCollection
                 if let marketV1 = self.marketV1Capability {
                     return marketV1.borrow()!.borrowMoment(id: id)
                 }
@@ -311,7 +319,7 @@ pub contract TopShotMarketV3 {
         }
     }
 
-    /// createCollection returns a new collection resource to the caller
+    // createCollection returns a new collection resource to the caller
     pub fun createSaleCollection(ownerCollection: Capability<&TopShot.Collection>,
                                  ownerCapability: Capability<&{FungibleToken.Receiver}>,
                                  beneficiaryCapability: Capability<&{FungibleToken.Receiver}>,
