@@ -179,9 +179,6 @@ pub contract TopShotMarketV3 {
                 } else {
                     panic("Token with the specified ID is not already for sale in either sale collection")
                 }
-
-            } else {
-                panic("Token with the specified ID is not already for sale in either sale collection")
             }
         }
 
