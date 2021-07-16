@@ -962,7 +962,7 @@ func TestMarketV3(t *testing.T) {
 		result = executeScriptAndCheck(t, b, templates.GenerateGetSalePercentageV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress))})
 		assertEqual(t, CadenceUFix64("0.15"), result)
 
-		// Should fail because this ID is not for sale
+		// Should not fail if an ID is not for sale
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCancelSaleV3Script(env), bastianAddress)
 
 		_ = tx.AddArgument(cadence.NewUInt64(4))
@@ -970,7 +970,7 @@ func TestMarketV3(t *testing.T) {
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
-			true,
+			false,
 		)
 
 		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCancelSaleV3Script(env), bastianAddress)

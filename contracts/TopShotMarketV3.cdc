@@ -176,8 +176,6 @@ pub contract TopShotMarketV3 {
 
                     // deposit the withdrawn moment into the main collection
                     ownerCollectionRef.deposit(token: <-token)
-                } else {
-                    panic("Token with the specified ID is not already for sale in either sale collection")
                 }
             }
         }
