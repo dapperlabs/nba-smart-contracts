@@ -54,8 +54,6 @@ pub contract TopShotMarketV3 {
     pub event MomentPurchased(id: UInt64, price: UFix64, seller: Address?)
     /// emitted when a moment has been withdrawn from the sale
     pub event MomentWithdrawn(id: UInt64, owner: Address?)
-    /// emitted when the cut percentage of the sale has been changed by the owner
-    pub event CutPercentageChanged(newPercent: UFix64, seller: Address?)
 
     /// Path where the `SaleCollection` is stored
     pub let marketStoragePath: StoragePath
@@ -178,12 +176,7 @@ pub contract TopShotMarketV3 {
 
                     // deposit the withdrawn moment into the main collection
                     ownerCollectionRef.deposit(token: <-token)
-                } else {
-                    panic("Token with the specified ID is not already for sale in either sale collection")
                 }
-
-            } else {
-                panic("Token with the specified ID is not already for sale in either sale collection")
             }
         }
 
@@ -228,12 +221,17 @@ pub contract TopShotMarketV3 {
                 return <-boughtMoment
 
             // If not found in this SaleCollection, check V1
-            } else if let v1Market = self.marketV1Capability {
-                let v1MarketRef = v1Market.borrow()!
+            } else {
+                if let v1Market = self.marketV1Capability {
+                    let v1MarketRef = v1Market.borrow()!
 
-                return <-v1MarketRef.purchase(tokenID: tokenID, buyTokens: <-buyTokens)
+                    return <-v1MarketRef.purchase(tokenID: tokenID, buyTokens: <-buyTokens)
+                } else {
+                    panic("No token matching this ID for sale!")
+                }
             }
             
+            destroy buyTokens // This line can be removed when this issue is released: https://github.com/onflow/cadence/pull/1000
             panic("No token matching this ID for sale!")
         }
 
