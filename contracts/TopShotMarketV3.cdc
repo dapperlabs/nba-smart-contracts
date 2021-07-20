@@ -39,6 +39,7 @@ import FungibleToken from 0xFUNGIBLETOKENADDRESS
 import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 import Market from 0xMARKETADDRESS
+import DapperUtilityCoin from 0xDUCADDRESS
 
 pub contract TopShotMarketV3 {
 
@@ -187,7 +188,7 @@ pub contract TopShotMarketV3 {
         ///             buyTokens: the fungible tokens that are used to buy the NFT
         ///
         /// Returns: @TopShot.NFT: the purchased NFT
-        pub fun purchase(tokenID: UInt64, buyTokens: @FungibleToken.Vault): @TopShot.NFT {
+        pub fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
 
             // First check this sale collection for the NFT
             if self.prices[tokenID] != nil {

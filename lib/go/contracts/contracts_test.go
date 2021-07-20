@@ -11,6 +11,8 @@ import (
 var addrA = "0A"
 var addrB = "0B"
 var addrC = "0C"
+var addrD = "0D"
+var addrE = "0E"
 
 func TestTopShotContract(t *testing.T) {
 	contract := contracts.GenerateTopShotContract(addrA)
@@ -30,7 +32,13 @@ func TestTopShotAdminReceiverContract(t *testing.T) {
 }
 
 func TestTopShotMarketContract(t *testing.T) {
-	contract := contracts.GenerateTopShotMarketContract(addrA, addrB, addrC)
+	contract := contracts.GenerateTopShotMarketContract(addrA, addrB, addrC, addrD)
+	assert.NotNil(t, contract)
+	assert.Contains(t, string(contract), addrA)
+}
+
+func TestTopShotMarketV3Contract(t *testing.T) {
+	contract := contracts.GenerateTopShotMarketV3Contract(addrA, addrB, addrC, addrD, addrE)
 	assert.NotNil(t, contract)
 	assert.Contains(t, string(contract), addrA)
 }
