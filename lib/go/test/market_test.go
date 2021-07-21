@@ -60,7 +60,7 @@ func TestMarketDeployment(t *testing.T) {
 
 	// Should be able to deploy a token contract
 	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage, "1000.0")
-	_, err = b.CreateAccount(nil, []sdktemplates.Contract{
+	tokenAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "DapperUtilityCoin",
 			Source: string(tokenCode),
@@ -73,7 +73,7 @@ func TestMarketDeployment(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should be able to deploy the market contract
-	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
+	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), tokenAddr.String())
 	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "Market",
@@ -86,7 +86,7 @@ func TestMarketDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	require.NoError(t, err)
 
-	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String())
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), tokenAddr.String())
 	_, err = b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotMarketV3",
@@ -163,7 +163,7 @@ func TestMarketV1(t *testing.T) {
 	env.DUCAddress = tokenAddr.String()
 
 	// Should be able to deploy the market contract
-	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
+	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), env.DUCAddress)
 	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "Market",
@@ -497,19 +497,8 @@ func TestMarketV1(t *testing.T) {
 	})
 
 	t.Run("Can change the cut percentage of a sale", func(t *testing.T) {
-		// cannot change the cut percentage for the sale collection to greater than 100%
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateChangePercentageScript(env), bastianAddress)
-
-		_ = tx.AddArgument(CadenceUFix64("2.18"))
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
-			true,
-		)
-
 		// change the cut percentage for the sale collection to 18%
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateChangePercentageScript(env), bastianAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateChangePercentageScript(env), bastianAddress)
 
 		_ = tx.AddArgument(CadenceUFix64("0.18"))
 
@@ -692,7 +681,7 @@ func TestMarketV3(t *testing.T) {
 	env.DUCAddress = tokenAddr.String()
 
 	// Setup with the first market contract
-	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String())
+	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), env.DUCAddress)
 	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "Market",
@@ -708,7 +697,7 @@ func TestMarketV3(t *testing.T) {
 	env.TopShotMarketAddress = marketAddr.String()
 
 	// Should be able to deploy the third market contract
-	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String())
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), env.DUCAddress)
 	marketV3Addr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotMarketV3",

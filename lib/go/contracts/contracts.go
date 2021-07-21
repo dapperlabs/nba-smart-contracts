@@ -10,9 +10,11 @@ import (
 )
 
 const (
-	topshotFile                    = "TopShot.cdc"
-	marketV3File                   = "TopShotMarketV3.cdc"
-	marketFile                     = "MarketTopShot.cdc"
+	topshotFile  = "TopShot.cdc"
+	marketV3File = "TopShotMarketV3.cdc"
+	// There is a MarketTopShot.cdc contract which was updated to be token agnostic, however this was not backwards compatible.
+	// MarketTopShotOldVersion.cdc is the current contract in production
+	marketFile                     = "MarketTopShotOldVersion.cdc"
 	shardedCollectionFile          = "TopShotShardedCollection.cdc"
 	adminReceiverFile              = "TopshotAdminReceiver.cdc"
 	defaultNonFungibleTokenAddress = "NFTADDRESS"
@@ -57,25 +59,27 @@ func GenerateTopshotAdminReceiverContract(topshotAddr, shardedAddr string) []byt
 
 // GenerateTopShotMarketContract returns a copy
 // of the TopShotMarketContract with the import addresses updated
-func GenerateTopShotMarketContract(ftAddr, nftAddr, topshotAddr string) []byte {
+func GenerateTopShotMarketContract(ftAddr, nftAddr, topshotAddr, ducTokenAddr string) []byte {
 
 	marketCode := assets.MustAssetString(marketFile)
 	codeWithNFTAddr := strings.ReplaceAll(marketCode, defaultNonFungibleTokenAddress, nftAddr)
 	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 	codeWithFTAddr := strings.ReplaceAll(codeWithTopshotAddr, defaultFungibleTokenAddress, ftAddr)
+	codeWithTokenAddr := strings.ReplaceAll(codeWithFTAddr, "DUCADDRESS", ducTokenAddr)
 
-	return []byte(codeWithFTAddr)
+	return []byte(codeWithTokenAddr)
 }
 
 // GenerateTopShotMarketV3Contract returns a copy
 // of the third version TopShotMarketContract with the import addresses updated
-func GenerateTopShotMarketV3Contract(ftAddr, nftAddr, topshotAddr, marketAddr string) []byte {
+func GenerateTopShotMarketV3Contract(ftAddr, nftAddr, topshotAddr, marketAddr, ducTokenAddr string) []byte {
 
 	marketCode := assets.MustAssetString(marketV3File)
 	codeWithNFTAddr := strings.ReplaceAll(marketCode, defaultNonFungibleTokenAddress, nftAddr)
 	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 	codeWithFTAddr := strings.ReplaceAll(codeWithTopshotAddr, defaultFungibleTokenAddress, ftAddr)
 	codeWithMarketV3Addr := strings.ReplaceAll(codeWithFTAddr, defaultMarketAddress, marketAddr)
+	codeWithTokenAddr := strings.ReplaceAll(codeWithMarketV3Addr, "DUCADDRESS", ducTokenAddr)
 
-	return []byte(codeWithMarketV3Addr)
+	return []byte(codeWithTokenAddr)
 }
