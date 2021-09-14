@@ -143,7 +143,7 @@ pub contract TopShot: NonFungibleToken {
         // This is not the long term way NFT metadata will be stored. It's a temporary
         // construct while we figure out a better way to do metadata.
         //
-        pub let metadata: {String: String}
+        access(self) let metadata: {String: String}
 
         init(metadata: {String: String}) {
             pre {
@@ -156,6 +156,10 @@ pub contract TopShot: NonFungibleToken {
             TopShot.nextPlayID = TopShot.nextPlayID + UInt32(1)
 
             emit PlayCreated(id: self.playID, metadata: metadata)
+        }
+
+        pub fun getMetadata(): {String: String} {
+            return self.metadata
         }
     }
 
@@ -225,12 +229,12 @@ pub contract TopShot: NonFungibleToken {
         // Array of plays that are a part of this set.
         // When a play is added to the set, its ID gets appended here.
         // The ID does not get removed from this array when a Play is retired.
-        pub var plays: [UInt32]
+        access(contract) var plays: [UInt32]
 
         // Map of Play IDs that Indicates if a Play in this Set can be minted.
         // When a Play is added to a Set, it is mapped to false (not retired).
         // When a Play is retired, this is set to true and cannot be changed.
-        pub var retired: {UInt32: Bool}
+        access(contract) var retired: {UInt32: Bool}
 
         // Indicates if the Set is currently locked.
         // When a Set is created, it is unlocked 
@@ -247,7 +251,7 @@ pub contract TopShot: NonFungibleToken {
         // that have been minted for specific Plays in this Set.
         // When a Moment is minted, this value is stored in the Moment to
         // show its place in the Set, eg. 13 of 60.
-        pub var numberMintedPerPlay: {UInt32: UInt32}
+        access(contract) var numberMintedPerPlay: {UInt32: UInt32}
 
         init(name: String) {
             self.setID = TopShot.nextSetID
@@ -386,6 +390,52 @@ pub contract TopShot: NonFungibleToken {
             }
 
             return <-newCollection
+        }
+
+        pub fun getPlays(): [String] {
+            return self.plays
+        }
+
+        pub fun getRetired(): {UInt32: Bool} {
+            return self.retired
+        }
+
+        pub fun getNumMintedPerPlay(): {UInt32: UInt32} {
+            return self.numberMintedPerPlay
+        }
+    }
+
+    pub struct QuerySetData {
+        pub let setID: UInt32?
+        pub let name: String
+        pub let series: UInt32?
+        access(contract) var plays: [UInt32]
+        access(contract) var retired: {UInt32: Bool}
+        pub var locked: Bool
+        access(contract) var numberMintedPerPlay: {UInt32: UInt32}
+
+        init(setID: UInt32) {
+
+            if TopShot.sets[setID] != nil {
+                let set = &TopShot.sets[setID] as &Set
+                let setData = TopShot.setDatas[setID]
+
+                self.setID = setID
+                self.name = setData.name
+                self.series = setData.series
+                self.plays = set.plays
+                self.retired = set.retired
+                self.locked = set.locked
+                self.numberMintedPerPlay = set.numberMintedPerPlay
+            } else {
+                self.setID = nil
+                self.name = ""
+                self.series = nil
+                self.plays = []
+                self.retired = {}
+                self.locked = false
+                self.numberMintedPerPlay = {}
+            }
         }
     }
 
@@ -877,4 +927,3 @@ pub contract TopShot: NonFungibleToken {
         emit ContractInitialized()
     }
 }
- 
