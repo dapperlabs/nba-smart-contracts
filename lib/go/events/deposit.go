@@ -38,10 +38,6 @@ func (evt depositEvent) Owner() string {
 	return evt.To()
 }
 
-func (evt depositEvent) isValidEvent() bool {
-	return evt.EventType.QualifiedIdentifier == EventDeposit
-}
-
 func (evt depositEvent) validate() error {
 	if evt.EventType.QualifiedIdentifier != EventDeposit{
 		return fmt.Errorf("error validating event: event is not a valid moment destroyed event, expected type %s, got %s",
