@@ -1,6 +1,7 @@
 package events
 
 import (
+	"fmt"
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 )
@@ -15,8 +16,16 @@ type MomentDestroyedEvent interface {
 
 type momentDestroyedEvent cadence.Event
 
-func (a momentDestroyedEvent) Id() uint64 {
-	return uint64(a.Fields[0].(cadence.UInt64))
+func (evt momentDestroyedEvent) Id() uint64 {
+	return uint64(evt.Fields[0].(cadence.UInt64))
+}
+
+func (evt momentDestroyedEvent) validate() error {
+	if evt.EventType.QualifiedIdentifier != EventMomentDestroyed{
+		return fmt.Errorf("error validating event: event is not a valid moment destroyed event, expected type %s, got %s",
+			EventMomentDestroyed, evt.EventType.QualifiedIdentifier)
+	}
+	return nil
 }
 
 func DecodeMomentDestroyedEvent(b []byte) (MomentDestroyedEvent, error) {
@@ -24,5 +33,9 @@ func DecodeMomentDestroyedEvent(b []byte) (MomentDestroyedEvent, error) {
 	if err != nil {
 		return nil, err
 	}
-	return momentDestroyedEvent(value.(cadence.Event)), nil
+	event := momentDestroyedEvent(value.(cadence.Event))
+	if err := event.validate(); err != nil{
+		return nil, fmt.Errorf("error decoding event: %w", err)
+	}
+	return event, nil
 }
