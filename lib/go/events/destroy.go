@@ -31,7 +31,7 @@ func DecodeMomentDestroyedEvent(b []byte) (MomentDestroyedEvent, error) {
 	}
 	event := momentDestroyedEvent(value.(cadence.Event))
 	if !event.isValidEvent(){
-		return nil, fmt.Errorf("error decoding event: event is not a valid deposit event")
+		return nil, fmt.Errorf("error decoding event: event is not a valid moment destroyed event")
 	}
 	return event, nil
 }
