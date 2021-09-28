@@ -1,6 +1,7 @@
 package events
 
 import (
+	"fmt"
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 )
@@ -15,8 +16,12 @@ type MomentDestroyedEvent interface {
 
 type momentDestroyedEvent cadence.Event
 
-func (a momentDestroyedEvent) Id() uint64 {
-	return uint64(a.Fields[0].(cadence.UInt64))
+func (evt momentDestroyedEvent) Id() uint64 {
+	return uint64(evt.Fields[0].(cadence.UInt64))
+}
+
+func (evt momentDestroyedEvent) isValidEvent() bool {
+	return evt.EventType.QualifiedIdentifier == EventMomentDestroyed
 }
 
 func DecodeMomentDestroyedEvent(b []byte) (MomentDestroyedEvent, error) {
@@ -24,5 +29,9 @@ func DecodeMomentDestroyedEvent(b []byte) (MomentDestroyedEvent, error) {
 	if err != nil {
 		return nil, err
 	}
-	return momentDestroyedEvent(value.(cadence.Event)), nil
+	event := momentDestroyedEvent(value.(cadence.Event))
+	if !event.isValidEvent(){
+		return nil, fmt.Errorf("error decoding event: event is not a valid deposit event")
+	}
+	return event, nil
 }
