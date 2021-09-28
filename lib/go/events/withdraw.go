@@ -1,6 +1,7 @@
 package events
 
 import (
+	"fmt"
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 	"github.com/onflow/flow-go-sdk"
@@ -38,10 +39,18 @@ func (evt withdrawEvent) Owner() string {
 	return evt.From()
 }
 
+func (evt withdrawEvent) isValidEvent() bool {
+	return evt.EventType.QualifiedIdentifier == EventWithdraw
+}
+
 func DecodeWithdrawEvent(b []byte) (WithdrawEvent, error) {
 	value, err := jsoncdc.Decode(b)
 	if err != nil {
 		return nil, err
 	}
-	return withdrawEvent(value.(cadence.Event)), nil
+	event := withdrawEvent(value.(cadence.Event))
+	if !event.isValidEvent(){
+		return nil, fmt.Errorf("error decoding event: event is not a valid withdraw event")
+	}
+	return event, nil
 }

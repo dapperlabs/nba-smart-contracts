@@ -1,12 +1,13 @@
 package events
 
 import (
+	"fmt"
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 )
 
 var (
-	EventPlayCreated string = "TopShot.PlayCreated"
+	EventPlayCreated = "TopShot.PlayCreated"
 )
 
 type PlayCreatedEvent interface {
@@ -24,10 +25,18 @@ func (evt playCreatedEvent) MetaData() map[interface{}]interface{} {
 	return evt.Fields[1].(cadence.Dictionary).ToGoValue().(map[interface{}]interface{})
 }
 
+func (evt playCreatedEvent) isValidEvent() bool {
+	return evt.EventType.QualifiedIdentifier == EventPlayCreated
+}
+
 func DecodePlayCreatedEvent(b []byte) (PlayCreatedEvent, error) {
 	value, err := jsoncdc.Decode(b)
 	if err != nil {
 		return nil, err
 	}
-	return playCreatedEvent(value.(cadence.Event)), nil
+	event := playCreatedEvent(value.(cadence.Event))
+	if !event.isValidEvent(){
+		return nil, fmt.Errorf("error decoding event: event is not a valid play created event")
+	}
+	return event, nil
 }

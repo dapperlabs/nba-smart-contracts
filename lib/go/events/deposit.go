@@ -1,6 +1,7 @@
 package events
 
 import (
+	"fmt"
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 	"github.com/onflow/flow-go-sdk"
@@ -37,10 +38,18 @@ func (evt depositEvent) Owner() string {
 	return evt.To()
 }
 
+func (evt depositEvent) isValidEvent() bool {
+	return evt.EventType.QualifiedIdentifier == EventDeposit
+}
+
 func DecodeDepositEvent(b []byte) (DepositEvent, error) {
 	value, err := jsoncdc.Decode(b)
 	if err != nil {
 		return nil, err
 	}
-	return depositEvent(value.(cadence.Event)), nil
+	event := depositEvent(value.(cadence.Event))
+	if !event.isValidEvent(){
+		return nil, fmt.Errorf("error decoding event: event is not a valid deposit event")
+	}
+	return event, nil
 }

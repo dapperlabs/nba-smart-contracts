@@ -1,12 +1,13 @@
 package events
 
 import (
+	"fmt"
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 )
 
 var (
-	EventSetCreated string = "TopShot.SetCreated"
+	EventSetCreated = "TopShot.SetCreated"
 )
 
 type SetCreatedEvent interface {
@@ -16,12 +17,16 @@ type SetCreatedEvent interface {
 
 type setCreatedEvent cadence.Event
 
-func (s setCreatedEvent) SetID() uint32 {
-	return uint32(s.Fields[0].(cadence.UInt32))
+func (evt setCreatedEvent) SetID() uint32 {
+	return uint32(evt.Fields[0].(cadence.UInt32))
 }
 
-func (s setCreatedEvent) Series() uint32 {
-	return uint32(s.Fields[1].(cadence.UInt32))
+func (evt setCreatedEvent) Series() uint32 {
+	return uint32(evt.Fields[1].(cadence.UInt32))
+}
+
+func (evt setCreatedEvent) isValidEvent() bool {
+	return evt.EventType.QualifiedIdentifier == EventSetCreated
 }
 
 var _ SetCreatedEvent = (*setCreatedEvent)(nil)
@@ -31,5 +36,9 @@ func DecodeSetCreatedEvent(b []byte) (SetCreatedEvent, error) {
 	if err != nil {
 		return nil, err
 	}
-	return setCreatedEvent(value.(cadence.Event)), nil
+	event := setCreatedEvent(value.(cadence.Event))
+	if !event.isValidEvent(){
+		return nil, fmt.Errorf("error decoding event: event is not a valid set created event")
+	}
+	return event, nil
 }

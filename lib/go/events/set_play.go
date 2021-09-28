@@ -1,12 +1,13 @@
 package events
 
 import (
+	"fmt"
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 )
 
 var (
-	EventPlayAddedToSet string = "TopShot.PlayAddedToSet"
+	EventPlayAddedToSet = "TopShot.PlayAddedToSet"
 )
 
 type PlayAddedToSetEvent interface {
@@ -16,12 +17,16 @@ type PlayAddedToSetEvent interface {
 
 type playAddedToSetEvent cadence.Event
 
-func (p playAddedToSetEvent) SetID() uint32 {
-	return uint32(p.Fields[0].(cadence.UInt32))
+func (evt playAddedToSetEvent) SetID() uint32 {
+	return uint32(evt.Fields[0].(cadence.UInt32))
 }
 
-func (p playAddedToSetEvent) PlayID() uint32 {
-	return uint32(p.Fields[1].(cadence.UInt32))
+func (evt playAddedToSetEvent) PlayID() uint32 {
+	return uint32(evt.Fields[1].(cadence.UInt32))
+}
+
+func (evt playAddedToSetEvent) isValidEvent() bool {
+	return evt.EventType.QualifiedIdentifier == EventPlayAddedToSet
 }
 
 var _ PlayAddedToSetEvent = (*playAddedToSetEvent)(nil)
@@ -31,6 +36,10 @@ func DecodePlayAddedToSetEvent(b []byte)(PlayAddedToSetEvent, error) {
 	if err != nil {
 		return nil, err
 	}
-	return playAddedToSetEvent(value.(cadence.Event)), nil
+	event := playAddedToSetEvent(value.(cadence.Event))
+	if !event.isValidEvent(){
+		return nil, fmt.Errorf("error decoding event: event is not a valid play added to set event")
+	}
+	return event, nil
 
 }
