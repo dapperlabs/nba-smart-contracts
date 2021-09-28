@@ -30,8 +30,12 @@ func (evt setPlayRetiredEvent) NumMoments() uint32 {
 	return uint32(evt.Fields[2].(cadence.UInt32))
 }
 
-func (evt setPlayRetiredEvent) isValidEvent() bool {
-	return evt.EventType.QualifiedIdentifier == EventPlayRetiredFromSet
+func (evt setPlayRetiredEvent) validate() error {
+	if evt.EventType.QualifiedIdentifier != EventPlayRetiredFromSet{
+		return fmt.Errorf("error validating event: event is not a valid play retired from set event, expected type %s, got %s",
+			EventPlayRetiredFromSet, evt.EventType.QualifiedIdentifier)
+	}
+	return nil
 }
 
 var _ SetPlayRetiredEvent = (*setPlayRetiredEvent)(nil)
@@ -42,8 +46,8 @@ func DecodeSetPlayRetiredEvent(b []byte) (SetPlayRetiredEvent, error) {
 		return nil, err
 	}
 	event := setPlayRetiredEvent(value.(cadence.Event))
-	if !event.isValidEvent(){
-		return nil, fmt.Errorf("error decoding event: event is not a valid play retired from set event")
+	if err := event.validate(); err != nil{
+		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
 	return event, nil
 }

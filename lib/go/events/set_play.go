@@ -25,8 +25,12 @@ func (evt playAddedToSetEvent) PlayID() uint32 {
 	return uint32(evt.Fields[1].(cadence.UInt32))
 }
 
-func (evt playAddedToSetEvent) isValidEvent() bool {
-	return evt.EventType.QualifiedIdentifier == EventPlayAddedToSet
+func (evt playAddedToSetEvent) validate() error {
+	if evt.EventType.QualifiedIdentifier != EventPlayAddedToSet{
+		return fmt.Errorf("error validating event: event is not a valid play added to set event, expected type %s, got %s",
+			EventPlayAddedToSet, evt.EventType.QualifiedIdentifier)
+	}
+	return nil
 }
 
 var _ PlayAddedToSetEvent = (*playAddedToSetEvent)(nil)
@@ -37,8 +41,8 @@ func DecodePlayAddedToSetEvent(b []byte)(PlayAddedToSetEvent, error) {
 		return nil, err
 	}
 	event := playAddedToSetEvent(value.(cadence.Event))
-	if !event.isValidEvent(){
-		return nil, fmt.Errorf("error decoding event: event is not a valid play added to set event")
+	if err := event.validate(); err != nil{
+		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
 	return event, nil
 

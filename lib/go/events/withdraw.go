@@ -39,8 +39,12 @@ func (evt withdrawEvent) Owner() string {
 	return evt.From()
 }
 
-func (evt withdrawEvent) isValidEvent() bool {
-	return evt.EventType.QualifiedIdentifier == EventWithdraw
+func (evt withdrawEvent) validate() error {
+	if evt.EventType.QualifiedIdentifier != EventWithdraw{
+		return fmt.Errorf("error validating event: event is not a valid withdraw event, expected type %s, got %s",
+			EventWithdraw, evt.EventType.QualifiedIdentifier)
+	}
+	return nil
 }
 
 func DecodeWithdrawEvent(b []byte) (WithdrawEvent, error) {
@@ -49,8 +53,8 @@ func DecodeWithdrawEvent(b []byte) (WithdrawEvent, error) {
 		return nil, err
 	}
 	event := withdrawEvent(value.(cadence.Event))
-	if !event.isValidEvent(){
-		return nil, fmt.Errorf("error decoding event: event is not a valid withdraw event")
+	if err := event.validate(); err != nil{
+		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
 	return event, nil
 }

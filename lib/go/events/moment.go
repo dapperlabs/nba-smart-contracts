@@ -36,8 +36,12 @@ func (evt momentMintedEvent) SerialNumber() uint32 {
 	return uint32(evt.Fields[3].(cadence.UInt32))
 }
 
-func (evt momentMintedEvent) isValidEvent() bool {
-	return evt.EventType.QualifiedIdentifier == EventMomentMinted
+func (evt momentMintedEvent) validate() error {
+	if evt.EventType.QualifiedIdentifier != EventMomentMinted{
+		return fmt.Errorf("error validating event: event is not a valid moment minted event, expected type %s, got %s",
+			EventMomentMinted, evt.EventType.QualifiedIdentifier)
+	}
+	return nil
 }
 
 var _ MomentMintedEvent = (*momentMintedEvent)(nil)
@@ -48,8 +52,8 @@ func DecodeMomentMintedEvent(b []byte) (MomentMintedEvent, error) {
 		return nil, err
 	}
 	event := momentMintedEvent(value.(cadence.Event))
-	if !event.isValidEvent(){
-		return nil, fmt.Errorf("error decoding event: event is not a valid moment minted event")
+	if err := event.validate(); err != nil{
+		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
 	return event, nil
 }

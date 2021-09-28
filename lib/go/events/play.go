@@ -25,8 +25,12 @@ func (evt playCreatedEvent) MetaData() map[interface{}]interface{} {
 	return evt.Fields[1].(cadence.Dictionary).ToGoValue().(map[interface{}]interface{})
 }
 
-func (evt playCreatedEvent) isValidEvent() bool {
-	return evt.EventType.QualifiedIdentifier == EventPlayCreated
+func (evt playCreatedEvent) validate() error {
+	if evt.EventType.QualifiedIdentifier != EventPlayCreated{
+		return fmt.Errorf("error validating event: event is not a valid play created event, expected type %s, got %s",
+			EventPlayCreated, evt.EventType.QualifiedIdentifier)
+	}
+	return nil
 }
 
 func DecodePlayCreatedEvent(b []byte) (PlayCreatedEvent, error) {
@@ -35,8 +39,8 @@ func DecodePlayCreatedEvent(b []byte) (PlayCreatedEvent, error) {
 		return nil, err
 	}
 	event := playCreatedEvent(value.(cadence.Event))
-	if !event.isValidEvent(){
-		return nil, fmt.Errorf("error decoding event: event is not a valid play created event")
+	if err := event.validate(); err != nil{
+		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
 	return event, nil
 }

@@ -42,14 +42,22 @@ func (evt depositEvent) isValidEvent() bool {
 	return evt.EventType.QualifiedIdentifier == EventDeposit
 }
 
+func (evt depositEvent) validate() error {
+	if evt.EventType.QualifiedIdentifier != EventDeposit{
+		return fmt.Errorf("error validating event: event is not a valid moment destroyed event, expected type %s, got %s",
+			EventDeposit, evt.EventType.QualifiedIdentifier)
+	}
+	return nil
+}
+
 func DecodeDepositEvent(b []byte) (DepositEvent, error) {
 	value, err := jsoncdc.Decode(b)
 	if err != nil {
 		return nil, err
 	}
 	event := depositEvent(value.(cadence.Event))
-	if !event.isValidEvent(){
-		return nil, fmt.Errorf("error decoding event: event is not a valid deposit event")
+	if err := event.validate(); err != nil{
+		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
 	return event, nil
 }

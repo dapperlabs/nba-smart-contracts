@@ -20,8 +20,12 @@ func (evt momentDestroyedEvent) Id() uint64 {
 	return uint64(evt.Fields[0].(cadence.UInt64))
 }
 
-func (evt momentDestroyedEvent) isValidEvent() bool {
-	return evt.EventType.QualifiedIdentifier == EventMomentDestroyed
+func (evt momentDestroyedEvent) validate() error {
+	if evt.EventType.QualifiedIdentifier != EventMomentDestroyed{
+		return fmt.Errorf("error validating event: event is not a valid moment destroyed event, expected type %s, got %s",
+			EventMomentDestroyed, evt.EventType.QualifiedIdentifier)
+	}
+	return nil
 }
 
 func DecodeMomentDestroyedEvent(b []byte) (MomentDestroyedEvent, error) {
@@ -30,8 +34,8 @@ func DecodeMomentDestroyedEvent(b []byte) (MomentDestroyedEvent, error) {
 		return nil, err
 	}
 	event := momentDestroyedEvent(value.(cadence.Event))
-	if !event.isValidEvent(){
-		return nil, fmt.Errorf("error decoding event: event is not a valid moment destroyed event")
+	if err := event.validate(); err != nil{
+		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
 	return event, nil
 }

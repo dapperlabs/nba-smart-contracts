@@ -25,8 +25,12 @@ func (evt setCreatedEvent) Series() uint32 {
 	return uint32(evt.Fields[1].(cadence.UInt32))
 }
 
-func (evt setCreatedEvent) isValidEvent() bool {
-	return evt.EventType.QualifiedIdentifier == EventSetCreated
+func (evt setCreatedEvent) validate() error {
+	if evt.EventType.QualifiedIdentifier != EventSetCreated{
+		return fmt.Errorf("error validating event: event is not a valid set created event, expected type %s, got %s",
+			EventSetCreated, evt.EventType.QualifiedIdentifier)
+	}
+	return nil
 }
 
 var _ SetCreatedEvent = (*setCreatedEvent)(nil)
@@ -37,8 +41,8 @@ func DecodeSetCreatedEvent(b []byte) (SetCreatedEvent, error) {
 		return nil, err
 	}
 	event := setCreatedEvent(value.(cadence.Event))
-	if !event.isValidEvent(){
-		return nil, fmt.Errorf("error decoding event: event is not a valid set created event")
+	if err := event.validate(); err != nil{
+		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
 	return event, nil
 }
