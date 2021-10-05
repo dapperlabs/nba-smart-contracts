@@ -405,6 +405,11 @@ pub contract TopShot: NonFungibleToken {
         }
     }
 
+    // Struct that contains all of the important data about a set
+    // Can be easily queried by instantiating the `QuerySetData` object
+    // with the desired set ID
+    // let setData = TopShot.QuerySetData(setID: 12)
+    //
     pub struct QuerySetData {
         pub let setID: UInt32?
         pub let name: String
@@ -519,7 +524,8 @@ pub contract TopShot: NonFungibleToken {
         //
         // Parameters: name: The name of the Set
         //
-        pub fun createSet(name: String) {
+        // Returns: The ID of the created set
+        pub fun createSet(name: String): UInt32 {
             // Create the new Set
             var newSet <- create Set(name: name)
 
