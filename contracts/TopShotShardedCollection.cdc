@@ -35,8 +35,8 @@
 
 */
 
-// import NonFungibleToken from 0xNFTADDRESS
-// import TopShot from 0xTOPSHOTADDRESS
+import NonFungibleToken from 0xNFTADDRESS
+import TopShot from 0xTOPSHOTADDRESS
 
 pub contract TopShotShardedCollection {
 
