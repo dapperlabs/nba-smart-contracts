@@ -850,14 +850,11 @@ pub contract TopShot: NonFungibleToken {
     // Returns: Boolean indicating if the edition is retired or not
     pub fun isEditionRetired(setID: UInt32, playID: UInt32): Bool? {
         // Don't force a revert if the set or play ID is invalid
-        // Remove the set from the dictionary to get its field
-        if let setToRead <- TopShot.sets.remove(key: setID) {
+        // borrow a reference to the set
+        if let setToRead = &TopShot.sets[setID] as? &TopShot.Set {
 
             // See if the Play is retired from this Set
             let retired = setToRead.retired[playID]
-
-            // Put the Set back in the contract storage
-            TopShot.sets[setID] <-! setToRead
 
             // Return the retired status
             return retired
@@ -891,14 +888,11 @@ pub contract TopShot: NonFungibleToken {
     //          that have been minted from an edition
     pub fun getNumMomentsInEdition(setID: UInt32, playID: UInt32): UInt32? {
         // Don't force a revert if the Set or play ID is invalid
-        // Remove the Set from the dictionary to get its field
-        if let setToRead <- TopShot.sets.remove(key: setID) {
+        // borrow a reference to the set
+        if let setToRead = &TopShot.sets[setID] as? &TopShot.Set{
 
             // Read the numMintedPerPlay
             let amount = setToRead.numberMintedPerPlay[playID]
-
-            // Put the Set back into the Sets dictionary
-            TopShot.sets[setID] <-! setToRead
 
             return amount
         } else {
