@@ -392,7 +392,7 @@ pub contract TopShot: NonFungibleToken {
             return <-newCollection
         }
 
-        pub fun getPlays(): [String] {
+        pub fun getPlays(): [UInt32] {
             return self.plays
         }
 
@@ -411,36 +411,29 @@ pub contract TopShot: NonFungibleToken {
     // let setData = TopShot.QuerySetData(setID: 12)
     //
     pub struct QuerySetData {
-        pub let setID: UInt32?
+        pub let setID: UInt32
         pub let name: String
-        pub let series: UInt32?
+        pub let series: UInt32
         access(contract) var plays: [UInt32]
         access(contract) var retired: {UInt32: Bool}
         pub var locked: Bool
         access(contract) var numberMintedPerPlay: {UInt32: UInt32}
 
         init(setID: UInt32) {
-
-            if TopShot.sets[setID] != nil {
-                let set = &TopShot.sets[setID] as &Set
-                let setData = TopShot.setDatas[setID]
-
-                self.setID = setID
-                self.name = setData.name
-                self.series = setData.series
-                self.plays = set.plays
-                self.retired = set.retired
-                self.locked = set.locked
-                self.numberMintedPerPlay = set.numberMintedPerPlay
-            } else {
-                self.setID = nil
-                self.name = ""
-                self.series = nil
-                self.plays = []
-                self.retired = {}
-                self.locked = false
-                self.numberMintedPerPlay = {}
+            pre {
+                TopShot.sets[setID] != nil: "The set with the provided ID does not exist"
             }
+
+            let set = &TopShot.sets[setID] as &Set
+            let setData = TopShot.setDatas[setID]!
+
+            self.setID = setID
+            self.name = setData.name
+            self.series = setData.series
+            self.plays = set.plays
+            self.retired = set.retired
+            self.locked = set.locked
+            self.numberMintedPerPlay = set.numberMintedPerPlay
         }
     }
 
@@ -529,8 +522,12 @@ pub contract TopShot: NonFungibleToken {
             // Create the new Set
             var newSet <- create Set(name: name)
 
+            let newID = newSet.setID
+
             // Store it in the sets mapping field
-            TopShot.sets[newSet.setID] <-! newSet
+            TopShot.sets[newID] <-! newSet
+
+            return newID
         }
 
         // borrowSet returns a reference to a set in the TopShot
@@ -760,7 +757,7 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: The metadata as a String to String mapping optional
     pub fun getPlayMetaData(playID: UInt32): {String: String}? {
-        return self.playDatas[playID]?.metadata
+        return self.playDatas[playID]?.getMetadata()
     }
 
     // getPlayMetaDataByField returns the metadata associated with a 
@@ -775,9 +772,23 @@ pub contract TopShot: NonFungibleToken {
     pub fun getPlayMetaDataByField(playID: UInt32, field: String): String? {
         // Don't force a revert if the playID or field is invalid
         if let play = TopShot.playDatas[playID] {
-            return play.metadata[field]
+            return play.getMetadata()[field]
         } else {
             return nil
+        }
+    }
+
+    // getSetData returns the data that the specified Set
+    //            is associated with.
+    // 
+    // Parameters: setID: The id of the Set that is being searched
+    //
+    // Returns: The QuerySetData struct that has all the important information about the set
+    pub fun getSetData(setID: UInt32): QuerySetData? {
+        if TopShot.sets[setID] == nil {
+            return nil
+        } else {
+            return QuerySetData(setID: setID)
         }
     }
 
@@ -850,8 +861,9 @@ pub contract TopShot: NonFungibleToken {
     // Returns: Boolean indicating if the edition is retired or not
     pub fun isEditionRetired(setID: UInt32, playID: UInt32): Bool? {
         // Don't force a revert if the set or play ID is invalid
+        if TopShot.sets[setID] != nil {
         // borrow a reference to the set
-        if let setToRead = &TopShot.sets[setID] as? &TopShot.Set {
+            let setToRead = &TopShot.sets[setID] as? &TopShot.Set
 
             // See if the Play is retired from this Set
             let retired = setToRead.retired[playID]
@@ -888,8 +900,9 @@ pub contract TopShot: NonFungibleToken {
     //          that have been minted from an edition
     pub fun getNumMomentsInEdition(setID: UInt32, playID: UInt32): UInt32? {
         // Don't force a revert if the Set or play ID is invalid
-        // borrow a reference to the set
-        if let setToRead = &TopShot.sets[setID] as? &TopShot.Set{
+        if TopShot.sets[setID] != nil {
+            // borrow a reference to the set
+            let setToRead = &TopShot.sets[setID] as? &TopShot.Set
 
             // Read the numMintedPerPlay
             let amount = setToRead.numberMintedPerPlay[playID]
