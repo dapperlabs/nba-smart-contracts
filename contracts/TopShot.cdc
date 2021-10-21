@@ -143,7 +143,7 @@ pub contract TopShot: NonFungibleToken {
         // This is not the long term way NFT metadata will be stored. It's a temporary
         // construct while we figure out a better way to do metadata.
         //
-        access(self) let metadata: {String: String}
+        pub let metadata: {String: String}
 
         init(metadata: {String: String}) {
             pre {
@@ -156,10 +156,6 @@ pub contract TopShot: NonFungibleToken {
             TopShot.nextPlayID = TopShot.nextPlayID + UInt32(1)
 
             emit PlayCreated(id: self.playID, metadata: metadata)
-        }
-
-        pub fun getMetadata(): {String: String} {
-            return self.metadata
         }
     }
 
@@ -757,7 +753,7 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: The metadata as a String to String mapping optional
     pub fun getPlayMetaData(playID: UInt32): {String: String}? {
-        return self.playDatas[playID]?.getMetadata()
+        return self.playDatas[playID]?.metadata
     }
 
     // getPlayMetaDataByField returns the metadata associated with a 
@@ -772,7 +768,7 @@ pub contract TopShot: NonFungibleToken {
     pub fun getPlayMetaDataByField(playID: UInt32, field: String): String? {
         // Don't force a revert if the playID or field is invalid
         if let play = TopShot.playDatas[playID] {
-            return play.getMetadata()[field]
+            return play.metadata[field]
         } else {
             return nil
         }
@@ -860,13 +856,11 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: Boolean indicating if the edition is retired or not
     pub fun isEditionRetired(setID: UInt32, playID: UInt32): Bool? {
-        // Don't force a revert if the set or play ID is invalid
-        if TopShot.sets[setID] != nil {
-        // borrow a reference to the set
-            let setToRead = &TopShot.sets[setID] as? &TopShot.Set
+
+        if let setdata = self.getSetData(setID: setID) {
 
             // See if the Play is retired from this Set
-            let retired = setToRead.retired[playID]
+            let retired = setdata.retired[playID]
 
             // Return the retired status
             return retired
@@ -899,13 +893,10 @@ pub contract TopShot: NonFungibleToken {
     // Returns: The total number of Moments 
     //          that have been minted from an edition
     pub fun getNumMomentsInEdition(setID: UInt32, playID: UInt32): UInt32? {
-        // Don't force a revert if the Set or play ID is invalid
-        if TopShot.sets[setID] != nil {
-            // borrow a reference to the set
-            let setToRead = &TopShot.sets[setID] as? &TopShot.Set
+        if let setdata = self.getSetData(setID: setID) {
 
             // Read the numMintedPerPlay
-            let amount = setToRead.numberMintedPerPlay[playID]
+            let amount = setdata.numberMintedPerPlay[playID]
 
             return amount
         } else {

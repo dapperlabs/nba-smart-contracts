@@ -176,6 +176,17 @@ func CadenceUFix64(value string) cadence.Value {
 	return newValue
 }
 
+// CadenceString returns a string value from a string representation
+func CadenceString(value string) cadence.Value {
+	newValue, err := cadence.NewString(value)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return newValue
+}
+
 func bytesToCadenceArray(b []byte) cadence.Array {
 	values := make([]cadence.Value, len(b))
 

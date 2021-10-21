@@ -153,11 +153,11 @@ func TestMintNFTs(t *testing.T) {
 	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
 	joshAddress, _ := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
 
-	firstName := cadence.NewString("FullName")
-	lebron := cadence.NewString("Lebron")
-	oladipo := cadence.NewString("Oladipo")
-	hayward := cadence.NewString("Hayward")
-	durant := cadence.NewString("Durant")
+	firstName := CadenceString("FullName")
+	lebron := CadenceString("Lebron")
+	oladipo := CadenceString("Oladipo")
+	hayward := CadenceString("Hayward")
+	durant := CadenceString("Durant")
 
 	// Admin sends a transaction to create a play
 	t.Run("Should be able to create a new Play", func(t *testing.T) {
@@ -217,14 +217,14 @@ func TestMintNFTs(t *testing.T) {
 		executeScriptAndCheck(t, b, templates.GenerateGetAllPlaysScript(env), nil)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetPlayMetadataFieldScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.String("FullName"))})
-		assert.Equal(t, cadence.NewString("Lebron"), result)
+		assert.Equal(t, CadenceString("Lebron"), result)
 	})
 
 	// Admin creates a new Set with the name Genesis
 	t.Run("Should be able to create a new Set", func(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintSetScript(env), topshotAddr)
 
-		_ = tx.AddArgument(cadence.NewString("Genesis"))
+		_ = tx.AddArgument(CadenceString("Genesis"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -234,7 +234,7 @@ func TestMintNFTs(t *testing.T) {
 
 		// Check that the set name, ID, and series were initialized correctly.
 		result := executeScriptAndCheck(t, b, templates.GenerateGetSetNameScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1))})
-		assert.Equal(t, cadence.NewString("Genesis"), result)
+		assert.Equal(t, CadenceString("Genesis"), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetSetIDsByNameScript(env), [][]byte{jsoncdc.MustEncode(cadence.String("Genesis"))})
 		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt32(1)})
@@ -472,6 +472,17 @@ func TestMintNFTs(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
 			true,
 		)
+
+		verifyQuerySetMetadata(t, b, env,
+			SetMetadata{
+				setID:  1,
+				name:   "Genesis",
+				series: 0,
+				plays:  []uint32{1, 2, 3},
+				//retired {UInt32: Bool}
+				locked: true,
+				//numberMintedPerPlay {UInt32: UInt32}})
+			})
 	})
 
 	// create a new Collection for a user address
@@ -604,8 +615,8 @@ func TestTransferAdmin(t *testing.T) {
 
 	env.AdminReceiverAddress = adminAddr.String()
 
-	firstName := cadence.NewString("FullName")
-	lebron := cadence.NewString("Lebron")
+	firstName := CadenceString("FullName")
+	lebron := CadenceString("Lebron")
 
 	// create a new Collection
 	t.Run("Should be able to transfer an admin Capability to the receiver account", func(t *testing.T) {
@@ -682,10 +693,10 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 		false,
 	)
 
-	firstName := cadence.NewString("FullName")
-	lebron := cadence.NewString("Lebron")
-	hayward := cadence.NewString("Hayward")
-	antetokounmpo := cadence.NewString("Antetokounmpo")
+	firstName := CadenceString("FullName")
+	lebron := CadenceString("Lebron")
+	hayward := CadenceString("Hayward")
+	antetokounmpo := CadenceString("Antetokounmpo")
 
 	// Create plays
 	lebronPlayID := uint32(1)
@@ -729,7 +740,7 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 	genesisSetID := uint32(1)
 	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintSetScript(env), topshotAddr)
 
-	_ = tx.AddArgument(cadence.NewString("Genesis"))
+	_ = tx.AddArgument(CadenceString("Genesis"))
 
 	signAndSubmit(
 		t, b, tx,

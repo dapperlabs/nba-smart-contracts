@@ -26,6 +26,7 @@ const (
 	playsInSetFilename          = "sets/get_plays_in_set.cdc"
 	setNameFilename             = "sets/get_setName.cdc"
 	setLockedFilename           = "sets/get_set_locked.cdc"
+	getSetMetadataFilename      = "sets/get_set_data.cdc"
 
 	// collections scripts
 	collectionIDsFilename       = "collections/get_collection_ids.cdc"
@@ -135,6 +136,12 @@ func GenerateGetPlaysInSetScript(env Environment) []byte {
 // GenerateGetIsSetLockedScript creates a script that indicates if a set is locked
 func GenerateGetIsSetLockedScript(env Environment) []byte {
 	code := assets.MustAssetString(scriptsPath + setLockedFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+func GenerateGetSetMetadataScript(env Environment) []byte {
+	code := assets.MustAssetString(scriptsPath + getSetMetadataFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
