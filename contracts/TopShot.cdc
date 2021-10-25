@@ -151,11 +151,6 @@ pub contract TopShot: NonFungibleToken {
             }
             self.playID = TopShot.nextPlayID
             self.metadata = metadata
-
-            // Increment the ID so that it isn't used again
-            TopShot.nextPlayID = TopShot.nextPlayID + UInt32(1)
-
-            emit PlayCreated(id: self.playID, metadata: metadata)
         }
     }
 
@@ -190,11 +185,6 @@ pub contract TopShot: NonFungibleToken {
             self.setID = TopShot.nextSetID
             self.name = name
             self.series = TopShot.currentSeries
-
-            // Increment the setID so that it isn't used again
-            TopShot.nextSetID = TopShot.nextSetID + UInt32(1)
-
-            emit SetCreated(setID: self.setID, series: self.series)
         }
     }
 
@@ -502,6 +492,11 @@ pub contract TopShot: NonFungibleToken {
             var newPlay = Play(metadata: metadata)
             let newID = newPlay.playID
 
+            // Increment the ID so that it isn't used again
+            TopShot.nextPlayID = TopShot.nextPlayID + UInt32(1)
+
+            emit PlayCreated(id: newPlay.playID, metadata: metadata)
+
             // Store it in the contract storage
             TopShot.playDatas[newID] = newPlay
 
@@ -515,10 +510,16 @@ pub contract TopShot: NonFungibleToken {
         //
         // Returns: The ID of the created set
         pub fun createSet(name: String): UInt32 {
+
             // Create the new Set
             var newSet <- create Set(name: name)
 
+            // Increment the setID so that it isn't used again
+            TopShot.nextSetID = TopShot.nextSetID + UInt32(1)
+
             let newID = newSet.setID
+
+            emit SetCreated(setID: newSet.setID, series: TopShot.currentSeries)
 
             // Store it in the sets mapping field
             TopShot.sets[newID] <-! newSet
