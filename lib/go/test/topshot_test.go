@@ -244,6 +244,24 @@ func TestMintNFTs(t *testing.T) {
 		assert.Equal(t, cadence.NewUInt32(0), result)
 	})
 
+	t.Run("Should not be able to create set and play data structs that increment the id counter", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateSetandPlayDataScript(env), topshotAddr)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			false,
+		)
+
+		// Check that the play ID and set ID were not incremented
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNextPlayIDScript(env), nil)
+		assert.Equal(t, cadence.NewUInt32(5), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNextSetIDScript(env), nil)
+		assert.Equal(t, cadence.NewUInt32(2), result)
+
+	})
+
 	// Admin sends a transaction that adds play 1 to the set
 	t.Run("Should be able to add a play to a Set", func(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateAddPlayToSetScript(env), topshotAddr)

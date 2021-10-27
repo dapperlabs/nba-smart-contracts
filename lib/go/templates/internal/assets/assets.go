@@ -5,6 +5,7 @@
 // ../../../transactions/admin/batch_mint_moment.cdc (1.534kB)
 // ../../../transactions/admin/create_play.cdc (1.026kB)
 // ../../../transactions/admin/create_set.cdc (929B)
+// ../../../transactions/admin/create_set_and_play_struct.cdc (296B)
 // ../../../transactions/admin/fulfill_pack.cdc (1.502kB)
 // ../../../transactions/admin/lock_set.cdc (795B)
 // ../../../transactions/admin/mint_moment.cdc (1.399kB)
@@ -238,6 +239,26 @@ func TransactionsAdminCreate_setCdc() (*asset, error) {
 
 	info := bindataFileInfo{name: "../../../transactions/admin/create_set.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xf3, 0xfe, 0xaf, 0x33, 0xb, 0x29, 0x40, 0x5d, 0x62, 0xa9, 0xf0, 0x6, 0xf7, 0x5f, 0xf2, 0x5b, 0x27, 0x5e, 0x8a, 0xa1, 0x70, 0x5b, 0x2f, 0x6f, 0xfa, 0x8c, 0x2b, 0xe5, 0xe4, 0xbc, 0x83, 0xd9}}
+	return a, nil
+}
+
+var _TransactionsAdminCreate_set_and_play_structCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x64\x8e\xc1\x6a\xc4\x30\x0c\x44\xef\xf9\x8a\xc1\xa7\xe4\x52\x7a\x0e\xec\x21\x90\x42\x6f\xbb\xd4\xf9\x01\xd5\xab\x36\xa1\x6b\xcb\x38\x0a\x6d\x08\xf9\xf7\x62\x97\xd0\x96\xd5\x41\x23\xc1\x3c\x8d\x26\x1f\x25\x29\x06\x89\x76\x14\xc5\x5b\x12\x8f\xc7\xaf\xe1\x7c\xb1\xcf\xe7\xa1\xeb\xfb\x97\x27\x6b\xab\x4a\x13\x85\x99\x9c\x4e\x12\xea\x06\x5b\x05\x00\xa5\xc5\xc4\x91\x12\xd7\xe4\x9c\xb6\xe8\x16\x1d\x3b\xe7\x64\x09\x9a\x5d\xc5\x91\xeb\xc6\x0a\xcf\x4a\x57\x52\x6a\xb1\x59\x4d\x53\x78\x6f\xf1\xa3\x3b\x4e\xd8\xcc\xe5\x46\xeb\xb0\x46\x36\x2d\x8c\x1d\x85\xf1\xca\x4e\x3c\xcf\x58\x82\x4e\x7c\x35\xfb\xff\x6b\x81\x3f\x33\x81\xd3\xf1\xf9\x43\x5e\xeb\xdf\x90\x63\x6a\xee\x38\xcb\xfa\x07\xb3\xac\x3d\x29\xd5\x81\x3c\xe7\xe8\xc0\xf4\xb1\xa2\x08\xa7\xd9\x34\x85\xde\xab\xfd\x3b\x00\x00\xff\xff\x5e\x66\xa8\xf1\x28\x01\x00\x00"
+
+func TransactionsAdminCreate_set_and_play_structCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsAdminCreate_set_and_play_structCdc,
+		"../../../transactions/admin/create_set_and_play_struct.cdc",
+	)
+}
+
+func TransactionsAdminCreate_set_and_play_structCdc() (*asset, error) {
+	bytes, err := TransactionsAdminCreate_set_and_play_structCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/admin/create_set_and_play_struct.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x7a, 0x1a, 0xe, 0x6d, 0xd4, 0x33, 0x49, 0xb2, 0x64, 0x3c, 0xf2, 0xa1, 0xdf, 0x1b, 0xb8, 0x9b, 0x46, 0xc1, 0x7a, 0xe0, 0xb5, 0x5f, 0xe3, 0x17, 0x58, 0x7a, 0x5e, 0x9a, 0x1b, 0x98, 0xee, 0xaa}}
 	return a, nil
 }
 
@@ -1677,6 +1698,7 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/admin/batch_mint_moment.cdc":                    TransactionsAdminBatch_mint_momentCdc,
 	"../../../transactions/admin/create_play.cdc":                          TransactionsAdminCreate_playCdc,
 	"../../../transactions/admin/create_set.cdc":                           TransactionsAdminCreate_setCdc,
+	"../../../transactions/admin/create_set_and_play_struct.cdc":           TransactionsAdminCreate_set_and_play_structCdc,
 	"../../../transactions/admin/fulfill_pack.cdc":                         TransactionsAdminFulfill_packCdc,
 	"../../../transactions/admin/lock_set.cdc":                             TransactionsAdminLock_setCdc,
 	"../../../transactions/admin/mint_moment.cdc":                          TransactionsAdminMint_momentCdc,
@@ -1800,6 +1822,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 						"batch_mint_moment.cdc": {TransactionsAdminBatch_mint_momentCdc, map[string]*bintree{}},
 						"create_play.cdc": {TransactionsAdminCreate_playCdc, map[string]*bintree{}},
 						"create_set.cdc": {TransactionsAdminCreate_setCdc, map[string]*bintree{}},
+						"create_set_and_play_struct.cdc": {TransactionsAdminCreate_set_and_play_structCdc, map[string]*bintree{}},
 						"fulfill_pack.cdc": {TransactionsAdminFulfill_packCdc, map[string]*bintree{}},
 						"lock_set.cdc": {TransactionsAdminLock_setCdc, map[string]*bintree{}},
 						"mint_moment.cdc": {TransactionsAdminMint_momentCdc, map[string]*bintree{}},
