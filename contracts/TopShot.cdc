@@ -400,10 +400,10 @@ pub contract TopShot: NonFungibleToken {
         pub let setID: UInt32
         pub let name: String
         pub let series: UInt32
-        access(contract) var plays: [UInt32]
-        access(contract) var retired: {UInt32: Bool}
+        access(self) var plays: [UInt32]
+        access(self) var retired: {UInt32: Bool}
         pub var locked: Bool
-        access(contract) var numberMintedPerPlay: {UInt32: UInt32}
+        access(self) var numberMintedPerPlay: {UInt32: UInt32}
 
         init(setID: UInt32) {
             pre {
@@ -420,6 +420,18 @@ pub contract TopShot: NonFungibleToken {
             self.retired = set.retired
             self.locked = set.locked
             self.numberMintedPerPlay = set.numberMintedPerPlay
+        }
+
+        pub fun getPlays(): [UInt32] {
+            return self.plays
+        }
+
+        pub fun getRetired(): {UInt32: Bool} {
+            return self.retired
+        }
+
+        pub fun getNumberMintedPerPlay(): {UInt32: UInt32} {
+            return self.numberMintedPerPlay
         }
     }
 
@@ -861,7 +873,7 @@ pub contract TopShot: NonFungibleToken {
         if let setdata = self.getSetData(setID: setID) {
 
             // See if the Play is retired from this Set
-            let retired = setdata.retired[playID]
+            let retired = setdata.getRetired()[playID]
 
             // Return the retired status
             return retired
@@ -897,7 +909,7 @@ pub contract TopShot: NonFungibleToken {
         if let setdata = self.getSetData(setID: setID) {
 
             // Read the numMintedPerPlay
-            let amount = setdata.numberMintedPerPlay[playID]
+            let amount = setdata.getNumberMintedPerPlay()[playID]
 
             return amount
         } else {
