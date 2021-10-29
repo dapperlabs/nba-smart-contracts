@@ -249,8 +249,8 @@ func TestMarketV1(t *testing.T) {
 		)
 	})
 
-	firstName := cadence.NewString("FullName")
-	lebron := cadence.NewString("Lebron")
+	firstName := CadenceString("FullName")
+	lebron := CadenceString("Lebron")
 
 	// Admin sends transactions to create a play, set, and moments
 	t.Run("Should be able to setup a play, set, and mint moment", func(t *testing.T) {
@@ -270,7 +270,7 @@ func TestMarketV1(t *testing.T) {
 		// create a new set
 		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintSetScript(env), topshotAddr)
 
-		_ = tx.AddArgument(cadence.NewString("Genesis"))
+		_ = tx.AddArgument(CadenceString("Genesis"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -764,8 +764,8 @@ func TestMarketV3(t *testing.T) {
 		)
 	})
 
-	firstName := cadence.NewString("FullName")
-	lebron := cadence.NewString("Lebron")
+	firstName := CadenceString("FullName")
+	lebron := CadenceString("Lebron")
 
 	// Admin sends transactions to create a play, set, and moments
 	t.Run("Should be able to setup a play, set, and mint moment", func(t *testing.T) {
@@ -785,7 +785,7 @@ func TestMarketV3(t *testing.T) {
 		// create a new set
 		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintSetScript(env), topshotAddr)
 
-		_ = tx.AddArgument(cadence.NewString("Genesis"))
+		_ = tx.AddArgument(CadenceString("Genesis"))
 
 		signAndSubmit(
 			t, b, tx,
