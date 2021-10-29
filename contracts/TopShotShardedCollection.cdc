@@ -102,10 +102,14 @@ pub contract TopShotShardedCollection {
             // Find the bucket this corresponds to
             let bucket = token.id % self.numBuckets
 
-            let collectionRef = &self.collections[bucket] as! &TopShot.Collection
+            // Remove the collection
+            let collection <- self.collections.remove(key: bucket)!
 
             // Deposit the nft into the bucket
-            collectionRef.deposit(token: <-token)
+            collection.deposit(token: <-token)
+
+            // Put the Collection back in storage
+            self.collections[bucket] <-! collection
         }
 
         // batchDeposit takes a Collection object as an argument

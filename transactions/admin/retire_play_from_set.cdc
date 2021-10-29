@@ -31,7 +31,7 @@ transaction(setID: UInt32, playID: UInt32) {
 
     post {
         
-        self.adminRef.borrowSet(setID: setID).getRetired()[playID]!: 
+        self.adminRef.borrowSet(setID: setID).retired[playID]!: 
             "play is not retired"
     }
 }

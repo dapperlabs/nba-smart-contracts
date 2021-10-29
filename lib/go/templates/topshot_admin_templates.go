@@ -5,19 +5,18 @@ import (
 )
 
 const (
-	transactionsPath         = "../../../transactions/"
-	createPlayFilename       = "admin/create_play.cdc"
-	createSetFilename        = "admin/create_set.cdc"
-	addPlayFilename          = "admin/add_play_to_set.cdc"
-	addPlaysFilename         = "admin/add_plays_to_set.cdc"
-	lockSetFilename          = "admin/lock_set.cdc"
-	retirePlayFilename       = "admin/retire_play_from_set.cdc"
-	retireAllFilename        = "admin/retire_all.cdc"
-	newSeriesFilename        = "admin/start_new_series.cdc"
-	mintMomentFilename       = "admin/mint_moment.cdc"
-	batchMintMomentFilename  = "admin/batch_mint_moment.cdc"
+	transactionsPath        = "../../../transactions/"
+	createPlayFilename      = "admin/create_play.cdc"
+	createSetFilename       = "admin/create_set.cdc"
+	addPlayFilename         = "admin/add_play_to_set.cdc"
+	addPlaysFilename        = "admin/add_plays_to_set.cdc"
+	lockSetFilename         = "admin/lock_set.cdc"
+	retirePlayFilename      = "admin/retire_play_from_set.cdc"
+	retireAllFilename       = "admin/retire_all.cdc"
+	newSeriesFilename       = "admin/start_new_series.cdc"
+	mintMomentFilename      = "admin/mint_moment.cdc"
+	batchMintMomentFilename = "admin/batch_mint_moment.cdc"
 	fulfillPackFilename      = "admin/fulfill_pack.cdc"
-	createSetAndPlayFilename = "admin/create_set_and_play_struct.cdc"
 
 	transferAdminFilename = "admin/transfer_admin.cdc"
 )
@@ -107,13 +106,6 @@ func GenerateTransferAdminScript(env Environment) []byte {
 // GenerateChangeSeriesScript uses the admin to update the current series
 func GenerateChangeSeriesScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + newSeriesFilename)
-
-	return []byte(replaceAddresses(code, env))
-}
-
-// For testing purposes only
-func GenerateCreateSetandPlayDataScript(env Environment) []byte {
-	code := assets.MustAssetString(transactionsPath + createSetAndPlayFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
