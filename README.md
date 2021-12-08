@@ -164,6 +164,9 @@ The other types that are defined in `TopShot` are as follows:
  - `Admin`: This is a resource type that can be used by admins to perform
     various acitions in the smart contract like starting a new series, 
     creating a new play or set, and getting a reference to an existing set.
+ - `QuerySetData`: A struct that contains the metadata associated with a set.
+    This is currently the only way to access the metadata of a set.
+    Can be accessed by calling the public function in the `TopShot` smart contract called `getSetData(setID)`
 
 Metadata structs associated with plays and sets are stored in the main smart contract
 and can be queried by anyone. For example, If a player wanted to find out the 
@@ -171,7 +174,7 @@ name of the team that the player represented in their Moment plays for, they
 would call a public function in the `TopShot` smart contract 
 called `getPlayMetaDataByField`, providing, from their owned Moment,
 the play and field that they want to query. 
-They can do the same with information about sets.
+They can do the same with information about sets by calling `getSetData` with the setID.
 
 The power to create new plays, sets, and Moments rests 
 with the owner of the `Admin` resource.
@@ -380,6 +383,79 @@ returns it to the buyer.
 
 The new version of the market contract is currently NOT DEPLOYED to mainnet,
 but it will be deployed and utilized in the near future.
+
+## TopShot contract improvement
+Some improvements were made to the Topshot contract to reflect some cadence best practices and fix a bug.
+These improvements are dscribed below
+
+### Make dictionary and array fields private
+Following cadence best practices in [Cadence Anti-Patterns](https://docs.onflow.org/cadence/anti-patterns/#array-or-dictionary-fields-should-be-private)
+variables `plays, retired, numberMintedPerPlay` in the `Set` resource were changed from `pub` to `access(contract)`.
+This makes it impossible for `Admin` to directly modify these fields. Any modification will have to be done
+through the methods defined in the `Set` resource.
+
+We now have
+```
+pub resource Set {
+    access(contract) var plays: [UInt32]
+    access(contract) var retired: {UInt32: Bool}
+    access(contract) var numberMintedPerPlay: {UInt32: UInt32}
+}
+```
+
+### Unified Set metadata struct
+In addition to `SetData` (which records the id, name and series of a set), and the `Set` resource
+(which records other information about the set and acts as an authorization resource for the admin to create editions, mint moments, retire plays, and more),
+a new struct `QuerySetData` was added.
+```
+pub struct QuerySetData {
+    pub let setID: UInt32
+    pub let name: String
+    pub let series: UInt32
+    access(self) var plays: [UInt32]
+    access(self) var retired: {UInt32: Bool}
+    pub var locked: Bool
+    access(self) var numberMintedPerPlay: {UInt32: UInt32}
+}
+```
+This new struct consolidates all the important information about a set and can be queried using
+`TopShot.getSetData(setID: UInt32): QuerySetData?` method. This makes it easier to get a `Set` information instead of having to call multiple methods
+and stitching together their responses
+
+### Perform state changing operations in admin resources, not in public structs
+state changing operations like incrementing `TopShot.nextPlayID` and emitting `PlayCreated` event were moved to be done by the admin only
+For instance
+```
+TopShot.nextPlayID = TopShot.nextPlayID + UInt32(1)
+emit PlayCreated(id: newPlay.playID, metadata: metadata)
+```
+was moved to `Admin.createPlay()`
+
+### Borrow references to resources instead of loading them from storage
+Instead of the inefficient loading of a set from storage to read it's fields and putting it back. We moved to borrowing a reference to the resource.
+
+Example: Instead of
+
+```
+if let setToRead <- TopShot.sets.remove(key: setID) {
+    // See if the Play is retired from this Set
+    let retired = setToRead.retired[playID]
+    
+    // Put the Set back in the contract storage
+    TopShot.sets[setID] <-! setToRead
+    
+    // Return the retired status
+    return retired
+}
+```
+do
+```
+let set = &TopShot.sets[setID] as! &Set
+// See if the Play is retired from this Set
+let retired = set.retired[playID]
+return retired
+``` 
+In depth explanation on the se changes and why we made them can be found in our [Blog Post](https://blog.nbatopshot.com/posts/nba-top-shot-smart-contract-improvements) 
 
 ## License 
 
