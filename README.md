@@ -389,7 +389,7 @@ Some improvements were made to the Topshot contract to reflect some cadence best
 These improvements are dscribed below
 
 ### Make dictionary and array fields private
-Following cadence best practices in [Cadence Anti-Patterns](https://docs.onflow.org/cadence/anti-patterns/#array-or-dictionary-fields-should-be-private)
+Following cadence best practices in [Cadence Anti-Patterns](https://docs.onflow.org/cadence/anti-patterns/#array-or-dictionary-fields-should-be-private),
 variables `plays, retired, numberMintedPerPlay` in the `Set` resource were changed from `pub` to `access(contract)`.
 This makes it impossible for `Admin` to directly modify these fields. Any modification will have to be done
 through the methods defined in the `Set` resource.
@@ -405,8 +405,8 @@ pub resource Set {
 
 ### Unified Set metadata struct
 In addition to `SetData` (which records the id, name and series of a set), and the `Set` resource
-(which records other information about the set and acts as an authorization resource for the admin to create editions, mint moments, retire plays, and more),
-a new struct `QuerySetData` was added.
+(which records other information about the set and acts as an authorization resource for the admin
+to create editions, mint moments, retire plays, and more), a new struct `QuerySetData` was added.
 ```
 pub struct QuerySetData {
     pub let setID: UInt32
@@ -419,8 +419,8 @@ pub struct QuerySetData {
 }
 ```
 This new struct consolidates all the important information about a set and can be queried using
-`TopShot.getSetData(setID: UInt32): QuerySetData?` method. This makes it easier to get a `Set` information instead of having to call multiple methods
-and stitching together their responses
+`TopShot.getSetData(setID: UInt32): QuerySetData?` method. This makes it easier to get a `Set`
+information instead of having to call multiple methods and stitching together their responses
 
 ### Perform state changing operations in admin resources, not in public structs
 state changing operations like incrementing `TopShot.nextPlayID` and emitting `PlayCreated` event were moved to be done by the admin only
@@ -455,7 +455,7 @@ let set = &TopShot.sets[setID] as! &Set
 let retired = set.retired[playID]
 return retired
 ``` 
-In depth explanation on the se changes and why we made them can be found in our [Blog Post](https://blog.nbatopshot.com/posts/nba-top-shot-smart-contract-improvements) 
+In-depth explanation on these changes and why we made them can be found in our [Blog Post](https://blog.nbatopshot.com/posts/nba-top-shot-smart-contract-improvements) 
 
 ## License 
 
