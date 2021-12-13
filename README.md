@@ -164,6 +164,9 @@ The other types that are defined in `TopShot` are as follows:
  - `Admin`: This is a resource type that can be used by admins to perform
     various acitions in the smart contract like starting a new series, 
     creating a new play or set, and getting a reference to an existing set.
+ - `QuerySetData`: A struct that contains the metadata associated with a set.
+    This is currently the only way to access the metadata of a set.
+    Can be accessed by calling the public function in the `TopShot` smart contract called `getSetData(setID)`
 
 Metadata structs associated with plays and sets are stored in the main smart contract
 and can be queried by anyone. For example, If a player wanted to find out the 
@@ -171,7 +174,7 @@ name of the team that the player represented in their Moment plays for, they
 would call a public function in the `TopShot` smart contract 
 called `getPlayMetaDataByField`, providing, from their owned Moment,
 the play and field that they want to query. 
-They can do the same with information about sets.
+They can do the same with information about sets by calling `getSetData` with the setID.
 
 The power to create new plays, sets, and Moments rests 
 with the owner of the `Admin` resource.
@@ -380,6 +383,10 @@ returns it to the buyer.
 
 The new version of the market contract is currently NOT DEPLOYED to mainnet,
 but it will be deployed and utilized in the near future.
+
+## TopShot contract improvement
+Some improvements were made to the Topshot contract to reflect some cadence best practices and fix a bug.
+In-depth explanation on the changes and why we made them can be found in our [Blog Post](https://blog.nbatopshot.com/posts/nba-top-shot-smart-contract-improvements) 
 
 ## License 
 
