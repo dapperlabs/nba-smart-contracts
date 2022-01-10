@@ -82,6 +82,16 @@ pub contract TopShot: NonFungibleToken {
     // Emitted when a Moment is destroyed
     pub event MomentDestroyed(id: UInt64)
 
+    // Emitted when an ASNFT is minted
+    pub event ASNFTMinted(id: UInt64, team: String)
+
+    // Emitted when a moment is linke to an ASNFT
+    pub event ASNFTMomentLinked(ASNFTID: UInt64, momentID: UInt64)
+    pub event ASNFTMomentUnlinked(ASNFTID: UInt64, momentID: UInt64)
+
+    // Emitted when an ASNFT is destroyed
+    pub event ASNFTDestroyed(id: UInt64)
+
     // -----------------------------------------------------------------------
     // TopShot contract-level fields.
     // These contain actual values that are stored in the smart contract.
@@ -581,6 +591,87 @@ pub contract TopShot: NonFungibleToken {
         }
     }
 
+    // The resource that represents the All star NFTs
+    pub resource ASNFT: NonFungibleToken.INFT{
+        // Global unique ASNFT ID.
+        // NOTE: This will be gotten from TopShot.totalSupply
+        // which is also used to generate ids for moments
+        pub let id: UInt64
+            
+        // The NBAID of the team that the ASNFT belongs to
+        pub let teamID: String
+
+        // The Moment linked to this ASNFT
+        pub var linkedMoment: @NFT?
+
+        init(teamID: String) { // teamID here is equal to NBA id of the team
+        // i.e equivalent to teamAtMomentNBAID in plays
+
+            // Increment the totalSupply
+            TopShot.totalSupply = TopShot.totalSupply + 1
+            self.id = TopShot.totalSupply
+            self.teamID = teamID
+            self.linkedMoment <- nil
+            emit ASNFTMinted(id: self.id, team: teamID)
+        }
+
+        pub fun linkMoment(token: @NFT): @NFT?{
+            // ensure that moment belongs to the same team
+            let playMeta = TopShot.getPlayMetaData(playID: token.data.playID)!
+            assert(
+                playMeta["TeamAtMomentNBAID"] == self.teamID,
+                message: "Moment is not from the same team"
+            )
+            let tokenID = token.id
+            
+            let oldLinkedMoment <- self.linkedMoment <- token
+            emit ASNFTMomentLinked(ASNFTID:self.id, momentID: tokenID)
+            return <- oldLinkedMoment // to be returned back to the user's collection
+        }
+
+        pub fun unlinkMoment(): @NFT?{
+            let token <- self.linkedMoment <- nil
+            emit ASNFTMomentUnlinked(ASNFTID:self.id, momentID: token?.id!)
+            return <-token
+        }
+        // If the ASNFT is destroyed, emit an event to indicate 
+        // to outside ovbservers that it has been destroyed
+        destroy() {
+            destroy self.linkedMoment
+            emit ASNFTDestroyed(id: self.id)
+        }
+    }
+
+    // ASNFTAdmin is a special resource that allows us to mint ASNFTs
+    pub resource ASNFTAdmin{
+        access(self) var totalNFTS: UInt32
+        access(self) var numMinted: UInt32
+
+        init(totalNFTs: UInt32){
+            self.totalNFTS = totalNFTs
+            self.numMinted = 0
+        }
+
+        pub fun mintASNFTs(teams: [String]): @Collection {
+
+            pre {
+                teams.length > Int(self.totalNFTS - self.numMinted): "Cannot mint ASNFTs: teams more than total allowable mints for ASNFT"
+                self.numMinted == self.totalNFTS: "Cannot mint ASNFTs: Already minted maximum allowable mints"
+            }
+
+            let newCollection <- create Collection()
+
+            for teamID in teams{
+                // Mint the new ASNFT
+                let newASNFT: @ASNFT <- create ASNFT(teamID: teamID)
+                newCollection.depositNFT(token: <- (newASNFT as! @NonFungibleToken.NFT))
+                // Increment the count of ASNFT minted
+                self.numMinted = self.numMinted + 1
+            }
+            return <-newCollection
+        }
+    }
+
     // This is the interface that users can cast their Moment Collection as
     // to allow others to deposit Moments into their Collection. It also allows for reading
     // the IDs of Moments in the Collection.
@@ -658,6 +749,28 @@ pub contract TopShot: NonFungibleToken {
             // Cast the deposited token as a TopShot NFT to make sure
             // it is the correct type
             let token <- token as! @TopShot.NFT
+
+            // Get the token's ID
+            let id = token.id
+
+            // Add the new token to the dictionary
+            let oldToken <- self.ownedNFTs[id] <- token
+
+            // Only emit a deposit event if the Collection 
+            // is in an account's storage
+            if self.owner?.address != nil {
+                emit Deposit(id: id, to: self.owner?.address)
+            }
+
+            // Destroy the empty old token that was "removed"
+            destroy oldToken
+        }
+
+        // deposit takes a Moment and adds it to the Collections dictionary
+        //
+        // Paramters: token: the NFT to be deposited in the collection
+        //
+        pub fun depositNFT(token: @NonFungibleToken.NFT) {
 
             // Get the token's ID
             let id = token.id
@@ -941,6 +1054,10 @@ pub contract TopShot: NonFungibleToken {
         // Put the Minter in storage
         self.account.save<@Admin>(<- create Admin(), to: /storage/TopShotAdmin)
 
+        // Put the ASNFTMinter in storage
+        self.account.save<@ASNFTAdmin>(<- create ASNFTAdmin(totalNFTs: 31), to: /storage/TopShotASNFTAdmin)
+
         emit ContractInitialized()
     }
 }
+ 
