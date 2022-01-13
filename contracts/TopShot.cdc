@@ -1006,6 +1006,7 @@ pub contract TopShot: NonFungibleToken {
         self.playDatas = {}
         self.setDatas = {}
         self.sets <- {}
+        self.momentMetadatas = {}
         self.nextPlayID = 1
         self.nextSetID = 1
         self.totalSupply = 0
