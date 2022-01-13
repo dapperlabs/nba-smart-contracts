@@ -987,11 +987,11 @@ pub contract TopShot: NonFungibleToken {
         }
     }
 
-    // getPlayMetaData returns all the metadata associated with a specific Play
+    // getMomentMetadataDisplay returns the metadata to display an NFT
     // 
-    // Parameters: playID: The id of the Play that is being searched
+    // Parameters: momentID: The id of the Moment that is being searched
     //
-    // Returns: The metadata as a String to String mapping optional
+    // Returns: The MomentMetadataDisplay object of the Moment passed in
     pub fun getMomentMetadataDisplay(momentID: UInt32): MomentMetadataDisplay? {
         return self.momentMetadatas[momentId]
     }
