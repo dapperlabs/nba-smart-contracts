@@ -44,6 +44,7 @@
 */
 
 import NonFungibleToken from 0xNFTADDRESS
+import MetadataViews from 0xNFTADDRESS
 
 pub contract TopShot: NonFungibleToken {
 
@@ -71,6 +72,8 @@ pub contract TopShot: NonFungibleToken {
     pub event SetLocked(setID: UInt32)
     // Emitted when a Moment is minted from a Set
     pub event MomentMinted(momentID: UInt64, playID: UInt32, setID: UInt32, serialNumber: UInt32)
+    // Emitted when a Moment metadata is set
+    pub event MomentMetadataCreated(momentId: momentId, name: name, description: description, thumbnail: thumbnail)
 
     // Events for Collection-related actions
     //
@@ -100,6 +103,9 @@ pub contract TopShot: NonFungibleToken {
 
     // Variable size dictionary of Set resources
     access(self) var sets: @{UInt32: Set}
+
+    // Variable size dictionary of MomentMetadataDisplay structs
+    access(self) var momentMetadatas: {UInt64: MomentMetadataDisplay}
 
     // The ID that is used to create Plays. 
     // Every time a Play is created, playID is assigned 
@@ -455,9 +461,29 @@ pub contract TopShot: NonFungibleToken {
 
     }
 
+    // This is an implementation of a metadata view.
+    // Eventually, structures like this will be defined in a common
+    // contract and shared by NFT implementations.
+    pub struct MomentMetadataDisplay {
+
+        pub let name: String
+        pub let description: String
+        pub let thumbnail: String
+
+        init(
+            name: String,
+            description: String,
+            thumbnail: String,
+        ) {
+            self.name = name
+            self.description = description
+            self.thumbnail = thumbnail
+        }
+    }
+
     // The resource that represents the Moment NFTs
     //
-    pub resource NFT: NonFungibleToken.INFT {
+    pub resource NFT: NonFungibleToken.INFT, MetadataViews.Resolver {
 
         // Global unique moment ID
         pub let id: UInt64
@@ -482,6 +508,31 @@ pub contract TopShot: NonFungibleToken {
         destroy() {
             emit MomentDestroyed(id: self.id)
         }
+
+        pub fun getViews(): [Type] {
+            return [
+                Type<MetadataViews.Display>(),
+                Type<MetadataViews.HTTPThumbnail>()
+            ]
+        }
+
+        pub fun resolveView(_ view: Type): AnyStruct? {
+            momentMetadata = getMomentMetadataDisplay(self.id)
+            switch view {
+                case Type<MetadataViews.Display>():
+                    return MetadataViews.Display(
+                        name: momentMetadata?.name,
+                        description: momentMetadata?.description,
+                    )
+                case Type<MetadataViews.HTTPThumbnail>():
+                    return MetadataViews.HTTPThumbnail(
+                        uri: momentMetadata?.thumbnail,
+                        mimetype: "image/jpeg"
+                    )
+            }
+
+            return nil
+        }        
     }
 
     // Admin is a special authorization resource that 
@@ -537,6 +588,24 @@ pub contract TopShot: NonFungibleToken {
             TopShot.sets[newID] <-! newSet
 
             return newID
+        }
+
+        // createMomentMetadata creates a new MomentMetadataDisplay struct 
+        // and stores it in the MomentMetadataDisplay dictionary in the TopShot smart contract
+        //
+        // Parameters: momentId: the momentId for the metadata
+        // name: the name of the moment
+        // description: the description of the moment
+        // thumbnail: the thumbnail of the moment NFT
+        //
+        pub fun createMomentMetadata(momentId: UInt64, name: String, description: String, thumbnail: String) {
+            // Create the new MomentMetadata
+            var newMomentMetadata = MomentMetadataDisplay(name: name, description: description, thumbnail: thumbnail)
+
+            emit MomentMetadataCreated(momentId: momentId, name: name, description: description, thumbnail: thumbnail)
+
+            // Store it in the contract storage
+            TopShot.momentMetadatas[momentId] = newMomentMetadata
         }
 
         // borrowSet returns a reference to a set in the TopShot
@@ -916,6 +985,15 @@ pub contract TopShot: NonFungibleToken {
             // If the set wasn't found return nil
             return nil
         }
+    }
+
+    // getPlayMetaData returns all the metadata associated with a specific Play
+    // 
+    // Parameters: playID: The id of the Play that is being searched
+    //
+    // Returns: The metadata as a String to String mapping optional
+    pub fun getMomentMetadataDisplay(momentID: UInt32): MomentMetadataDisplay? {
+        return self.momentMetadatas[momentId]
     }
 
     // -----------------------------------------------------------------------
