@@ -22,17 +22,20 @@ const (
 	defaultTopshotAddress          = "TOPSHOTADDRESS"
 	defaultShardedAddress          = "SHARDEDADDRESS"
 	defaultMarketAddress           = "MARKETADDRESS"
+	defaultMetadataviewsAddress = "METADATAVIEWSADDRESS"
 )
 
 // GenerateTopShotContract returns a copy
 // of the topshot contract with the import addresses updated
-func GenerateTopShotContract(nftAddr string) []byte {
+func GenerateTopShotContract(nftAddr string, metadataViewsAddr string) []byte {
 
 	topShotCode := assets.MustAssetString(topshotFile)
 
 	codeWithNFTAddr := strings.ReplaceAll(topShotCode, defaultNonFungibleTokenAddress, nftAddr)
 
-	return []byte(codeWithNFTAddr)
+	codeWithMetadataViewsAddr := strings.ReplaceAll(codeWithNFTAddr, defaultMetadataviewsAddress, metadataViewsAddr)
+
+	return []byte(codeWithMetadataViewsAddr)
 }
 
 // GenerateTopShotShardedCollectionContract returns a copy

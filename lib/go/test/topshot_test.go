@@ -22,6 +22,9 @@ const (
 	NonFungibleTokenContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/master/contracts/"
 	NonFungibleTokenInterfaceFile    = "NonFungibleToken.cdc"
 
+	MetadataViewsContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/master/contracts/"
+	MetadataViewsInterfaceFile = "MetadataViews.cdc"
+
 	emulatorFTAddress        = "ee82856bf20e2aa6"
 	emulatorFlowTokenAddress = "0ae53cb6e3f42a79"
 )
@@ -45,9 +48,24 @@ func TestNFTDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
+	// Should be able to deploy the MetadataViews contract
+	// as a new account with no keys.
+	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "MetadataViews",
+			Source: string(metadataViewsCode),
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
 	// Should be able to deploy the topshot contract
 	// as a new account with no keys.
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
 	topshotAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShot",
@@ -112,8 +130,19 @@ func TestMintNFTs(t *testing.T) {
 
 	env.NFTAddress = nftAddr.String()
 
+	// Should be able to deploy a contract as a new account with no keys.
+	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	metadataViewsAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "MetadataViews",
+			Source: string(metadataViewsCode),
+		},
+	})
+
+	env.MetadataViewsAddress = metadataViewsAddr.String()
+
 	// Deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -597,8 +626,19 @@ func TestTransferAdmin(t *testing.T) {
 
 	env.NFTAddress = nftAddr.String()
 
+	// Should be able to deploy a contract as a new account with no keys.
+	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	metadataViewsAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "MetadataViews",
+			Source: string(metadataViewsCode),
+		},
+	})
+
+	env.MetadataViewsAddress = metadataViewsAddr.String()
+
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -687,8 +727,19 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 
 	env.NFTAddress = nftAddr.String()
 
+	// Should be able to deploy a contract as a new account with no keys.
+	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	metadataViewsAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "MetadataViews",
+			Source: string(metadataViewsCode),
+		},
+	})
+
+	env.MetadataViewsAddress = metadataViewsAddr.String()
+
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
