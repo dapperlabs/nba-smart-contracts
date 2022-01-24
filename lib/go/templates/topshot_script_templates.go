@@ -1,6 +1,8 @@
 package templates
 
 import (
+	"fmt"
+
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates/internal/assets"
 )
 
@@ -39,6 +41,9 @@ const (
 	momentSerialNumFilename     = "collections/get_moment_serialNum.cdc"
 	momentSetNameFilename       = "collections/get_moment_setName.cdc"
 	getSetPlaysAreOwnedFilename = "collections/get_setplays_are_owned.cdc"
+
+	// metadata scripts
+	getNFTMetadataFilename = "get_nft_metadata.cdc"
 )
 
 // Global Data Gettetrs
@@ -211,5 +216,14 @@ func GenerateGetMomentSerialNumScript(env Environment) []byte {
 func GenerateSetPlaysOwnedByAddressScript(env Environment) []byte {
 	code := assets.MustAssetString(scriptsPath + getSetPlaysAreOwnedFilename)
 
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateGetNFTMetadataScript creates a script that returns the metadata for an NFT.
+func GenerateGetNFTMetadataScript(env Environment) []byte {
+	fmt.Println(scriptsPath + getNFTMetadataFilename)
+	code := assets.MustAssetString(scriptsPath + getNFTMetadataFilename)
+	fmt.Println("code")
+	fmt.Println(code)
 	return []byte(replaceAddresses(code, env))
 }

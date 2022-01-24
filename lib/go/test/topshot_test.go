@@ -23,7 +23,7 @@ const (
 	NonFungibleTokenInterfaceFile    = "NonFungibleToken.cdc"
 
 	MetadataViewsContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/master/contracts/"
-	MetadataViewsInterfaceFile = "MetadataViews.cdc"
+	MetadataViewsInterfaceFile    = "MetadataViews.cdc"
 
 	emulatorFTAddress        = "ee82856bf20e2aa6"
 	emulatorFlowTokenAddress = "0ae53cb6e3f42a79"
@@ -370,6 +370,14 @@ func TestMintNFTs(t *testing.T) {
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		assert.Equal(t, cadence.NewUInt32(1), result)
+
+		//remove
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
+		//result = executeScriptAndCheck(t, b, templates.GenerateGetNextPlayIDScript(env), nil)
+		t.Log("blah")
+		t.Log(result)
+		//assert.Equal(t, cadence.NewUInt32(1), result)
+
 	})
 
 	// Admin sends a transaction that locks the set
