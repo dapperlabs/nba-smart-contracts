@@ -188,11 +188,14 @@ func TestMintNFTs(t *testing.T) {
 	hayward := CadenceString("Hayward")
 	durant := CadenceString("Durant")
 
+	playType := CadenceString("PlayType")
+	dunk := CadenceString("Dunk")
+
 	// Admin sends a transaction to create a play
 	t.Run("Should be able to create a new Play", func(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
 
-		metadata := []cadence.KeyValuePair{{Key: firstName, Value: lebron}}
+		metadata := []cadence.KeyValuePair{{Key: firstName, Value: lebron}, {Key: playType, Value: dunk}}
 		play := cadence.NewDictionary(metadata)
 		_ = tx.AddArgument(play)
 
@@ -371,13 +374,17 @@ func TestMintNFTs(t *testing.T) {
 		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		assert.Equal(t, cadence.NewUInt32(1), result)
 
-		//remove
-		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
-		//result = executeScriptAndCheck(t, b, templates.GenerateGetNextPlayIDScript(env), nil)
-		t.Log("blah")
-		t.Log(result)
-		//assert.Equal(t, cadence.NewUInt32(1), result)
+	})
 
+	t.Run("Should be able to get moments metadata", func(t *testing.T) {
+		expectedMetadataName := "Lebron Dunk"
+		expectedMetadataDescription := "A series 0 Genesis moment with serial number 1"
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
+		nftResult := result.(cadence.Struct)
+
+		assert.Equal(t, cadence.String(expectedMetadataName), nftResult.Fields[0])
+		assert.Equal(t, cadence.String(expectedMetadataDescription), nftResult.Fields[1])
 	})
 
 	// Admin sends a transaction that locks the set
@@ -410,6 +417,7 @@ func TestMintNFTs(t *testing.T) {
 	})
 
 	// Admin sends a transaction that mints a batch of moments
+
 	t.Run("Should be able to mint a batch of moments", func(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchMintMomentScript(env), topshotAddr)
 
@@ -435,7 +443,7 @@ func TestMintNFTs(t *testing.T) {
 		assert.Equal(t, cadence.NewBool(true), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetCollectionIDsScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr))})
-		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt64(6), cadence.NewUInt64(4), cadence.NewUInt64(2), cadence.NewUInt64(1), cadence.NewUInt64(5), cadence.NewUInt64(3)})
+		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt64(2), cadence.NewUInt64(3), cadence.NewUInt64(1), cadence.NewUInt64(4), cadence.NewUInt64(5), cadence.NewUInt64(6)})
 		assert.Equal(t, idsArray, result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})

@@ -1,8 +1,6 @@
 package templates
 
 import (
-	"fmt"
-
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates/internal/assets"
 )
 
@@ -221,9 +219,7 @@ func GenerateSetPlaysOwnedByAddressScript(env Environment) []byte {
 
 // GenerateGetNFTMetadataScript creates a script that returns the metadata for an NFT.
 func GenerateGetNFTMetadataScript(env Environment) []byte {
-	fmt.Println(scriptsPath + getNFTMetadataFilename)
 	code := assets.MustAssetString(scriptsPath + getNFTMetadataFilename)
-	fmt.Println("code")
-	fmt.Println(code)
+
 	return []byte(replaceAddresses(code, env))
 }
