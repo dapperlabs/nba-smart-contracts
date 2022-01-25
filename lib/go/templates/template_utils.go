@@ -20,7 +20,7 @@ const (
 	placeholderAdminReceiverAddress   = "0xADMINRECEIVERADDRESS"
 	placeholderDUCAddress             = "0xDUCADDRESS"
 	placeholderForwardingAddress      = "0xFORWARDINGADDRESS"
-	placeholderMetadataViewsAddress = "0xMETADATAVIEWSADDRESS"
+	placeholderMetadataViewsAddress   = "0xMETADATAVIEWSADDRESS"
 )
 
 type Environment struct {
@@ -35,7 +35,7 @@ type Environment struct {
 	AdminReceiverAddress   string
 	DUCAddress             string
 	ForwardingAddress      string
-	MetadataViewsAddress string
+	MetadataViewsAddress   string
 }
 
 func uint32ToCadenceArr(nums []uint32) []byte {
