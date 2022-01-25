@@ -417,7 +417,6 @@ func TestMintNFTs(t *testing.T) {
 	})
 
 	// Admin sends a transaction that mints a batch of moments
-
 	t.Run("Should be able to mint a batch of moments", func(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchMintMomentScript(env), topshotAddr)
 

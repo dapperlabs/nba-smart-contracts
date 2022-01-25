@@ -456,9 +456,8 @@ pub contract TopShot: NonFungibleToken {
 
     }
 
-    // This is an implementation of a metadata view for Top Shot.
-    // Eventually, structures like this will be defined in a common
-    // contract and shared by NFT implementations.
+    // This is an implementation of a custom metadata view for Top Shot.
+    // This view contains the play metadata.
     //
     pub struct TopShotMomentsMetadataView {
 

@@ -22,7 +22,7 @@ const (
 	defaultTopshotAddress          = "TOPSHOTADDRESS"
 	defaultShardedAddress          = "SHARDEDADDRESS"
 	defaultMarketAddress           = "MARKETADDRESS"
-	defaultMetadataviewsAddress = "METADATAVIEWSADDRESS"
+	defaultMetadataviewsAddress    = "METADATAVIEWSADDRESS"
 )
 
 // GenerateTopShotContract returns a copy
