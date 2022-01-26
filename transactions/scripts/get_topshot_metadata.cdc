@@ -13,7 +13,7 @@ pub fun main(address: Address, id: UInt64): TopShot.TopShotMomentMetadataView {
     // Get the Top Shot specific metadata for this NFT
     let view = nft.resolveView(Type<TopShot.TopShotMomentMetadataView>())!
 
-    let metadata = view as TopShot.TopShotMomentMetadataView
+    let metadata = view as! TopShot.TopShotMomentMetadataView
     
     return metadata
 }
