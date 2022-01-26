@@ -349,6 +349,11 @@ the `lib/go/events` package.
 
     Emitted when a Moment is deposited into a collection. `id` refers to the global Moment ID. If the collection was in an account's storage when it was deposited, `to` will show the address of the account that it was deposited to. If the collection was not in storage when the Moment was deposited, `to` will be `nil`.
 
+### Top Shot NFT Metadata
+
+NFT metadata is represented in a flexible and modular way using the [standard proposed in FLIP-0636](https://github.com/onflow/flow/blob/master/flips/20210916-nft-metadata.md). The Top Shot contract implements the [`MetadataViews.Resolver`](https://github.com/onflow/flow-nft/blob/master/contracts/MetadataViews.cdc#L21) interface, which standardizes the display of Top Shot NFT in accordance with FLIP-0636. The Top Shot contract also defines a custom view of moment play data called TopShotMomentMetadataView.
+
+
 ## NBA Top Shot Marketplace
 
 The `contracts/MarketTopShot.cdc` contract allows users to create a sale object

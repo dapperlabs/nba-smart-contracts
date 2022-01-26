@@ -43,9 +43,24 @@ func TestMarketDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
+	// Should be able to deploy the MetadataViews contract
+	// as a new account with no keys.
+	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "MetadataViews",
+			Source: string(metadataViewsCode),
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
 	// Should be able to deploy the topshot contract
 	// as a new account with no keys.
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
 	topshotAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShot",
@@ -128,8 +143,25 @@ func TestMarketV1(t *testing.T) {
 
 	env.NFTAddress = nftAddr.String()
 
+	// Should be able to deploy the MetadataViews contract
+	// as a new account with no keys.
+	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "MetadataViews",
+			Source: string(metadataViewsCode),
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
+	env.MetadataViewsAddress = metadataViewsAddr.String()
+
 	// Should be able to deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, err := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -646,8 +678,25 @@ func TestMarketV3(t *testing.T) {
 
 	env.NFTAddress = nftAddr.String()
 
+	// Should be able to deploy the MetadataViews contract
+	// as a new account with no keys.
+	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "MetadataViews",
+			Source: string(metadataViewsCode),
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
+	env.MetadataViewsAddress = metadataViewsAddr.String()
+
 	// Should be able to deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, err := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{

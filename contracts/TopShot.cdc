@@ -44,6 +44,7 @@
 */
 
 import NonFungibleToken from 0xNFTADDRESS
+import MetadataViews from 0xMETADATAVIEWSADDRESS
 
 pub contract TopShot: NonFungibleToken {
 
@@ -455,9 +456,110 @@ pub contract TopShot: NonFungibleToken {
 
     }
 
+    // This is an implementation of a custom metadata view for Top Shot.
+    // This view contains the play metadata.
+    //
+    pub struct TopShotMomentMetadataView {
+
+        pub let fullName: String?
+        pub let firstName: String?
+        pub let lastName: String?
+        pub let birthdate: String?
+        pub let birthplace: String?
+        pub let jerseyNumber: String?
+        pub let draftTeam: String?
+        pub let draftYear: String?
+        pub let draftSelection: String?
+        pub let draftRound: String?
+        pub let teamAtMomentNBAID: String?
+        pub let teamAtMoment: String?
+        pub let primaryPosition: String?
+        pub let height: String?
+        pub let weight: String?
+        pub let totalYearsExperience: String?
+        pub let nbaSeason: String?
+        pub let dateOfMoment: String?
+        pub let playCategory: String?
+        pub let playType: String?
+        pub let homeTeamName: String?
+        pub let awayTeamName: String?
+        pub let homeTeamScore: String?
+        pub let awayTeamScore: String?
+        pub let seriesNumber: UInt32?
+        pub let setName: String?
+        pub let serialNumber: UInt32
+        pub let playID: UInt32
+        pub let setID: UInt32
+        pub let numMomentsInEdition: UInt32?
+
+        init(
+            fullName: String?,
+            firstName: String?,
+            lastName: String?,
+            birthdate: String?,
+            birthplace: String?,
+            jerseyNumber: String?,
+            draftTeam: String?,
+            draftYear: String?,
+            draftSelection: String?,
+            draftRound: String?,
+            teamAtMomentNBAID: String?,
+            teamAtMoment: String?,
+            primaryPosition: String?,
+            height: String?,
+            weight: String?,
+            totalYearsExperience: String?,
+            nbaSeason: String?,
+            dateOfMoment: String?,
+            playCategory: String?,
+            playType: String?,
+            homeTeamName: String?,
+            awayTeamName: String?,
+            homeTeamScore: String?,
+            awayTeamScore: String?,
+            seriesNumber: UInt32?,
+            setName: String?,
+            serialNumber: UInt32,
+            playID: UInt32,
+            setID: UInt32,
+            numMomentsInEdition: UInt32?
+        ) {
+            self.fullName = fullName
+            self.firstName = firstName
+            self.lastName = lastName
+            self.birthdate = birthdate
+            self.birthplace = birthplace
+            self.jerseyNumber = jerseyNumber
+            self.draftTeam = draftTeam
+            self.draftYear = draftYear
+            self.draftSelection = draftSelection
+            self.draftRound = draftRound
+            self.teamAtMomentNBAID = teamAtMomentNBAID
+            self.teamAtMoment = teamAtMoment
+            self.primaryPosition = primaryPosition
+            self.height = height
+            self.weight = weight
+            self.totalYearsExperience = totalYearsExperience
+            self.nbaSeason = nbaSeason
+            self.dateOfMoment= dateOfMoment
+            self.playCategory = playCategory
+            self.playType = playType
+            self.homeTeamName = homeTeamName
+            self.awayTeamName = awayTeamName
+            self.homeTeamScore = homeTeamScore
+            self.awayTeamScore = awayTeamScore
+            self.seriesNumber = seriesNumber
+            self.setName = setName
+            self.serialNumber = serialNumber
+            self.playID = playID
+            self.setID = setID
+            self.numMomentsInEdition = numMomentsInEdition
+        }
+    }
+
     // The resource that represents the Moment NFTs
     //
-    pub resource NFT: NonFungibleToken.INFT {
+    pub resource NFT: NonFungibleToken.INFT, MetadataViews.Resolver {
 
         // Global unique moment ID
         pub let id: UInt64
@@ -482,6 +584,79 @@ pub contract TopShot: NonFungibleToken {
         destroy() {
             emit MomentDestroyed(id: self.id)
         }
+
+        pub fun name(): String {
+            let fullName: String = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "FullName") ?? ""
+            let playType: String = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "PlayType") ?? ""
+            return fullName
+                .concat(" ")
+                .concat(playType)
+        }
+
+        pub fun description(): String {
+            let setName: String = TopShot.getSetName(setID: self.data.setID) ?? ""
+            let serialNumber: String = self.data.serialNumber.toString()
+            let seriesNumber: String = TopShot.getSetSeries(setID: self.data.setID)?.toString() ?? ""
+            return "A series "
+                .concat(seriesNumber)
+                .concat(" ")
+                .concat(setName)
+                .concat(" moment with serial number ")
+                .concat(serialNumber)
+        }
+
+        pub fun getViews(): [Type] {
+            return [
+                Type<MetadataViews.Display>(),
+                Type<TopShotMomentMetadataView>()
+            ]
+        }
+
+        pub fun resolveView(_ view: Type): AnyStruct? {
+            switch view {
+                case Type<MetadataViews.Display>():
+                    return MetadataViews.Display(
+                        name: self.name(),
+                        description: self.description(),
+                        thumbnail: MetadataViews.HTTPFile("")
+                    )
+                case Type<TopShotMomentMetadataView>():
+                    return TopShotMomentMetadataView(
+                        fullName: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "FullName"),
+                        firstName: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "FirstName"),
+                        lastName: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "LastName"),
+                        birthdate: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "Birthdate"),
+                        birthplace: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "Birthplace"),
+                        jerseyNumber: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "JerseyNumber"),
+                        draftTeam: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "DraftTeam"),
+                        draftYear: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "DraftYear"),
+                        draftSelection: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "DraftSelection"),
+                        draftRound: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "DraftRound"),
+                        teamAtMomentNBAID: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "TeamAtMomentNBAID"),
+                        teamAtMoment: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "TeamAtMoment"),
+                        primaryPosition: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "PrimaryPosition"),
+                        height: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "Height"),
+                        weight: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "Weight"),
+                        totalYearsExperience: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "TotalYearsExperience"),
+                        nbaSeason: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "NbaSeason"),
+                        dateOfMoment: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "DateOfMoment"),
+                        playCategory: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "PlayCategory"),
+                        playType: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "PlayType"),
+                        homeTeamName: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "HomeTeamName"),
+                        awayTeamName: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "AwayTeamName"),
+                        homeTeamScore: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "HomeTeamScore"),
+                        awayTeamScore: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "AwayTeamScore"),
+                        seriesNumber: TopShot.getSetSeries(setID: self.data.setID),
+                        setName: TopShot.getSetName(setID: self.data.setID),
+                        serialNumber: self.data.serialNumber,
+                        playID: self.data.playID,
+                        setID: self.data.setID,
+                        numMomentsInEdition: TopShot.getNumMomentsInEdition(setID: self.data.setID, playID: self.data.playID)
+                    )
+            }
+
+            return nil
+        }   
     }
 
     // Admin is a special authorization resource that 
@@ -602,7 +777,7 @@ pub contract TopShot: NonFungibleToken {
     // Collection is a resource that every user who owns NFTs 
     // will store in their account to manage their NFTS
     //
-    pub resource Collection: MomentCollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic { 
+    pub resource Collection: MomentCollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic, MetadataViews.ResolverCollection { 
         // Dictionary of Moment conforming tokens
         // NFT is a resource type with a UInt64 ID field
         pub var ownedNFTs: @{UInt64: NonFungibleToken.NFT}
@@ -728,6 +903,12 @@ pub contract TopShot: NonFungibleToken {
             } else {
                 return nil
             }
+        }
+
+        pub fun borrowViewResolver(id: UInt64): &AnyResource{MetadataViews.Resolver} {
+            let nft = &self.ownedNFTs[id] as auth &NonFungibleToken.NFT
+            let topShotNFT = nft as! &TopShot.NFT
+            return topShotNFT as &AnyResource{MetadataViews.Resolver}
         }
 
         // If a transaction destroys the Collection object,
