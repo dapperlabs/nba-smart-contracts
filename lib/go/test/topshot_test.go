@@ -13,9 +13,8 @@ import (
 	sdktemplates "github.com/onflow/flow-go-sdk/templates"
 	"github.com/onflow/flow-go-sdk/test"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/onflow/flow-go-sdk"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -379,12 +378,20 @@ func TestMintNFTs(t *testing.T) {
 	t.Run("Should be able to get moments metadata", func(t *testing.T) {
 		expectedMetadataName := "Lebron Dunk"
 		expectedMetadataDescription := "A series 0 Genesis moment with serial number 1"
+		expectedPlayID := 1
+		expectedSetID := 1
+		expectedSerialNumber := 1
 
-		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
-		nftResult := result.(cadence.Struct)
+		resultNFT := executeScriptAndCheck(t, b, templates.GenerateGetNFTMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
+		metadataViewNFT := resultNFT.(cadence.Struct)
+		assert.Equal(t, cadence.String(expectedMetadataName), metadataViewNFT.Fields[0])
+		assert.Equal(t, cadence.String(expectedMetadataDescription), metadataViewNFT.Fields[1])
 
-		assert.Equal(t, cadence.String(expectedMetadataName), nftResult.Fields[0])
-		assert.Equal(t, cadence.String(expectedMetadataDescription), nftResult.Fields[1])
+		resultTopShot := executeScriptAndCheck(t, b, templates.GenerateGetTopShotMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
+		metadataViewTopShot := resultTopShot.(cadence.Struct)
+		assert.Equal(t, cadence.UInt32(expectedSerialNumber), metadataViewTopShot.Fields[26])
+		assert.Equal(t, cadence.UInt32(expectedPlayID), metadataViewTopShot.Fields[27])
+		assert.Equal(t, cadence.UInt32(expectedSetID), metadataViewTopShot.Fields[28])
 	})
 
 	// Admin sends a transaction that locks the set

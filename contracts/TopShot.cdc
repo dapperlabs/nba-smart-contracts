@@ -459,7 +459,7 @@ pub contract TopShot: NonFungibleToken {
     // This is an implementation of a custom metadata view for Top Shot.
     // This view contains the play metadata.
     //
-    pub struct TopShotMomentsMetadataView {
+    pub struct TopShotMomentMetadataView {
 
         pub let fullName: String?
         pub let firstName: String?
@@ -485,9 +485,12 @@ pub contract TopShot: NonFungibleToken {
         pub let awayTeamName: String?
         pub let homeTeamScore: String?
         pub let awayTeamScore: String?
-        pub let seriesNumber: String?
+        pub let seriesNumber: UInt32?
         pub let setName: String?
-        pub let serialNumber: String?
+        pub let serialNumber: UInt32
+        pub let playID: UInt32
+        pub let setID: UInt32
+        pub let numMomentsInEdition: UInt32?
 
         init(
             fullName: String?,
@@ -514,9 +517,12 @@ pub contract TopShot: NonFungibleToken {
             awayTeamName: String?,
             homeTeamScore: String?,
             awayTeamScore: String?,
-            seriesNumber: String?,
+            seriesNumber: UInt32?,
             setName: String?,
-            serialNumber: String?,
+            serialNumber: UInt32,
+            playID: UInt32,
+            setID: UInt32,
+            numMomentsInEdition: UInt32?
         ) {
             self.fullName = fullName
             self.firstName = firstName
@@ -545,6 +551,9 @@ pub contract TopShot: NonFungibleToken {
             self.seriesNumber = seriesNumber
             self.setName = setName
             self.serialNumber = serialNumber
+            self.playID = playID
+            self.setID = setID
+            self.numMomentsInEdition = numMomentsInEdition
         }
     }
 
@@ -599,7 +608,7 @@ pub contract TopShot: NonFungibleToken {
         pub fun getViews(): [Type] {
             return [
                 Type<MetadataViews.Display>(),
-                Type<TopShotMomentsMetadataView>()
+                Type<TopShotMomentMetadataView>()
             ]
         }
 
@@ -611,8 +620,8 @@ pub contract TopShot: NonFungibleToken {
                         description: self.description(),
                         thumbnail: MetadataViews.HTTPFile("")
                     )
-                case Type<TopShotMomentsMetadataView>():
-                    return TopShotMomentsMetadataView(
+                case Type<TopShotMomentMetadataView>():
+                    return TopShotMomentMetadataView(
                         fullName: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "FullName"),
                         firstName: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "FirstName"),
                         lastName: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "LastName"),
@@ -637,9 +646,12 @@ pub contract TopShot: NonFungibleToken {
                         awayTeamName: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "AwayTeamName"),
                         homeTeamScore: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "HomeTeamScore"),
                         awayTeamScore: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "AwayTeamScore"),
-                        seriesNumber: TopShot.getSetSeries(setID: self.data.setID)?.toString(),
+                        seriesNumber: TopShot.getSetSeries(setID: self.data.setID),
                         setName: TopShot.getSetName(setID: self.data.setID),
-                        serialNumber: self.data.serialNumber.toString()
+                        serialNumber: self.data.serialNumber,
+                        playID: self.data.playID,
+                        setID: self.data.setID,
+                        numMomentsInEdition: TopShot.getNumMomentsInEdition(setID: self.data.setID, playID: self.data.playID)
                     )
             }
 

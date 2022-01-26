@@ -41,7 +41,8 @@ const (
 	getSetPlaysAreOwnedFilename = "collections/get_setplays_are_owned.cdc"
 
 	// metadata scripts
-	getNFTMetadataFilename = "get_nft_metadata.cdc"
+	getNFTMetadataFilename     = "get_nft_metadata.cdc"
+	getTopShotMetadataFilename = "get_topshot_metadata.cdc"
 )
 
 // Global Data Gettetrs
@@ -220,6 +221,13 @@ func GenerateSetPlaysOwnedByAddressScript(env Environment) []byte {
 // GenerateGetNFTMetadataScript creates a script that returns the metadata for an NFT.
 func GenerateGetNFTMetadataScript(env Environment) []byte {
 	code := assets.MustAssetString(scriptsPath + getNFTMetadataFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateGetTopShotMetadataScript creates a script that returns the metadata for an NFT.
+func GenerateGetTopShotMetadataScript(env Environment) []byte {
+	code := assets.MustAssetString(scriptsPath + getTopShotMetadataFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
