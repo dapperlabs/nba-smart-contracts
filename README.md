@@ -353,6 +353,9 @@ the `lib/go/events` package.
 
 NFT metadata is represented in a flexible and modular way using the [standard proposed in FLIP-0636](https://github.com/onflow/flow/blob/master/flips/20210916-nft-metadata.md). The Top Shot contract implements the [`MetadataViews.Resolver`](https://github.com/onflow/flow-nft/blob/master/contracts/MetadataViews.cdc#L21) interface, which standardizes the display of Top Shot NFT in accordance with FLIP-0636. The Top Shot contract also defines a custom view of moment play data called TopShotMomentMetadataView.
 
+## NBA Top Shot Packs
+
+NBA Top Shot packs are currently off-chain and not managed by the NBA Top Shot smart contract. Moments in a pack are minted on-chain, and assembled into a pack for purchase on the NBA Top Shot platform. When a collector purchases a pack, the moments within the pack are transferred to this collector on-chain. The NBA Top Shot smart contract has no knowledge of packs, just the moments that make up the pack.
 
 ## NBA Top Shot Marketplace
 
