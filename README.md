@@ -355,7 +355,7 @@ NFT metadata is represented in a flexible and modular way using the [standard pr
 
 ## NBA Top Shot Packs
 
-NBA Top Shot packs are currently off-chain and not managed by the NBA Top Shot smart contract. Moments in a pack are minted on-chain, and assembled into a pack for purchase on the NBA Top Shot platform. When a collector purchases a pack, the moments within the pack are transferred to this collector on-chain. The NBA Top Shot smart contract has no knowledge of packs, just the moments that make up the pack.
+NBA Top Shot packs are currently off-chain and not managed by the NBA Top Shot smart contract. Moments in a pack are minted on-chain, and assembled into a pack for purchase off-chain on the NBA Top Shot platform. When a collector purchases a pack, the moments within the pack are transferred directly to this collector on-chain. The NBA Top Shot smart contract has no knowledge of packs.
 
 ## NBA Top Shot Marketplace
 
