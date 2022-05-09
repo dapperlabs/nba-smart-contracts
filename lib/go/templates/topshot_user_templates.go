@@ -10,6 +10,7 @@ const (
 	batchTransferFilename  = "user/batch_transfer.cdc"
 
 	transferMomentV3Filename = "user/transfer_moment_v3_sale.cdc"
+	destroyMomentsFilename = "user/destroy_moments.cdc"
 )
 
 // GenerateSetupAccountScript creates a script that sets up an account to use topshot
@@ -37,6 +38,14 @@ func GenerateBatchTransferMomentScript(env Environment) []byte {
 // and cancels its sale if it is for sale
 func GenerateTransferMomentV3Script(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + transferMomentV3Filename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateDestroyMomentsScript creates a script that destroyes select
+// moments from a user's collection
+func GenerateDestroyMomentsScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + destroyMomentsFilename)
 
 	return []byte(replaceAddresses(code, env))
 }

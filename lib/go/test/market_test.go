@@ -17,6 +17,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"strings"
 )
 
 const (
@@ -46,10 +47,11 @@ func TestMarketDeployment(t *testing.T) {
 	// Should be able to deploy the MetadataViews contract
 	// as a new account with no keys.
 	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1)
 	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
-			Source: string(metadataViewsCode),
+			Source: parsedMetadataContract,
 		},
 	})
 	if !assert.NoError(t, err) {
@@ -146,10 +148,11 @@ func TestMarketV1(t *testing.T) {
 	// Should be able to deploy the MetadataViews contract
 	// as a new account with no keys.
 	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1)
 	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
-			Source: string(metadataViewsCode),
+			Source: parsedMetadataContract,
 		},
 	})
 	if !assert.NoError(t, err) {
@@ -681,10 +684,11 @@ func TestMarketV3(t *testing.T) {
 	// Should be able to deploy the MetadataViews contract
 	// as a new account with no keys.
 	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1)
 	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
-			Source: string(metadataViewsCode),
+			Source: parsedMetadataContract,
 		},
 	})
 	if !assert.NoError(t, err) {

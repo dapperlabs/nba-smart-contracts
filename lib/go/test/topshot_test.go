@@ -1,6 +1,7 @@
 package test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/onflow/cadence"
@@ -26,6 +27,7 @@ const (
 
 	emulatorFTAddress        = "ee82856bf20e2aa6"
 	emulatorFlowTokenAddress = "0ae53cb6e3f42a79"
+	MetadataReplaceAddress = `"./utility/FungibleToken.cdc"`
 )
 
 // This test is for testing the deployment the topshot smart contracts
@@ -50,10 +52,11 @@ func TestNFTDeployment(t *testing.T) {
 	// Should be able to deploy the MetadataViews contract
 	// as a new account with no keys.
 	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1)
 	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
-			Source: string(metadataViewsCode),
+			Source: parsedMetadataContract,
 		},
 	})
 	if !assert.NoError(t, err) {
@@ -131,12 +134,16 @@ func TestMintNFTs(t *testing.T) {
 
 	// Should be able to deploy a contract as a new account with no keys.
 	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	metadataViewsAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1)
+	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
-			Source: string(metadataViewsCode),
+			Source: parsedMetadataContract,
 		},
 	})
+	// errString := err.Error()
+	// log.Print(errString)
+	assert.Nil(t, err)
 
 	env.MetadataViewsAddress = metadataViewsAddr.String()
 
@@ -378,6 +385,7 @@ func TestMintNFTs(t *testing.T) {
 	t.Run("Should be able to get moments metadata", func(t *testing.T) {
 		expectedMetadataName := "Lebron Dunk"
 		expectedMetadataDescription := "A series 0 Genesis moment with serial number 1"
+		expectedMetadataThumbnail := "https://ipfs.dapperlabs.com/ipfs/Qmbdj1agtbzpPWZ81wCGaDiMKRFaRN3TU6cfztVCu6nh4o"
 		expectedPlayID := 1
 		expectedSetID := 1
 		expectedSerialNumber := 1
@@ -386,6 +394,7 @@ func TestMintNFTs(t *testing.T) {
 		metadataViewNFT := resultNFT.(cadence.Struct)
 		assert.Equal(t, cadence.String(expectedMetadataName), metadataViewNFT.Fields[0])
 		assert.Equal(t, cadence.String(expectedMetadataDescription), metadataViewNFT.Fields[1])
+		assert.Equal(t, cadence.String(expectedMetadataThumbnail), metadataViewNFT.Fields[2])
 
 		resultTopShot := executeScriptAndCheck(t, b, templates.GenerateGetTopShotMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		metadataViewTopShot := resultTopShot.(cadence.Struct)
@@ -449,7 +458,7 @@ func TestMintNFTs(t *testing.T) {
 		assert.Equal(t, cadence.NewBool(true), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetCollectionIDsScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr))})
-		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt64(2), cadence.NewUInt64(3), cadence.NewUInt64(1), cadence.NewUInt64(4), cadence.NewUInt64(5), cadence.NewUInt64(6)})
+		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt64(6), cadence.NewUInt64(5), cadence.NewUInt64(1), cadence.NewUInt64(4), cadence.NewUInt64(3), cadence.NewUInt64(2)})
 		assert.Equal(t, idsArray, result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
@@ -650,10 +659,11 @@ func TestTransferAdmin(t *testing.T) {
 
 	// Should be able to deploy a contract as a new account with no keys.
 	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1)
 	metadataViewsAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
-			Source: string(metadataViewsCode),
+			Source: parsedMetadataContract,
 		},
 	})
 
@@ -751,10 +761,11 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 
 	// Should be able to deploy a contract as a new account with no keys.
 	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1)
 	metadataViewsAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
-			Source: string(metadataViewsCode),
+			Source: parsedMetadataContract,
 		},
 	})
 
@@ -921,4 +932,179 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 	// 	assert.Error(t, err)
 	// 	assert.True(t, strings.Contains(err.Error(), "no SetPlays"))
 	// })
+}
+
+func TestDestroyMoments(t *testing.T) {
+	// Setup
+	b := newBlockchain()
+
+	accountKeys := test.AccountKeyGenerator()
+
+	env := templates.Environment{
+		FungibleTokenAddress: emulatorFTAddress,
+		FlowTokenAddress:     emulatorFlowTokenAddress,
+	}
+
+	// Should be able to deploy a contract as a new account with no keys.
+	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
+	nftAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "NonFungibleToken",
+			Source: string(nftCode),
+		},
+	})
+
+	env.NFTAddress = nftAddr.String()
+
+	// Should be able to deploy a contract as a new account with no keys.
+	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1)
+	metadataViewsAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "MetadataViews",
+			Source: parsedMetadataContract,
+		},
+	})
+
+	env.MetadataViewsAddress = metadataViewsAddr.String()
+
+	// First, deploy the topshot contract
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
+	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
+	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
+		{
+			Name:   "TopShot",
+			Source: string(topshotCode),
+		},
+	})
+
+	env.TopShotAddress = topshotAddr.String()
+
+	// Create a new user account
+	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
+	joshAddress, _ := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
+
+	// Create moment collection
+	tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(env), joshAddress)
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+		false,
+	)
+
+	firstName := CadenceString("FullName")
+	lebron := CadenceString("Lebron")
+	hayward := CadenceString("Hayward")
+	antetokounmpo := CadenceString("Antetokounmpo")
+
+	// Create plays
+	lebronPlayID := uint32(1)
+	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
+
+	metadata := []cadence.KeyValuePair{{Key: firstName, Value: lebron}}
+	play := cadence.NewDictionary(metadata)
+	_ = tx.AddArgument(play)
+
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+	haywardPlayID := uint32(2)
+	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
+
+	metadata = []cadence.KeyValuePair{{Key: firstName, Value: hayward}}
+	play = cadence.NewDictionary(metadata)
+	_ = tx.AddArgument(play)
+
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+	antetokounmpoPlayID := uint32(3)
+	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
+
+	metadata = []cadence.KeyValuePair{{Key: firstName, Value: antetokounmpo}}
+	play = cadence.NewDictionary(metadata)
+	_ = tx.AddArgument(play)
+
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+
+	// Create Set
+	genesisSetID := uint32(1)
+	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintSetScript(env), topshotAddr)
+
+	_ = tx.AddArgument(CadenceString("Genesis"))
+
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+
+	// Add plays to Set
+	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateAddPlaysToSetScript(env), topshotAddr)
+
+	_ = tx.AddArgument(cadence.NewUInt32(genesisSetID))
+
+	plays := []cadence.Value{cadence.NewUInt32(lebronPlayID), cadence.NewUInt32(haywardPlayID), cadence.NewUInt32(antetokounmpoPlayID)}
+	_ = tx.AddArgument(cadence.NewArray(plays))
+
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+
+	// Mint two moments to joshAddress
+	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentScript(env), topshotAddr)
+
+	_ = tx.AddArgument(cadence.NewUInt32(genesisSetID))
+	_ = tx.AddArgument(cadence.NewUInt32(lebronPlayID))
+	_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentScript(env), topshotAddr)
+
+	_ = tx.AddArgument(cadence.NewUInt32(genesisSetID))
+	_ = tx.AddArgument(cadence.NewUInt32(haywardPlayID))
+	_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+		false,
+	)
+
+	t.Run("Should destroy the 2 moments created in Josh account", func(t *testing.T) {
+		// check that moments with ids 1 and 2 exist in josh's collection
+		result := executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
+		assert.Equal(t, cadence.NewBool(true), result)
+		result = executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		assert.Equal(t, cadence.NewBool(true), result)
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateDestroyMomentsScript(env), joshAddress)
+		_ = tx.AddArgument(cadence.NewArray([]cadence.Value{cadence.NewUInt64(1), cadence.NewUInt64(2)}))
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			false,
+		)
+
+		// verify that the moments no longer exist in josh's collection
+		r, err := b.ExecuteScript(templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
+		assert.NoError(t, err)
+		assert.Contains(t, r.Error.Error(), "NFT does not exist in the collection")
+		r, err = b.ExecuteScript(templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		assert.NoError(t, err)
+		assert.Contains(t, r.Error.Error(), "NFT does not exist in the collection")
+
+	})
 }

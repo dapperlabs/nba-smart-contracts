@@ -618,7 +618,7 @@ pub contract TopShot: NonFungibleToken {
                     return MetadataViews.Display(
                         name: self.name(),
                         description: self.description(),
-                        thumbnail: MetadataViews.HTTPFile("")
+                        thumbnail: MetadataViews.HTTPFile(url:"https://ipfs.dapperlabs.com/ipfs/Qmbdj1agtbzpPWZ81wCGaDiMKRFaRN3TU6cfztVCu6nh4o")
                     )
                 case Type<TopShotMomentMetadataView>():
                     return TopShotMomentMetadataView(
