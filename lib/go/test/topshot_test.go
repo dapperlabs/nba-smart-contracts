@@ -385,6 +385,7 @@ func TestMintNFTs(t *testing.T) {
 	t.Run("Should be able to get moments metadata", func(t *testing.T) {
 		expectedMetadataName := "Lebron Dunk"
 		expectedMetadataDescription := "A series 0 Genesis moment with serial number 1"
+		expectedMetadataThumbnail := "https://ipfs.dapperlabs.com/ipfs/Qmbdj1agtbzpPWZ81wCGaDiMKRFaRN3TU6cfztVCu6nh4o"
 		expectedPlayID := 1
 		expectedSetID := 1
 		expectedSerialNumber := 1
@@ -393,6 +394,7 @@ func TestMintNFTs(t *testing.T) {
 		metadataViewNFT := resultNFT.(cadence.Struct)
 		assert.Equal(t, cadence.String(expectedMetadataName), metadataViewNFT.Fields[0])
 		assert.Equal(t, cadence.String(expectedMetadataDescription), metadataViewNFT.Fields[1])
+		assert.Equal(t, cadence.String(expectedMetadataThumbnail), metadataViewNFT.Fields[2])
 
 		resultTopShot := executeScriptAndCheck(t, b, templates.GenerateGetTopShotMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		metadataViewTopShot := resultTopShot.(cadence.Struct)
