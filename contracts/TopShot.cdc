@@ -43,8 +43,8 @@
 
 */
 
-import NonFungibleToken from 0xNFTADDRESS
-import MetadataViews from 0xMETADATAVIEWSADDRESS
+import NonFungibleToken from 0x01cf0e2f2f715450
+import MetadataViews from 0x01cf0e2f2f715450
 
 pub contract TopShot: NonFungibleToken {
 
@@ -401,37 +401,37 @@ pub contract TopShot: NonFungibleToken {
         pub let setID: UInt32
         pub let name: String
         pub let series: UInt32
-        access(self) var plays: [UInt32]
-        access(self) var retired: {UInt32: Bool}
-        pub var locked: Bool
-        access(self) var numberMintedPerPlay: {UInt32: UInt32}
+        access(self) var plays: [UInt32]?
+        access(self) var retired: {UInt32: Bool}?
+        pub var locked: Bool?
+        access(self) var numberMintedPerPlay: {UInt32: UInt32}?
 
         init(setID: UInt32) {
             pre {
                 TopShot.sets[setID] != nil: "The set with the provided ID does not exist"
             }
 
-            let set = &TopShot.sets[setID] as &Set
+            let set = &TopShot.sets[setID] as &Set?
             let setData = TopShot.setDatas[setID]!
 
             self.setID = setID
             self.name = setData.name
             self.series = setData.series
-            self.plays = set.plays
-            self.retired = set.retired
-            self.locked = set.locked
-            self.numberMintedPerPlay = set.numberMintedPerPlay
+            self.plays = set?.plays
+            self.retired = set?.retired
+            self.locked = set?.locked
+            self.numberMintedPerPlay = set?.numberMintedPerPlay
         }
 
-        pub fun getPlays(): [UInt32] {
+        pub fun getPlays(): [UInt32]? {
             return self.plays
         }
 
-        pub fun getRetired(): {UInt32: Bool} {
+        pub fun getRetired(): {UInt32: Bool}? {
             return self.retired
         }
 
-        pub fun getNumberMintedPerPlay(): {UInt32: UInt32} {
+        pub fun getNumberMintedPerPlay(): {UInt32: UInt32}? {
             return self.numberMintedPerPlay
         }
     }
@@ -723,14 +723,14 @@ pub contract TopShot: NonFungibleToken {
         // Returns: A reference to the Set with all of the fields
         // and methods exposed
         //
-        pub fun borrowSet(setID: UInt32): &Set {
+        pub fun borrowSet(setID: UInt32): &Set? {
             pre {
                 TopShot.sets[setID] != nil: "Cannot borrow Set: The Set doesn't exist"
             }
             
             // Get a reference to the Set and return it
             // use `&` to indicate the reference to the object and type
-            return &TopShot.sets[setID] as &Set
+            return &TopShot.sets[setID] as &Set?
         }
 
         // startNewSeries ends the current series by incrementing
@@ -883,7 +883,7 @@ pub contract TopShot: NonFungibleToken {
         // read Moment data.
         //
         pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
-            return &self.ownedNFTs[id] as &NonFungibleToken.NFT
+            return (&self.ownedNFTs[id] as &NonFungibleToken.NFT?)!
         }
 
         // borrowMoment returns a borrowed reference to a Moment
@@ -898,7 +898,7 @@ pub contract TopShot: NonFungibleToken {
         // Returns: A reference to the NFT
         pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
             if self.ownedNFTs[id] != nil {
-                let ref = &self.ownedNFTs[id] as auth &NonFungibleToken.NFT
+                let ref = &self.ownedNFTs[id] as auth &NonFungibleToken.NFT?
                 return ref as! &TopShot.NFT
             } else {
                 return nil
@@ -906,7 +906,7 @@ pub contract TopShot: NonFungibleToken {
         }
 
         pub fun borrowViewResolver(id: UInt64): &AnyResource{MetadataViews.Resolver} {
-            let nft = &self.ownedNFTs[id] as auth &NonFungibleToken.NFT
+            let nft = &self.ownedNFTs[id] as auth &NonFungibleToken.NFT?
             let topShotNFT = nft as! &TopShot.NFT
             return topShotNFT as &AnyResource{MetadataViews.Resolver}
         }
@@ -1050,11 +1050,11 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: Boolean indicating if the edition is retired or not
     pub fun isEditionRetired(setID: UInt32, playID: UInt32): Bool? {
-
         if let setdata = self.getSetData(setID: setID) {
 
             // See if the Play is retired from this Set
-            let retired = setdata.getRetired()[playID]
+
+            let retired = setdata.getRetired()![playID]
 
             // Return the retired status
             return retired
@@ -1090,7 +1090,7 @@ pub contract TopShot: NonFungibleToken {
         if let setdata = self.getSetData(setID: setID) {
 
             // Read the numMintedPerPlay
-            let amount = setdata.getNumberMintedPerPlay()[playID]
+            let amount = setdata.getNumberMintedPerPlay()![playID]
 
             return amount
         } else {
