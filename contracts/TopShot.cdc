@@ -411,16 +411,17 @@ pub contract TopShot: NonFungibleToken {
                 TopShot.sets[setID] != nil: "The set with the provided ID does not exist"
             }
 
-            let set = &TopShot.sets[setID] as &Set?
+            let set = &TopShot.sets[setID] as &Set
+
             let setData = TopShot.setDatas[setID]!
 
             self.setID = setID
             self.name = setData.name
             self.series = setData.series
-            self.plays = set?.plays
-            self.retired = set?.retired
-            self.locked = set?.locked
-            self.numberMintedPerPlay = set?.numberMintedPerPlay
+            self.plays = set.plays
+            self.retired = set.retired
+            self.locked = set.locked
+            self.numberMintedPerPlay = set.numberMintedPerPlay
         }
 
         pub fun getPlays(): [UInt32]? {

@@ -32,10 +32,10 @@
     deposited to.
 */
 
-import FungibleToken from 0xFUNGIBLETOKENADDRESS
-import DapperUtilityCoin from 0xDUCADDRESS
-import NonFungibleToken from 0xNFTADDRESS
-import TopShot from 0xTOPSHOTADDRESS
+import FungibleToken from 0x01cf0e2f2f715450
+import DapperUtilityCoin from 0x01cf0e2f2f715450
+import NonFungibleToken from 0x01cf0e2f2f715450
+import TopShot from 0x01cf0e2f2f715450
 
 pub contract Market {
 
@@ -257,3 +257,4 @@ pub contract Market {
         return <- create SaleCollection(ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: cutPercentage)
     }
 }
+ 

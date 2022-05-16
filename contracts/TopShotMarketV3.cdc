@@ -35,11 +35,11 @@
     deposited to.
 **/
 
-import FungibleToken from 0xFUNGIBLETOKENADDRESS
-import NonFungibleToken from 0xNFTADDRESS
-import TopShot from 0xTOPSHOTADDRESS
-import Market from 0xMARKETADDRESS
-import DapperUtilityCoin from 0xDUCADDRESS
+import FungibleToken from 0x01cf0e2f2f715450
+import NonFungibleToken from 0x01cf0e2f2f715450
+import TopShot from 0x01cf0e2f2f715450
+import Market from 0x01cf0e2f2f715450
+import DapperUtilityCoin from 0x01cf0e2f2f715450
 
 pub contract TopShotMarketV3 {
 
