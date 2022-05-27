@@ -1,4 +1,6 @@
+import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
+import MetadataViews from 0xMETADATAVIEWSADDRESS
 
 // This transaction sets up an account to use Top Shot
 // by storing an empty moment collection and creating
@@ -18,7 +20,7 @@ transaction {
             acct.save(<-collection, to: /storage/MomentCollection)
 
             // create a public capability for the collection
-            acct.link<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection, target: /storage/MomentCollection)
+            acct.link<&{NonFungibleToken.CollectionPublic, TopShot.MomentCollectionPublic, MetadataViews.ResolverCollection}>(/public/MomentCollection, target: /storage/MomentCollection)
         }
     }
 }
