@@ -29,6 +29,9 @@ type PlayMetadata struct {
 	AwayTeamName         string
 	HomeTeamScore        *int32 `json:",string"`
 	AwayTeamScore        *int32 `json:",string"`
+	AutographType        string `json:",omitempty"`
+	AutographDate        string `json:",omitempty"`
+	AutographSigner      string `json:",omitempty"`
 }
 
 // GenerateEmptyPlay generates a play with all its fields
@@ -56,5 +59,8 @@ func GenerateEmptyPlay(fullName string) PlayMetadata {
 		AwayTeamName:         "",
 		HomeTeamScore:        &num,
 		AwayTeamScore:        &num,
+		AutographType:        "",
+		AutographDate:        "",
+		AutographSigner:      "",
 	}
 }
