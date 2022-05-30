@@ -6,6 +6,8 @@ import (
 
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
+	fungibleToken "github.com/onflow/flow-ft/lib/go/contracts"
+	fungibleTokenTemplates "github.com/onflow/flow-ft/lib/go/templates"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
@@ -16,6 +18,7 @@ import (
 
 	"github.com/onflow/flow-go-sdk"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -27,8 +30,8 @@ const (
 
 	emulatorFTAddress        = "ee82856bf20e2aa6"
 	emulatorFlowTokenAddress = "0ae53cb6e3f42a79"
-	MetadataReplaceAddress = `"./utility/FungibleToken.cdc"`
-	NFTReplaceAddress = `"./NonFungibleToken.cdc"`
+	MetadataReplaceAddress   = `"./utility/FungibleToken.cdc"`
+	NFTReplaceAddress        = `"./NonFungibleToken.cdc"`
 )
 
 // This test is for testing the deployment the topshot smart contracts
@@ -53,7 +56,7 @@ func TestNFTDeployment(t *testing.T) {
 	// Should be able to deploy the MetadataViews contract
 	// as a new account with no keys.
 	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1), NFTReplaceAddress, "0x" + nftAddr.Hex(), 1)
+	parsedMetadataContract := strings.Replace(strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1), NFTReplaceAddress, "0x"+nftAddr.Hex(), 1)
 	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
@@ -981,12 +984,93 @@ func TestDestroyMoments(t *testing.T) {
 
 	env.TopShotAddress = topshotAddr.String()
 
+	// Should be able to deploy the token contract
+	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage, "1000.0")
+	tokenAccountKey, tokenSigner := accountKeys.NewWithSigner()
+	tokenAddr, err := b.CreateAccount([]*flow.AccountKey{tokenAccountKey}, []sdktemplates.Contract{
+		{
+			Name:   "DapperUtilityCoin",
+			Source: string(tokenCode),
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
+	env.DUCAddress = tokenAddr.String()
+
+	// Setup with the first market contract
+	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), env.DUCAddress)
+	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "Market",
+			Source: string(marketCode),
+		},
+	})
+	if !assert.Nil(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	require.NoError(t, err)
+
+	env.TopShotMarketAddress = marketAddr.String()
+
+	// Should be able to deploy the third market contract
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), env.DUCAddress)
+	marketV3Addr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotMarketV3",
+			Source: string(marketV3Code),
+		},
+	})
+	if !assert.Nil(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	require.NoError(t, err)
+
+	env.TopShotMarketV3Address = marketV3Addr.String()
+
+	// Should be able to deploy the token forwarding contract
+	forwardingCode := fungibleToken.CustomTokenForwarding(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
+	forwardingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TokenForwarding",
+			Source: string(forwardingCode),
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
+	env.ForwardingAddress = forwardingAddr.String()
+
 	// Create a new user account
 	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
 	joshAddress, _ := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
 
+	tx := createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName), joshAddress)
+
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+		false,
+	)
+
+	tx = createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateMintTokensScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, joshAddress, defaultTokenName, 80), tokenAddr)
+
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+		false,
+	)
+
 	// Create moment collection
-	tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(env), joshAddress)
+	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(env), joshAddress)
 	signAndSubmit(
 		t, b, tx,
 		[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
@@ -1085,12 +1169,59 @@ func TestDestroyMoments(t *testing.T) {
 		false,
 	)
 
+	//check that moments with ids 1 and 2 exist in josh's collection
+	result := executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
+	assert.Equal(t, cadence.NewBool(true), result)
+	result = executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
+	assert.Equal(t, cadence.NewBool(true), result)
+
+	ducPublicPath := cadence.Path{Domain: "public", Identifier: "dapperUtilityCoinReceiver"}
+
+	// Create a marketv1 sale collection for Josh
+	// setting himself as the beneficiary with a 15% cut
+	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateAndStartSaleScript(env), joshAddress)
+
+	_ = tx.AddArgument(ducPublicPath)
+	_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+	_ = tx.AddArgument(CadenceUFix64("0.15"))
+	_ = tx.AddArgument(cadence.NewUInt64(2))
+	_ = tx.AddArgument(CadenceUFix64("50.0"))
+
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+		false,
+	)
+
+	// Create a sale collection for josh's account, setting josh as the beneficiary
+	// and with a 15% cut
+	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateAndStartSaleV3Script(env), joshAddress)
+
+	_ = tx.AddArgument(ducPublicPath)
+	_ = tx.AddArgument(cadence.NewAddress(joshAddress))
+	_ = tx.AddArgument(CadenceUFix64("0.15"))
+	_ = tx.AddArgument(cadence.NewUInt64(1))
+	_ = tx.AddArgument(CadenceUFix64("50.0"))
+
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+		false,
+	)
+
+	momentIDs := []uint64{1, 2}
+	// check the price, sale length, and the sale's data
+	result = executeScriptAndCheck(t, b, templates.GenerateGetSaleLenV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress))})
+	assertEqual(t, cadence.NewInt(2), result)
+	for _, momentID := range momentIDs {
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSalePriceV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(momentID))})
+		assertEqual(t, CadenceUFix64("50.0"), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSaleSetIDV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(momentID))})
+		assertEqual(t, cadence.NewUInt32(1), result)
+	}
+
 	t.Run("Should destroy the 2 moments created in Josh account", func(t *testing.T) {
-		// check that moments with ids 1 and 2 exist in josh's collection
-		result := executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
-		assert.Equal(t, cadence.NewBool(true), result)
-		result = executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
-		assert.Equal(t, cadence.NewBool(true), result)
 		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateDestroyMomentsScript(env), joshAddress)
 		_ = tx.AddArgument(cadence.NewArray([]cadence.Value{cadence.NewUInt64(1), cadence.NewUInt64(2)}))
 		signAndSubmit(
@@ -1100,12 +1231,13 @@ func TestDestroyMoments(t *testing.T) {
 		)
 
 		// verify that the moments no longer exist in josh's collection
-		r, err := b.ExecuteScript(templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
-		assert.NoError(t, err)
-		assert.Contains(t, r.Error.Error(), "NFT does not exist in the collection")
-		r, err = b.ExecuteScript(templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
-		assert.NoError(t, err)
-		assert.Contains(t, r.Error.Error(), "NFT does not exist in the collection")
-
+		for _, momentID := range momentIDs {
+			r, err := b.ExecuteScript(templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(momentID))})
+			assert.NoError(t, err)
+			assert.Contains(t, r.Error.Error(), "NFT does not exist in the collection")
+		}
+		// verify no moments in sale collection
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSaleLenV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress))})
+		assertEqual(t, cadence.NewInt(0), result)
 	})
 }
