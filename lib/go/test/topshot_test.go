@@ -28,10 +28,10 @@ const (
 	MetadataViewsContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/master/contracts/"
 	MetadataViewsInterfaceFile    = "MetadataViews.cdc"
 
-	emulatorFTAddress        = "ee82856bf20e2aa6"
-	emulatorFlowTokenAddress = "0ae53cb6e3f42a79"
-	MetadataReplaceAddress   = `"./utility/FungibleToken.cdc"`
-	NFTReplaceAddress        = `"./NonFungibleToken.cdc"`
+	emulatorFTAddress         = "ee82856bf20e2aa6"
+	emulatorFlowTokenAddress  = "0ae53cb6e3f42a79"
+	MetadataFTReplaceAddress  = `"./utility/FungibleToken.cdc"`
+	MetadataNFTReplaceAddress = `"./NonFungibleToken.cdc"`
 )
 
 // This test is for testing the deployment the topshot smart contracts
@@ -56,7 +56,8 @@ func TestNFTDeployment(t *testing.T) {
 	// Should be able to deploy the MetadataViews contract
 	// as a new account with no keys.
 	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1), NFTReplaceAddress, "0x"+nftAddr.Hex(), 1)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
+	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
 	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
@@ -138,7 +139,8 @@ func TestMintNFTs(t *testing.T) {
 
 	// Should be able to deploy a contract as a new account with no keys.
 	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1), NFTReplaceAddress, "0x"+nftAddr.Hex(), 1)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
+	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
 	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
@@ -663,7 +665,8 @@ func TestTransferAdmin(t *testing.T) {
 
 	// Should be able to deploy a contract as a new account with no keys.
 	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1), NFTReplaceAddress, "0x"+nftAddr.Hex(), 1)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
+	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
 	metadataViewsAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
@@ -765,7 +768,8 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 
 	// Should be able to deploy a contract as a new account with no keys.
 	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1), NFTReplaceAddress, "0x"+nftAddr.Hex(), 1)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
+	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
 	metadataViewsAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
@@ -962,7 +966,8 @@ func TestDestroyMoments(t *testing.T) {
 
 	// Should be able to deploy a contract as a new account with no keys.
 	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(strings.Replace(string(metadataViewsCode), MetadataReplaceAddress, "0x"+emulatorFTAddress, 1), NFTReplaceAddress, "0x"+nftAddr.Hex(), 1)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
+	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
 	metadataViewsAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
