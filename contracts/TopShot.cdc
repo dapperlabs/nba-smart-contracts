@@ -906,13 +906,9 @@ pub contract TopShot: NonFungibleToken {
         }
 
         pub fun borrowViewResolver(id: UInt64): &AnyResource{MetadataViews.Resolver} {
-            if self.ownedNFTs[id] != nil {
-                let nft = &self.ownedNFTs[id] as auth &NonFungibleToken.NFT?
-                let topShotNFT = nft as! &TopShot.NFT
-                return topShotNFT as &AnyResource{MetadataViews.Resolver}
-            } else {
-                return nil
-            }
+            let nft = (&self.ownedNFTs[id] as auth &NonFungibleToken.NFT?)! 
+            let topShotNFT = nft as! &TopShot.NFT
+            return topShotNFT as &AnyResource{MetadataViews.Resolver}
         }
 
         // If a transaction destroys the Collection object,

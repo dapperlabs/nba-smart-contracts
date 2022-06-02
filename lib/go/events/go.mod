@@ -3,7 +3,8 @@ module github.com/dapperlabs/nba-smart-contracts/lib/go/events
 go 1.16
 
 require (
-	github.com/onflow/cadence v0.18.0
-	github.com/onflow/flow-go-sdk v0.20.0
-	github.com/stretchr/testify v1.7.0
+	github.com/onflow/cadence v0.21.3-0.20220419065337-d5202c162010
+	github.com/onflow/flow-emulator v0.31.2-0.20220422152808-6c116a9d88b7 // indirect
+	github.com/onflow/flow-go-sdk v0.24.1-0.20220421152843-9ce4d554036e
+	github.com/stretchr/testify v1.7.1-0.20210824115523-ab6dc3262822
 )
