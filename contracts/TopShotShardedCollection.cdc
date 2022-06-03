@@ -102,7 +102,7 @@ pub contract TopShotShardedCollection {
             // Find the bucket this corresponds to
             let bucket = token.id % self.numBuckets
 
-            let collectionRef = &self.collections[bucket] as! &TopShot.Collection
+            let collectionRef = (&self.collections[bucket] as &TopShot.Collection?)!
 
             // Deposit the nft into the bucket
             collectionRef.deposit(token: <-token)
