@@ -2,6 +2,7 @@ package events
 
 import (
 	"fmt"
+
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 	"github.com/onflow/flow-go-sdk"
@@ -39,7 +40,7 @@ func (evt depositEvent) Owner() string {
 }
 
 func (evt depositEvent) validate() error {
-	if evt.EventType.QualifiedIdentifier != EventDeposit{
+	if evt.EventType.QualifiedIdentifier != EventDeposit {
 		return fmt.Errorf("error validating event: event is not a valid moment destroyed event, expected type %s, got %s",
 			EventDeposit, evt.EventType.QualifiedIdentifier)
 	}
@@ -47,12 +48,12 @@ func (evt depositEvent) validate() error {
 }
 
 func DecodeDepositEvent(b []byte) (DepositEvent, error) {
-	value, err := jsoncdc.Decode(b)
+	value, err := jsoncdc.Decode(nil, b)
 	if err != nil {
 		return nil, err
 	}
 	event := depositEvent(value.(cadence.Event))
-	if err := event.validate(); err != nil{
+	if err := event.validate(); err != nil {
 		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
 	return event, nil

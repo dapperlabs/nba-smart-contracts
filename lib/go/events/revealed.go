@@ -2,9 +2,10 @@ package events
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
-	"strings"
 )
 
 const (
@@ -47,7 +48,7 @@ func parseNFTs(nft string) []string {
 }
 
 func DecodeRevealedEvent(b []byte) (RevealedEvent, error) {
-	value, err := jsoncdc.Decode(b)
+	value, err := jsoncdc.Decode(nil, b)
 	if err != nil {
 		return nil, err
 	}
