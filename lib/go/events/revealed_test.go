@@ -2,8 +2,9 @@ package events
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
@@ -14,7 +15,7 @@ import (
 func TestCadenceEvents_Reveal(t *testing.T) {
 	var (
 		packID = uint64(10)
-		salt = "salt"
+		salt   = "salt"
 
 		momentID1 = uint64(1)
 		momentID2 = uint64(2)
@@ -43,8 +44,8 @@ func TestCadenceEvents_Reveal(t *testing.T) {
 
 	revealedEvent := cadence.NewEvent([]cadence.Value{
 		cadence.NewUInt64(packID),
-		cadence.NewString(salt),
-		cadence.NewString(momentIDs),
+		NewCadenceString(salt),
+		NewCadenceString(momentIDs),
 	}).WithType(&revealedEventType)
 
 	revealedPayload, err := jsoncdc.Encode(revealedEvent)
