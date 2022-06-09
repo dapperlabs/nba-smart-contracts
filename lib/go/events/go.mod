@@ -6,8 +6,8 @@ require (
 	github.com/btcsuite/btcd v0.22.0-beta // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
-	github.com/onflow/cadence v0.24.0
-	github.com/onflow/flow-go-sdk v0.26.0
+	github.com/onflow/cadence v0.24.1
+	github.com/onflow/flow-go-sdk v0.26.1
 	github.com/rogpeppe/go-internal v1.8.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
