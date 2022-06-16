@@ -2,6 +2,7 @@ package events
 
 import (
 	"fmt"
+
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 )
@@ -26,7 +27,7 @@ func (evt playAddedToSetEvent) PlayID() uint32 {
 }
 
 func (evt playAddedToSetEvent) validate() error {
-	if evt.EventType.QualifiedIdentifier != EventPlayAddedToSet{
+	if evt.EventType.QualifiedIdentifier != EventPlayAddedToSet {
 		return fmt.Errorf("error validating event: event is not a valid play added to set event, expected type %s, got %s",
 			EventPlayAddedToSet, evt.EventType.QualifiedIdentifier)
 	}
@@ -35,13 +36,13 @@ func (evt playAddedToSetEvent) validate() error {
 
 var _ PlayAddedToSetEvent = (*playAddedToSetEvent)(nil)
 
-func DecodePlayAddedToSetEvent(b []byte)(PlayAddedToSetEvent, error) {
-	value, err := jsoncdc.Decode(b)
+func DecodePlayAddedToSetEvent(b []byte) (PlayAddedToSetEvent, error) {
+	value, err := jsoncdc.Decode(nil, b)
 	if err != nil {
 		return nil, err
 	}
 	event := playAddedToSetEvent(value.(cadence.Event))
-	if err := event.validate(); err != nil{
+	if err := event.validate(); err != nil {
 		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
 	return event, nil

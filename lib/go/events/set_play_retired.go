@@ -2,6 +2,7 @@ package events
 
 import (
 	"fmt"
+
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 )
@@ -31,7 +32,7 @@ func (evt setPlayRetiredEvent) NumMoments() uint32 {
 }
 
 func (evt setPlayRetiredEvent) validate() error {
-	if evt.EventType.QualifiedIdentifier != EventPlayRetiredFromSet{
+	if evt.EventType.QualifiedIdentifier != EventPlayRetiredFromSet {
 		return fmt.Errorf("error validating event: event is not a valid play retired from set event, expected type %s, got %s",
 			EventPlayRetiredFromSet, evt.EventType.QualifiedIdentifier)
 	}
@@ -41,12 +42,12 @@ func (evt setPlayRetiredEvent) validate() error {
 var _ SetPlayRetiredEvent = (*setPlayRetiredEvent)(nil)
 
 func DecodeSetPlayRetiredEvent(b []byte) (SetPlayRetiredEvent, error) {
-	value, err := jsoncdc.Decode(b)
+	value, err := jsoncdc.Decode(nil, b)
 	if err != nil {
 		return nil, err
 	}
 	event := setPlayRetiredEvent(value.(cadence.Event))
-	if err := event.validate(); err != nil{
+	if err := event.validate(); err != nil {
 		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
 	return event, nil

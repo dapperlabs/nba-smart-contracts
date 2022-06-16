@@ -1,8 +1,9 @@
 package events
 
 import (
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
@@ -12,11 +13,11 @@ import (
 
 func TestCadenceEvents_PlayCreated(t *testing.T) {
 	var (
-		id = uint32(1234)
-		playerKey = "playerID"
+		id          = uint32(1234)
+		playerKey   = "playerID"
 		playerValue = "player ID"
-		teamKey = "teamAtMoment"
-		teamValue = "current team"
+		teamKey     = "teamAtMoment"
+		teamValue   = "current team"
 	)
 
 	playCreatedEventType := cadence.EventType{
@@ -38,8 +39,8 @@ func TestCadenceEvents_PlayCreated(t *testing.T) {
 	playCreatedEvent := cadence.NewEvent([]cadence.Value{
 		cadence.NewUInt32(id),
 		cadence.NewDictionary([]cadence.KeyValuePair{
-			{Key: cadence.NewString(playerKey), Value: cadence.NewString(playerValue)},
-			{Key: cadence.NewString(teamKey), Value: cadence.NewString(teamValue)},
+			{Key: NewCadenceString(playerKey), Value: NewCadenceString(playerValue)},
+			{Key: NewCadenceString(teamKey), Value: NewCadenceString(teamValue)},
 		}),
 	}).WithType(&playCreatedEventType)
 
@@ -52,6 +53,6 @@ func TestCadenceEvents_PlayCreated(t *testing.T) {
 	assert.Equal(t, id, decodedPlayCreatedEventType.Id())
 	assert.Equal(t, map[interface{}]interface{}{
 		playerKey: playerValue,
-		teamKey: teamValue,
+		teamKey:   teamValue,
 	}, decodedPlayCreatedEventType.MetaData())
 }

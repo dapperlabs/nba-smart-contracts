@@ -2,6 +2,7 @@ package events
 
 import (
 	"fmt"
+
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 )
@@ -37,7 +38,7 @@ func (evt momentMintedEvent) SerialNumber() uint32 {
 }
 
 func (evt momentMintedEvent) validate() error {
-	if evt.EventType.QualifiedIdentifier != EventMomentMinted{
+	if evt.EventType.QualifiedIdentifier != EventMomentMinted {
 		return fmt.Errorf("error validating event: event is not a valid moment minted event, expected type %s, got %s",
 			EventMomentMinted, evt.EventType.QualifiedIdentifier)
 	}
@@ -47,12 +48,12 @@ func (evt momentMintedEvent) validate() error {
 var _ MomentMintedEvent = (*momentMintedEvent)(nil)
 
 func DecodeMomentMintedEvent(b []byte) (MomentMintedEvent, error) {
-	value, err := jsoncdc.Decode(b)
+	value, err := jsoncdc.Decode(nil, b)
 	if err != nil {
 		return nil, err
 	}
 	event := momentMintedEvent(value.(cadence.Event))
-	if err := event.validate(); err != nil{
+	if err := event.validate(); err != nil {
 		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
 	return event, nil
