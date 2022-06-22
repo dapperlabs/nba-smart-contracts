@@ -85,7 +85,7 @@ pub contract TopShot: NonFungibleToken {
     pub event MomentDestroyed(id: UInt64)
 
     // Emitted when a Moment is locked
-    pub event MomentLocked(id: UInt64, expiryTimestamp: UFix64)
+    pub event MomentLocked(id: UInt64, duration: UFix64, expiryTimestamp: UFix64)
 
     // Emitted when a Moment is unlocked
     pub event MomentUnlocked(id: UInt64)
@@ -890,7 +890,7 @@ pub contract TopShot: NonFungibleToken {
             // Add the new token to the dictionary
             let oldToken <- self.ownedNFTs[id] <- NFTLocking.lockNFT(nft: <- token, expiryTimestamp: lockExpiryTimestamp)
 
-            emit MomentLocked(id: id, expiryTimestamp: lockExpiryTimestamp)
+            emit MomentLocked(id: id, duration: duration, expiryTimestamp: lockExpiryTimestamp)
 
             destroy oldToken
         }
