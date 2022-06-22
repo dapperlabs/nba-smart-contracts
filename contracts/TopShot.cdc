@@ -45,6 +45,7 @@
 
 import NonFungibleToken from 0xNFTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
+import NFTLocking from 0xNFTLOCKINGADDRESS
 
 pub contract TopShot: NonFungibleToken {
 
@@ -794,6 +795,12 @@ pub contract TopShot: NonFungibleToken {
         // returns: @NonFungibleToken.NFT the token that was withdrawn
         pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT {
 
+            // Borrow nft and check if locked
+            let nft = self.borrowNFT(id: withdrawID)
+            if NFTLocking.isLocked(nftRef: nft) {
+                panic("Cannot withdraw: Moment is locked")
+            }
+
             // Remove the nft from the Collection
             let token <- self.ownedNFTs.remove(key: withdrawID) 
                 ?? panic("Cannot withdraw: Moment does not exist in the collection")
@@ -864,6 +871,37 @@ pub contract TopShot: NonFungibleToken {
 
             // Destroy the empty Collection
             destroy tokens
+        }
+
+        // lock takes a token id and a duration in seconds and locks
+        // the moment for that duration
+        pub fun lock(id: UInt64, duration: UFix64) {
+            let lockExpiryTimestamp = getCurrentBlock().timestamp + duration
+            // Remove the nft from the Collection
+            let token <- self.ownedNFTs.remove(key: id) 
+                ?? panic("Cannot lock: Moment does not exist in the collection")
+
+            // Add the new token to the dictionary
+            let oldToken <- self.ownedNFTs[id] <- NFTLocking.lockNFT(nft: <- token, expiryTimestamp: lockExpiryTimestamp)
+
+            emit MomentLocked(id: id)
+
+            destroy oldToken
+        }
+
+        // unlock takes a token id and attempts to unlock it
+        // NFTLocking.unlockNFT contains business logic around unlock eligibility
+        pub fun unlock(id: UInt64) {
+            // Remove the nft from the Collection
+            let token <- self.ownedNFTs.remove(key: id) 
+                ?? panic("Cannot lock: Moment does not exist in the collection")
+
+            // Add the new token to the dictionary
+            let oldToken <- self.ownedNFTs[id] <- NFTLocking.unlockNFT(nft: <- token)
+
+            emit MomentUnlocked(id: id)
+
+            destroy oldToken
         }
 
         // getIDs returns an array of the IDs that are in the Collection
