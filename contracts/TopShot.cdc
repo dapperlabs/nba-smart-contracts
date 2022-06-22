@@ -84,6 +84,12 @@ pub contract TopShot: NonFungibleToken {
     // Emitted when a Moment is destroyed
     pub event MomentDestroyed(id: UInt64)
 
+    // Emitted when a Moment is locked
+    pub event MomentLocked(id: UInt64)
+
+    // Emitted when a Moment is unlocked
+    pub event MomentUnlocked(id: UInt64)
+
     // -----------------------------------------------------------------------
     // TopShot contract-level fields.
     // These contain actual values that are stored in the smart contract.
