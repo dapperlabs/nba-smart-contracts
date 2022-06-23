@@ -45,7 +45,7 @@
 
 import NonFungibleToken from 0xNFTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
-import NFTLocking from 0xNFTLOCKINGADDRESS
+import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 
 pub contract TopShot: NonFungibleToken {
 
@@ -803,7 +803,7 @@ pub contract TopShot: NonFungibleToken {
 
             // Borrow nft and check if locked
             let nft = self.borrowNFT(id: withdrawID)
-            if NFTLocking.isLocked(nftRef: nft) {
+            if TopShotLocking.isLocked(nftRef: nft) {
                 panic("Cannot withdraw: Moment is locked")
             }
 
@@ -888,7 +888,7 @@ pub contract TopShot: NonFungibleToken {
                 ?? panic("Cannot lock: Moment does not exist in the collection")
 
             // Add the new token to the dictionary
-            let oldToken <- self.ownedNFTs[id] <- NFTLocking.lockNFT(nft: <- token, expiryTimestamp: lockExpiryTimestamp)
+            let oldToken <- self.ownedNFTs[id] <- TopShotLocking.lockNFT(nft: <- token, expiryTimestamp: lockExpiryTimestamp)
 
             emit MomentLocked(id: id, duration: duration, expiryTimestamp: lockExpiryTimestamp)
 
@@ -896,14 +896,14 @@ pub contract TopShot: NonFungibleToken {
         }
 
         // unlock takes a token id and attempts to unlock it
-        // NFTLocking.unlockNFT contains business logic around unlock eligibility
+        // TopShotLocking.unlockNFT contains business logic around unlock eligibility
         pub fun unlock(id: UInt64) {
             // Remove the nft from the Collection
             let token <- self.ownedNFTs.remove(key: id) 
                 ?? panic("Cannot lock: Moment does not exist in the collection")
 
             // Add the new token to the dictionary
-            let oldToken <- self.ownedNFTs[id] <- NFTLocking.unlockNFT(nft: <- token)
+            let oldToken <- self.ownedNFTs[id] <- TopShotLocking.unlockNFT(nft: <- token)
 
             emit MomentUnlocked(id: id)
 

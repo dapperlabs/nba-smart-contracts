@@ -1,9 +1,9 @@
 import NonFungibleToken from 0xNFTADDRESS
 
-pub contract NFTLocking {
+pub contract TopShotLocking {
 
     // -----------------------------------------------------------------------
-    // NFTLocking contract Events
+    // TopShotLocking contract Events
     // -----------------------------------------------------------------------
 
     // Emitted when a moment is withdrawn from a Collection
@@ -89,12 +89,12 @@ pub contract NFTLocking {
         }
 
         pub fun markNFTUnlockable(nftRef: &NonFungibleToken.NFT) {
-            NFTLocking.unlockableNFTs[nftRef.uuid] = true
+            TopShotLocking.unlockableNFTs[nftRef.uuid] = true
         }
     }
 
     // -----------------------------------------------------------------------
-    // NFTLocking initialization function
+    // TopShotLocking initialization function
     // -----------------------------------------------------------------------
     //
     init() {
@@ -105,6 +105,6 @@ pub contract NFTLocking {
         let admin <- create Admin()
 
         // Store it in private account storage in `init` so only the admin can use it
-        self.account.save(<-admin, to: /storage/nftLockingAdmin)
+        self.account.save(<-admin, to: /storage/TopShotLockingAdmin)
     }
 }
