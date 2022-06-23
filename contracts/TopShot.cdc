@@ -896,7 +896,7 @@ pub contract TopShot: NonFungibleToken {
         }
 
         pub fun batchLock(ids: [UInt64], duration: UFix64) {
-            // Iterate through the ids and withdraw them from the Collection
+            // Iterate through the ids and lock them
             for id in ids {
                 self.lock(id: id, duration: duration)
             }
@@ -918,7 +918,7 @@ pub contract TopShot: NonFungibleToken {
         }
 
         pub fun batchUnlock(ids: [UInt64]) {
-            // Iterate through the ids and withdraw them from the Collection
+            // Iterate through the ids and unlocks them
             for id in ids {
                 self.unlock(id: id)
             }
