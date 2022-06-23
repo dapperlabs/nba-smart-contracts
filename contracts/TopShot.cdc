@@ -895,6 +895,13 @@ pub contract TopShot: NonFungibleToken {
             destroy oldToken
         }
 
+        pub fun batchLock(ids: [UInt64], duration: UFix64) {
+            // Iterate through the ids and withdraw them from the Collection
+            for id in ids {
+                self.lock(id: id, duration: duration)
+            }
+        }
+
         // unlock takes a token id and attempts to unlock it
         // TopShotLocking.unlockNFT contains business logic around unlock eligibility
         pub fun unlock(id: UInt64) {
@@ -908,6 +915,13 @@ pub contract TopShot: NonFungibleToken {
             emit MomentUnlocked(id: id)
 
             destroy oldToken
+        }
+
+        pub fun batchUnlock(ids: [UInt64]) {
+            // Iterate through the ids and withdraw them from the Collection
+            for id in ids {
+                self.unlock(id: id)
+            }
         }
 
         // getIDs returns an array of the IDs that are in the Collection

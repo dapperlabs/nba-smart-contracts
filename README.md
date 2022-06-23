@@ -422,6 +422,22 @@ but it will be deployed and utilized in the near future.
 Some improvements were made to the Topshot contract to reflect some cadence best practices and fix a bug.
 In-depth explanation on the changes and why we made them can be found in our [Blog Post](https://blog.nbatopshot.com/posts/nba-top-shot-smart-contract-improvements) 
 
+## TopShot Locking Contract Overview
+
+TopShot NFTs can be locked for a duration meaning they are unable to be withdrawn, listed for sale, burned, etc. 
+In the NBA TopShot product users are rewarded for locking their moments.
+
+An NFT may be unlocked after the lock duration has passed, or the contract admin has marked it eligible for unlocking.
+
+The moment is locked even if expiry has passed until the owner requests it be unlocked.
+The address which owns the locked NFT must make an unlocking transaction once it is eligible.
+
+### Contracts Honoring the Lock
+
+- TopShot `withdraw`
+- MarketTopShot relies on the NFT being withdrawn first so no additional code is needed
+- TopShotMarketV3 `listForSale`
+
 ## License 
 
 The works in these folders 
@@ -444,4 +460,3 @@ https://github.com/onflow/flow-NFT/blob/master/LICENSE
 
 
 
- 

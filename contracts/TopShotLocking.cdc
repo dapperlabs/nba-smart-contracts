@@ -34,8 +34,12 @@ pub contract TopShotLocking {
     //
     // Returns: the NFT resource
     pub fun lockNFT(nft: @NonFungibleToken.NFT, expiryTimestamp: UFix64): @NonFungibleToken.NFT {
-        let id = nft.uuid
+        let TopShotNFTType: Type = CompositeType("A.0xTOPSHOTADDRESS.TopShot.NFT")!
+        if !nft.isInstance(TopShotNFTType) {
+            panic("NFT is not a TopShot NFT")
+        }
 
+        let id = nft.uuid
         if self.lockedNFTs.containsKey(id) {
             panic("NFT is already locked")
         }

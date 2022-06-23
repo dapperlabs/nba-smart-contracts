@@ -121,7 +121,7 @@ func TestMarketDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	require.NoError(t, err)
 
-	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), tokenAddr.String())
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), tokenAddr.String(), topShotLockingAddr.String())
 	_, err = b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotMarketV3",
@@ -812,7 +812,7 @@ func TestMarketV3(t *testing.T) {
 	env.TopShotMarketAddress = marketAddr.String()
 
 	// Should be able to deploy the third market contract
-	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), env.DUCAddress)
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), env.DUCAddress, topShotLockingAddr.String())
 	marketV3Addr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotMarketV3",

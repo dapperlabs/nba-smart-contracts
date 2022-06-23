@@ -1,7 +1,6 @@
 package test
 
 import (
-	"log"
 	"strings"
 	"testing"
 
@@ -187,7 +186,6 @@ func TestMintNFTs(t *testing.T) {
 		},
 	})
 	assert.Nil(t, err)
-	log.Printf("topShotLockingCode %+v", string(parsedTopShotLockingContract))
 
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
@@ -1112,7 +1110,7 @@ func TestDestroyMoments(t *testing.T) {
 	env.TopShotMarketAddress = marketAddr.String()
 
 	// Should be able to deploy the third market contract
-	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), env.DUCAddress)
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), env.DUCAddress, topShotLockingAddr.String())
 	marketV3Addr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotMarketV3",
