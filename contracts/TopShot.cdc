@@ -909,7 +909,8 @@ pub contract TopShot: NonFungibleToken {
             let token <- self.ownedNFTs.remove(key: id) 
                 ?? panic("Cannot lock: Moment does not exist in the collection")
 
-            // Add the new token to the dictionary
+            // Pass the token to the TopShotLocking contract then get it back
+            // Store it back to the ownedNFTs dictionary
             let oldToken <- self.ownedNFTs[id] <- TopShotLocking.unlockNFT(nft: <- token)
 
             emit MomentUnlocked(id: id)
