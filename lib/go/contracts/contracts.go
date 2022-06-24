@@ -17,6 +17,7 @@ const (
 	marketFile                     = "MarketTopShotOldVersion.cdc"
 	shardedCollectionFile          = "TopShotShardedCollection.cdc"
 	adminReceiverFile              = "TopshotAdminReceiver.cdc"
+	topShotLockingFile             = "TopShotLocking.cdc"
 	defaultNonFungibleTokenAddress = "NFTADDRESS"
 	defaultFungibleTokenAddress    = "FUNGIBLETOKENADDRESS"
 	defaultTopshotAddress          = "TOPSHOTADDRESS"
@@ -89,4 +90,11 @@ func GenerateTopShotMarketV3Contract(ftAddr, nftAddr, topshotAddr, marketAddr, d
 	codeWithTopShotLockingAddr := strings.ReplaceAll(codeWithTokenAddr, defaultTopShotLockingAddress, topShotLockingAddr)
 
 	return []byte(codeWithTopShotLockingAddr)
+}
+
+func GenerateTopShotLockingContract(nftAddr string) []byte {
+	lockingCode := assets.MustAssetString(topShotLockingFile)
+	codeWithNFTAddr := strings.ReplaceAll(lockingCode, defaultNonFungibleTokenAddress, nftAddr)
+
+	return []byte(codeWithNFTAddr)
 }

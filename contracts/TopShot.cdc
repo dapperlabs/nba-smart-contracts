@@ -84,12 +84,6 @@ pub contract TopShot: NonFungibleToken {
     // Emitted when a Moment is destroyed
     pub event MomentDestroyed(id: UInt64)
 
-    // Emitted when a Moment is locked
-    pub event MomentLocked(id: UInt64, duration: UFix64, expiryTimestamp: UFix64)
-
-    // Emitted when a Moment is unlocked
-    pub event MomentUnlocked(id: UInt64)
-
     // -----------------------------------------------------------------------
     // TopShot contract-level fields.
     // These contain actual values that are stored in the smart contract.
@@ -882,15 +876,13 @@ pub contract TopShot: NonFungibleToken {
         // lock takes a token id and a duration in seconds and locks
         // the moment for that duration
         pub fun lock(id: UInt64, duration: UFix64) {
-            let lockExpiryTimestamp = getCurrentBlock().timestamp + duration
             // Remove the nft from the Collection
             let token <- self.ownedNFTs.remove(key: id) 
                 ?? panic("Cannot lock: Moment does not exist in the collection")
 
-            // Add the new token to the dictionary
-            let oldToken <- self.ownedNFTs[id] <- TopShotLocking.lockNFT(nft: <- token, expiryTimestamp: lockExpiryTimestamp)
-
-            emit MomentLocked(id: id, duration: duration, expiryTimestamp: lockExpiryTimestamp)
+            // pass the token to the locking contract
+            // store it again after it comes back
+            let oldToken <- self.ownedNFTs[id] <- TopShotLocking.lockNFT(nft: <- token, duration: duration)
 
             destroy oldToken
         }
@@ -914,8 +906,6 @@ pub contract TopShot: NonFungibleToken {
             // Pass the token to the TopShotLocking contract then get it back
             // Store it back to the ownedNFTs dictionary
             let oldToken <- self.ownedNFTs[id] <- TopShotLocking.unlockNFT(nft: <- token)
-
-            emit MomentUnlocked(id: id)
 
             destroy oldToken
         }

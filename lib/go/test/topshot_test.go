@@ -28,9 +28,6 @@ const (
 	MetadataViewsContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/master/contracts/"
 	MetadataViewsInterfaceFile    = "MetadataViews.cdc"
 
-	TopShotLockingContractsBaseURL       = "https://raw.githubusercontent.com/dapperlabs/nba-smart-contracts/tpetrychyn/locking/contracts/"
-	TopShotLockingContractsInterfaceFile = "TopShotLocking.cdc"
-
 	emulatorFTAddress         = "ee82856bf20e2aa6"
 	emulatorFlowTokenAddress  = "0ae53cb6e3f42a79"
 	MetadataFTReplaceAddress  = `"./utility/FungibleToken.cdc"`
@@ -73,14 +70,13 @@ func TestNFTDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
-	// Should be able to deploy the TopShotLocking contract
+	// Should be able to deploy the TopShot Locking contract
 	// as a new account with no keys.
-	topShotLockingCode, _ := DownloadFile(TopShotLockingContractsBaseURL + TopShotLockingContractsInterfaceFile)
-	parsedTopShotLockingContract := strings.Replace(string(topShotLockingCode), "0xNFTADDRESS", "0x"+nftAddr.String(), 1)
+	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
 	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotLocking",
-			Source: parsedTopShotLockingContract,
+			Source: string(topshotLockingCode),
 		},
 	})
 	if !assert.NoError(t, err) {
@@ -175,17 +171,14 @@ func TestMintNFTs(t *testing.T) {
 
 	env.MetadataViewsAddress = metadataViewsAddr.String()
 
-	// Should be able to deploy the TopShotLocking contract
-	// as a new account with no keys.
-	topShotLockingCode, _ := DownloadFile(TopShotLockingContractsBaseURL + TopShotLockingContractsInterfaceFile)
-	parsedTopShotLockingContract := strings.Replace(string(topShotLockingCode), "0xNFTADDRESS", "0x"+nftAddr.String(), 1)
+	// Deploy TopShot Locking contract
+	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
 	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotLocking",
-			Source: parsedTopShotLockingContract,
+			Source: string(topshotLockingCode),
 		},
 	})
-	assert.Nil(t, err)
 
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
@@ -715,17 +708,14 @@ func TestTransferAdmin(t *testing.T) {
 
 	env.MetadataViewsAddress = metadataViewsAddr.String()
 
-	// Should be able to deploy the TopShotLocking contract
-	// as a new account with no keys.
-	topShotLockingCode, _ := DownloadFile(TopShotLockingContractsBaseURL + TopShotLockingContractsInterfaceFile)
-	parsedTopShotLockingContract := strings.Replace(string(topShotLockingCode), "0xNFTADDRESS", "0x"+nftAddr.String(), 1)
+	// Deploy TopShot Locking contract
+	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
 	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotLocking",
-			Source: parsedTopShotLockingContract,
+			Source: string(topshotLockingCode),
 		},
 	})
-	assert.Nil(t, err)
 
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
@@ -835,17 +825,14 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 
 	env.MetadataViewsAddress = metadataViewsAddr.String()
 
-	// Should be able to deploy the TopShotLocking contract
-	// as a new account with no keys.
-	topShotLockingCode, _ := DownloadFile(TopShotLockingContractsBaseURL + TopShotLockingContractsInterfaceFile)
-	parsedTopShotLockingContract := strings.Replace(string(topShotLockingCode), "0xNFTADDRESS", "0x"+nftAddr.String(), 1)
+	// Deploy TopShot Locking contract
+	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
 	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotLocking",
-			Source: parsedTopShotLockingContract,
+			Source: string(topshotLockingCode),
 		},
 	})
-	assert.Nil(t, err)
 
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
@@ -1050,17 +1037,14 @@ func TestDestroyMoments(t *testing.T) {
 
 	env.MetadataViewsAddress = metadataViewsAddr.String()
 
-	// Should be able to deploy the TopShotLocking contract
-	// as a new account with no keys.
-	topShotLockingCode, _ := DownloadFile(TopShotLockingContractsBaseURL + TopShotLockingContractsInterfaceFile)
-	parsedTopShotLockingContract := strings.Replace(string(topShotLockingCode), "0xNFTADDRESS", "0x"+nftAddr.String(), 1)
+	// Deploy TopShot Locking contract
+	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
 	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotLocking",
-			Source: parsedTopShotLockingContract,
+			Source: string(topshotLockingCode),
 		},
 	})
-	assert.Nil(t, err)
 
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 

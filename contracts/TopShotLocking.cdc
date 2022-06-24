@@ -6,6 +6,12 @@ pub contract TopShotLocking {
     // TopShotLocking contract Events
     // -----------------------------------------------------------------------
 
+    // Emitted when a Moment is locked
+    pub event MomentLocked(id: UInt64, duration: UFix64, expiryTimestamp: UFix64)
+
+    // Emitted when a Moment is unlocked
+    pub event MomentUnlocked(id: UInt64)
+
     // Dictionary of locked NFTs
     // nft resource uuid is the key
     // locked until timestamp is the value
@@ -29,19 +35,23 @@ pub contract TopShotLocking {
     //             expiryTimestamp: The unix timestamp in seconds after which the nft may be unlocked
     //
     // Returns: the NFT resource
-    pub fun lockNFT(nft: @NonFungibleToken.NFT, expiryTimestamp: UFix64): @NonFungibleToken.NFT {
+    pub fun lockNFT(nft: @NonFungibleToken.NFT, duration: UFix64): @NonFungibleToken.NFT {
         let TopShotNFTType: Type = CompositeType("A.0xTOPSHOTADDRESS.TopShot.NFT")!
         if !nft.isInstance(TopShotNFTType) {
             panic("NFT is not a TopShot NFT")
         }
 
-        let id = nft.uuid
-        if self.lockedNFTs.containsKey(id) {
+        let uuid = nft.uuid
+        if self.lockedNFTs.containsKey(uuid) {
             // already locked - short circuit and return the nft
             return <- nft
         }
 
-        self.lockedNFTs[id] = expiryTimestamp
+        let expiryTimestamp = getCurrentBlock().timestamp + duration
+
+        self.lockedNFTs[uuid] = expiryTimestamp
+
+        emit MomentLocked(id: nft.id, duration: duration, expiryTimestamp: expiryTimestamp)
 
         return <- nft
     }
@@ -54,23 +64,25 @@ pub contract TopShotLocking {
     //
     // NFT must be eligible for unlocking by an admin
     pub fun unlockNFT(nft: @NonFungibleToken.NFT): @NonFungibleToken.NFT {
-        let id = nft.uuid
-        if !self.lockedNFTs.containsKey(id) {
+        let uuid = nft.uuid
+        if !self.lockedNFTs.containsKey(uuid) {
             // nft is not locked, short circuit and return the nft
             return <- nft
         }
 
-        let lockExpiryTimestamp: UFix64 = self.lockedNFTs[id]!
+        let lockExpiryTimestamp: UFix64 = self.lockedNFTs[uuid]!
         let isPastExpiry: Bool = getCurrentBlock().timestamp >= lockExpiryTimestamp
 
-        let isUnlockableOverridden: Bool = self.unlockableNFTs.containsKey(id)
+        let isUnlockableOverridden: Bool = self.unlockableNFTs.containsKey(uuid)
 
         if !(isPastExpiry || isUnlockableOverridden) {
             panic("NFT is not eligible to be unlocked, expires at ".concat(lockExpiryTimestamp.toString()))
         }
 
-        self.unlockableNFTs.remove(key: id)
-        self.lockedNFTs.remove(key: id)
+        self.unlockableNFTs.remove(key: uuid)
+        self.lockedNFTs.remove(key: uuid)
+
+        emit MomentUnlocked(id: nft.id)
 
         return <- nft
     }
