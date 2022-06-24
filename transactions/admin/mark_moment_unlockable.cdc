@@ -1,4 +1,3 @@
-import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 
@@ -7,7 +6,8 @@ transaction(ownerAddress: Address, id: UInt64) {
 
     prepare(acct: AuthAccount) {
         // Set TopShotLocking admin ref
-        self.adminRef = acct.borrow<&TopShotLocking.Admin>(from: /storage/TopShotLockingAdmin)!
+        self.adminRef = acct.borrow<&TopShotLocking.Admin>(from: /storage/TopShotLockingAdmin)
+            ?? panic("Could not find reference to TopShotLocking Admin resource")
     }
 
     execute {

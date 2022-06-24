@@ -29,6 +29,18 @@ pub contract TopShotLocking {
         return self.lockedNFTs.containsKey(nftRef.uuid)
     }
 
+    // getLockExpiry Returns the unix timestamp when an nft is unlockable
+    //
+    // Parameters: nftRef: A reference to the NFT resource
+    //
+    // Returns: unix timestamp
+    pub fun getLockExpiry(nftRef: &NonFungibleToken.NFT): UFix64 {
+        if !self.lockedNFTs.containsKey(nftRef.uuid) {
+            panic("NFT is not locked")
+        }
+        return self.lockedNFTs[nftRef.uuid]!
+    }
+
     // lockNFT Takes an NFT resource and adds its unique identifier to the lockedNFTs dictionary
     //
     // Parameters: nft: NFT resource
@@ -36,7 +48,7 @@ pub contract TopShotLocking {
     //
     // Returns: the NFT resource
     pub fun lockNFT(nft: @NonFungibleToken.NFT, duration: UFix64): @NonFungibleToken.NFT {
-        let TopShotNFTType: Type = CompositeType("A.0xTOPSHOTADDRESS.TopShot.NFT")!
+        let TopShotNFTType: Type = CompositeType("A.TOPSHOTADDRESS.TopShot.NFT")!
         if !nft.isInstance(TopShotNFTType) {
             panic("NFT is not a TopShot NFT")
         }

@@ -467,6 +467,14 @@ let collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollec
 collectionRef.unlock(id: 1)
 ```
 
+#### isLocked
+`pub fun isLocked(nftRef: &NonFungibleToken.NFT): Bool`  
+Returns true if the moment is locked
+
+#### getLockExpiry
+`pub fun getLockExpiry(nftRef: &NonFungibleToken.NFT): UFix64`  
+Returns the unix timestamp when the nft is eligible for unlock
+
 ### Admin Functions
 
 #### markNFTUnlockable

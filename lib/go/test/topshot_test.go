@@ -72,8 +72,9 @@ func TestNFTDeployment(t *testing.T) {
 
 	// Should be able to deploy the TopShot Locking contract
 	// as a new account with no keys.
+	lockingKey, lockingSigner := test.AccountKeyGenerator().NewWithSigner()
 	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
-	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+	topShotLockingAddr, err := b.CreateAccount([]*flow.AccountKey{lockingKey}, []sdktemplates.Contract{
 		{
 			Name:   "TopShotLocking",
 			Source: string(topshotLockingCode),
@@ -99,6 +100,14 @@ func TestNFTDeployment(t *testing.T) {
 	}
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
+
+	// Should be able to update the locking contract
+	// with the address of TopShot contract to perform runtime type checking
+	topShotLockingCodeWithRuntimeAddr := contracts.GenerateTopShotLockingContractWithTopShotRuntimeAddr(nftAddr.String(), topshotAddr.String())
+	err = updateContract(b, topShotLockingAddr, lockingSigner, "TopShotLocking", topShotLockingCodeWithRuntimeAddr)
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
 
 	// deploy the sharded collection contract
 	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr.String(), topshotAddr.String())

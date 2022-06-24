@@ -1,6 +1,9 @@
 package test
 
 import (
+	sdk "github.com/onflow/flow-go-sdk"
+	"github.com/onflow/flow-go-sdk/crypto"
+	sdktemplates "github.com/onflow/flow-go-sdk/templates"
 	"testing"
 
 	"github.com/onflow/cadence"
@@ -52,4 +55,53 @@ func verifyQuerySetMetadata(
 	locked := metadataFields[5]
 	assertEqual(t, cadence.NewBool(expectedMetadata.locked), locked)
 
+}
+
+func updateContract(b *emulator.Blockchain, address sdk.Address, signer crypto.Signer, name string, contractCode []byte) error {
+	tx := sdktemplates.UpdateAccountContract(
+		address,
+		sdktemplates.Contract{
+			Name:   name,
+			Source: string(contractCode),
+		},
+	)
+
+	tx.SetGasLimit(9999).
+		SetProposalKey(b.ServiceKey().Address, b.ServiceKey().Index, b.ServiceKey().SequenceNumber).
+		SetPayer(b.ServiceKey().Address)
+
+	err := tx.SignPayload(address, 0, signer)
+	if err != nil {
+		return err
+	}
+
+	serviceSigner, err := b.ServiceKey().Signer()
+	if err != nil {
+		return err
+	}
+
+	err = tx.SignEnvelope(b.ServiceKey().Address, b.ServiceKey().Index, serviceSigner)
+	if err != nil {
+		return err
+	}
+
+	err = b.AddTransaction(*tx)
+	if err != nil {
+		return err
+	}
+
+	result, err := b.ExecuteNextTransaction()
+	if err != nil {
+		return err
+	}
+	if !result.Succeeded() {
+		return result.Error
+	}
+
+	_, err = b.CommitBlock()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

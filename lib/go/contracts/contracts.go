@@ -92,9 +92,22 @@ func GenerateTopShotMarketV3Contract(ftAddr, nftAddr, topshotAddr, marketAddr, d
 	return []byte(codeWithTopShotLockingAddr)
 }
 
+// GenerateTopShotLockingContract returns a copy
+// of the TopShotLockingContract with the import addresses updated
 func GenerateTopShotLockingContract(nftAddr string) []byte {
 	lockingCode := assets.MustAssetString(topShotLockingFile)
 	codeWithNFTAddr := strings.ReplaceAll(lockingCode, defaultNonFungibleTokenAddress, nftAddr)
 
 	return []byte(codeWithNFTAddr)
+}
+
+// GenerateTopShotLockingContractWithTopShotRuntimeAddr returns a copy
+// of the TopShotLockingContractWithTopShotRuntimeAddr with the import addresses updated
+// the contract includes a runtime type check relying on the topshotAddr
+func GenerateTopShotLockingContractWithTopShotRuntimeAddr(nftAddr string, topshotAddr string) []byte {
+	lockingCode := assets.MustAssetString(topShotLockingFile)
+	codeWithNFTAddr := strings.ReplaceAll(lockingCode, defaultNonFungibleTokenAddress, nftAddr)
+	codeWithTopShotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
+
+	return []byte(codeWithTopShotAddr)
 }

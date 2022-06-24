@@ -141,7 +141,7 @@ pub contract TopShotMarketV3 {
                     "Moment does not exist in the owner's collection"
 
                 !TopShotLocking.isLocked(nftRef: self.ownerCollection.borrow()!.borrowNFT(id: tokenID)):
-                    "Moment is locked and therefore cannot be listed for sale"
+                    "Moment is locked"
             }
 
             // Set the token's price
