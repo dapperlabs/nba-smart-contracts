@@ -12,7 +12,6 @@ import (
 	sdktemplates "github.com/onflow/flow-go-sdk/templates"
 	"github.com/onflow/flow-go-sdk/test"
 	"github.com/stretchr/testify/assert"
-	"log"
 	"strings"
 	"testing"
 	"time"
@@ -184,10 +183,7 @@ func TestTopShotLocking(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateGetTopShotLockingLockMomentScript(env), topshotAddr)
 
 		_ = tx.AddArgument(cadence.NewUInt64(momentId))
-		duration, err := cadence.NewUFix64("31536000.0")
-		if err != nil {
-			log.Printf("err %+v", err)
-		}
+		duration, _ := cadence.NewUFix64("31536000.0")
 		_ = tx.AddArgument(duration)
 
 		signAndSubmit(
