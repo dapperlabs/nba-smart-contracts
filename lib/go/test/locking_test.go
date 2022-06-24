@@ -112,10 +112,6 @@ func TestTopShotLocking(t *testing.T) {
 	})
 	env.TopShotMarketV3Address = marketV3Addr.String()
 
-	// Create a new user account
-	//joshAccountKey, joshSigner := accountKeys.NewWithSigner()
-	//joshAddress, _ := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
-
 	firstName := CadenceString("FullName")
 	lebron := CadenceString("Lebron")
 	playType := CadenceString("PlayType")
