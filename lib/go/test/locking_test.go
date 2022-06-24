@@ -180,7 +180,7 @@ func TestTopShotLocking(t *testing.T) {
 	t.Run("Should be able to lock a moment for 1 year", func(t *testing.T) {
 		expectedExpiryTime := time.Now().Add(31536000 * time.Second)
 
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateGetTopShotLockingLockMomentScript(env), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateTopShotLockingLockMomentScript(env), topshotAddr)
 
 		_ = tx.AddArgument(cadence.NewUInt64(momentId))
 		duration, _ := cadence.NewUFix64("31536000.0")
@@ -200,7 +200,7 @@ func TestTopShotLocking(t *testing.T) {
 		assertEqual(t, cadence.NewBool(true), result)
 
 		// Verify moment is locked for 1 year
-		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentIsLockExpiryScript(env), [][]byte{
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentLockExpiryScript(env), [][]byte{
 			jsoncdc.MustEncode(cadence.Address(topshotAddr)),
 			jsoncdc.MustEncode(cadence.UInt64(momentId)),
 		})
@@ -223,7 +223,7 @@ func TestTopShotLocking(t *testing.T) {
 		)
 
 		// Attempt to unlock
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateGetTopShotLockingUnlockMomentScript(env), topshotAddr)
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateTopShotLockingUnlockMomentScript(env), topshotAddr)
 		_ = tx.AddArgument(cadence.NewUInt64(momentId))
 		signAndSubmit(
 			t, b, tx,
@@ -234,7 +234,7 @@ func TestTopShotLocking(t *testing.T) {
 
 	t.Run("Should be able to lock a moment then unlock when the duration has expired", func(t *testing.T) {
 		// Lock for 0 seconds
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateGetTopShotLockingLockMomentScript(env), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateTopShotLockingLockMomentScript(env), topshotAddr)
 		_ = tx.AddArgument(cadence.NewUInt64(momentId))
 		duration, _ := cadence.NewUFix64("0.0")
 		_ = tx.AddArgument(duration)
@@ -252,7 +252,7 @@ func TestTopShotLocking(t *testing.T) {
 		assertEqual(t, cadence.NewBool(true), result)
 
 		// Attempt to unlock
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateGetTopShotLockingUnlockMomentScript(env), topshotAddr)
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateTopShotLockingUnlockMomentScript(env), topshotAddr)
 		_ = tx.AddArgument(cadence.NewUInt64(momentId))
 		signAndSubmit(
 			t, b, tx,
@@ -270,7 +270,7 @@ func TestTopShotLocking(t *testing.T) {
 
 	t.Run("Should be unable to withdraw or transfer the moment if locked", func(t *testing.T) {
 		// Lock the moment
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateGetTopShotLockingLockMomentScript(env), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateTopShotLockingLockMomentScript(env), topshotAddr)
 		_ = tx.AddArgument(cadence.NewUInt64(momentId))
 		duration, _ := cadence.NewUFix64("0.0")
 		_ = tx.AddArgument(duration)
@@ -331,5 +331,91 @@ func TestTopShotLocking(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			true,
 		)
+	})
+
+	// BATCH TESTS
+	// Mint Moment 2
+	{
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewAddress(topshotAddr))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+	}
+	// Mint Moment 3
+	{
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewAddress(topshotAddr))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+	}
+
+	t.Run("Should be able to batch lock moments", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchLockMomentScript(env), topshotAddr)
+
+		ids := []cadence.Value{cadence.NewUInt64(2), cadence.NewUInt64(3)}
+		_ = tx.AddArgument(cadence.NewArray(ids))
+		duration, _ := cadence.NewUFix64("0.0")
+		_ = tx.AddArgument(duration)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+
+		// Verify that moment 2 is locked
+		result := executeScriptAndCheck(t, b, templates.GenerateGetMomentIsLockedScript(env), [][]byte{
+			jsoncdc.MustEncode(cadence.Address(topshotAddr)),
+			jsoncdc.MustEncode(cadence.UInt64(2)),
+		})
+		assertEqual(t, cadence.NewBool(true), result)
+
+		// Verify that moment 3 is locked
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentIsLockedScript(env), [][]byte{
+			jsoncdc.MustEncode(cadence.Address(topshotAddr)),
+			jsoncdc.MustEncode(cadence.UInt64(3)),
+		})
+		assertEqual(t, cadence.NewBool(true), result)
+	})
+
+	t.Run("Should be able to batch unlock moments", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchUnlockMomentScript(env), topshotAddr)
+
+		ids := []cadence.Value{cadence.NewUInt64(2), cadence.NewUInt64(3)}
+		_ = tx.AddArgument(cadence.NewArray(ids))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+
+		// Verify that moment 2 is unlocked
+		result := executeScriptAndCheck(t, b, templates.GenerateGetMomentIsLockedScript(env), [][]byte{
+			jsoncdc.MustEncode(cadence.Address(topshotAddr)),
+			jsoncdc.MustEncode(cadence.UInt64(2)),
+		})
+		assertEqual(t, cadence.NewBool(false), result)
+
+		// Verify that moment 3 is unlocked
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentIsLockedScript(env), [][]byte{
+			jsoncdc.MustEncode(cadence.Address(topshotAddr)),
+			jsoncdc.MustEncode(cadence.UInt64(3)),
+		})
+		assertEqual(t, cadence.NewBool(false), result)
 	})
 }
