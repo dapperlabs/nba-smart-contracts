@@ -895,6 +895,8 @@ pub contract TopShot: NonFungibleToken {
             destroy oldToken
         }
 
+        // batchLock takes an array of token ids and a duration in seconds
+        // it iterates through the ids and locks each for the specified duration
         pub fun batchLock(ids: [UInt64], duration: UFix64) {
             // Iterate through the ids and lock them
             for id in ids {
@@ -918,6 +920,8 @@ pub contract TopShot: NonFungibleToken {
             destroy oldToken
         }
 
+        // batchUnlock takes an array of token ids
+        // it iterates through the ids and unlocks each if they are eligible
         pub fun batchUnlock(ids: [UInt64]) {
             // Iterate through the ids and unlocks them
             for id in ids {

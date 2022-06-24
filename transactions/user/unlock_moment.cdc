@@ -1,7 +1,11 @@
-import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
-import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 
+// This transaction unlocks a TopShot NFT removing it from the locked dictionary
+// and re-enabling the ability to withdraw, sell, and transfer the moment
+
+// Parameters
+//
+// id: the Flow ID of the TopShot moment
 transaction(id: UInt64) {
     prepare(acct: AuthAccount) {
         let collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)

@@ -1,6 +1,12 @@
-import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
-import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
+import TopShotMarketV3 from 0xMARKETV3ADDRESS
+
+// This transaction locks a TopShot NFT rendering it unable to be withdrawn, sold, or transferred
+
+// Parameters
+//
+// id: the Flow ID of the TopShot moment
+// duration: number of seconds that the moment will be locked for
 
 transaction(id: UInt64, duration: UFix64) {
     prepare(acct: AuthAccount) {
