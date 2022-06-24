@@ -9,6 +9,7 @@ const (
 	batchUnlockMomentsFilename  = "user/batch_unlock_moments.cdc"
 	isLockedScriptFilename      = "collections/get_moment_isLocked.cdc"
 	getLockExpiryScriptFilename = "collections/get_moment_lockExpiry.cdc"
+	lockFakeNFTFilename         = "user/lock_fake_nft.cdc"
 
 	adminMarkMomentUnlockableFilename = "admin/mark_moment_unlockable.cdc"
 )
@@ -20,21 +21,21 @@ func GenerateTopShotLockingLockMomentScript(env Environment) []byte {
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateTopShotLockingUnlockMomentScript creates a script that locks a moment.
+// GenerateTopShotLockingUnlockMomentScript creates a script that unlocks a moment.
 func GenerateTopShotLockingUnlockMomentScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + unlockMomentFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateGetTopShotLockingBatchLockMomentScript creates a script that locks a moment.
+// GenerateBatchLockMomentScript creates a script that locks multiple moments.
 func GenerateBatchLockMomentScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + batchLockMomentsFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateGetTopShotLockingBatchUnlockMomentScript creates a script that locks a moment.
+// GenerateBatchUnlockMomentScript creates a script that unlocks multiple moments.
 func GenerateBatchUnlockMomentScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + batchUnlockMomentsFilename)
 
@@ -48,14 +49,21 @@ func GenerateGetMomentIsLockedScript(env Environment) []byte {
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateGetMomentLockExpiryScript creates a script that checks if a moment is locked
+// GenerateGetMomentLockExpiryScript creates a script that returns the expiry timestamp of a moment
 func GenerateGetMomentLockExpiryScript(env Environment) []byte {
 	code := assets.MustAssetString(scriptsPath + getLockExpiryScriptFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateGetMomentLockExpiryScript creates a script that checks if a moment is locked
+// GenerateLockFakeNFTScript creates a script that tries to lock a NonFungibleToken.NFT
+func GenerateLockFakeNFTScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + lockFakeNFTFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateAdminMarkMomentUnlockableScript creates a script that marks a moment as unlockable
 func GenerateAdminMarkMomentUnlockableScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + adminMarkMomentUnlockableFilename)
 

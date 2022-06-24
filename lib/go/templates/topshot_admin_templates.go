@@ -19,6 +19,11 @@ const (
 	fulfillPackFilename      = "admin/fulfill_pack.cdc"
 	createSetAndPlayFilename = "admin/create_set_and_play_struct.cdc"
 
+	createFakePlayFilename = "admin/fake_admin/create_play.cdc"
+	createFakeSetFilename  = "admin/fake_admin/create_set.cdc"
+	addFakePlayFilename    = "admin/fake_admin/add_play_to_set.cdc"
+	mintFakeMomentFilename = "admin/fake_admin/mint_moment.cdc"
+
 	transferAdminFilename = "admin/transfer_admin.cdc"
 )
 
@@ -130,5 +135,37 @@ func GenerateInvalidChangePlaysScript(env Environment) []byte {
 				TopShot.playDatas[UInt32(1)] = nil
 			}
 		}`
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateFakeMintPlayScript creates a new play data struct
+// and initializes it with metadata
+func GenerateFakeMintPlayScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + createFakePlayFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateFakeMintSetScript creates a new Set struct and initializes its metadata
+func GenerateFakeMintSetScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + createFakeSetFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateFakeAddPlayToSetScript adds a play to a set
+// so that moments can be minted from the combo
+func GenerateFakeAddPlayToSetScript(env Environment) []byte {
+
+	code := assets.MustAssetString(transactionsPath + addFakePlayFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateFakeMintMomentScript generates a script to mint a new moment
+// from a play-set combination
+func GenerateFakeMintMomentScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + mintFakeMomentFilename)
+
 	return []byte(replaceAddresses(code, env))
 }

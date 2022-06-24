@@ -19,7 +19,7 @@ import (
 
 const CadenceUFix64Factor = 100000000
 
-// Tests all the main functionality of the V1 Market
+// Tests all the main functionality of the TopShot Locking contract
 func TestTopShotLocking(t *testing.T) {
 	b := newBlockchain()
 
@@ -413,5 +413,78 @@ func TestTopShotLocking(t *testing.T) {
 			jsoncdc.MustEncode(cadence.UInt64(3)),
 		})
 		assertEqual(t, cadence.NewBool(false), result)
+	})
+
+	t.Run("Should not be able to lock a non-TopShot.NFT", func(t *testing.T) {
+		// Deploy a copy of the TopShot to a new address contract
+		fakeTopshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
+		fakeTopshotAccountKey, fakeTopshotSigner := accountKeys.NewWithSigner()
+		fakeTopshotAddress, _ := b.CreateAccount([]*flow.AccountKey{fakeTopshotAccountKey}, []sdktemplates.Contract{
+			{
+				Name:   "TopShot",
+				Source: string(fakeTopshotCode),
+			},
+		})
+		env.FakeTopshotAddress = fakeTopshotAddress.String()
+
+		// Create Fake Play
+		{
+			tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateFakeMintPlayScript(env), fakeTopshotAddress)
+			metadata := []cadence.KeyValuePair{{Key: firstName, Value: lebron}, {Key: playType, Value: dunk}}
+			play := cadence.NewDictionary(metadata)
+			_ = tx.AddArgument(play)
+			signAndSubmit(
+				t, b, tx,
+				[]flow.Address{b.ServiceKey().Address, fakeTopshotAddress}, []crypto.Signer{serviceKeySigner, fakeTopshotSigner},
+				false,
+			)
+		}
+
+		// Create Fake Set
+		{
+			tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateFakeMintSetScript(env), fakeTopshotAddress)
+			_ = tx.AddArgument(CadenceString("Genesis"))
+			signAndSubmit(
+				t, b, tx,
+				[]flow.Address{b.ServiceKey().Address, fakeTopshotAddress}, []crypto.Signer{serviceKeySigner, fakeTopshotSigner},
+				false,
+			)
+		}
+		// Add Fake Play to Fake Set
+		{
+			tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateFakeAddPlayToSetScript(env), fakeTopshotAddress)
+			_ = tx.AddArgument(cadence.NewUInt32(1))
+			_ = tx.AddArgument(cadence.NewUInt32(1))
+			signAndSubmit(
+				t, b, tx,
+				[]flow.Address{b.ServiceKey().Address, fakeTopshotAddress}, []crypto.Signer{serviceKeySigner, fakeTopshotSigner},
+				false,
+			)
+		}
+
+		// Mint Fake Moment 1
+		{
+			tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateFakeMintMomentScript(env), fakeTopshotAddress)
+			_ = tx.AddArgument(cadence.NewUInt32(1))
+			_ = tx.AddArgument(cadence.NewUInt32(1))
+			_ = tx.AddArgument(cadence.NewAddress(fakeTopshotAddress))
+			signAndSubmit(
+				t, b, tx,
+				[]flow.Address{b.ServiceKey().Address, fakeTopshotAddress}, []crypto.Signer{serviceKeySigner, fakeTopshotSigner},
+				false,
+			)
+		}
+
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateLockFakeNFTScript(env), fakeTopshotAddress)
+		_ = tx.AddArgument(cadence.NewUInt64(1))
+		duration, _ := cadence.NewUFix64("0.0")
+		_ = tx.AddArgument(duration)
+
+		// Will revert due to not matching the correct FQ TopShot NFT type
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, fakeTopshotAddress}, []crypto.Signer{serviceKeySigner, fakeTopshotSigner},
+			true,
+		)
 	})
 }
