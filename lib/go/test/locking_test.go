@@ -415,7 +415,7 @@ func TestTopShotLocking(t *testing.T) {
 		assertEqual(t, cadence.NewBool(false), result)
 	})
 
-	t.Run("`Should not be able to lock a non-TopShot.NFT`", func(t *testing.T) {
+	t.Run("Should not be able to lock a non-TopShot.NFT", func(t *testing.T) {
 		// Deploy a copy of the TopShot to a new address contract
 		fakeTopshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
 		fakeTopshotAccountKey, fakeTopshotSigner := accountKeys.NewWithSigner()
