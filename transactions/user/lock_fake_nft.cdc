@@ -1,4 +1,4 @@
-import TopShot from 0xFAKETOPSHOTADDRESS
+import TopShot from 0xTOPSHOTADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 
 // This transaction attempts to send an NFT that is impersonating a TopShot NFT
