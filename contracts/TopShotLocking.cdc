@@ -44,7 +44,7 @@ pub contract TopShotLocking {
     // lockNFT Takes an NFT resource and adds its unique identifier to the lockedNFTs dictionary
     //
     // Parameters: nft: NFT resource
-    //             expiryTimestamp: The unix timestamp in seconds after which the nft may be unlocked
+    //             duration: number of seconds the NFT will be locked for
     //
     // Returns: the NFT resource
     pub fun lockNFT(nft: @NonFungibleToken.NFT, duration: UFix64): @NonFungibleToken.NFT {
