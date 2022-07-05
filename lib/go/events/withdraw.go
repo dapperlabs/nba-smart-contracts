@@ -1,6 +1,8 @@
 package events
 
 import (
+	"fmt"
+
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 	"github.com/onflow/flow-go-sdk"
@@ -18,7 +20,6 @@ type WithdrawEvent interface {
 }
 
 type withdrawEvent cadence.Event
-
 
 var _ WithdrawEvent = (*withdrawEvent)(nil)
 
@@ -38,10 +39,22 @@ func (evt withdrawEvent) Owner() string {
 	return evt.From()
 }
 
+func (evt withdrawEvent) validate() error {
+	if evt.EventType.QualifiedIdentifier != EventWithdraw {
+		return fmt.Errorf("error validating event: event is not a valid withdraw event, expected type %s, got %s",
+			EventWithdraw, evt.EventType.QualifiedIdentifier)
+	}
+	return nil
+}
+
 func DecodeWithdrawEvent(b []byte) (WithdrawEvent, error) {
-	value, err := jsoncdc.Decode(b)
+	value, err := jsoncdc.Decode(nil, b)
 	if err != nil {
 		return nil, err
 	}
-	return withdrawEvent(value.(cadence.Event)), nil
+	event := withdrawEvent(value.(cadence.Event))
+	if err := event.validate(); err != nil {
+		return nil, fmt.Errorf("error decoding event: %w", err)
+	}
+	return event, nil
 }

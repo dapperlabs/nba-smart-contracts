@@ -1,6 +1,8 @@
 package events
 
 import (
+	"fmt"
+
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 )
@@ -19,28 +21,40 @@ type MomentMintedEvent interface {
 
 type momentMintedEvent cadence.Event
 
-func (a momentMintedEvent) MomentId() uint64 {
-	return uint64(a.Fields[0].(cadence.UInt64))
+func (evt momentMintedEvent) MomentId() uint64 {
+	return uint64(evt.Fields[0].(cadence.UInt64))
 }
 
-func (a momentMintedEvent) PlayId() uint32 {
-	return uint32(a.Fields[1].(cadence.UInt32))
+func (evt momentMintedEvent) PlayId() uint32 {
+	return uint32(evt.Fields[1].(cadence.UInt32))
 }
 
-func (a momentMintedEvent) SetId() uint32 {
-	return uint32(a.Fields[2].(cadence.UInt32))
+func (evt momentMintedEvent) SetId() uint32 {
+	return uint32(evt.Fields[2].(cadence.UInt32))
 }
 
-func (a momentMintedEvent) SerialNumber() uint32 {
-	return uint32(a.Fields[3].(cadence.UInt32))
+func (evt momentMintedEvent) SerialNumber() uint32 {
+	return uint32(evt.Fields[3].(cadence.UInt32))
+}
+
+func (evt momentMintedEvent) validate() error {
+	if evt.EventType.QualifiedIdentifier != EventMomentMinted {
+		return fmt.Errorf("error validating event: event is not a valid moment minted event, expected type %s, got %s",
+			EventMomentMinted, evt.EventType.QualifiedIdentifier)
+	}
+	return nil
 }
 
 var _ MomentMintedEvent = (*momentMintedEvent)(nil)
 
 func DecodeMomentMintedEvent(b []byte) (MomentMintedEvent, error) {
-	value, err := jsoncdc.Decode(b)
+	value, err := jsoncdc.Decode(nil, b)
 	if err != nil {
 		return nil, err
 	}
-	return momentMintedEvent(value.(cadence.Event)), nil
+	event := momentMintedEvent(value.(cadence.Event))
+	if err := event.validate(); err != nil {
+		return nil, fmt.Errorf("error decoding event: %w", err)
+	}
+	return event, nil
 }

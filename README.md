@@ -164,6 +164,9 @@ The other types that are defined in `TopShot` are as follows:
  - `Admin`: This is a resource type that can be used by admins to perform
     various acitions in the smart contract like starting a new series, 
     creating a new play or set, and getting a reference to an existing set.
+ - `QuerySetData`: A struct that contains the metadata associated with a set.
+    This is currently the only way to access the metadata of a set.
+    Can be accessed by calling the public function in the `TopShot` smart contract called `getSetData(setID)`
 
 Metadata structs associated with plays and sets are stored in the main smart contract
 and can be queried by anyone. For example, If a player wanted to find out the 
@@ -171,7 +174,7 @@ name of the team that the player represented in their Moment plays for, they
 would call a public function in the `TopShot` smart contract 
 called `getPlayMetaDataByField`, providing, from their owned Moment,
 the play and field that they want to query. 
-They can do the same with information about sets.
+They can do the same with information about sets by calling `getSetData` with the setID.
 
 The power to create new plays, sets, and Moments rests 
 with the owner of the `Admin` resource.
@@ -200,7 +203,7 @@ to move them in and out and to read data about the collection and its Moments.
 
 The first step for using any smart contract is deploying it to the blockchain,
 or emulator in our case. Do these commands in vscode. 
-See the [vscode extension instructions](https://docs.onflow.org/docs/visual-studio-code-extension) 
+See the [vscode extension instructions](https://docs.onflow.org/vscode-extension/) 
 to learn how to use it.
 
  1. Start the emulator with the `Run emulator` vscode command.
@@ -208,9 +211,8 @@ to learn how to use it.
  3. In `NonFungibleToken.cdc`, click the `deploy contract to account` 
  above the `Dummy` contract at the bottom of the file to deploy it.
  This also deploys the `NonFungbleToken` interface.
- 4. Switch to a different account.
- 5. In `TopShot.cdc`, make sure it imports `NonFungibleToken` from the account you deployed it to.
- 6. Click the `deploy contract to account` button that appears over the 
+ 4. In `TopShot.cdc`, make sure it imports `NonFungibleToken` from the account you deployed it to.
+ 5. Click the `deploy contract to account` button that appears over the 
     `TopShot` contract declaration to deploy it to a new account.
 
 This deploys the contract code. It also runs the contract's
@@ -233,6 +235,33 @@ hard code the values that they are used for.
 
 You also need to replace the `ADDRESS` placeholders with the actual Flow 
 addresses that you want to import from.
+
+## How to Run Transactions Against the Top Shot Contract
+This repository contains sample transactions that can be executed against the Top Shot contract either via Flow CLI or using VSCode. This section will describe how to create a new Top Shot set on the Flow emulator.
+
+#### Send Transaction with Flow CLI
+1. Install the [Flow CLI and emulator](https://docs.onflow.org/flow-cli/install/)
+2. Initialize the flow emulator configuration.  
+`flow emulator --init`
+3. [Configure the contracts & deployment section](https://docs.onflow.org/flow-cli/configuration/) of the initialized flow.json file. 
+4. Start the emulator.  
+`flow emulator`
+5. On TopShot.cdc substitute the placeholder address `import NonFungibleToken from 0xNFTADDRESS` with the address the NonFungibleToken was deployed to. This will be the emulator address found in the accounts object of the initialized flow.json.
+6. Deploy the NonFungibleToken & TopShot contracts to the flow emulator.  
+`flow project deploy --network=emulator`
+7. Use the Flow CLI to execute transactions against the emulator. This transaction creates a new set on the flow emulator called "new set name".   
+`flow transactions send ./transactions/admin/create_set.cdc "new set name"`
+
+#### Send Transaction with VSCode
+1. [Install and configure](https://docs.onflow.org/vscode-extension/) VSCode extension.
+2. Start flow emulator by running the VSCode command.  
+`Cadence: Run emulator`
+3. On TopShot.cdc substitute the placeholder address `import NonFungibleToken from 0xNFTADDRESS` with the address the NonFungibleToken was deployed to. Typically, this will be the service account address.
+4. Above the contract definition `pub contract interface NonFungibleToken` you will see and press text to deploy this contract to the service account.
+5. Above the contract definition `pub contract TopShot: NonFungibleToken` you will see and press text to deploy this contract to the service account.
+6. Navigate to `transactions/admin/create_set.cdc` Substitute the placeholder address `import TopShot from 0xNFTADDRESS` with the address TopShot.cdc was deployed to.
+7. Transactions run in VSCode cannot take arguments. Replace the line `transaction(setName : String)` with `transaction()` and find every instance of setName in the contract and replace with a hard coded value like "new set name".
+8. Above the line `transaction()` you will now see and press the text `Send signed by service account`. This will create a set on the flow emulator called "new set name".
 
 ## How to run the automated tests for the contracts
 
@@ -320,6 +349,14 @@ the `lib/go/events` package.
 
     Emitted when a Moment is deposited into a collection. `id` refers to the global Moment ID. If the collection was in an account's storage when it was deposited, `to` will show the address of the account that it was deposited to. If the collection was not in storage when the Moment was deposited, `to` will be `nil`.
 
+### Top Shot NFT Metadata
+
+NFT metadata is represented in a flexible and modular way using the [standard proposed in FLIP-0636](https://github.com/onflow/flow/blob/master/flips/20210916-nft-metadata.md). The Top Shot contract implements the [`MetadataViews.Resolver`](https://github.com/onflow/flow-nft/blob/master/contracts/MetadataViews.cdc#L21) interface, which standardizes the display of Top Shot NFT in accordance with FLIP-0636. The Top Shot contract also defines a custom view of moment play data called TopShotMomentMetadataView.
+
+## NBA Top Shot Packs
+
+NBA Top Shot packs are currently off-chain and not managed by the NBA Top Shot smart contract. Moments in a pack are minted on-chain, and assembled into a pack for purchase off-chain on the NBA Top Shot platform. When a collector purchases a pack, the moments within the pack are transferred directly to this collector on-chain. The NBA Top Shot smart contract has no knowledge of packs.
+
 ## NBA Top Shot Marketplace
 
 The `contracts/MarketTopShot.cdc` contract allows users to create a sale object
@@ -381,6 +418,10 @@ returns it to the buyer.
 The new version of the market contract is currently NOT DEPLOYED to mainnet,
 but it will be deployed and utilized in the near future.
 
+## TopShot contract improvement
+Some improvements were made to the Topshot contract to reflect some cadence best practices and fix a bug.
+In-depth explanation on the changes and why we made them can be found in our [Blog Post](https://blog.nbatopshot.com/posts/nba-top-shot-smart-contract-improvements) 
+
 ## License 
 
 The works in these folders 
@@ -403,3 +444,4 @@ https://github.com/onflow/flow-NFT/blob/master/LICENSE
 
 
 
+ 

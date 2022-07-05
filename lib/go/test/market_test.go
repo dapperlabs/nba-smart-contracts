@@ -15,6 +15,8 @@ import (
 	sdktemplates "github.com/onflow/flow-go-sdk/templates"
 	"github.com/onflow/flow-go-sdk/test"
 
+	"strings"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -43,9 +45,26 @@ func TestMarketDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
+	// Should be able to deploy the MetadataViews contract
+	// as a new account with no keys.
+	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
+	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
+	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "MetadataViews",
+			Source: parsedMetadataContract,
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
 	// Should be able to deploy the topshot contract
 	// as a new account with no keys.
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
 	topshotAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShot",
@@ -104,6 +123,9 @@ func TestMarketDeployment(t *testing.T) {
 func TestMarketV1(t *testing.T) {
 	b := newBlockchain()
 
+	serviceKeySigner, err := b.ServiceKey().Signer()
+	assert.NoError(t, err)
+
 	accountKeys := test.AccountKeyGenerator()
 
 	env := templates.Environment{
@@ -128,8 +150,27 @@ func TestMarketV1(t *testing.T) {
 
 	env.NFTAddress = nftAddr.String()
 
+	// Should be able to deploy the MetadataViews contract
+	// as a new account with no keys.
+	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
+	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
+	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "MetadataViews",
+			Source: parsedMetadataContract,
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
+	env.MetadataViewsAddress = metadataViewsAddr.String()
+
 	// Should be able to deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, err := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -212,7 +253,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 
@@ -221,7 +262,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{serviceKeySigner, joshSigner},
 			false,
 		)
 
@@ -230,7 +271,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{serviceKeySigner, tokenSigner},
 			false,
 		)
 
@@ -244,13 +285,13 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{serviceKeySigner, joshSigner},
 			false,
 		)
 	})
 
-	firstName := cadence.NewString("FullName")
-	lebron := cadence.NewString("Lebron")
+	firstName := CadenceString("FullName")
+	lebron := CadenceString("Lebron")
 
 	// Admin sends transactions to create a play, set, and moments
 	t.Run("Should be able to setup a play, set, and mint moment", func(t *testing.T) {
@@ -263,18 +304,18 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
 
 		// create a new set
 		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintSetScript(env), topshotAddr)
 
-		_ = tx.AddArgument(cadence.NewString("Genesis"))
+		_ = tx.AddArgument(CadenceString("Genesis"))
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
 
@@ -286,7 +327,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
 
@@ -300,7 +341,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
 
@@ -309,7 +350,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 
@@ -318,7 +359,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{serviceKeySigner, joshSigner},
 			false,
 		)
 
@@ -330,7 +371,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
 
@@ -342,7 +383,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
 	})
@@ -356,7 +397,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{serviceKeySigner, joshSigner},
 			false,
 		)
 		// check the price, sale length, and the sale's data
@@ -380,7 +421,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			true,
 		)
 	})
@@ -395,7 +436,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			true,
 		)
 	})
@@ -410,7 +451,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			true,
 		)
 	})
@@ -425,7 +466,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 
@@ -451,7 +492,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 		// Make sure that moment id 2 is for sale for 50 tokens and the data is correct
@@ -474,7 +515,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			true,
 		)
 	})
@@ -488,7 +529,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 		// make sure the price has been changed
@@ -504,7 +545,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 		// make sure the percentage was changed correctly
@@ -520,7 +561,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			true,
 		)
 		// make sure nothing was withdrawn
@@ -535,7 +576,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 
@@ -553,7 +594,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 		// Make sure that moment id 2 is for sale for 50 tokens and the data is correct
@@ -574,7 +615,7 @@ func TestMarketV1(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateCreateForwarderScript(flow.HexToAddress(defaultfungibleTokenAddr), forwardingAddr, tokenAddr, "DapperUtilityCoin"), bastianAddress)
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 	})
@@ -585,7 +626,7 @@ func TestMarketV1(t *testing.T) {
 		_ = tx.AddArgument(ducPublicPath)
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 
@@ -607,7 +648,7 @@ func TestMarketV1(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{serviceKeySigner, tokenSigner},
 			false,
 		)
 
@@ -621,6 +662,9 @@ func TestMarketV1(t *testing.T) {
 
 func TestMarketV3(t *testing.T) {
 	b := newBlockchain()
+
+	serviceKeySigner, err := b.ServiceKey().Signer()
+	assert.NoError(t, err)
 
 	accountKeys := test.AccountKeyGenerator()
 
@@ -644,10 +688,29 @@ func TestMarketV3(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
-	env.NFTAddress = nftAddr.String()
+	env.NFTAddress = "0x" + nftAddr.String()
+
+	// Should be able to deploy the MetadataViews contract
+	// as a new account with no keys.
+	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
+	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
+	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
+	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "MetadataViews",
+			Source: parsedMetadataContract,
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
+	env.MetadataViewsAddress = metadataViewsAddr.String()
 
 	// Should be able to deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, err := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -742,7 +805,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 
@@ -751,7 +814,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{serviceKeySigner, joshSigner},
 			false,
 		)
 
@@ -759,13 +822,13 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{serviceKeySigner, tokenSigner},
 			false,
 		)
 	})
 
-	firstName := cadence.NewString("FullName")
-	lebron := cadence.NewString("Lebron")
+	firstName := CadenceString("FullName")
+	lebron := CadenceString("Lebron")
 
 	// Admin sends transactions to create a play, set, and moments
 	t.Run("Should be able to setup a play, set, and mint moment", func(t *testing.T) {
@@ -778,18 +841,18 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
 
 		// create a new set
 		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintSetScript(env), topshotAddr)
 
-		_ = tx.AddArgument(cadence.NewString("Genesis"))
+		_ = tx.AddArgument(CadenceString("Genesis"))
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
 
@@ -801,7 +864,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
 
@@ -815,7 +878,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
 
@@ -824,7 +887,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 
@@ -833,7 +896,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{serviceKeySigner, joshSigner},
 			false,
 		)
 
@@ -841,7 +904,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{serviceKeySigner, tokenSigner},
 			false,
 		)
 
@@ -853,7 +916,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
 
@@ -865,7 +928,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
 
@@ -877,7 +940,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{b.ServiceKey().Signer(), topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
 	})
@@ -898,7 +961,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 
@@ -914,7 +977,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 	})
@@ -932,7 +995,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			true,
 		)
 	})
@@ -958,7 +1021,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 
@@ -968,7 +1031,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 
@@ -978,7 +1041,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 	})
@@ -995,7 +1058,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 
@@ -1006,7 +1069,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{b.ServiceKey().Signer(), bastianSigner},
+			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
 
@@ -1025,7 +1088,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{serviceKeySigner, tokenSigner},
 			false,
 		)
 
@@ -1039,7 +1102,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{serviceKeySigner, tokenSigner},
 			true,
 		)
 
@@ -1052,7 +1115,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{serviceKeySigner, tokenSigner},
 			false,
 		)
 
@@ -1068,7 +1131,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{serviceKeySigner, tokenSigner},
 			true,
 		)
 	})
@@ -1084,7 +1147,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{serviceKeySigner, joshSigner},
 			false,
 		)
 
@@ -1094,7 +1157,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{serviceKeySigner, joshSigner},
 			false,
 		)
 
@@ -1108,7 +1171,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{b.ServiceKey().Signer(), joshSigner},
+			[]flow.Address{b.ServiceKey().Address, joshAddress}, []crypto.Signer{serviceKeySigner, joshSigner},
 			false,
 		)
 
@@ -1121,7 +1184,7 @@ func TestMarketV3(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{b.ServiceKey().Signer(), tokenSigner},
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{serviceKeySigner, tokenSigner},
 			false,
 		)
 	})

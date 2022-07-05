@@ -26,6 +26,7 @@ const (
 	playsInSetFilename          = "sets/get_plays_in_set.cdc"
 	setNameFilename             = "sets/get_setName.cdc"
 	setLockedFilename           = "sets/get_set_locked.cdc"
+	getSetMetadataFilename      = "sets/get_set_data.cdc"
 
 	// collections scripts
 	collectionIDsFilename       = "collections/get_collection_ids.cdc"
@@ -38,6 +39,10 @@ const (
 	momentSerialNumFilename     = "collections/get_moment_serialNum.cdc"
 	momentSetNameFilename       = "collections/get_moment_setName.cdc"
 	getSetPlaysAreOwnedFilename = "collections/get_setplays_are_owned.cdc"
+
+	// metadata scripts
+	getNFTMetadataFilename     = "get_nft_metadata.cdc"
+	getTopShotMetadataFilename = "get_topshot_metadata.cdc"
 )
 
 // Global Data Gettetrs
@@ -139,6 +144,12 @@ func GenerateGetIsSetLockedScript(env Environment) []byte {
 	return []byte(replaceAddresses(code, env))
 }
 
+func GenerateGetSetMetadataScript(env Environment) []byte {
+	code := assets.MustAssetString(scriptsPath + getSetMetadataFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
 // Collection related scripts
 
 func GenerateGetCollectionIDsScript(env Environment) []byte {
@@ -203,6 +214,20 @@ func GenerateGetMomentSerialNumScript(env Environment) []byte {
 // Set and Play IDs are matched up by index in the passed slices.
 func GenerateSetPlaysOwnedByAddressScript(env Environment) []byte {
 	code := assets.MustAssetString(scriptsPath + getSetPlaysAreOwnedFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateGetNFTMetadataScript creates a script that returns the metadata for an NFT.
+func GenerateGetNFTMetadataScript(env Environment) []byte {
+	code := assets.MustAssetString(scriptsPath + getNFTMetadataFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateGetTopShotMetadataScript creates a script that returns the metadata for an NFT.
+func GenerateGetTopShotMetadataScript(env Environment) []byte {
+	code := assets.MustAssetString(scriptsPath + getTopShotMetadataFilename)
 
 	return []byte(replaceAddresses(code, env))
 }

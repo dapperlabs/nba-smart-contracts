@@ -15,7 +15,7 @@ var addrD = "0D"
 var addrE = "0E"
 
 func TestTopShotContract(t *testing.T) {
-	contract := contracts.GenerateTopShotContract(addrA)
+	contract := contracts.GenerateTopShotContract(addrA, addrA)
 	assert.NotNil(t, contract)
 }
 
