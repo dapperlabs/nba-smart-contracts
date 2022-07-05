@@ -4,10 +4,10 @@
     {
       "id": "TS.01",
       "name": "Set up Top Shot Collection",
-      "source": "import TopShot from 0x0b2a3299cc857e29\n\n// This transaction sets up an account to use Top Shot\n// by storing an empty moment collection and creating\n// a public capability for it\n\ntransaction {\n\n    prepare(acct: AuthAccount) {\n\n        // First, check to see if a moment collection already exists\n        if acct.borrow\u003c\u0026TopShot.Collection\u003e(from: /storage/MomentCollection) == nil {\n\n            // create a new TopShot Collection\n            let collection \u003c- TopShot.createEmptyCollection() as! @TopShot.Collection\n\n            // Put the new Collection in storage\n            acct.save(\u003c-collection, to: /storage/MomentCollection)\n\n            // create a public capability for the collection\n            acct.link\u003c\u0026{TopShot.MomentCollectionPublic}\u003e(/public/MomentCollection, target: /storage/MomentCollection)\n        }\n    }\n}",
+      "source": "import NonFungibleToken from 0x1d7e57aa55817448\nimport TopShot from 0x0b2a3299cc857e29\nimport MetadataViews from \n\n// This transaction sets up an account to use Top Shot\n// by storing an empty moment collection and creating\n// a public capability for it\n\ntransaction {\n\n    prepare(acct: AuthAccount) {\n\n        // First, check to see if a moment collection already exists\n        if acct.borrow\u003c\u0026TopShot.Collection\u003e(from: /storage/MomentCollection) == nil {\n\n            // create a new TopShot Collection\n            let collection \u003c- TopShot.createEmptyCollection() as! @TopShot.Collection\n\n            // Put the new Collection in storage\n            acct.save(\u003c-collection, to: /storage/MomentCollection)\n\n            // create a public capability for the collection\n            acct.link\u003c\u0026{NonFungibleToken.CollectionPublic, TopShot.MomentCollectionPublic, MetadataViews.ResolverCollection}\u003e(/public/MomentCollection, target: /storage/MomentCollection)\n        }\n    }\n}",
       "arguments": [],
       "network": "mainnet",
-      "hash": "7511848f1c27a173d966f4b868fd7efead7eeb1bbf04fc3f3e60dabc6c7f7593"
+      "hash": "d464442d7ede9074b11b75717837890e80226cc17eab34d71f4eb030bfeb4bd8"
     },
     {
       "id": "TS.02",

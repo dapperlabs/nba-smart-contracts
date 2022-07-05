@@ -99,16 +99,16 @@ func generateManifest(env templates.Environment) *manifest {
 		templates.GenerateTransferMomentScript,
 		[]argument{
 			{
+				Type:         "Address",
+				Name:         "recipient",
+				Label:        "Recipient",
+				SampleValues: []cadenceValue{sampleAddress(env.Network)},
+			},
+			{
 				Type:         "UInt64",
 				Name:         "withdrawID",
 				Label:        "Moment ID",
 				SampleValues: []cadenceValue{sampleMomentID},
-			},
-			{
-				Type: "Address",
-				Name: "recipient",
-				Label: "Recipient",
-				SampleValues: []cadenceValue{sampleAddress(env.Network)},
 			},
 		},
 	))

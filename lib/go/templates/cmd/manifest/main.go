@@ -26,12 +26,14 @@ const (
 
 const (
 	testnetNonFungibleTokenAddress = "631e88ae7f1d7c20"
-	testnetTopShotAddress     = "877931736ee77cff"
+	testnetTopShotAddress          = "877931736ee77cff"
+	testnetMetadataViewsAddress    = "631e88ae7f1d7c20"
 )
 
 const (
 	mainnetNonFungibleTokenAddress = "1d7e57aa55817448"
-	mainnetTopShotAddress     = "0b2a3299cc857e29"
+	mainnetTopShotAddress          = "0b2a3299cc857e29"
+	mainnetMetadataViewsAddress    = "1d7e57aa55817448"
 )
 
 var conf Config
@@ -67,16 +69,18 @@ func getEnv(conf Config) (templates.Environment, error) {
 	if conf.Network == testnet {
 		return templates.Environment{
 			Network:              testnet,
-			NFTAddress: testnetNonFungibleTokenAddress,
-			TopShotAddress:     testnetTopShotAddress,
+			NFTAddress:           testnetNonFungibleTokenAddress,
+			TopShotAddress:       testnetTopShotAddress,
+			MetadataViewsAddress: testnetMetadataViewsAddress,
 		}, nil
 	}
 
 	if conf.Network == mainnet {
 		return templates.Environment{
 			Network:              mainnet,
-			NFTAddress: mainnetNonFungibleTokenAddress,
-			TopShotAddress:     mainnetTopShotAddress,
+			NFTAddress:           mainnetNonFungibleTokenAddress,
+			TopShotAddress:       mainnetTopShotAddress,
+			MetadataViewsAddress: mainnetMetadataViewsAddress,
 		}, nil
 	}
 

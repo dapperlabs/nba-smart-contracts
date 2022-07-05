@@ -4,10 +4,10 @@
     {
       "id": "TS.01",
       "name": "Set up Top Shot Collection",
-      "source": "import TopShot from 0x877931736ee77cff\n\n// This transaction sets up an account to use Top Shot\n// by storing an empty moment collection and creating\n// a public capability for it\n\ntransaction {\n\n    prepare(acct: AuthAccount) {\n\n        // First, check to see if a moment collection already exists\n        if acct.borrow\u003c\u0026TopShot.Collection\u003e(from: /storage/MomentCollection) == nil {\n\n            // create a new TopShot Collection\n            let collection \u003c- TopShot.createEmptyCollection() as! @TopShot.Collection\n\n            // Put the new Collection in storage\n            acct.save(\u003c-collection, to: /storage/MomentCollection)\n\n            // create a public capability for the collection\n            acct.link\u003c\u0026{TopShot.MomentCollectionPublic}\u003e(/public/MomentCollection, target: /storage/MomentCollection)\n        }\n    }\n}",
+      "source": "import NonFungibleToken from 0x631e88ae7f1d7c20\nimport TopShot from 0x877931736ee77cff\nimport MetadataViews from \n\n// This transaction sets up an account to use Top Shot\n// by storing an empty moment collection and creating\n// a public capability for it\n\ntransaction {\n\n    prepare(acct: AuthAccount) {\n\n        // First, check to see if a moment collection already exists\n        if acct.borrow\u003c\u0026TopShot.Collection\u003e(from: /storage/MomentCollection) == nil {\n\n            // create a new TopShot Collection\n            let collection \u003c- TopShot.createEmptyCollection() as! @TopShot.Collection\n\n            // Put the new Collection in storage\n            acct.save(\u003c-collection, to: /storage/MomentCollection)\n\n            // create a public capability for the collection\n            acct.link\u003c\u0026{NonFungibleToken.CollectionPublic, TopShot.MomentCollectionPublic, MetadataViews.ResolverCollection}\u003e(/public/MomentCollection, target: /storage/MomentCollection)\n        }\n    }\n}",
       "arguments": [],
       "network": "testnet",
-      "hash": "0f0baeef9353ceee607c5be3b7c0f86792dadf20b9e9c89e831adb0199e75882"
+      "hash": "f9f2c822f49006a485c812e2d7de470ab7b7095ddf5bddb9cb3eee81624f333a"
     },
     {
       "id": "TS.02",
