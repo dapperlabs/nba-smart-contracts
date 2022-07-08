@@ -45,6 +45,7 @@
 
 import NonFungibleToken from 0xNFTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
+import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 
 pub contract TopShot: NonFungibleToken {
 
@@ -794,6 +795,12 @@ pub contract TopShot: NonFungibleToken {
         // returns: @NonFungibleToken.NFT the token that was withdrawn
         pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT {
 
+            // Borrow nft and check if locked
+            let nft = self.borrowNFT(id: withdrawID)
+            if TopShotLocking.isLocked(nftRef: nft) {
+                panic("Cannot withdraw: Moment is locked")
+            }
+
             // Remove the nft from the Collection
             let token <- self.ownedNFTs.remove(key: withdrawID) 
                 ?? panic("Cannot withdraw: Moment does not exist in the collection")
@@ -864,6 +871,52 @@ pub contract TopShot: NonFungibleToken {
 
             // Destroy the empty Collection
             destroy tokens
+        }
+
+        // lock takes a token id and a duration in seconds and locks
+        // the moment for that duration
+        pub fun lock(id: UInt64, duration: UFix64) {
+            // Remove the nft from the Collection
+            let token <- self.ownedNFTs.remove(key: id) 
+                ?? panic("Cannot lock: Moment does not exist in the collection")
+
+            // pass the token to the locking contract
+            // store it again after it comes back
+            let oldToken <- self.ownedNFTs[id] <- TopShotLocking.lockNFT(nft: <- token, duration: duration)
+
+            destroy oldToken
+        }
+
+        // batchLock takes an array of token ids and a duration in seconds
+        // it iterates through the ids and locks each for the specified duration
+        pub fun batchLock(ids: [UInt64], duration: UFix64) {
+            // Iterate through the ids and lock them
+            for id in ids {
+                self.lock(id: id, duration: duration)
+            }
+        }
+
+        // unlock takes a token id and attempts to unlock it
+        // TopShotLocking.unlockNFT contains business logic around unlock eligibility
+        pub fun unlock(id: UInt64) {
+            // Remove the nft from the Collection
+            let token <- self.ownedNFTs.remove(key: id) 
+                ?? panic("Cannot lock: Moment does not exist in the collection")
+
+            // Pass the token to the TopShotLocking contract then get it back
+            // Store it back to the ownedNFTs dictionary
+            let oldToken <- self.ownedNFTs[id] <- TopShotLocking.unlockNFT(nft: <- token)
+
+            destroy oldToken
+        }
+
+        // batchUnlock takes an array of token ids
+        // it iterates through the ids and unlocks each if they are eligible
+        pub fun batchUnlock(ids: [UInt64]) {
+            // Iterate through the ids and unlocks them
+            for id in ids {
+                self.unlock(id: id)
+            }
         }
 
         // getIDs returns an array of the IDs that are in the Collection

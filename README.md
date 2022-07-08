@@ -422,6 +422,92 @@ but it will be deployed and utilized in the near future.
 Some improvements were made to the Topshot contract to reflect some cadence best practices and fix a bug.
 In-depth explanation on the changes and why we made them can be found in our [Blog Post](https://blog.nbatopshot.com/posts/nba-top-shot-smart-contract-improvements) 
 
+## TopShot Locking Contract Overview
+
+Contract Name: `TopShotLocking`
+
+TopShot NFTs can be locked for a duration meaning they are unable to be withdrawn, listed for sale, burned, etc. 
+In the NBA TopShot product users are rewarded for locking their moments.
+
+An NFT may be unlocked after the lock duration has passed, or the contract admin has marked it eligible for unlocking.
+
+The moment is locked even if expiry has passed until the owner requests it be unlocked.
+The address which owns the locked NFT must make an unlocking transaction once it is eligible.
+
+### Available functions
+
+#### lockNFT
+`pub fun lockNFT(nft: @NonFungibleToken.NFT, expiryTimestamp: UFix64): @NonFungibleToken.NFT`  
+Takes a TopShot.NFT resource and sets it in the lockedNFTs dictionary, the value of the entry is the expiry timestamp  
+Params:  
+`nft` - a `NonFungibleToken.NFT` resource, but must conform to `TopShot.NFT` asserted at runtime  
+`expiryTimestamp` - the unix timestamp in seconds at which this nft can be unlocked
+
+Example:
+```cadence
+let collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
+            ?? panic("Could not borrow from MomentCollection in storage")
+
+let ONE_YEAR_IN_SECONDS: UFix64 = UFix64(31536000)
+collectionRef.lock(id: 1, duration: ONE_YEAR_IN_SECONDS)
+```
+
+#### unlockNFT
+`pub fun unlockNFT(nft: @NonFungibleToken.NFT): @NonFungibleToken.NFT`  
+Takes a `NonFungibleToken.NFT` resource and attempts to remove it from the lockedNFTs dictionary.
+This function will panic if the nft lock has not expired or been overridden by an admin.
+Params:  
+`nft` - a `NonFungibleToken.NFT` resource 
+
+Example:
+```cadence
+let collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
+            ?? panic("Could not borrow from MomentCollection in storage")
+
+collectionRef.unlock(id: 1)
+```
+
+#### isLocked
+`pub fun isLocked(nftRef: &NonFungibleToken.NFT): Bool`  
+Returns true if the moment is locked
+
+#### getLockExpiry
+`pub fun getLockExpiry(nftRef: &NonFungibleToken.NFT): UFix64`  
+Returns the unix timestamp when the nft is eligible for unlock
+
+### Admin Functions
+
+#### markNFTUnlockable
+`pub fun markNFTUnlockable(nftRef: &NonFungibleToken.NFT)`  
+Places the nft id in an unlockableNFTs dictionary. This dictionary is checked in the `unlockNFT` function and bypasses the `expiryTimestamp`
+Params:  
+`nftRef` - a reference to an `NonFungibleToken.NFT` resource  
+
+Example:
+```cadence
+let adminRef: &NFTLocking.Admin
+
+prepare(acct: AuthAccount) {
+    // Set TopShotLocking admin ref
+    self.adminRef = acct.borrow<&NFTLocking.Admin>(from: /storage/TopShotLockingAdmin)!
+}
+
+execute {
+    // Set Top Shot NFT Owner collection ref
+    let owner = getAccount(0x179b6b1cb6755e31)
+    let collectionRef = owner.getCapability(/public/MomentCollection).borrow<&{TopShot.MomentCollectionPublic}>()
+        ?? panic("Could not reference owner's moment collection")
+
+    let nftRef = collectionRef.borrowNFT(id: 1)
+    self.adminRef.markNFTUnlockable(nftRef: nftRef)
+}
+```
+### Contracts Honoring the Lock
+
+- TopShot `withdraw`
+- MarketTopShot relies on the NFT being withdrawn first so no additional code is needed
+- TopShotMarketV3 `listForSale`
+
 ## License 
 
 The works in these folders 
@@ -444,4 +530,3 @@ https://github.com/onflow/flow-NFT/blob/master/LICENSE
 
 
 
- 

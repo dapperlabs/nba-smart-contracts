@@ -13,9 +13,10 @@ var addrB = "0B"
 var addrC = "0C"
 var addrD = "0D"
 var addrE = "0E"
+var addrF = "0F"
 
 func TestTopShotContract(t *testing.T) {
-	contract := contracts.GenerateTopShotContract(addrA, addrA)
+	contract := contracts.GenerateTopShotContract(addrA, addrA, addrA)
 	assert.NotNil(t, contract)
 }
 
@@ -38,7 +39,7 @@ func TestTopShotMarketContract(t *testing.T) {
 }
 
 func TestTopShotMarketV3Contract(t *testing.T) {
-	contract := contracts.GenerateTopShotMarketV3Contract(addrA, addrB, addrC, addrD, addrE)
+	contract := contracts.GenerateTopShotMarketV3Contract(addrA, addrB, addrC, addrD, addrE, addrF)
 	assert.NotNil(t, contract)
 	assert.Contains(t, string(contract), addrA)
 }

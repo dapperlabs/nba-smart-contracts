@@ -40,6 +40,7 @@ import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 import Market from 0xMARKETADDRESS
 import DapperUtilityCoin from 0xDUCADDRESS
+import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 
 pub contract TopShotMarketV3 {
 
@@ -138,6 +139,9 @@ pub contract TopShotMarketV3 {
             pre {
                 self.ownerCollection.borrow()!.borrowMoment(id: tokenID) != nil:
                     "Moment does not exist in the owner's collection"
+
+                !TopShotLocking.isLocked(nftRef: self.ownerCollection.borrow()!.borrowNFT(id: tokenID)):
+                    "Moment is locked"
             }
 
             // Set the token's price
@@ -329,4 +333,3 @@ pub contract TopShotMarketV3 {
         self.marketPublicPath = /public/topshotSalev3Collection
     }
 }
- 
