@@ -70,9 +70,25 @@ func TestNFTDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
+	// Should be able to deploy the TopShot Locking contract
+	// as a new account with no keys.
+	lockingKey, lockingSigner := test.AccountKeyGenerator().NewWithSigner()
+	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
+	topShotLockingAddr, err := b.CreateAccount([]*flow.AccountKey{lockingKey}, []sdktemplates.Contract{
+		{
+			Name:   "TopShotLocking",
+			Source: string(topshotLockingCode),
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
 	// Should be able to deploy the topshot contract
 	// as a new account with no keys.
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
 	topshotAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShot",
@@ -84,6 +100,14 @@ func TestNFTDeployment(t *testing.T) {
 	}
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
+
+	// Should be able to update the locking contract
+	// with the address of TopShot contract to perform runtime type checking
+	topShotLockingCodeWithRuntimeAddr := contracts.GenerateTopShotLockingContractWithTopShotRuntimeAddr(nftAddr.String(), topshotAddr.String())
+	err = updateContract(b, topShotLockingAddr, lockingSigner, "TopShotLocking", topShotLockingCodeWithRuntimeAddr)
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
 
 	// deploy the sharded collection contract
 	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr.String(), topshotAddr.String())
@@ -156,8 +180,19 @@ func TestMintNFTs(t *testing.T) {
 
 	env.MetadataViewsAddress = metadataViewsAddr.String()
 
+	// Deploy TopShot Locking contract
+	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
+	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotLocking",
+			Source: string(topshotLockingCode),
+		},
+	})
+
+	env.TopShotLockingAddress = topShotLockingAddr.String()
+
 	// Deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -467,7 +502,7 @@ func TestMintNFTs(t *testing.T) {
 		assert.Equal(t, cadence.NewBool(true), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetCollectionIDsScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr))})
-		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt64(2), cadence.NewUInt64(1), cadence.NewUInt64(5), cadence.NewUInt64(4), cadence.NewUInt64(3), cadence.NewUInt64(6)})
+		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt64(3), cadence.NewUInt64(5), cadence.NewUInt64(4), cadence.NewUInt64(2), cadence.NewUInt64(6), cadence.NewUInt64(1)})
 		assert.Equal(t, idsArray, result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
@@ -682,8 +717,19 @@ func TestTransferAdmin(t *testing.T) {
 
 	env.MetadataViewsAddress = metadataViewsAddr.String()
 
+	// Deploy TopShot Locking contract
+	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
+	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotLocking",
+			Source: string(topshotLockingCode),
+		},
+	})
+
+	env.TopShotLockingAddress = topShotLockingAddr.String()
+
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -788,8 +834,19 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 
 	env.MetadataViewsAddress = metadataViewsAddr.String()
 
+	// Deploy TopShot Locking contract
+	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
+	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotLocking",
+			Source: string(topshotLockingCode),
+		},
+	})
+
+	env.TopShotLockingAddress = topShotLockingAddr.String()
+
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -989,8 +1046,19 @@ func TestDestroyMoments(t *testing.T) {
 
 	env.MetadataViewsAddress = metadataViewsAddr.String()
 
+	// Deploy TopShot Locking contract
+	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
+	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotLocking",
+			Source: string(topshotLockingCode),
+		},
+	})
+
+	env.TopShotLockingAddress = topShotLockingAddr.String()
+
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -1035,7 +1103,7 @@ func TestDestroyMoments(t *testing.T) {
 	env.TopShotMarketAddress = marketAddr.String()
 
 	// Should be able to deploy the third market contract
-	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), env.DUCAddress)
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), env.DUCAddress, topShotLockingAddr.String())
 	marketV3Addr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotMarketV3",

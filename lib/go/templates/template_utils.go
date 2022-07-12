@@ -23,6 +23,7 @@ const (
 	placeholderDUCAddress             = "0xDUCADDRESS"
 	placeholderForwardingAddress      = "0xFORWARDINGADDRESS"
 	placeholderMetadataViewsAddress   = "0xMETADATAVIEWSADDRESS"
+	placeholderTopShotLockingAddress  = "0xTOPSHOTLOCKINGADDRESS"
 )
 
 type Environment struct {
@@ -38,6 +39,7 @@ type Environment struct {
 	DUCAddress             string
 	ForwardingAddress      string
 	MetadataViewsAddress   string
+	TopShotLockingAddress  string
 }
 
 func uint32ToCadenceArr(nums []uint32) []byte {
@@ -127,6 +129,12 @@ func replaceAddresses(code string, env Environment) string {
 		code,
 		placeholderMetadataViewsAddress,
 		withHexPrefix(env.MetadataViewsAddress),
+	)
+
+	code = strings.ReplaceAll(
+		code,
+		placeholderTopShotLockingAddress,
+		withHexPrefix(env.TopShotLockingAddress),
 	)
 
 	return code
