@@ -1,4 +1,4 @@
-import NonFungibleToken from 0x631e88ae7f1d7c20
+import NonFungibleToken from 0xNFTADDRESS
 
 pub contract TopShotLocking {
 
@@ -48,7 +48,7 @@ pub contract TopShotLocking {
     //
     // Returns: the NFT resource
     pub fun lockNFT(nft: @NonFungibleToken.NFT, duration: UFix64): @NonFungibleToken.NFT {
-        let TopShotNFTType: Type = CompositeType("A.877931736ee77cff.TopShot.NFT")!
+        let TopShotNFTType: Type = CompositeType("A.TOPSHOTADDRESS.TopShot.NFT")!
         if !nft.isInstance(TopShotNFTType) {
             panic("NFT is not a TopShot NFT")
         }
