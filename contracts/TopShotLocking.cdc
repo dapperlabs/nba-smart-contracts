@@ -143,9 +143,8 @@ pub contract TopShotLocking {
 
         // unlocks all NFTs
         pub fun unlockAll() {
-            for key in TopShotLocking.lockedNFTs.keys {
-                TopShotLocking.lockedNFTs.remove(key: key)
-            }
+            TopShotLocking.lockedNFTs = {}
+            TopShotLocking.unlockableNFTs = {}
         }
     }
 
