@@ -13,12 +13,12 @@ pub contract TopShotLocking {
     pub event MomentUnlocked(id: UInt64)
 
     // Dictionary of locked NFTs
-    // nft resource uuid is the key
+    // TopShot nft resource id is the key
     // locked until timestamp is the value
     access(self) var lockedNFTs: {UInt64: UFix64}
 
     // Dictionary of NFTs overridden to be unlocked
-    access(self) var unlockableNFTs: {UInt64: Bool} // nft resource uuid is the key
+    access(self) var unlockableNFTs: {UInt64: Bool} // nft resource id is the key
 
     // isLocked Returns a boolean indicating if an nft exists in the lockedNFTs dictionary
     //
@@ -26,7 +26,7 @@ pub contract TopShotLocking {
     //
     // Returns: true if NFT is locked
     pub fun isLocked(nftRef: &NonFungibleToken.NFT): Bool {
-        return self.lockedNFTs.containsKey(nftRef.uuid)
+        return self.lockedNFTs.containsKey(nftRef.id)
     }
 
     // getLockExpiry Returns the unix timestamp when an nft is unlockable
@@ -35,10 +35,10 @@ pub contract TopShotLocking {
     //
     // Returns: unix timestamp
     pub fun getLockExpiry(nftRef: &NonFungibleToken.NFT): UFix64 {
-        if !self.lockedNFTs.containsKey(nftRef.uuid) {
+        if !self.lockedNFTs.containsKey(nftRef.id) {
             panic("NFT is not locked")
         }
-        return self.lockedNFTs[nftRef.uuid]!
+        return self.lockedNFTs[nftRef.id]!
     }
 
     // lockNFT Takes an NFT resource and adds its unique identifier to the lockedNFTs dictionary
@@ -53,15 +53,14 @@ pub contract TopShotLocking {
             panic("NFT is not a TopShot NFT")
         }
 
-        let uuid = nft.uuid
-        if self.lockedNFTs.containsKey(uuid) {
+        if self.lockedNFTs.containsKey(nft.id) {
             // already locked - short circuit and return the nft
             return <- nft
         }
 
         let expiryTimestamp = getCurrentBlock().timestamp + duration
 
-        self.lockedNFTs[uuid] = expiryTimestamp
+        self.lockedNFTs[nft.id] = expiryTimestamp
 
         emit MomentLocked(id: nft.id, duration: duration, expiryTimestamp: expiryTimestamp)
 
@@ -76,27 +75,52 @@ pub contract TopShotLocking {
     //
     // NFT must be eligible for unlocking by an admin
     pub fun unlockNFT(nft: @NonFungibleToken.NFT): @NonFungibleToken.NFT {
-        let uuid = nft.uuid
-        if !self.lockedNFTs.containsKey(uuid) {
+        if !self.lockedNFTs.containsKey(nft.id) {
             // nft is not locked, short circuit and return the nft
             return <- nft
         }
 
-        let lockExpiryTimestamp: UFix64 = self.lockedNFTs[uuid]!
+        let lockExpiryTimestamp: UFix64 = self.lockedNFTs[nft.id]!
         let isPastExpiry: Bool = getCurrentBlock().timestamp >= lockExpiryTimestamp
 
-        let isUnlockableOverridden: Bool = self.unlockableNFTs.containsKey(uuid)
+        let isUnlockableOverridden: Bool = self.unlockableNFTs.containsKey(nft.id)
 
         if !(isPastExpiry || isUnlockableOverridden) {
             panic("NFT is not eligible to be unlocked, expires at ".concat(lockExpiryTimestamp.toString()))
         }
 
-        self.unlockableNFTs.remove(key: uuid)
-        self.lockedNFTs.remove(key: uuid)
+        self.unlockableNFTs.remove(key: nft.id)
+        self.lockedNFTs.remove(key: nft.id)
 
         emit MomentUnlocked(id: nft.id)
 
         return <- nft
+    }
+
+    // getIDs Returns the ids of all locked Top Shot NFT tokens
+    //
+    // Returns: array of ids
+    //
+    pub fun getIDs(): [UInt64] {
+        return self.lockedNFTs.keys
+    }
+
+    // getExpiry Returns the timestamp when a locked token is eligible for unlock
+    //
+    // Parameters: tokenID: the nft id of the locked token
+    //
+    // Returns: a unix timestamp in seconds
+    //
+    pub fun getExpiry(tokenID: UInt64): UFix64? {
+        return self.lockedNFTs[tokenID]
+    }
+
+    // getLockedNFTsLength Returns the count of locked tokens
+    //
+    // Returns: an integer containing the number of locked tokens
+    //
+    pub fun getLockedNFTsLength(): Int {
+        return self.lockedNFTs.length
     }
 
     // Admin is a special authorization resource that 
@@ -114,7 +138,13 @@ pub contract TopShotLocking {
         // the nft owner will still need to send an unlock transaction to unlock
         //
         pub fun markNFTUnlockable(nftRef: &NonFungibleToken.NFT) {
-            TopShotLocking.unlockableNFTs[nftRef.uuid] = true
+            TopShotLocking.unlockableNFTs[nftRef.id] = true
+        }
+
+        // unlocks all NFTs
+        pub fun unlockAll() {
+            TopShotLocking.lockedNFTs = {}
+            TopShotLocking.unlockableNFTs = {}
         }
     }
 

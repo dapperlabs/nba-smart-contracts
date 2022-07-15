@@ -9,9 +9,11 @@ const (
 	batchUnlockMomentsFilename  = "user/batch_unlock_moments.cdc"
 	isLockedScriptFilename      = "collections/get_moment_isLocked.cdc"
 	getLockExpiryScriptFilename = "collections/get_moment_lockExpiry.cdc"
+	getLockedNFTsLengthFilename = "collections/get_locked_nfts_length.cdc"
 	lockFakeNFTFilename         = "user/lock_fake_nft.cdc"
 
 	adminMarkMomentUnlockableFilename = "admin/mark_moment_unlockable.cdc"
+	adminUnlockAllMomentsFilename     = "admin/unlock_all_moments.cdc"
 )
 
 // GenerateTopShotLockingLockMomentScript creates a script that locks a moment.
@@ -66,6 +68,20 @@ func GenerateLockFakeNFTScript(env Environment) []byte {
 // GenerateAdminMarkMomentUnlockableScript creates a script that marks a moment as unlockable
 func GenerateAdminMarkMomentUnlockableScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + adminMarkMomentUnlockableFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateAdminUnlockAllMomentsScript creates a script that unlocks all moments
+func GenerateAdminUnlockAllMomentsScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + adminUnlockAllMomentsFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateGetLockedNFTsLengthScript creates a script that returns the number of locked NFTs in the contract
+func GenerateGetLockedNFTsLengthScript(env Environment) []byte {
+	code := assets.MustAssetString(scriptsPath + getLockedNFTsLengthFilename)
 
 	return []byte(replaceAddresses(code, env))
 }

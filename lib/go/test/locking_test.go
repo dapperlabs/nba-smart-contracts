@@ -228,6 +228,50 @@ func TestTopShotLocking(t *testing.T) {
 		)
 	})
 
+	t.Run("Admin should be able to unlock all moments", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateTopShotLockingLockMomentScript(env), topshotAddr)
+		_ = tx.AddArgument(cadence.NewUInt64(momentId))
+		duration, _ := cadence.NewUFix64("31536000.0")
+		_ = tx.AddArgument(duration)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+
+		// Verify moment is locked
+		result := executeScriptAndCheck(t, b, templates.GenerateGetMomentIsLockedScript(env), [][]byte{
+			jsoncdc.MustEncode(cadence.Address(topshotAddr)),
+			jsoncdc.MustEncode(cadence.UInt64(momentId)),
+		})
+		assertEqual(t, cadence.NewBool(true), result)
+
+		// Verify that 1 moment is locked
+		result = executeScriptAndCheck(t, b, templates.GenerateGetLockedNFTsLengthScript(env), nil)
+		assertEqual(t, cadence.NewInt(1), result)
+
+		// locking admin unlocks all moments
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateAdminUnlockAllMomentsScript(env), topShotLockingAddr)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topShotLockingAddr}, []crypto.Signer{serviceKeySigner, lockingSigner},
+			false,
+		)
+
+		// Verify moment is not locked
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentIsLockedScript(env), [][]byte{
+			jsoncdc.MustEncode(cadence.Address(topshotAddr)),
+			jsoncdc.MustEncode(cadence.UInt64(momentId)),
+		})
+		assertEqual(t, cadence.NewBool(false), result)
+
+		// Verify that 0 moments are locked
+		result = executeScriptAndCheck(t, b, templates.GenerateGetLockedNFTsLengthScript(env), nil)
+		assertEqual(t, cadence.NewInt(0), result)
+	})
+
 	t.Run("Should be able to lock a moment then unlock when the duration has expired", func(t *testing.T) {
 		// Lock for 0 seconds
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateTopShotLockingLockMomentScript(env), topshotAddr)
