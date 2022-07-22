@@ -606,12 +606,22 @@ pub contract TopShot: NonFungibleToken {
                 .concat(serialNumber)
         }
 
+        // All supported metadata views for the Moment including the Core NFT Views
         pub fun getViews(): [Type] {
             return [
                 Type<MetadataViews.Display>(),
-                Type<TopShotMomentMetadataView>()
+                Type<TopShotMomentMetadataView>(),
+                Type<MetadataViews.Royalties>(),
+                Type<MetadataViews.Editions>(),
+                Type<MetadataViews.ExternalURL>(),
+                Type<MetadataViews.NFTCollectionData>(),
+                Type<MetadataViews.NFTCollectionDisplay>(),
+                Type<MetadataViews.Serial>(),
+                Type<MetadataViews.Traits>()
             ]
         }
+
+       
 
         pub fun resolveView(_ view: Type): AnyStruct? {
             switch view {
@@ -619,8 +629,9 @@ pub contract TopShot: NonFungibleToken {
                     return MetadataViews.Display(
                         name: self.name(),
                         description: self.description(),
-                        thumbnail: MetadataViews.HTTPFile(url:"https://ipfs.dapperlabs.com/ipfs/Qmbdj1agtbzpPWZ81wCGaDiMKRFaRN3TU6cfztVCu6nh4o")
+                        thumbnail: MetadataViews.HTTPFile(url: self.imageURL())
                     )
+                // Custom metadata view unique to TopShot Moments
                 case Type<TopShotMomentMetadataView>():
                     return TopShotMomentMetadataView(
                         fullName: TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "FullName"),
@@ -654,10 +665,95 @@ pub contract TopShot: NonFungibleToken {
                         setID: self.data.setID,
                         numMomentsInEdition: TopShot.getNumMomentsInEdition(setID: self.data.setID, playID: self.data.playID)
                     )
+                case Type<MetadataViews.Editions>():
+                    let name = self.getEditionName()
+                    let max = TopShot.getNumMomentsInEdition(setID: self.data.setID, playID: self.data.playID) ?? 0;
+                    let editionInfo = MetadataViews.Edition(name: name, number: UInt64(self.data.serialNumber), max: UInt64(max))
+                    let editionList: [MetadataViews.Edition] = [editionInfo]
+                    return MetadataViews.Editions(
+                        editionList
+                    )
+                case Type<MetadataViews.Serial>():
+                    return MetadataViews.Serial(
+                        UInt64(self.data.serialNumber)
+                    )
+                case Type<MetadataViews.Royalties>():
+                    return MetadataViews.Royalties(
+                        royalties: [
+                            // No royalty for Moments yet defined for 3rd party marketplaces
+                        ]
+                    )
+                case Type<MetadataViews.ExternalURL>():
+                    return MetadataViews.ExternalURL(self.getMomentURL())
+                case Type<MetadataViews.NFTCollectionData>():
+                    return MetadataViews.NFTCollectionData(
+                        storagePath: /storage/MomentCollection,
+                        publicPath: /public/MomentCollection,
+                        providerPath: /private/MomentCollection,
+                        publicCollection: Type<&TopShot.Collection{TopShot.MomentCollectionPublic}>(),
+                        publicLinkedType: Type<&TopShot.Collection{TopShot.MomentCollectionPublic,NonFungibleToken.Receiver,NonFungibleToken.CollectionPublic,MetadataViews.ResolverCollection}>(),
+                        providerLinkedType: Type<&TopShot.Collection{NonFungibleToken.Provider}>(),
+                        createEmptyCollectionFunction: (fun (): @NonFungibleToken.Collection {
+                            return <-TopShot.createEmptyCollection()
+                        })
+                    )
+                case Type<MetadataViews.NFTCollectionDisplay>():
+                    let media = MetadataViews.Media(
+                        file: MetadataViews.HTTPFile(
+                            url: "https://nbatopshot.com/static/img/top-shot-logo-horizontal-white.svg"
+                        ),
+                        mediaType: "image/svg+xml"
+                    )
+                    return MetadataViews.NFTCollectionDisplay(
+                        name: "NBA TopShot",
+                        description: "NBA Top Shot is your chance to own, sell, and trade official digital collectibles of the NBA and WNBA's greatest plays and players",
+                        externalURL: MetadataViews.ExternalURL("https://nbatopshot.com"),
+                        squareImage: media,
+                        bannerImage: media,
+                        socials: {}
+                    )
+                case Type<MetadataViews.Traits>():
+                    let traitDictionary: {String: AnyStruct} = {
+                        "Date Of Moment": TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "DateOfMoment"),
+                        "Play Category": TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "PlayCategory"),
+                        "Play Type": TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "PlayType"),
+                        "Series Number": TopShot.getSetSeries(setID: self.data.setID),
+                        "Set Name": TopShot.getSetName(setID: self.data.setID),
+                        "Serial Number": self.data.serialNumber
+                    }
+                    return MetadataViews.dictToTraits(dict: traitDictionary, excludedNames: [])
             }
 
             return nil
         }   
+
+        // Functions used for computing MetadataViews 
+
+        // getMomentURL 
+        // Returns: The computed external url of the moment
+        pub fun getMomentURL(): String {
+            return "https://nbatopshot.com/moment/".concat(self.id.toString())
+        }
+        // getEditionName Moment's edition name a combination of the Moment's setName and playID
+        // `setName: #playID`
+        pub fun getEditionName() : String {
+            let setName: String = TopShot.getSetName(setID: self.data.setID) ?? ""
+            let editionName = setName.concat(": #").concat(self.data.playID.toString())
+            return editionName
+        }
+
+        // imageURL will build the url for the image associated with the moment based on its metadata
+        //
+        // Returns: The computed external url of a medium sized image associated with the moment
+        pub fun imageURL(): String {
+            // The following is an example of what the path should look like:
+            // https://assets.nbatopshot.com/resize/editions/{SETSLUG}/{PLAYID}/play_{PLAYID}_{SETSLUG}_capture_
+            let setSlug = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "SetSlug") ?? ""
+            let playGuid = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "PlayGuid") ?? ""
+            let dynamicPath = setSlug.concat("/").concat(playGuid).concat("/")
+            let imagePrefix = "play_".concat(playGuid).concat("_").concat(setSlug).concat("_capture_")
+            return "https://assets.nbatopshot.com/resize/editions/".concat(dynamicPath).concat(imagePrefix).concat("Hero_2880_2880_Black.jpg")
+        }
     }
 
     // Admin is a special authorization resource that 
