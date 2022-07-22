@@ -748,7 +748,7 @@ pub contract TopShot: NonFungibleToken {
         pub fun imageURL(): String {
             // The following is an example of what the path should look like:
             // https://assets.nbatopshot.com/resize/editions/{SETSLUG}/{PLAYID}/play_{PLAYID}_{SETSLUG}_capture_
-            let setSlug = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "SetSlug") ?? ""
+            let setSlug = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "DefaultSetSlug") ?? ""
             let playGuid = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "PlayGuid") ?? ""
             let dynamicPath = setSlug.concat("/").concat(playGuid).concat("/")
             let imagePrefix = "play_".concat(playGuid).concat("_").concat(setSlug).concat("_capture_")
