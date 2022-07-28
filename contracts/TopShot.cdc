@@ -692,25 +692,35 @@ pub contract TopShot: NonFungibleToken {
                         providerPath: /private/MomentCollection,
                         publicCollection: Type<&TopShot.Collection{TopShot.MomentCollectionPublic}>(),
                         publicLinkedType: Type<&TopShot.Collection{TopShot.MomentCollectionPublic,NonFungibleToken.Receiver,NonFungibleToken.CollectionPublic,MetadataViews.ResolverCollection}>(),
-                        providerLinkedType: Type<&TopShot.Collection{NonFungibleToken.Provider}>(),
+                        providerLinkedType: Type<&TopShot.Collection{NonFungibleToken.Provider,TopShot.MomentCollectionPublic,NonFungibleToken.Receiver,NonFungibleToken.CollectionPublic,MetadataViews.ResolverCollection}>(),
                         createEmptyCollectionFunction: (fun (): @NonFungibleToken.Collection {
                             return <-TopShot.createEmptyCollection()
                         })
                     )
                 case Type<MetadataViews.NFTCollectionDisplay>():
-                    let media = MetadataViews.Media(
+                    let bannerImage = MetadataViews.Media(
                         file: MetadataViews.HTTPFile(
                             url: "https://nbatopshot.com/static/img/top-shot-logo-horizontal-white.svg"
                         ),
                         mediaType: "image/svg+xml"
                     )
+                    let squareImage = MetadataViews.Media(
+                        file: MetadataViews.HTTPFile(
+                            url: "https://nbatopshot.com/static/img/og/og.png"
+                        ),
+                        mediaType: "image/png"
+                    )
                     return MetadataViews.NFTCollectionDisplay(
-                        name: "NBA TopShot",
+                        name: "NBA-Top-Shot",
                         description: "NBA Top Shot is your chance to own, sell, and trade official digital collectibles of the NBA and WNBA's greatest plays and players",
                         externalURL: MetadataViews.ExternalURL("https://nbatopshot.com"),
-                        squareImage: media,
-                        bannerImage: media,
-                        socials: {}
+                        squareImage: squareImage,
+                        bannerImage: bannerImage,
+                        socials: {
+                            "twitter": MetadataViews.ExternalURL("https://twitter.com/nbatopshot"),
+                            "discord": MetadataViews.ExternalURL("https://discord.com/invite/nbatopshot"),
+                            "instagram": MetadataViews.ExternalURL("https://www.instagram.com/nbatopshot")
+                        }
                     )
                 case Type<MetadataViews.Traits>():
                     let traitDictionary: {String: AnyStruct} = {
