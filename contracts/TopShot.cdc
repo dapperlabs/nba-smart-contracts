@@ -617,7 +617,8 @@ pub contract TopShot: NonFungibleToken {
                 Type<MetadataViews.NFTCollectionData>(),
                 Type<MetadataViews.NFTCollectionDisplay>(),
                 Type<MetadataViews.Serial>(),
-                Type<MetadataViews.Traits>()
+                Type<MetadataViews.Traits>(),
+                Type<MetadataViews.Medias>()
             ]
         }
 
@@ -629,7 +630,7 @@ pub contract TopShot: NonFungibleToken {
                     return MetadataViews.Display(
                         name: self.name(),
                         description: self.description(),
-                        thumbnail: MetadataViews.HTTPFile(url: self.imageURL())
+                        thumbnail: MetadataViews.HTTPFile(url: self.thumbnail())
                     )
                 // Custom metadata view unique to TopShot Moments
                 case Type<TopShotMomentMetadataView>():
@@ -680,7 +681,7 @@ pub contract TopShot: NonFungibleToken {
                 case Type<MetadataViews.Royalties>():
                     return MetadataViews.Royalties(
                         royalties: [
-                            // No royalty for Moments yet defined for 3rd party marketplaces
+                            // Reserved for 3rd party marketplace royalty
                         ]
                     )
                 case Type<MetadataViews.ExternalURL>():
@@ -732,6 +733,17 @@ pub contract TopShot: NonFungibleToken {
                         "Serial Number": self.data.serialNumber
                     }
                     return MetadataViews.dictToTraits(dict: traitDictionary, excludedNames: [])
+                case Type<MetadataViews.Medias>():
+                    return MetadataViews.Medias(
+                        items: [
+                            MetadataViews.Media(
+                                file: MetadataViews.HTTPFile(
+                                    url: self.mediumimage()
+                                ),
+                                mediaType: "image/jpeg"
+                            )
+                        ]
+                    )
             }
 
             return nil
@@ -744,7 +756,7 @@ pub contract TopShot: NonFungibleToken {
         pub fun getMomentURL(): String {
             return "https://nbatopshot.com/moment/".concat(self.id.toString())
         }
-        // getEditionName Moment's edition name a combination of the Moment's setName and playID
+        // getEditionName Moment's edition name is a combination of the Moment's setName and playID
         // `setName: #playID`
         pub fun getEditionName() : String {
             let setName: String = TopShot.getSetName(setID: self.data.setID) ?? ""
@@ -752,17 +764,18 @@ pub contract TopShot: NonFungibleToken {
             return editionName
         }
 
-        // imageURL will build the url for the image associated with the moment based on its metadata
-        //
-        // Returns: The computed external url of a medium sized image associated with the moment
-        pub fun imageURL(): String {
-            // The following is an example of what the path should look like:
-            // https://assets.nbatopshot.com/resize/editions/{SETSLUG}/{PLAYID}/play_{PLAYID}_{SETSLUG}_capture_
-            let setSlug = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "DefaultSetSlug") ?? ""
-            let playGuid = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "PlayGuid") ?? ""
-            let dynamicPath = setSlug.concat("/").concat(playGuid).concat("/")
-            let imagePrefix = "play_".concat(playGuid).concat("_").concat(setSlug).concat("_capture_")
-            return "https://assets.nbatopshot.com/resize/editions/".concat(dynamicPath).concat(imagePrefix).concat("Hero_2880_2880_Black.jpg")
+        pub fun assetPath(): String {
+            return "https://assets.nbatopshot.com/flow-asset/"
+        }
+
+        // returns a url to display an medium sized image
+        pub fun mediumimage(): String {
+            return self.assetPath().concat(self.data.playID.toString()).concat("_512_512.jpg")
+        }
+
+        // returns a url to display a thumbnail associated with the moment
+        pub fun thumbnail(): String {
+            return self.assetPath().concat(self.data.playID.toString()).concat("_256_256.jpg")
         }
     }
 
