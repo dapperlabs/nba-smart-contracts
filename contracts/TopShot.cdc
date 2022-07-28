@@ -668,8 +668,8 @@ pub contract TopShot: NonFungibleToken {
                     )
                 case Type<MetadataViews.Editions>():
                     let name = self.getEditionName()
-                    let max = TopShot.getNumMomentsInEdition(setID: self.data.setID, playID: self.data.playID) ?? 0;
-                    let editionInfo = MetadataViews.Edition(name: name, number: UInt64(self.data.serialNumber), max: UInt64(max))
+                    let max = TopShot.getNumMomentsInEdition(setID: self.data.setID, playID: self.data.playID) ?? 0
+                    let editionInfo = MetadataViews.Edition(name: name, number: UInt64(self.data.serialNumber), max: max > 0 ? UInt64(max) : nil)
                     let editionList: [MetadataViews.Edition] = [editionInfo]
                     return MetadataViews.Editions(
                         editionList
