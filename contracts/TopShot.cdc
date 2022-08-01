@@ -681,7 +681,7 @@ pub contract TopShot: NonFungibleToken {
         }
 
         // If the Moment is destroyed, emit an event to indicate 
-        // to outside ovbservers that it has been destroyed
+        // to outside observers that it has been destroyed
         destroy() {
             emit MomentDestroyed(id: self.id)
         }
