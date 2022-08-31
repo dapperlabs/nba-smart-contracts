@@ -32,6 +32,7 @@ type PlayMetadata struct {
 	PlayerAutographType   string `json:",omitempty"`
 	PlayerAutographDate   string `json:",omitempty"`
 	PlayerAutographSigner string `json:",omitempty"`
+	OverrideHeadline      string `json:",omitempty"`
 }
 
 // GenerateEmptyPlay generates a play with all its fields
@@ -62,5 +63,6 @@ func GenerateEmptyPlay(fullName string) PlayMetadata {
 		PlayerAutographType:   "",
 		PlayerAutographDate:   "",
 		PlayerAutographSigner: "",
+		OverrideHeadline:      "",
 	}
 }
