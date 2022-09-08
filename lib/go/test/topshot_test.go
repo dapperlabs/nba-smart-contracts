@@ -32,6 +32,7 @@ const (
 	emulatorFlowTokenAddress  = "0ae53cb6e3f42a79"
 	MetadataFTReplaceAddress  = `"./utility/FungibleToken.cdc"`
 	MetadataNFTReplaceAddress = `"./NonFungibleToken.cdc"`
+	Network                   = `"mainnet"`
 )
 
 // This test is for testing the deployment the topshot smart contracts
@@ -95,7 +96,7 @@ func TestNFTDeployment(t *testing.T) {
 
 	// Should be able to deploy the topshot contract
 	// as a new account with no keys.
-	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
 	topshotAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShot",
@@ -206,7 +207,7 @@ func TestMintNFTs(t *testing.T) {
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// Deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -775,7 +776,7 @@ func TestTransferAdmin(t *testing.T) {
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -899,7 +900,7 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -1118,7 +1119,7 @@ func TestDestroyMoments(t *testing.T) {
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{

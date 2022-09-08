@@ -821,16 +821,29 @@ pub contract TopShot: NonFungibleToken {
 
         // returns a url to display an medium sized image
         pub fun mediumimage(): String {
-            return self.assetPath().concat("?width=512")
+            let url = self.assetPath().concat("?width=512")
+            return self.appendOptionalParams(url: url, firstDelim: "&")
         }
 
-        // returns a url to display a thumbnail associated with the moment
+        // a url to display a thumbnail associated with the moment
         pub fun thumbnail(): String {
-            return self.assetPath().concat("?width=256")
+            let url = self.assetPath().concat("?width=256")
+            return self.appendOptionalParams(url: url, firstDelim: "&")
         }
 
+        // a url to display a video associated with the moment
         pub fun video(): String {
-            return self.assetPath().concat("/video")
+            let url = self.assetPath().concat("/video")
+            return self.appendOptionalParams(url: url, firstDelim: "?")
+        }
+
+        // appends and optional network param needed to resolve the media
+        pub fun appendOptionalParams(url: String, firstDelim: String): String {
+            let env = 0xNETWORK
+            if (env == "testnet") {
+                return url.concat(firstDelim).concat("testnet")
+            }
+            return url
         }
     }
 
