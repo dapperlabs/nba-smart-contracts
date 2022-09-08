@@ -17,6 +17,7 @@ pub struct NFT {
     pub let collectionBannerImage: String
     pub let royaltyReceiversCount: UInt32
     pub let traitsCount: UInt32
+    pub let videoURL: String
 
     init(
             name: String,
@@ -33,7 +34,8 @@ pub struct NFT {
             collectionSquareImage: String,
             collectionBannerImage: String,
             royaltyReceiversCount: UInt32,
-            traitsCount: UInt32
+            traitsCount: UInt32,
+            videoURL: String
     ) {
         self.name = name
         self.description = description
@@ -50,6 +52,7 @@ pub struct NFT {
         self.collectionBannerImage = collectionBannerImage
         self.royaltyReceiversCount = royaltyReceiversCount
         self.traitsCount = traitsCount
+        self.videoURL = videoURL
     }
 }
 
@@ -68,7 +71,8 @@ pub fun main(address: Address, id: UInt64): NFT {
     let royaltiesView = nft.resolveView(Type<MetadataViews.Royalties>())! as! MetadataViews.Royalties
     let externalURLView = nft.resolveView(Type<MetadataViews.ExternalURL>())! as! MetadataViews.ExternalURL
     let traitsView = nft.resolveView(Type<MetadataViews.Traits>())! as! MetadataViews.Traits
-    
+    let mediasView = nft.resolveView(Type<MetadataViews.Medias>())! as! MetadataViews.Medias
+
     let owner: Address = nft.owner!.address!
     let nftType = nft.getType()
 
@@ -87,6 +91,7 @@ pub fun main(address: Address, id: UInt64): NFT {
         collectionSquareImage: collectionDisplayView.squareImage.file.uri(),
         collectionBannerImage: collectionDisplayView.bannerImage.file.uri(),
         royaltyReceiversCount: UInt32(royaltiesView.getRoyalties().length),
-        traitsCount: UInt32(traitsView.traits.length)
+        traitsCount: UInt32(traitsView.traits.length),
+        videoURL: mediasView.items[1].file.uri()
     )
 }

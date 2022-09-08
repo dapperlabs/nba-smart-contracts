@@ -724,15 +724,15 @@ pub contract TopShot: NonFungibleToken {
                         }
                     )
                 case Type<MetadataViews.Traits>():
+                    // non play specific traits
                     let traitDictionary: {String: AnyStruct} = {
-                        "Date Of Moment": TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "DateOfMoment"),
-                        "Play Category": TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "PlayCategory"),
-                        "Play Type": TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "PlayType"),
                         "Series Number": TopShot.getSetSeries(setID: self.data.setID),
                         "Set Name": TopShot.getSetName(setID: self.data.setID),
                         "Serial Number": self.data.serialNumber
                     }
-                    return MetadataViews.dictToTraits(dict: traitDictionary, excludedNames: [])
+                    // add play specific data
+                    let fullDictionary = self.mapPlayData(dict: traitDictionary)
+                    return MetadataViews.dictToTraits(dict: fullDictionary, excludedNames: [])
                 case Type<MetadataViews.Medias>():
                     return MetadataViews.Medias(
                         items: [
@@ -741,6 +741,12 @@ pub contract TopShot: NonFungibleToken {
                                     url: self.mediumimage()
                                 ),
                                 mediaType: "image/jpeg"
+                            ),
+                            MetadataViews.Media(
+                                file: MetadataViews.HTTPFile(
+                                    url: self.video()
+                                ),
+                                mediaType: "video/mp4"
                             )
                         ]
                     )
@@ -750,6 +756,44 @@ pub contract TopShot: NonFungibleToken {
         }   
 
         // Functions used for computing MetadataViews 
+
+        // mapPlayData helps build our trait map from play metadata
+        // Returns: The trait map with all non-nil fields from play data added
+        pub fun mapPlayData(dict: {String: AnyStruct}) : {String: AnyStruct} {      
+            let playMapping: {String: String} = {
+                "Full Name": "FullName",
+                "First Name": "FirstName",
+                "Last Name": "LastName",
+                "Birth Date": "Birthdate",
+                "Birth Place": "Birthplace",
+                "Jersey Number": "JerseyNumber",
+                "Draft Team": "DraftTeam",
+                "Draft Year": "DraftYear",
+                "Draft Selection": "DraftSelection",
+                "Draft Round": "DraftRound",
+                "Team At Moment": "TeamAtMoment",
+                "Primary Position": "PrimaryPosition",
+                "Height": "Height",
+                "Weight": "Weight",
+                "Total Years Experience": "TotalYearsExperience",
+                "NBA Season": "NbaSeason",
+                "Date Of Moment": "DateOfMoment",
+                "Play Category": "PlayCategory",
+                "Play Type": "PlayType",
+                "Home Team Name": "HomeTeamName",
+                "Away Team Name": "AwayTeamName",
+                "Home Team Score": "HomeTeamScore",
+                "Away Team Score": "AwayTeamScore"
+            }
+            for displayName in playMapping.keys {
+                let fieldName = playMapping[displayName]!
+                let fieldValue = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: fieldName)
+                if fieldValue != nil {
+                    dict.insert(key: displayName, fieldValue)
+                }
+            }
+            return dict
+        }
 
         // getMomentURL 
         // Returns: The computed external url of the moment
@@ -765,17 +809,21 @@ pub contract TopShot: NonFungibleToken {
         }
 
         pub fun assetPath(): String {
-            return "https://assets.nbatopshot.com/flow-asset/"
+            return "https://assets.nbatopshot.com/media/".concat(self.id.toString())
         }
 
         // returns a url to display an medium sized image
         pub fun mediumimage(): String {
-            return self.assetPath().concat(self.data.playID.toString()).concat("_512_512.jpg")
+            return self.assetPath().concat("?width=512")
         }
 
         // returns a url to display a thumbnail associated with the moment
         pub fun thumbnail(): String {
-            return self.assetPath().concat(self.data.playID.toString()).concat("_256_256.jpg")
+            return self.assetPath().concat("?width=256")
+        }
+
+        pub fun video(): String {
+            return self.assetPath().concat("/video")
         }
     }
 

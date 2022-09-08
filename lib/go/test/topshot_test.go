@@ -430,7 +430,7 @@ func TestMintNFTs(t *testing.T) {
 		// Tests to ensure that all core metadataviews are resolvable
 		expectedMetadataName := "Lebron Dunk"
 		expectedMetadataDescription := "A series 0 Genesis moment with serial number 1"
-		expectedMetadataThumbnail := "https://assets.nbatopshot.com/flow-asset/1_256_256.jpg"
+		expectedMetadataThumbnail := "https://assets.nbatopshot.com/media/1?width=256"
 		expectedMetadataExternalURL := "https://nbatopshot.com/moment/1"
 		expectedStoragePath := "/storage/MomentCollection"
 		expectedPublicPath := "/public/MomentCollection"
@@ -440,7 +440,8 @@ func TestMintNFTs(t *testing.T) {
 		expectedCollectionSquareImage := "https://nbatopshot.com/static/img/og/og.png"
 		expectedCollectionBannerImage := "https://nbatopshot.com/static/img/top-shot-logo-horizontal-white.svg"
 		expectedRoyaltyReceiversCount := 0
-		expectedTraitsCount := 6
+		expectedTraitsCount := 5
+		expectedVideoURL := "https://assets.nbatopshot.com/media/1/video"
 
 		resultNFT := executeScriptAndCheck(t, b, templates.GenerateGetNFTMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		metadataViewNFT := resultNFT.(cadence.Struct)
@@ -457,7 +458,8 @@ func TestMintNFTs(t *testing.T) {
 		assert.Equal(t, cadence.String(expectedCollectionBannerImage), metadataViewNFT.Fields[12])
 		assert.Equal(t, cadence.UInt32(expectedRoyaltyReceiversCount), metadataViewNFT.Fields[13])
 		assert.Equal(t, cadence.UInt32(expectedTraitsCount), metadataViewNFT.Fields[14])
-		
+		assert.Equal(t, cadence.String(expectedVideoURL), metadataViewNFT.Fields[15])
+
 		// Tests that top-shot specific metadata is discoverable on-chain
 		expectedPlayID := 1
 		expectedSetID := 1
