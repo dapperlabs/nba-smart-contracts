@@ -66,8 +66,10 @@ func TestTopShotLocking(t *testing.T) {
 	})
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
+	topShotRoyaltyAddr, err := b.CreateAccount([]*flow.AccountKey{lockingKey}, []sdktemplates.Contract{})
+
 	// Deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(defaultfungibleTokenAddr, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), topShotRoyaltyAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -461,7 +463,7 @@ func TestTopShotLocking(t *testing.T) {
 
 	t.Run("Should not be able to lock a non-TopShot.NFT", func(t *testing.T) {
 		// Deploy a copy of the TopShot to a new address contract
-		fakeTopshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
+		fakeTopshotCode := contracts.GenerateTopShotContract(defaultfungibleTokenAddr, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), topShotRoyaltyAddr.String())
 		fakeTopshotAccountKey, fakeTopshotSigner := accountKeys.NewWithSigner()
 		fakeTopshotAddress, _ := b.CreateAccount([]*flow.AccountKey{fakeTopshotAccountKey}, []sdktemplates.Contract{
 			{

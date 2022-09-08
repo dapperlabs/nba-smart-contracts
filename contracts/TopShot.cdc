@@ -43,6 +43,7 @@
 
 */
 
+import FungibleToken from 0xFUNGIBLETOKENADDRESS
 import NonFungibleToken from 0xNFTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
@@ -679,9 +680,15 @@ pub contract TopShot: NonFungibleToken {
                         UInt64(self.data.serialNumber)
                     )
                 case Type<MetadataViews.Royalties>():
+                    let royaltyReceiver: Capability<&{FungibleToken.Receiver}> =
+                        getAccount(0xTOPSHOTROYALTYADDRESS).getCapability<&AnyResource{FungibleToken.Receiver}>(MetadataViews.getRoyaltyReceiverPublicPath())
                     return MetadataViews.Royalties(
                         royalties: [
-                            // Reserved for 3rd party marketplace royalty
+                            MetadataViews.Royalty(
+                                receiver: royaltyReceiver,
+                                cut: 0.05,
+                                description: "NBATopShot marketplace royalty"
+                            )
                         ]
                     )
                 case Type<MetadataViews.ExternalURL>():
