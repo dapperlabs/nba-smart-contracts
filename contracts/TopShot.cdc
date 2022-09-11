@@ -49,6 +49,15 @@ import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 
 pub contract TopShot: NonFungibleToken {
+    // -----------------------------------------------------------------------
+    // TopShot deployment variables
+    // -----------------------------------------------------------------------
+
+    // The network the contract is deployed on
+    pub fun Network() : String { return ${NETWORK} }
+
+    // The address to which royalties should be deposited
+    pub fun RoyaltyAddress() : Address { return 0xTOPSHOTROYALTYADDRESS }
 
     // -----------------------------------------------------------------------
     // TopShot contract Events
@@ -681,7 +690,7 @@ pub contract TopShot: NonFungibleToken {
                     )
                 case Type<MetadataViews.Royalties>():
                     let royaltyReceiver: Capability<&{FungibleToken.Receiver}> =
-                        getAccount(0xTOPSHOTROYALTYADDRESS).getCapability<&AnyResource{FungibleToken.Receiver}>(MetadataViews.getRoyaltyReceiverPublicPath())
+                        getAccount(TopShot.RoyaltyAddress()).getCapability<&AnyResource{FungibleToken.Receiver}>(MetadataViews.getRoyaltyReceiverPublicPath())
                     return MetadataViews.Royalties(
                         royalties: [
                             MetadataViews.Royalty(
@@ -731,15 +740,17 @@ pub contract TopShot: NonFungibleToken {
                         }
                     )
                 case Type<MetadataViews.Traits>():
+                    // sports radar team id
+                    let excludedNames: [String] = ["TeamAtMomentNBAID"]
                     // non play specific traits
                     let traitDictionary: {String: AnyStruct} = {
-                        "Series Number": TopShot.getSetSeries(setID: self.data.setID),
-                        "Set Name": TopShot.getSetName(setID: self.data.setID),
-                        "Serial Number": self.data.serialNumber
+                        "SeriesNumber": TopShot.getSetSeries(setID: self.data.setID),
+                        "SetName": TopShot.getSetName(setID: self.data.setID),
+                        "SerialNumber": self.data.serialNumber
                     }
                     // add play specific data
                     let fullDictionary = self.mapPlayData(dict: traitDictionary)
-                    return MetadataViews.dictToTraits(dict: fullDictionary, excludedNames: [])
+                    return MetadataViews.dictToTraits(dict: fullDictionary, excludedNames: excludedNames)
                 case Type<MetadataViews.Medias>():
                     return MetadataViews.Medias(
                         items: [
@@ -765,38 +776,13 @@ pub contract TopShot: NonFungibleToken {
         // Functions used for computing MetadataViews 
 
         // mapPlayData helps build our trait map from play metadata
-        // Returns: The trait map with all non-nil fields from play data added
+        // Returns: The trait map with all non-empty fields from play data added
         pub fun mapPlayData(dict: {String: AnyStruct}) : {String: AnyStruct} {      
-            let playMapping: {String: String} = {
-                "Full Name": "FullName",
-                "First Name": "FirstName",
-                "Last Name": "LastName",
-                "Birth Date": "Birthdate",
-                "Birth Place": "Birthplace",
-                "Jersey Number": "JerseyNumber",
-                "Draft Team": "DraftTeam",
-                "Draft Year": "DraftYear",
-                "Draft Selection": "DraftSelection",
-                "Draft Round": "DraftRound",
-                "Team At Moment": "TeamAtMoment",
-                "Primary Position": "PrimaryPosition",
-                "Height": "Height",
-                "Weight": "Weight",
-                "Total Years Experience": "TotalYearsExperience",
-                "NBA Season": "NbaSeason",
-                "Date Of Moment": "DateOfMoment",
-                "Play Category": "PlayCategory",
-                "Play Type": "PlayType",
-                "Home Team Name": "HomeTeamName",
-                "Away Team Name": "AwayTeamName",
-                "Home Team Score": "HomeTeamScore",
-                "Away Team Score": "AwayTeamScore"
-            }
-            for displayName in playMapping.keys {
-                let fieldName = playMapping[displayName]!
-                let fieldValue = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: fieldName)
-                if fieldValue != nil {
-                    dict.insert(key: displayName, fieldValue)
+            let playMetadata = TopShot.getPlayMetaData(playID: self.data.playID) ?? {}
+            for name in playMetadata.keys {
+                let value = playMetadata[name] ?? ""
+                if value != "" {
+                    dict.insert(key: name, value)
                 }
             }
             return dict
@@ -839,8 +825,7 @@ pub contract TopShot: NonFungibleToken {
 
         // appends and optional network param needed to resolve the media
         pub fun appendOptionalParams(url: String, firstDelim: String): String {
-            let env = 0xNETWORK
-            if (env == "testnet") {
+            if (TopShot.Network() == "testnet") {
                 return url.concat(firstDelim).concat("testnet")
             }
             return url

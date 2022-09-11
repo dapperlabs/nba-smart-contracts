@@ -26,7 +26,7 @@ const (
 	defaultMetadataviewsAddress    = "METADATAVIEWSADDRESS"
 	defaultTopShotLockingAddress   = "TOPSHOTLOCKINGADDRESS"
 	defaultTopShotRoyaltyAddress   = "TOPSHOTROYALTYADDRESS"
-	defaultNetwork                 = "0xNETWORK"
+	defaultNetwork                 = "${NETWORK}"
 )
 
 // GenerateTopShotContract returns a copy
