@@ -148,21 +148,17 @@ func readFile(path string) []byte {
 	return contents
 }
 
-// ExecuteScriptAndCheckShouldFail executes a script and checks to make sure
-// that it succeeded
-func ExecuteScriptAndCheckShouldFail(t *testing.T, b *emulator.Blockchain, script []byte, shouldRevert bool) {
-	result, err := b.ExecuteScript(script, nil)
-	if err != nil {
-		t.Log(string(script))
-	}
+// ExecuteScriptAndCheckShouldFail executes a script and checks to make sure that it failed
+func executeScriptAndCheckShouldFail(t *testing.T, b *emulator.Blockchain, script []byte, arguments [][]byte, shouldRevert bool) bool {
+	result, err := b.ExecuteScript(script, arguments)
 	require.NoError(t, err)
+	//should not succeed
 	if shouldRevert {
-		assert.True(t, result.Reverted())
-	} else {
-		if !assert.True(t, result.Succeeded()) {
-			t.Log(result.Error.Error())
-		}
+		return assert.True(t, result.Reverted())
 	}
+
+	return assert.False(t, result.Succeeded())
+
 }
 
 // CadenceUFix64 returns a UFix64 value
