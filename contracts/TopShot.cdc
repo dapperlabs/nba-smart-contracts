@@ -46,6 +46,7 @@
 import NonFungibleToken from 0xNFTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
+import TopShotRemix from 0xTOPSHOTREMIXADDRESS
 
 pub contract TopShot: NonFungibleToken {
 
@@ -103,8 +104,8 @@ pub contract TopShot: NonFungibleToken {
     // Variable size dictionary of Set resources
     access(self) var sets: @{UInt32: Set}
 
-    // The ID that is used to create Plays. 
-    // Every time a Play is created, playID is assigned 
+    // The ID that is used to create Plays.
+    // Every time a Play is created, playID is assigned
     // to the new Play's ID and then is incremented by 1.
     pub var nextPlayID: UInt32
 
@@ -127,8 +128,8 @@ pub contract TopShot: NonFungibleToken {
     // can be created by this contract that contains stored values.
     // -----------------------------------------------------------------------
 
-    // Play is a Struct that holds metadata associated 
-    // with a specific NBA play, like the legendary moment when 
+    // Play is a Struct that holds metadata associated
+    // with a specific NBA play, like the legendary moment when
     // Ray Allen hit the 3 to tie the Heat and Spurs in the 2013 finals game 6
     // or when Lance Stephenson blew in the ear of Lebron James.
     //
@@ -159,11 +160,11 @@ pub contract TopShot: NonFungibleToken {
     // A Set is a grouping of Plays that have occured in the real world
     // that make up a related group of collectibles, like sets of baseball
     // or Magic cards. A Play can exist in multiple different sets.
-    // 
+    //
     // SetData is a struct that is stored in a field of the contract.
     // Anyone can query the constant information
-    // about a set by calling various getters located 
-    // at the end of the contract. Only the admin has the ability 
+    // about a set by calling various getters located
+    // at the end of the contract. Only the admin has the ability
     // to modify any data in the private Set resource.
     //
     pub struct SetData {
@@ -200,14 +201,14 @@ pub contract TopShot: NonFungibleToken {
     // that reference that playdata.
     // The Moments that are minted by a Set will be listed as belonging to
     // the Set that minted it, as well as the Play it references.
-    // 
+    //
     // Admin can also retire Plays from the Set, meaning that the retired
     // Play can no longer have Moments minted from it.
     //
-    // If the admin locks the Set, no more Plays can be added to it, but 
+    // If the admin locks the Set, no more Plays can be added to it, but
     // Moments can still be minted.
     //
-    // If retireAll() and lock() are called back-to-back, 
+    // If retireAll() and lock() are called back-to-back,
     // the Set is closed off forever and nothing more can be done with it.
     pub resource Set {
 
@@ -225,7 +226,7 @@ pub contract TopShot: NonFungibleToken {
         access(contract) var retired: {UInt32: Bool}
 
         // Indicates if the Set is currently locked.
-        // When a Set is created, it is unlocked 
+        // When a Set is created, it is unlocked
         // and Plays are allowed to be added to it.
         // When a set is locked, Plays cannot be added.
         // A Set can never be changed from locked to unlocked,
@@ -235,7 +236,7 @@ pub contract TopShot: NonFungibleToken {
         // that exist in the Set.
         pub var locked: Bool
 
-        // Mapping of Play IDs that indicates the number of Moments 
+        // Mapping of Play IDs that indicates the number of Moments
         // that have been minted for specific Plays in this Set.
         // When a Moment is minted, this value is stored in the Moment to
         // show its place in the Set, eg. 13 of 60.
@@ -297,7 +298,7 @@ pub contract TopShot: NonFungibleToken {
         //
         // Pre-Conditions:
         // The Play is part of the Set and not retired (available for minting).
-        // 
+        //
         pub fun retirePlay(playID: UInt32) {
             pre {
                 self.retired[playID] != nil: "Cannot retire the Play: Play doesn't exist in this set!"
@@ -331,14 +332,14 @@ pub contract TopShot: NonFungibleToken {
         }
 
         // mintMoment mints a new Moment and returns the newly minted Moment
-        // 
+        //
         // Parameters: playID: The ID of the Play that the Moment references
         //
         // Pre-Conditions:
         // The Play must exist in the Set and be allowed to mint new Moments
         //
         // Returns: The NFT that was minted
-        // 
+        //
         pub fun mintMoment(playID: UInt32): @NFT {
             pre {
                 self.retired[playID] != nil: "Cannot mint the moment: This play doesn't exist."
@@ -360,7 +361,7 @@ pub contract TopShot: NonFungibleToken {
             return <-newMoment
         }
 
-        // batchMintMoment mints an arbitrary quantity of Moments 
+        // batchMintMoment mints an arbitrary quantity of Moments
         // and returns them as a Collection
         //
         // Parameters: playID: the ID of the Play that the Moments are minted for
@@ -374,6 +375,45 @@ pub contract TopShot: NonFungibleToken {
             var i: UInt64 = 0
             while i < quantity {
                 newCollection.deposit(token: <-self.mintMoment(playID: playID))
+                i = i + UInt64(1)
+            }
+
+            return <-newCollection
+        }
+
+        pub fun mintMomentWithSubedition(playID: UInt32, subeditionID: UInt32): @NFT {
+            pre {
+                self.retired[playID] != nil: "Cannot mint the moment: This play doesn't exist."
+                !self.retired[playID]!: "Cannot mint the moment from this play: This play has been retired."
+            }
+
+            // Gets the number of Moments that have been minted for this Play
+            // to use as this Moment's serial number
+            let numInSubedition = TopShotRemix.getNumberMintedPerSubedition(setID: self.setID,
+                                                                            playID: playID,
+                                                                            sibeditionID: subeditionID)
+
+            // Mint the new moment
+            let newMoment: @NFT <- create NFT(serialNumber: numInSubedition + UInt32(1),
+                                              playID: playID,
+                                              setID: self.setID)
+
+            // Increment the count of Moments minted for this Play
+            TopShotRemix.addToNumberMintedPerSubedition(setID: self.setID,
+                                                        playID: playID,
+                                                        sibeditionID: subeditionID)
+            self.numberMintedPerPlay[playID] = numInPlay + UInt32(1)
+
+            return <-newMoment
+        }
+
+         pub fun batchMintMomentWithSubedition(playID: UInt32, subeditionID: UInt32, quantity: UInt64): @Collection {
+            let newCollection <- create Collection()
+
+            var i: UInt64 = 0
+            while i < quantity {
+                newCollection.deposit(token: <-self.mintMomentWithSubedition(playID: playID,
+                                                                             subeditionID: subeditionID))
                 i = i + UInt64(1)
             }
 
