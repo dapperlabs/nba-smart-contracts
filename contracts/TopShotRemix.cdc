@@ -12,4 +12,8 @@ pub contract TopShotRemix {
     pub fun addToNumberMintedPerSubedition(setID: UInt32, playID: UInt32, subeditionID: UInt32) {
         self.numberMintedPerSubedition[setID][playID][subeditionID]!= self.numberMintedPerSubedition[setID][playID][subeditionID] + UInt32(1)
     }
+
+     init() {
+            self.numberMintedPerSubedition = {}
+     }
 }
