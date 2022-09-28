@@ -32,6 +32,7 @@ const (
 	emulatorFlowTokenAddress  = "0ae53cb6e3f42a79"
 	MetadataFTReplaceAddress  = `"./utility/FungibleToken.cdc"`
 	MetadataNFTReplaceAddress = `"./NonFungibleToken.cdc"`
+	Network                   = `"mainnet"`
 )
 
 // This test is for testing the deployment the topshot smart contracts
@@ -86,9 +87,16 @@ func TestNFTDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
+	royaltyAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
 	// Should be able to deploy the topshot contract
 	// as a new account with no keys.
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
 	topshotAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShot",
@@ -189,10 +197,17 @@ func TestMintNFTs(t *testing.T) {
 		},
 	})
 
+	royaltyAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// Deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -427,18 +442,43 @@ func TestMintNFTs(t *testing.T) {
 	})
 
 	t.Run("Should be able to get moments metadata", func(t *testing.T) {
+		// Tests to ensure that all core metadataviews are resolvable
 		expectedMetadataName := "Lebron Dunk"
 		expectedMetadataDescription := "A series 0 Genesis moment with serial number 1"
-		expectedMetadataThumbnail := "https://ipfs.dapperlabs.com/ipfs/Qmbdj1agtbzpPWZ81wCGaDiMKRFaRN3TU6cfztVCu6nh4o"
-		expectedPlayID := 1
-		expectedSetID := 1
-		expectedSerialNumber := 1
+		expectedMetadataThumbnail := "https://assets.nbatopshot.com/media/1?width=256"
+		expectedMetadataExternalURL := "https://nbatopshot.com/moment/1"
+		expectedStoragePath := "/storage/MomentCollection"
+		expectedPublicPath := "/public/MomentCollection"
+		expectedPrivatePath := "/private/MomentCollection"
+		expectedCollectionName := "NBA-Top-Shot"
+		expectedCollectionDescription := "NBA Top Shot is your chance to own, sell, and trade official digital collectibles of the NBA and WNBA's greatest plays and players"
+		expectedCollectionSquareImage := "https://nbatopshot.com/static/img/og/og.png"
+		expectedCollectionBannerImage := "https://nbatopshot.com/static/img/top-shot-logo-horizontal-white.svg"
+		expectedRoyaltyReceiversCount := 1
+		expectedTraitsCount := 5
+		expectedVideoURL := "https://assets.nbatopshot.com/media/1/video"
 
 		resultNFT := executeScriptAndCheck(t, b, templates.GenerateGetNFTMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		metadataViewNFT := resultNFT.(cadence.Struct)
 		assert.Equal(t, cadence.String(expectedMetadataName), metadataViewNFT.Fields[0])
 		assert.Equal(t, cadence.String(expectedMetadataDescription), metadataViewNFT.Fields[1])
 		assert.Equal(t, cadence.String(expectedMetadataThumbnail), metadataViewNFT.Fields[2])
+		assert.Equal(t, cadence.String(expectedMetadataExternalURL), metadataViewNFT.Fields[5])
+		assert.Equal(t, cadence.String(expectedStoragePath), metadataViewNFT.Fields[6])
+		assert.Equal(t, cadence.String(expectedPublicPath), metadataViewNFT.Fields[7])
+		assert.Equal(t, cadence.String(expectedPrivatePath), metadataViewNFT.Fields[8])
+		assert.Equal(t, cadence.String(expectedCollectionName), metadataViewNFT.Fields[9])
+		assert.Equal(t, cadence.String(expectedCollectionDescription), metadataViewNFT.Fields[10])
+		assert.Equal(t, cadence.String(expectedCollectionSquareImage), metadataViewNFT.Fields[11])
+		assert.Equal(t, cadence.String(expectedCollectionBannerImage), metadataViewNFT.Fields[12])
+		assert.Equal(t, cadence.UInt32(expectedRoyaltyReceiversCount), metadataViewNFT.Fields[13])
+		assert.Equal(t, cadence.UInt32(expectedTraitsCount), metadataViewNFT.Fields[14])
+		assert.Equal(t, cadence.String(expectedVideoURL), metadataViewNFT.Fields[15])
+
+		// Tests that top-shot specific metadata is discoverable on-chain
+		expectedPlayID := 1
+		expectedSetID := 1
+		expectedSerialNumber := 1
 
 		resultTopShot := executeScriptAndCheck(t, b, templates.GenerateGetTopShotMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		metadataViewTopShot := resultTopShot.(cadence.Struct)
@@ -726,10 +766,17 @@ func TestTransferAdmin(t *testing.T) {
 		},
 	})
 
+	royaltyAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -843,10 +890,17 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 		},
 	})
 
+	royaltyAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -1055,10 +1109,17 @@ func TestDestroyMoments(t *testing.T) {
 		},
 	})
 
+	royaltyAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
