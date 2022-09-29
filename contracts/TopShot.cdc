@@ -389,9 +389,7 @@ pub contract TopShot: NonFungibleToken {
 
             // Gets the number of Moments that have been minted for this Play
             // to use as this Moment's serial number
-            let numInSubedition = TopShotRemix.getNumberMintedPerSubedition(setID: self.setID,
-                                                                            playID: playID,
-                                                                            subeditionID: subeditionID)
+            let numInSubedition = TopShotRemix.getNumberMintedPerSubedition(subeditionID: subeditionID)
 
             // Mint the new moment
             let newMoment: @NFT <- create NFT(serialNumber: numInSubedition + UInt32(1),
@@ -399,9 +397,8 @@ pub contract TopShot: NonFungibleToken {
                                               setID: self.setID)
 
             // Increment the count of Moments minted for this Play
-            TopShotRemix.addToNumberMintedPerSubedition(setID: self.setID,
-                                                        playID: playID,
-                                                        subeditionID: subeditionID)
+            TopShotRemix.addToNumberMintedPerSubedition(subeditionID: subeditionID)
+            TopShotRemix.setMomentsSubedition(nft: newMoment, subeditionID: subeditionID)
             self.numberMintedPerPlay[playID] = numInPlay + UInt32(1)
 
             return <-newMoment
