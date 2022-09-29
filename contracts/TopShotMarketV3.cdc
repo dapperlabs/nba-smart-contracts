@@ -235,9 +235,6 @@ pub contract TopShotMarketV3 {
                     panic("No token matching this ID for sale!")
                 }
             }
-            
-            destroy buyTokens // This line can be removed when this issue is released: https://github.com/onflow/cadence/pull/1000
-            panic("No token matching this ID for sale!")
         }
 
         /// changeOwnerReceiver updates the capability for the sellers fungible token Vault
