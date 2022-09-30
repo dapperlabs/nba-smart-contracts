@@ -3,6 +3,7 @@
 // ../../../transactions/admin/add_play_to_set.cdc (972B)
 // ../../../transactions/admin/add_plays_to_set.cdc (759B)
 // ../../../transactions/admin/batch_mint_moment.cdc (1.534kB)
+// ../../../transactions/admin/batch_mint_moment_with_subedition.cdc (1.639kB)
 // ../../../transactions/admin/create_play.cdc (1.026kB)
 // ../../../transactions/admin/create_set.cdc (929B)
 // ../../../transactions/admin/create_set_and_play_struct.cdc (296B)
@@ -10,6 +11,7 @@
 // ../../../transactions/admin/lock_set.cdc (795B)
 // ../../../transactions/admin/mark_moment_unlockable.cdc (925B)
 // ../../../transactions/admin/mint_moment.cdc (1.399kB)
+// ../../../transactions/admin/mint_moment_with_subedition.cdc (1.506kB)
 // ../../../transactions/admin/retireAll_plays_from_set.cdc (756B)
 // ../../../transactions/admin/retire_all.cdc (807B)
 // ../../../transactions/admin/retire_play_from_set.cdc (1.02kB)
@@ -58,6 +60,7 @@
 // ../../../transactions/scripts/collections/get_setplays_are_owned.cdc (1.685kB)
 // ../../../transactions/scripts/get_currentSeries.cdc (270B)
 // ../../../transactions/scripts/get_nft_metadata.cdc (1.289kB)
+// ../../../transactions/scripts/get_nft_subedition.cdc (237B)
 // ../../../transactions/scripts/get_topshot_metadata.cdc (628B)
 // ../../../transactions/scripts/get_totalSupply.cdc (307B)
 // ../../../transactions/scripts/plays/get_all_plays.cdc (271B)
@@ -215,6 +218,26 @@ func TransactionsAdminBatch_mint_momentCdc() (*asset, error) {
 	return a, nil
 }
 
+var _TransactionsAdminBatch_mint_moment_with_subeditionCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x8c\x53\x4d\x6f\xdb\x30\x0c\xbd\xe7\x57\x70\x3d\xac\x36\xd0\xc6\xc3\x36\xec\x10\xf4\x03\x41\xb3\x6e\x05\xd6\x36\x68\x32\xec\x2c\xcb\x74\xac\x55\x96\x3c\x89\x6e\x5a\x14\xf9\xef\x83\x24\xcb\xb1\xb3\x61\x58\x2e\xb1\x28\x92\xef\xf1\xf1\x49\xd4\x8d\x36\x04\x6b\xdd\xac\x2a\x4d\x50\x1a\x5d\xc3\xbb\xe7\xf5\xfd\x72\xf5\xf5\x7e\x3d\x5f\x2c\x1e\x3e\xaf\x56\x93\x49\x96\xc1\xba\x12\x16\xc8\x30\x65\x19\x27\xa1\x15\xd4\x42\x91\x85\xba\x95\x24\x1a\x89\x50\xeb\x1a\x15\x59\x97\xea\x9b\x30\xb0\x42\x6d\x24\x82\x45\xca\x1a\xc9\x5e\x80\xeb\x3a\x17\x8a\xf9\xe2\x44\x53\x85\x66\x2b\x2c\xc2\xa3\xd2\x5b\x05\xcc\x02\x16\xc2\xdd\xa5\x1e\x6e\xc9\x0c\xab\x91\xd0\xd8\xd9\x24\xcb\x5c\xc4\x22\xdd\x2c\x66\x40\x15\xc2\xcd\x02\x74\xe9\xbf\x2c\x12\x90\x86\x1c\x3d\x1d\x2c\x3c\xb6\xcb\x76\x88\x7f\xa6\x2f\x1d\x0f\x4f\x6f\x5b\x09\x5e\xf9\xd8\x6d\x20\x0e\xcc\xc4\x26\x1e\xad\xcd\x3b\x3e\xe3\x2e\xae\xef\xb1\x1d\x5c\xbb\xe4\x5f\x2d\x53\x24\xe8\x25\x24\xc6\x93\x4b\x8f\xcd\x87\x1c\x5d\x85\x41\x2e\x1a\x81\x8a\xe6\x45\x61\x42\xd9\xb5\xd4\x5b\x60\x45\x61\xd0\xda\xc8\x97\x71\xae\x5b\x45\x2e\x1d\xc5\x93\x50\x1b\x1f\xe5\x5a\x4a\x0c\x4b\xd0\x65\x1c\x3c\xea\x3f\x19\xec\x28\xe9\x34\xfb\x7e\xa3\xe8\xc3\xfb\x93\x5e\x94\x78\xde\xf3\x76\x91\x4f\x1f\x4f\xe2\x5c\x61\xea\x98\x76\x40\x76\x1e\x38\xa6\xf0\x3a\x99\x00\x00\x64\x19\x7c\xd3\x9c\x49\x78\x62\x46\xb0\x5c\x22\x94\xda\x78\xa2\xa4\x1b\xeb\x5c\x35\x2f\x6a\xa1\x40\xe7\x3f\x91\x93\x2f\x91\x48\xc0\x5c\xf0\x01\xcb\x19\xbc\xed\xdc\x37\xf5\x79\xa1\x69\x63\xb0\x61\x06\x13\xc6\x39\xcd\x60\xde\x52\x35\x0f\x5a\xf4\xb0\x1d\x74\xae\x8d\x71\xc2\x81\xc1\x12\x0d\x2a\xee\x60\x3d\x7a\x40\x35\x68\x75\x6b\x38\x82\x50\x60\x49\x1b\xb6\xc1\xbe\xdc\xa2\x2c\xa7\x91\x07\x9c\x3b\xb9\x69\x1a\x1a\x9e\x8d\x49\x5d\x24\xce\x35\x33\xc8\xba\x16\x59\x77\xeb\x2f\xd3\x37\xbe\xe3\x2e\xf0\xc2\x67\xe4\x2d\xe1\x7f\xd3\xfc\xbb\x85\x63\xa9\x53\xca\x22\x05\x7e\x23\xbe\x1d\xd1\x15\x52\x5c\xb3\xff\x4b\x47\xb0\xb7\x42\x11\x30\x29\x3d\x92\xc2\x2d\xdc\x5d\xaf\xed\xa8\xf9\xc0\x4c\x67\xa7\x1d\xd4\x34\x67\xc4\x2b\x57\x1b\xfc\xfb\x43\x50\xb5\x72\xce\xf0\xa6\x8a\x2e\x0a\xff\x27\x07\x4f\x65\x78\x1a\x3a\x2c\x7e\x8d\xf9\x7d\x71\xc3\x0f\x8c\x1e\x3c\xd2\x1b\xa8\x77\x5e\x7c\x10\x9d\x44\xa4\x1f\x51\x8d\xe7\xd8\xa7\x9e\xc3\x06\xa9\x73\x4b\x32\xf2\xee\x18\x7b\xd3\x61\x5f\xed\x15\xd8\x2f\x67\xc0\x00\xc5\x13\x9a\x43\x2c\x1f\x0c\x5b\xe9\x21\xa6\x1b\xa4\x2b\xd6\xb0\x5c\x48\x41\x2f\x49\xd6\xb4\xb9\x14\x3c\x0b\x1a\xee\x51\xd2\xde\x62\xaf\xd1\x63\x87\x29\x4b\x5f\xb9\xbb\x48\xd2\x1e\xd7\xfd\x2e\x2f\xa1\x61\x4a\xf0\xe4\xe8\x8a\x29\xa5\xe9\x1f\xae\xea\x49\x1d\xdb\xc1\x8a\x8f\xc6\x0a\x14\xd8\x68\x2b\x82\x0a\x77\xd7\x6b\xf7\x44\x86\x33\x0f\x2b\xfb\xb2\xc1\xec\xc1\x26\x8b\xd0\x24\x09\x3b\x99\xc1\xd9\xe9\xbe\x2a\xed\x1e\xc6\xee\x77\x00\x00\x00\xff\xff\x9c\x75\x4a\xd7\x67\x06\x00\x00"
+
+func TransactionsAdminBatch_mint_moment_with_subeditionCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsAdminBatch_mint_moment_with_subeditionCdc,
+		"../../../transactions/admin/batch_mint_moment_with_subedition.cdc",
+	)
+}
+
+func TransactionsAdminBatch_mint_moment_with_subeditionCdc() (*asset, error) {
+	bytes, err := TransactionsAdminBatch_mint_moment_with_subeditionCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/admin/batch_mint_moment_with_subedition.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xdc, 0xf1, 0x14, 0x44, 0x1c, 0x7c, 0x7a, 0x10, 0xdc, 0x9c, 0xad, 0x59, 0xd3, 0x82, 0xb7, 0xda, 0xbc, 0x81, 0xf6, 0x4, 0x31, 0xf8, 0x8d, 0xca, 0xa8, 0x6a, 0x87, 0xf3, 0x2f, 0x81, 0xaf, 0x4a}}
+	return a, nil
+}
+
 var _TransactionsAdminCreate_playCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x6c\x53\x4d\x8b\xdb\x3c\x10\xbe\xfb\x57\x3c\x6f\x0e\x2f\x59\x28\x71\x69\x6f\x6e\xb7\x4b\x68\x0a\x5d\x68\xbb\xcb\x26\xa5\xe7\x89\x3c\x4e\x54\x6c\xc9\x8c\xc6\x4d\xc2\x92\xff\x5e\x24\x3b\xce\x07\xcd\x25\x42\x9a\xe7\x6b\x66\x6c\x9b\xd6\x8b\x62\xe5\xdb\xe5\xd6\x2b\x2a\xf1\x0d\xde\xee\x57\x4f\xcf\xcb\xaf\x4f\xab\xf9\x62\xf1\xf2\x65\xb9\xcc\xb2\x3c\xc7\x6a\x6b\x03\x54\xc8\x05\x32\x6a\xbd\x83\x11\x26\xe5\x00\x82\xe3\x1d\xda\x9a\x0e\x08\x2a\x9d\x51\xc4\x72\x72\x25\x82\x7a\xe1\x00\xab\xb0\x0e\xba\xe5\xa8\x82\x24\x13\x1a\x12\x85\xf1\x4e\x85\x8c\xc6\xfa\x5f\x0c\xd3\x89\xb0\xd3\x3a\xf1\x58\xb7\xb1\xd5\x21\xa1\x1a\x56\x2a\x49\x29\x71\x5a\x17\x58\xb4\xe7\x54\x9f\xde\x23\xfc\xd2\x58\x8f\x7e\x83\x75\xa7\xd8\x91\x53\xa8\x47\x17\xf8\xaa\x86\x64\xd3\x35\xec\x34\x20\x78\xef\x52\xc0\x67\x12\x6a\x58\x59\x42\x91\xe5\x79\xbc\x39\x09\x17\x98\xa3\xb4\x09\x48\x72\x80\xaf\x40\x75\x9d\xa4\x53\xea\xb3\xbf\x10\xbc\xb1\xa4\x5c\x66\xd9\x85\xd8\xf4\xcc\xf3\xba\x4c\xde\x0a\xf4\xff\xc7\x3b\xbc\x66\x19\x00\xe4\x39\xbe\x79\x43\x35\xfe\x90\x58\x5a\xd7\x8c\xca\x4b\x92\x50\xdf\x86\xd8\xb2\x79\xd9\x58\x07\xbf\xfe\xcd\x46\x13\xa4\x66\x05\xc5\xcb\x17\xae\x0a\xfc\x3f\x4c\x70\x96\xea\xc6\x82\xd8\xd3\xe7\x9a\x0e\x8f\x8b\x02\x3f\x1f\x9d\xbe\x7f\xd7\xeb\xb5\xc2\x2d\x09\x4f\xc9\x18\x2d\x30\xef\x74\x3b\x37\xc6\x77\x4e\x47\x47\x83\xab\xb5\x17\xf1\x3b\x10\x84\x2b\x16\x76\x26\x3a\x4a\xc6\x92\x36\x84\x83\xef\xc4\xf0\x88\x09\x5c\x57\xb3\xb3\x2c\xee\x4f\xbb\x35\x73\xbc\xd7\xfe\xf2\xc3\x75\xf5\x29\x05\xee\x11\xfd\xcc\x7a\xcd\x8f\xd7\x91\x3e\x4d\xe3\x6e\x16\xc8\xe3\x56\xd1\x86\xf3\xe1\x35\x3d\xde\x8d\x84\xf1\xf7\xf0\x80\x96\x9c\x35\xd3\xc9\x0f\x7f\x63\x33\x6e\xe2\x40\x30\xe9\x41\xc7\x3e\x2e\xef\xd9\x74\xca\x37\xe9\x3f\xa7\x1d\x07\xf5\x83\xde\x59\xdd\xa6\xe8\xa1\x65\x63\x2b\xcb\xe5\x38\xfb\x7f\x07\x9a\xf5\xdf\x48\x0c\x7d\xb1\x04\xa7\xd3\x95\x7e\xeb\x83\xe2\x75\xa4\x19\x0f\xa7\x1e\x6c\x38\xf5\xee\x3b\x2b\x2d\x48\x69\xda\x0e\x43\xbd\x69\xf7\x1d\xfe\xbb\x87\xb3\x75\x71\xd5\x90\x49\x5f\x8d\xd2\x73\x70\x0a\xde\xdb\xa0\x93\x41\xfd\xf8\x37\x00\x00\xff\xff\x12\x5d\x9c\x74\x02\x04\x00\x00"
 
 func TransactionsAdminCreate_playCdcBytes() ([]byte, error) {
@@ -352,6 +375,26 @@ func TransactionsAdminMint_momentCdc() (*asset, error) {
 
 	info := bindataFileInfo{name: "../../../transactions/admin/mint_moment.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xad, 0x23, 0xe6, 0x20, 0x8d, 0xa8, 0xc0, 0xcc, 0xf6, 0x4c, 0xa6, 0xc7, 0x7a, 0x76, 0xf1, 0xa, 0x29, 0xd3, 0x47, 0xe8, 0xaf, 0xe8, 0x5c, 0x51, 0xab, 0xc6, 0xec, 0x82, 0xfb, 0x9a, 0xcb, 0x45}}
+	return a, nil
+}
+
+var _TransactionsAdminMint_moment_with_subeditionCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x7c\x54\x5b\x6f\xdb\x3c\x0c\x7d\xcf\xaf\xe0\xd7\x87\xaf\x0e\xd0\xc6\xbb\xbc\x05\xbd\xc0\x6b\x56\xac\x0f\xbd\xa0\xc9\xb0\x67\x45\xa6\x63\x6d\xb2\x64\x48\x74\xd3\xa2\xe8\x7f\x1f\x28\xc9\xae\x1d\x6c\x0b\x02\x18\xa2\x48\x9e\xc3\xa3\x23\xa9\xa6\xb5\x8e\x60\x63\xdb\x75\x6d\x09\x2a\x67\x1b\xf8\xf0\xbc\xb9\x7f\x58\x7f\xbb\xdf\x14\xab\xd5\xe3\xd7\xf5\x7a\x36\xcb\x73\xd8\xd4\xca\x03\x39\x61\xbc\x90\xa4\xac\x01\xe5\x61\x5f\x0b\x02\x61\x40\x94\x8d\x32\xb0\xb7\x9d\x2e\xa1\xf3\x08\x64\xa1\x51\x86\x40\x80\x57\x66\xa7\x11\x0c\xee\xa1\xb1\x0d\x1a\xe2\x56\xc2\x94\x50\x62\x6b\xbd\x22\xe0\xbf\x01\xc1\x65\xee\xd8\x83\xb4\x5a\x63\xe8\x1f\x40\x1f\x84\x13\x0d\x12\x3a\xbf\x9c\xe5\x39\x47\x3c\xd2\xcd\x6a\x09\x54\x23\xdc\xac\xc0\x56\x8c\x81\x04\xd2\x1a\x12\xca\x28\xb3\x0b\x5b\x24\xdc\x0e\x09\x5a\x2d\x5e\xb8\x88\xbf\x87\x55\x1c\x8b\xe3\xee\x6b\x25\x6b\x10\x23\x92\x3c\x1b\x0f\x80\x65\x80\xec\xb6\x58\x2a\xe6\x34\xed\xc1\x1d\x8e\xfd\x68\x9b\x93\x1d\x4a\xd5\x2a\x34\x54\x94\xa5\x8b\xd9\xd7\xda\xee\x41\x94\xa5\x43\xef\xb9\x8e\x63\x42\x4a\xdb\x19\xe2\x74\x54\x4f\x3d\x6d\x83\x7b\xfd\x92\x90\x7b\xbd\x66\x23\xcd\xb3\x34\xfd\xf7\x1b\x43\x9f\x3f\x9d\x0c\x73\xf5\xeb\x44\x25\x12\xed\x83\x07\x8c\x8a\x48\x64\x0e\xaf\x33\x00\x80\x3c\x07\x6d\xa5\xd0\xf0\x24\x9c\x12\x5b\x8d\x50\x59\x17\x29\x86\x43\x75\x58\xa1\x43\x23\x31\x64\x6b\xa4\x18\x7f\xc4\x6a\x09\xff\x27\xd7\x2c\x0a\x0e\xcd\x42\x46\xeb\xb0\x15\x0e\x33\x21\x25\x2d\xa1\xe8\xa8\x2e\xe2\xa8\x3d\x60\x02\xdd\x5a\xe7\x58\x96\x77\x00\x76\x0d\xe3\x16\x09\xd7\xdb\xce\x49\x64\x77\x78\xb2\x4e\xec\x70\x28\xf7\xa8\xab\x45\x4f\x03\xce\x59\x4c\x5a\xc4\x86\x67\x53\x4e\x17\x19\x9f\xf0\x12\xf2\xd4\x22\x4f\xbb\x61\x73\xfe\x5f\xe8\xf8\x16\x89\xe3\x33\xca\x8e\x70\xca\xf2\xcb\x5f\x59\xfa\x16\xa5\xaa\x14\x96\x6c\xbf\xa1\x84\xf5\xf1\x48\x91\xd6\x84\x66\xe2\xb7\x46\xea\x0f\x31\x7c\xe6\xb3\x31\xdc\x6d\xbc\x34\x6c\xc4\xbb\xeb\xcd\xa4\x6b\x74\xc3\x47\x38\x3b\x4d\x00\x0b\xb6\xc9\x6d\x88\xfe\x50\x54\xaf\x07\x17\x66\xbd\x2b\xe2\xf7\xe4\xc0\xbf\x61\x15\x17\x53\x70\xbe\x30\x3c\x59\xdb\x6d\xb5\x92\x83\x43\xed\xf6\x27\x4a\x1a\x5c\x31\xb8\x69\xc2\x6e\x88\xc2\x39\xf7\x49\x47\x9e\x4d\xac\xf7\x67\xb4\xab\xe1\xc2\x8f\x34\x1e\x81\xa1\x7a\x42\x77\x88\x15\x82\x51\xe4\x01\x62\xb1\x43\xba\x12\xad\xd8\x2a\xad\xe8\x25\xcb\xe3\x18\x79\x54\xe8\x1d\x65\x3e\x18\xe5\xb5\x77\xca\x61\xca\x43\xa8\x7c\xbb\xc8\xe6\x03\x2e\xff\x2e\x2f\xa1\x15\x46\xc9\xec\xe8\x4a\x18\x63\xe9\x1f\x16\x1e\x48\x1d\xfb\xfe\x45\x79\x7f\xd8\x8e\xa6\x42\xf4\x0f\x21\xd7\xdd\x5d\x6f\xd8\xef\xe3\xd1\x27\x4f\x62\x5f\x36\x92\x60\x91\xea\x33\xb2\xbf\xd0\x2c\xe1\xec\x34\x39\x65\x9e\xcc\xfd\xf6\x3b\x00\x00\xff\xff\xbc\x95\xc0\xfa\xe2\x05\x00\x00"
+
+func TransactionsAdminMint_moment_with_subeditionCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsAdminMint_moment_with_subeditionCdc,
+		"../../../transactions/admin/mint_moment_with_subedition.cdc",
+	)
+}
+
+func TransactionsAdminMint_moment_with_subeditionCdc() (*asset, error) {
+	bytes, err := TransactionsAdminMint_moment_with_subeditionCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/admin/mint_moment_with_subedition.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xca, 0x7e, 0x8a, 0x36, 0xd1, 0x89, 0xe0, 0x84, 0xa7, 0xb, 0xd4, 0x34, 0x56, 0xe6, 0x4a, 0x6b, 0x5c, 0x5d, 0xba, 0x2, 0xed, 0x79, 0x13, 0x80, 0xee, 0x4b, 0x26, 0x61, 0x6a, 0xca, 0x12, 0xc7}}
 	return a, nil
 }
 
@@ -1315,6 +1358,26 @@ func TransactionsScriptsGet_nft_metadataCdc() (*asset, error) {
 	return a, nil
 }
 
+var _TransactionsScriptsGet_nft_subeditionCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x54\x8e\x41\x4b\xc3\x40\x10\x85\xef\xfb\x2b\x1e\x3d\x25\x17\x11\xbd\x15\xa4\xa8\x29\x98\x43\xa9\x64\x23\x78\x6d\x9b\x59\x3b\x90\x9d\x59\x36\xb3\x50\x10\xff\xbb\x34\x01\xb1\x73\x1c\xde\xfb\xde\xc7\x31\x69\x36\xf4\x9a\xfc\x59\xad\xa3\xc8\x17\x84\xac\x11\xf7\x97\x7e\xff\xee\xdf\xf6\x7d\xb7\xdd\xb5\x9f\xcf\x4d\xd3\x6d\xbd\x77\x2e\x95\x23\x42\x11\xc4\x03\x4b\x25\xc1\xda\x66\x8d\x8f\x56\xec\xf1\xa1\x5e\xe3\x45\x75\xc4\xb7\x73\x00\x30\x92\x61\x2a\x47\x1a\xd8\x58\x05\x4f\x37\x13\x77\x5f\x64\x3b\x8d\x24\x36\xf9\xbf\x4c\x15\xe7\xcf\x95\x38\x83\xeb\x99\x73\xbd\xcd\x06\xe9\x20\x7c\xaa\x56\xaf\x5a\xc6\x01\xa2\x86\xc0\x32\xc0\xce\x84\x29\xd1\x89\x03\xd3\x80\xa5\xbf\xaa\x17\x81\x4c\x56\xb2\xfc\x73\x70\x3f\xbf\x01\x00\x00\xff\xff\x9f\x66\xc1\x06\xed\x00\x00\x00"
+
+func TransactionsScriptsGet_nft_subeditionCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsScriptsGet_nft_subeditionCdc,
+		"../../../transactions/scripts/get_nft_subedition.cdc",
+	)
+}
+
+func TransactionsScriptsGet_nft_subeditionCdc() (*asset, error) {
+	bytes, err := TransactionsScriptsGet_nft_subeditionCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/scripts/get_nft_subedition.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x92, 0x68, 0x78, 0x99, 0x4f, 0xfd, 0xdb, 0x6e, 0xbe, 0xbb, 0xfa, 0xe7, 0x17, 0xdd, 0x77, 0xd2, 0xeb, 0x78, 0x3b, 0xed, 0x38, 0xee, 0x23, 0x1b, 0xd1, 0x19, 0xb8, 0x4f, 0x3, 0x92, 0x18, 0x25}}
+	return a, nil
+}
+
 var _TransactionsScriptsGet_topshot_metadataCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x84\x51\x4b\x6b\xea\x40\x14\xde\xe7\x57\x1c\x37\x97\x04\x2e\xc9\x5d\x5c\xba\x10\x23\x04\xb5\xad\x0b\xab\x98\xd4\xae\x27\x93\x13\x1d\x48\x66\x86\x99\x13\xad\x88\xff\xbd\xe4\xa9\x2d\x14\x67\x31\x0f\xf8\x5e\xf3\x1d\x51\x6a\x65\x08\x12\xa5\xe3\x83\x22\xc8\x8d\x2a\xe1\xdf\x67\xb2\xde\xc4\xaf\xeb\x24\x9a\xcf\xb7\x8b\x38\x76\x3a\xd0\x0a\x89\x65\x8c\xd8\x4e\xe0\xc9\xf6\xd0\xd5\x22\x89\xe6\x51\x12\xed\x96\x8b\x8f\xb8\x27\x38\x8e\xae\x52\xc8\x2b\x09\x25\x13\xd2\x65\x59\x66\xd0\xda\x31\x44\xed\xe5\x2f\x88\x6c\x0c\xef\x4b\x49\x4f\xff\xbd\x71\x6f\xee\x77\xe7\x4a\x95\x28\xe9\xde\x0c\x2e\x0e\x00\x40\x81\x04\x8c\x73\x55\x49\x82\x10\xf6\x48\x51\xfb\xe8\xf5\x3d\x67\x80\x71\x55\x14\xc8\x49\x28\xb9\xc5\x1c\xc2\x9e\xe6\xef\x91\x66\x4c\xb3\x54\x14\x82\xce\x6e\xa0\xab\xb4\x10\x3c\x68\x1d\x67\x03\xc7\x6b\x74\x7e\x5b\x7e\xaa\x8c\x51\xa7\xc9\x9f\x4b\x1f\xfc\x27\x7f\xd3\xc8\x5e\xa7\xae\x37\xba\x45\x92\x79\x9d\xfa\x5b\xb0\x4e\xa9\xa5\xbb\x75\x27\x22\xf3\x46\x0d\xa3\xd9\x82\x00\x5e\x90\x80\x0e\x58\x77\x04\xcd\x84\xac\x46\x2e\x72\xc1\xa1\xec\x0a\x82\x5c\x19\xa0\x83\xb0\xf0\xf6\x9c\x0c\x6e\xc7\xba\xb6\xb0\x36\xf5\x0d\x5a\x55\x1c\xb1\x2e\xd2\x4d\xce\x1a\x27\x0f\xfb\x9e\xba\xde\x7d\xf2\xc1\x29\x6c\x65\x99\x1d\x3d\x9e\xd9\xed\x17\x06\xa9\x32\x72\x50\x71\xae\x5f\x01\x00\x00\xff\xff\x86\xd6\x73\x75\x74\x02\x00\x00"
 
 func TransactionsScriptsGet_topshot_metadataCdcBytes() ([]byte, error) {
@@ -1969,6 +2032,7 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/admin/add_play_to_set.cdc":                      TransactionsAdminAdd_play_to_setCdc,
 	"../../../transactions/admin/add_plays_to_set.cdc":                     TransactionsAdminAdd_plays_to_setCdc,
 	"../../../transactions/admin/batch_mint_moment.cdc":                    TransactionsAdminBatch_mint_momentCdc,
+	"../../../transactions/admin/batch_mint_moment_with_subedition.cdc":    TransactionsAdminBatch_mint_moment_with_subeditionCdc,
 	"../../../transactions/admin/create_play.cdc":                          TransactionsAdminCreate_playCdc,
 	"../../../transactions/admin/create_set.cdc":                           TransactionsAdminCreate_setCdc,
 	"../../../transactions/admin/create_set_and_play_struct.cdc":           TransactionsAdminCreate_set_and_play_structCdc,
@@ -1976,6 +2040,7 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/admin/lock_set.cdc":                             TransactionsAdminLock_setCdc,
 	"../../../transactions/admin/mark_moment_unlockable.cdc":               TransactionsAdminMark_moment_unlockableCdc,
 	"../../../transactions/admin/mint_moment.cdc":                          TransactionsAdminMint_momentCdc,
+	"../../../transactions/admin/mint_moment_with_subedition.cdc":          TransactionsAdminMint_moment_with_subeditionCdc,
 	"../../../transactions/admin/retireAll_plays_from_set.cdc":             TransactionsAdminRetireall_plays_from_setCdc,
 	"../../../transactions/admin/retire_all.cdc":                           TransactionsAdminRetire_allCdc,
 	"../../../transactions/admin/retire_play_from_set.cdc":                 TransactionsAdminRetire_play_from_setCdc,
@@ -2024,6 +2089,7 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/scripts/collections/get_setplays_are_owned.cdc": TransactionsScriptsCollectionsGet_setplays_are_ownedCdc,
 	"../../../transactions/scripts/get_currentSeries.cdc":                  TransactionsScriptsGet_currentseriesCdc,
 	"../../../transactions/scripts/get_nft_metadata.cdc":                   TransactionsScriptsGet_nft_metadataCdc,
+	"../../../transactions/scripts/get_nft_subedition.cdc":                 TransactionsScriptsGet_nft_subeditionCdc,
 	"../../../transactions/scripts/get_topshot_metadata.cdc":               TransactionsScriptsGet_topshot_metadataCdc,
 	"../../../transactions/scripts/get_totalSupply.cdc":                    TransactionsScriptsGet_totalsupplyCdc,
 	"../../../transactions/scripts/plays/get_all_plays.cdc":                TransactionsScriptsPlaysGet_all_playsCdc,
@@ -2103,112 +2169,115 @@ var _bintree = &bintree{nil, map[string]*bintree{
 			"..": {nil, map[string]*bintree{
 				"transactions": {nil, map[string]*bintree{
 					"admin": {nil, map[string]*bintree{
-						"add_play_to_set.cdc": {TransactionsAdminAdd_play_to_setCdc, map[string]*bintree{}},
-						"add_plays_to_set.cdc": {TransactionsAdminAdd_plays_to_setCdc, map[string]*bintree{}},
-						"batch_mint_moment.cdc": {TransactionsAdminBatch_mint_momentCdc, map[string]*bintree{}},
-						"create_play.cdc": {TransactionsAdminCreate_playCdc, map[string]*bintree{}},
-						"create_set.cdc": {TransactionsAdminCreate_setCdc, map[string]*bintree{}},
-						"create_set_and_play_struct.cdc": {TransactionsAdminCreate_set_and_play_structCdc, map[string]*bintree{}},
-						"fulfill_pack.cdc": {TransactionsAdminFulfill_packCdc, map[string]*bintree{}},
-						"lock_set.cdc": {TransactionsAdminLock_setCdc, map[string]*bintree{}},
-						"mark_moment_unlockable.cdc": {TransactionsAdminMark_moment_unlockableCdc, map[string]*bintree{}},
-						"mint_moment.cdc": {TransactionsAdminMint_momentCdc, map[string]*bintree{}},
-						"retireAll_plays_from_set.cdc": {TransactionsAdminRetireall_plays_from_setCdc, map[string]*bintree{}},
-						"retire_all.cdc": {TransactionsAdminRetire_allCdc, map[string]*bintree{}},
-						"retire_play_from_set.cdc": {TransactionsAdminRetire_play_from_setCdc, map[string]*bintree{}},
-						"start_new_series.cdc": {TransactionsAdminStart_new_seriesCdc, map[string]*bintree{}},
-						"transfer_admin.cdc": {TransactionsAdminTransfer_adminCdc, map[string]*bintree{}},
-						"unlock_all_moments.cdc": {TransactionsAdminUnlock_all_momentsCdc, map[string]*bintree{}},
+						"add_play_to_set.cdc":                   {TransactionsAdminAdd_play_to_setCdc, map[string]*bintree{}},
+						"add_plays_to_set.cdc":                  {TransactionsAdminAdd_plays_to_setCdc, map[string]*bintree{}},
+						"batch_mint_moment.cdc":                 {TransactionsAdminBatch_mint_momentCdc, map[string]*bintree{}},
+						"batch_mint_moment_with_subedition.cdc": {TransactionsAdminBatch_mint_moment_with_subeditionCdc, map[string]*bintree{}},
+						"create_play.cdc":                       {TransactionsAdminCreate_playCdc, map[string]*bintree{}},
+						"create_set.cdc":                        {TransactionsAdminCreate_setCdc, map[string]*bintree{}},
+						"create_set_and_play_struct.cdc":        {TransactionsAdminCreate_set_and_play_structCdc, map[string]*bintree{}},
+						"fulfill_pack.cdc":                      {TransactionsAdminFulfill_packCdc, map[string]*bintree{}},
+						"lock_set.cdc":                          {TransactionsAdminLock_setCdc, map[string]*bintree{}},
+						"mark_moment_unlockable.cdc":            {TransactionsAdminMark_moment_unlockableCdc, map[string]*bintree{}},
+						"mint_moment.cdc":                       {TransactionsAdminMint_momentCdc, map[string]*bintree{}},
+						"mint_moment_with_subedition.cdc":       {TransactionsAdminMint_moment_with_subeditionCdc, map[string]*bintree{}},
+						"retireAll_plays_from_set.cdc":          {TransactionsAdminRetireall_plays_from_setCdc, map[string]*bintree{}},
+						"retire_all.cdc":                        {TransactionsAdminRetire_allCdc, map[string]*bintree{}},
+						"retire_play_from_set.cdc":              {TransactionsAdminRetire_play_from_setCdc, map[string]*bintree{}},
+						"start_new_series.cdc":                  {TransactionsAdminStart_new_seriesCdc, map[string]*bintree{}},
+						"transfer_admin.cdc":                    {TransactionsAdminTransfer_adminCdc, map[string]*bintree{}},
+						"unlock_all_moments.cdc":                {TransactionsAdminUnlock_all_momentsCdc, map[string]*bintree{}},
 					}},
 					"market": {nil, map[string]*bintree{
 						"change_percentage.cdc": {TransactionsMarketChange_percentageCdc, map[string]*bintree{}},
-						"change_price.cdc": {TransactionsMarketChange_priceCdc, map[string]*bintree{}},
-						"change_receiver.cdc": {TransactionsMarketChange_receiverCdc, map[string]*bintree{}},
-						"create_sale.cdc": {TransactionsMarketCreate_saleCdc, map[string]*bintree{}},
+						"change_price.cdc":      {TransactionsMarketChange_priceCdc, map[string]*bintree{}},
+						"change_receiver.cdc":   {TransactionsMarketChange_receiverCdc, map[string]*bintree{}},
+						"create_sale.cdc":       {TransactionsMarketCreate_saleCdc, map[string]*bintree{}},
 						"create_start_sale.cdc": {TransactionsMarketCreate_start_saleCdc, map[string]*bintree{}},
 						"mint_and_purchase.cdc": {TransactionsMarketMint_and_purchaseCdc, map[string]*bintree{}},
-						"purchase_moment.cdc": {TransactionsMarketPurchase_momentCdc, map[string]*bintree{}},
+						"purchase_moment.cdc":   {TransactionsMarketPurchase_momentCdc, map[string]*bintree{}},
 						"scripts": {nil, map[string]*bintree{
-							"get_sale_len.cdc": {TransactionsMarketScriptsGet_sale_lenCdc, map[string]*bintree{}},
+							"get_sale_len.cdc":        {TransactionsMarketScriptsGet_sale_lenCdc, map[string]*bintree{}},
 							"get_sale_percentage.cdc": {TransactionsMarketScriptsGet_sale_percentageCdc, map[string]*bintree{}},
-							"get_sale_price.cdc": {TransactionsMarketScriptsGet_sale_priceCdc, map[string]*bintree{}},
-							"get_sale_set_id.cdc": {TransactionsMarketScriptsGet_sale_set_idCdc, map[string]*bintree{}},
+							"get_sale_price.cdc":      {TransactionsMarketScriptsGet_sale_priceCdc, map[string]*bintree{}},
+							"get_sale_set_id.cdc":     {TransactionsMarketScriptsGet_sale_set_idCdc, map[string]*bintree{}},
 						}},
 						"start_sale.cdc": {TransactionsMarketStart_saleCdc, map[string]*bintree{}},
-						"stop_sale.cdc": {TransactionsMarketStop_saleCdc, map[string]*bintree{}},
+						"stop_sale.cdc":  {TransactionsMarketStop_saleCdc, map[string]*bintree{}},
 					}},
 					"marketV3": {nil, map[string]*bintree{
-						"change_price.cdc": {TransactionsMarketv3Change_priceCdc, map[string]*bintree{}},
-						"change_receiver.cdc": {TransactionsMarketv3Change_receiverCdc, map[string]*bintree{}},
-						"create_sale.cdc": {TransactionsMarketv3Create_saleCdc, map[string]*bintree{}},
-						"create_start_sale.cdc": {TransactionsMarketv3Create_start_saleCdc, map[string]*bintree{}},
-						"mint_and_purchase.cdc": {TransactionsMarketv3Mint_and_purchaseCdc, map[string]*bintree{}},
+						"change_price.cdc":          {TransactionsMarketv3Change_priceCdc, map[string]*bintree{}},
+						"change_receiver.cdc":       {TransactionsMarketv3Change_receiverCdc, map[string]*bintree{}},
+						"create_sale.cdc":           {TransactionsMarketv3Create_saleCdc, map[string]*bintree{}},
+						"create_start_sale.cdc":     {TransactionsMarketv3Create_start_saleCdc, map[string]*bintree{}},
+						"mint_and_purchase.cdc":     {TransactionsMarketv3Mint_and_purchaseCdc, map[string]*bintree{}},
 						"purchase_both_markets.cdc": {TransactionsMarketv3Purchase_both_marketsCdc, map[string]*bintree{}},
-						"purchase_moment.cdc": {TransactionsMarketv3Purchase_momentCdc, map[string]*bintree{}},
+						"purchase_moment.cdc":       {TransactionsMarketv3Purchase_momentCdc, map[string]*bintree{}},
 						"scripts": {nil, map[string]*bintree{
-							"get_sale_len.cdc": {TransactionsMarketv3ScriptsGet_sale_lenCdc, map[string]*bintree{}},
+							"get_sale_len.cdc":        {TransactionsMarketv3ScriptsGet_sale_lenCdc, map[string]*bintree{}},
 							"get_sale_percentage.cdc": {TransactionsMarketv3ScriptsGet_sale_percentageCdc, map[string]*bintree{}},
-							"get_sale_price.cdc": {TransactionsMarketv3ScriptsGet_sale_priceCdc, map[string]*bintree{}},
-							"get_sale_set_id.cdc": {TransactionsMarketv3ScriptsGet_sale_set_idCdc, map[string]*bintree{}},
+							"get_sale_price.cdc":      {TransactionsMarketv3ScriptsGet_sale_priceCdc, map[string]*bintree{}},
+							"get_sale_set_id.cdc":     {TransactionsMarketv3ScriptsGet_sale_set_idCdc, map[string]*bintree{}},
 						}},
-						"start_sale.cdc": {TransactionsMarketv3Start_saleCdc, map[string]*bintree{}},
-						"stop_sale.cdc": {TransactionsMarketv3Stop_saleCdc, map[string]*bintree{}},
+						"start_sale.cdc":   {TransactionsMarketv3Start_saleCdc, map[string]*bintree{}},
+						"stop_sale.cdc":    {TransactionsMarketv3Stop_saleCdc, map[string]*bintree{}},
 						"upgrade_sale.cdc": {TransactionsMarketv3Upgrade_saleCdc, map[string]*bintree{}},
 					}},
 					"scripts": {nil, map[string]*bintree{
 						"collections": {nil, map[string]*bintree{
-							"get_collection_ids.cdc": {TransactionsScriptsCollectionsGet_collection_idsCdc, map[string]*bintree{}},
-							"get_id_in_Collection.cdc": {TransactionsScriptsCollectionsGet_id_in_collectionCdc, map[string]*bintree{}},
+							"get_collection_ids.cdc":     {TransactionsScriptsCollectionsGet_collection_idsCdc, map[string]*bintree{}},
+							"get_id_in_Collection.cdc":   {TransactionsScriptsCollectionsGet_id_in_collectionCdc, map[string]*bintree{}},
 							"get_locked_nfts_length.cdc": {TransactionsScriptsCollectionsGet_locked_nfts_lengthCdc, map[string]*bintree{}},
-							"get_metadata.cdc": {TransactionsScriptsCollectionsGet_metadataCdc, map[string]*bintree{}},
-							"get_metadata_field.cdc": {TransactionsScriptsCollectionsGet_metadata_fieldCdc, map[string]*bintree{}},
-							"get_moment_isLocked.cdc": {TransactionsScriptsCollectionsGet_moment_islockedCdc, map[string]*bintree{}},
-							"get_moment_lockExpiry.cdc": {TransactionsScriptsCollectionsGet_moment_lockexpiryCdc, map[string]*bintree{}},
-							"get_moment_playID.cdc": {TransactionsScriptsCollectionsGet_moment_playidCdc, map[string]*bintree{}},
-							"get_moment_serialNum.cdc": {TransactionsScriptsCollectionsGet_moment_serialnumCdc, map[string]*bintree{}},
-							"get_moment_series.cdc": {TransactionsScriptsCollectionsGet_moment_seriesCdc, map[string]*bintree{}},
-							"get_moment_setID.cdc": {TransactionsScriptsCollectionsGet_moment_setidCdc, map[string]*bintree{}},
-							"get_moment_setName.cdc": {TransactionsScriptsCollectionsGet_moment_setnameCdc, map[string]*bintree{}},
+							"get_metadata.cdc":           {TransactionsScriptsCollectionsGet_metadataCdc, map[string]*bintree{}},
+							"get_metadata_field.cdc":     {TransactionsScriptsCollectionsGet_metadata_fieldCdc, map[string]*bintree{}},
+							"get_moment_isLocked.cdc":    {TransactionsScriptsCollectionsGet_moment_islockedCdc, map[string]*bintree{}},
+							"get_moment_lockExpiry.cdc":  {TransactionsScriptsCollectionsGet_moment_lockexpiryCdc, map[string]*bintree{}},
+							"get_moment_playID.cdc":      {TransactionsScriptsCollectionsGet_moment_playidCdc, map[string]*bintree{}},
+							"get_moment_serialNum.cdc":   {TransactionsScriptsCollectionsGet_moment_serialnumCdc, map[string]*bintree{}},
+							"get_moment_series.cdc":      {TransactionsScriptsCollectionsGet_moment_seriesCdc, map[string]*bintree{}},
+							"get_moment_setID.cdc":       {TransactionsScriptsCollectionsGet_moment_setidCdc, map[string]*bintree{}},
+							"get_moment_setName.cdc":     {TransactionsScriptsCollectionsGet_moment_setnameCdc, map[string]*bintree{}},
 							"get_setplays_are_owned.cdc": {TransactionsScriptsCollectionsGet_setplays_are_ownedCdc, map[string]*bintree{}},
 						}},
-						"get_currentSeries.cdc": {TransactionsScriptsGet_currentseriesCdc, map[string]*bintree{}},
-						"get_nft_metadata.cdc": {TransactionsScriptsGet_nft_metadataCdc, map[string]*bintree{}},
+						"get_currentSeries.cdc":    {TransactionsScriptsGet_currentseriesCdc, map[string]*bintree{}},
+						"get_nft_metadata.cdc":     {TransactionsScriptsGet_nft_metadataCdc, map[string]*bintree{}},
+						"get_nft_subedition.cdc":   {TransactionsScriptsGet_nft_subeditionCdc, map[string]*bintree{}},
 						"get_topshot_metadata.cdc": {TransactionsScriptsGet_topshot_metadataCdc, map[string]*bintree{}},
-						"get_totalSupply.cdc": {TransactionsScriptsGet_totalsupplyCdc, map[string]*bintree{}},
+						"get_totalSupply.cdc":      {TransactionsScriptsGet_totalsupplyCdc, map[string]*bintree{}},
 						"plays": {nil, map[string]*bintree{
-							"get_all_plays.cdc": {TransactionsScriptsPlaysGet_all_playsCdc, map[string]*bintree{}},
-							"get_nextPlayID.cdc": {TransactionsScriptsPlaysGet_nextplayidCdc, map[string]*bintree{}},
-							"get_play_metadata.cdc": {TransactionsScriptsPlaysGet_play_metadataCdc, map[string]*bintree{}},
+							"get_all_plays.cdc":           {TransactionsScriptsPlaysGet_all_playsCdc, map[string]*bintree{}},
+							"get_nextPlayID.cdc":          {TransactionsScriptsPlaysGet_nextplayidCdc, map[string]*bintree{}},
+							"get_play_metadata.cdc":       {TransactionsScriptsPlaysGet_play_metadataCdc, map[string]*bintree{}},
 							"get_play_metadata_field.cdc": {TransactionsScriptsPlaysGet_play_metadata_fieldCdc, map[string]*bintree{}},
 						}},
 						"sets": {nil, map[string]*bintree{
-							"get_edition_retired.cdc": {TransactionsScriptsSetsGet_edition_retiredCdc, map[string]*bintree{}},
-							"get_nextSetID.cdc": {TransactionsScriptsSetsGet_nextsetidCdc, map[string]*bintree{}},
+							"get_edition_retired.cdc":       {TransactionsScriptsSetsGet_edition_retiredCdc, map[string]*bintree{}},
+							"get_nextSetID.cdc":             {TransactionsScriptsSetsGet_nextsetidCdc, map[string]*bintree{}},
 							"get_numMoments_in_edition.cdc": {TransactionsScriptsSetsGet_nummoments_in_editionCdc, map[string]*bintree{}},
-							"get_plays_in_set.cdc": {TransactionsScriptsSetsGet_plays_in_setCdc, map[string]*bintree{}},
-							"get_setIDs_by_name.cdc": {TransactionsScriptsSetsGet_setids_by_nameCdc, map[string]*bintree{}},
-							"get_setName.cdc": {TransactionsScriptsSetsGet_setnameCdc, map[string]*bintree{}},
-							"get_setSeries.cdc": {TransactionsScriptsSetsGet_setseriesCdc, map[string]*bintree{}},
-							"get_set_data.cdc": {TransactionsScriptsSetsGet_set_dataCdc, map[string]*bintree{}},
-							"get_set_locked.cdc": {TransactionsScriptsSetsGet_set_lockedCdc, map[string]*bintree{}},
+							"get_plays_in_set.cdc":          {TransactionsScriptsSetsGet_plays_in_setCdc, map[string]*bintree{}},
+							"get_setIDs_by_name.cdc":        {TransactionsScriptsSetsGet_setids_by_nameCdc, map[string]*bintree{}},
+							"get_setName.cdc":               {TransactionsScriptsSetsGet_setnameCdc, map[string]*bintree{}},
+							"get_setSeries.cdc":             {TransactionsScriptsSetsGet_setseriesCdc, map[string]*bintree{}},
+							"get_set_data.cdc":              {TransactionsScriptsSetsGet_set_dataCdc, map[string]*bintree{}},
+							"get_set_locked.cdc":            {TransactionsScriptsSetsGet_set_lockedCdc, map[string]*bintree{}},
 						}},
 					}},
 					"shardedCollection": {nil, map[string]*bintree{
-						"batch_from_sharded.cdc": {TransactionsShardedcollectionBatch_from_shardedCdc, map[string]*bintree{}},
+						"batch_from_sharded.cdc":       {TransactionsShardedcollectionBatch_from_shardedCdc, map[string]*bintree{}},
 						"setup_sharded_collection.cdc": {TransactionsShardedcollectionSetup_sharded_collectionCdc, map[string]*bintree{}},
-						"transfer_from_sharded.cdc": {TransactionsShardedcollectionTransfer_from_shardedCdc, map[string]*bintree{}},
+						"transfer_from_sharded.cdc":    {TransactionsShardedcollectionTransfer_from_shardedCdc, map[string]*bintree{}},
 					}},
 					"user": {nil, map[string]*bintree{
-						"batch_lock_moments.cdc": {TransactionsUserBatch_lock_momentsCdc, map[string]*bintree{}},
-						"batch_transfer.cdc": {TransactionsUserBatch_transferCdc, map[string]*bintree{}},
-						"batch_unlock_moments.cdc": {TransactionsUserBatch_unlock_momentsCdc, map[string]*bintree{}},
-						"destroy_moments.cdc": {TransactionsUserDestroy_momentsCdc, map[string]*bintree{}},
-						"lock_fake_nft.cdc": {TransactionsUserLock_fake_nftCdc, map[string]*bintree{}},
-						"lock_moment.cdc": {TransactionsUserLock_momentCdc, map[string]*bintree{}},
-						"setup_account.cdc": {TransactionsUserSetup_accountCdc, map[string]*bintree{}},
-						"transfer_moment.cdc": {TransactionsUserTransfer_momentCdc, map[string]*bintree{}},
+						"batch_lock_moments.cdc":      {TransactionsUserBatch_lock_momentsCdc, map[string]*bintree{}},
+						"batch_transfer.cdc":          {TransactionsUserBatch_transferCdc, map[string]*bintree{}},
+						"batch_unlock_moments.cdc":    {TransactionsUserBatch_unlock_momentsCdc, map[string]*bintree{}},
+						"destroy_moments.cdc":         {TransactionsUserDestroy_momentsCdc, map[string]*bintree{}},
+						"lock_fake_nft.cdc":           {TransactionsUserLock_fake_nftCdc, map[string]*bintree{}},
+						"lock_moment.cdc":             {TransactionsUserLock_momentCdc, map[string]*bintree{}},
+						"setup_account.cdc":           {TransactionsUserSetup_accountCdc, map[string]*bintree{}},
+						"transfer_moment.cdc":         {TransactionsUserTransfer_momentCdc, map[string]*bintree{}},
 						"transfer_moment_v3_sale.cdc": {TransactionsUserTransfer_moment_v3_saleCdc, map[string]*bintree{}},
-						"unlock_moment.cdc": {TransactionsUserUnlock_momentCdc, map[string]*bintree{}},
+						"unlock_moment.cdc":           {TransactionsUserUnlock_momentCdc, map[string]*bintree{}},
 					}},
 				}},
 			}},

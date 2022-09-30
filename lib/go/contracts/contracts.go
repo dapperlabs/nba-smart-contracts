@@ -18,6 +18,7 @@ const (
 	shardedCollectionFile          = "TopShotShardedCollection.cdc"
 	adminReceiverFile              = "TopshotAdminReceiver.cdc"
 	topShotLockingFile             = "TopShotLocking.cdc"
+	topShotRemixFile               = "TopShotRemix.cdc"
 	defaultNonFungibleTokenAddress = "NFTADDRESS"
 	defaultFungibleTokenAddress    = "FUNGIBLETOKENADDRESS"
 	defaultTopshotAddress          = "TOPSHOTADDRESS"
@@ -113,4 +114,11 @@ func GenerateTopShotLockingContractWithTopShotRuntimeAddr(nftAddr string, topsho
 	codeWithTopShotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 
 	return []byte(codeWithTopShotAddr)
+}
+
+func GenerateTopShotRemixContract(nftAddr string) []byte {
+	remixCode := assets.MustAssetString(topShotRemixFile)
+	codeWithNFTAddr := strings.ReplaceAll(remixCode, defaultNonFungibleTokenAddress, nftAddr)
+
+	return []byte(codeWithNFTAddr)
 }
