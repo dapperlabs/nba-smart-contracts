@@ -67,7 +67,7 @@ func TestTopShotLocking(t *testing.T) {
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// Deploy TopShot Remix contract
-	topshotRemixCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
+	topshotRemixCode := contracts.GenerateTopShotRemixContract(nftAddr.String())
 	topShotRemixAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotRemix",

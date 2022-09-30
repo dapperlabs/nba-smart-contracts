@@ -88,7 +88,7 @@ func TestNFTDeployment(t *testing.T) {
 
 	// Should be able to deploy the TopShot Remix contract
 	// as a new account with no keys.
-	topshotRemixCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
+	topshotRemixCode := contracts.GenerateTopShotRemixContract(nftAddr.String())
 	topShotRemixAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotRemix",
@@ -207,7 +207,7 @@ func TestMintNFTs(t *testing.T) {
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// Deploy TopShot Remix contract
-	topshotRemixCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
+	topshotRemixCode := contracts.GenerateTopShotRemixContract(nftAddr.String())
 	topShotRemixAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotRemix",
@@ -755,7 +755,7 @@ func TestTransferAdmin(t *testing.T) {
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// Deploy TopShot Remix contract
-	topshotRemixCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
+	topshotRemixCode := contracts.GenerateTopShotRemixContract(nftAddr.String())
 	topShotRemixAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotRemix",
@@ -883,7 +883,7 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// Deploy TopShot Remix contract
-	topshotRemixCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
+	topshotRemixCode := contracts.GenerateTopShotRemixContract(nftAddr.String())
 	topShotRemixAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotRemix",
@@ -1106,7 +1106,7 @@ func TestDestroyMoments(t *testing.T) {
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// Deploy TopShot Remix contract
-	topshotRemixCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
+	topshotRemixCode := contracts.GenerateTopShotRemixContract(nftAddr.String())
 	topShotRemixAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotRemix",

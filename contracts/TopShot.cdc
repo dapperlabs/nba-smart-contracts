@@ -398,8 +398,7 @@ pub contract TopShot: NonFungibleToken {
 
             // Increment the count of Moments minted for this Play
             TopShotRemix.addToNumberMintedPerSubedition(subeditionID: subeditionID)
-            TopShotRemix.setMomentsSubedition(nft: newMoment, subeditionID: subeditionID)
-            self.numberMintedPerPlay[playID] = numInPlay + UInt32(1)
+            TopShotRemix.setMomentsSubedition(nftID: newMoment.id, subeditionID: subeditionID)
 
             return <-newMoment
         }
