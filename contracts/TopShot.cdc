@@ -404,6 +404,7 @@ pub contract TopShot: NonFungibleToken {
             subEditionRef.addToNumberMintedPerSubEdition(setID: self.setID,
                                                          playID: playID,
                                                          subEditionID: subEditionID)
+
             subEditionRef.setMomentsSubEdition(nftID: newMoment.id, subEditionID: subEditionID)
 
             self.numberMintedPerPlay[playID] = self.numberMintedPerPlay[playID]! + UInt32(1)
@@ -411,7 +412,7 @@ pub contract TopShot: NonFungibleToken {
             return <-newMoment
         }
 
-         pub fun batchMintMomentWithSubEdition(playID: UInt32, subEditionID: UInt32, quantity: UInt64): @Collection {
+         pub fun batchMintMomentWithSubEdition(playID: UInt32, quantity: UInt64, subEditionID: UInt32): @Collection {
             let newCollection <- create Collection()
 
             var i: UInt64 = 0
@@ -1236,7 +1237,7 @@ pub contract TopShot: NonFungibleToken {
        }
 
        pub fun setMomentsSubEdition(nftID: UInt64, subEditionID: UInt32){
-           self.momentsSubEdition[nftID] != subEditionID
+           self.momentsSubEdition.insert(key: nftID, subEditionID)
        }
 
        init() {

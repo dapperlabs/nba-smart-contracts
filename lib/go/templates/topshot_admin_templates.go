@@ -20,6 +20,9 @@ const (
 	createSetAndPlayFilename = "admin/create_set_and_play_struct.cdc"
 
 	transferAdminFilename = "admin/transfer_admin.cdc"
+
+	mintMomentWithSubEditionFilename      = "admin/mint_moment_with_subedition.cdc"
+	batchMintMomentWithSubEditionFilename = "admin/batch_mint_moment_with_subedition.cdc"
 )
 
 // GenerateMintPlayScript creates a new play data struct
@@ -114,6 +117,18 @@ func GenerateChangeSeriesScript(env Environment) []byte {
 // For testing purposes only
 func GenerateCreateSetandPlayDataScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + createSetAndPlayFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+func GenerateMintMomentWithSubEditionScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + mintMomentWithSubEditionFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+func GenerateBatchMintMomentWithSubEditionScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + batchMintMomentWithSubEditionFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
