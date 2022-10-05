@@ -388,8 +388,7 @@ pub contract TopShot: NonFungibleToken {
 
             // Gets the number of Moments that have been minted for this Play
             // to use as this Moment's serial number
-            let subEditionCap = TopShot.account.getCapability<&{AdminSubEdition}>(/private/AdminSubEdition)
-            let subEditionRef = subEditionCap.borrow()!
+            let subEditionRef = TopShot.account.getCapability(/private/AdminSubEdition).borrow<&{AdminSubEdition}>()!
 
             let numInSubEdition = subEditionRef.getNumberMintedPerSubEdition(setID: self.setID,
                                                                              playID: playID,
@@ -793,6 +792,12 @@ pub contract TopShot: NonFungibleToken {
             emit NewSeriesStarted(newCurrentSeries: TopShot.currentSeries)
 
             return TopShot.currentSeries
+        }
+
+        pub fun createShowcaseResource() {
+           TopShot.account.save<@SubEdition>(<- create SubEdition(), to: /storage/TopShotSubEdition)
+           TopShot.account.link<&{AdminSubEdition}>(/private/AdminSubEdition, target: /storage/TopShotSubEdition)
+           TopShot.account.link<&{PublicSubEdition}>(/public/PublicSubEdition, target: /storage/TopShotSubEdition)
         }
 
         // createNewAdmin creates a new Admin resource
@@ -1243,6 +1248,8 @@ pub contract TopShot: NonFungibleToken {
        init() {
            self.momentsSubEdition = {}
            self.numberMintedPerSubEdition = {}
+
+
        }
     }
 
@@ -1269,11 +1276,6 @@ pub contract TopShot: NonFungibleToken {
 
         // Put the Minter in storage
         self.account.save<@Admin>(<- create Admin(), to: /storage/TopShotAdmin)
-
-        self.account.save<@SubEdition>(<- create SubEdition(), to: /storage/TopShotSubEdition)
-
-        self.account.link<&{AdminSubEdition}>(/private/AdminSubEdition, target: /storage/TopShotSubEdition)
-        self.account.link<&{PublicSubEdition}>(/public/PublicSubEdition, target: /storage/TopShotSubEdition)
 
         emit ContractInitialized()
     }

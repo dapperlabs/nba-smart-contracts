@@ -19,7 +19,7 @@ import (
 )
 
 // This test tests the pure functionality of the smart contract
-func TestMintWithSubeditionNFTs(t *testing.T) {
+func TestMintWithSubEditionNFTs(t *testing.T) {
 	b := newBlockchain()
 
 	serviceKeySigner, err := b.ServiceKey().Signer()
@@ -270,6 +270,16 @@ func TestMintWithSubeditionNFTs(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupShardedCollectionScript(env), topshotAddr)
 
 		_ = tx.AddArgument(cadence.NewUInt64(32))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+	})
+
+	t.Run("Should be able to create new showcase resource", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateNewSubEditionResoourceScript(env), topshotAddr)
 
 		signAndSubmit(
 			t, b, tx,

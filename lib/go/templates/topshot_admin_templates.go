@@ -23,6 +23,7 @@ const (
 
 	mintMomentWithSubEditionFilename      = "admin/mint_moment_with_subedition.cdc"
 	batchMintMomentWithSubEditionFilename = "admin/batch_mint_moment_with_subedition.cdc"
+	createNewSubEditionResourceFilename   = "admin/create_new_showcase_resource.cdc"
 )
 
 // GenerateMintPlayScript creates a new play data struct
@@ -129,6 +130,12 @@ func GenerateMintMomentWithSubEditionScript(env Environment) []byte {
 
 func GenerateBatchMintMomentWithSubEditionScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + batchMintMomentWithSubEditionFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+func GenerateCreateNewSubEditionResoourceScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + createNewSubEditionResourceFilename)
 
 	return []byte(replaceAddresses(code, env))
 }

@@ -4,6 +4,7 @@
 // ../../../transactions/admin/add_plays_to_set.cdc (759B)
 // ../../../transactions/admin/batch_mint_moment.cdc (1.534kB)
 // ../../../transactions/admin/batch_mint_moment_with_subedition.cdc (1.641kB)
+// ../../../transactions/admin/create_new_showcase_resource.cdc (649B)
 // ../../../transactions/admin/create_play.cdc (1.026kB)
 // ../../../transactions/admin/create_set.cdc (929B)
 // ../../../transactions/admin/create_set_and_play_struct.cdc (296B)
@@ -235,6 +236,26 @@ func TransactionsAdminBatch_mint_moment_with_subeditionCdc() (*asset, error) {
 
 	info := bindataFileInfo{name: "../../../transactions/admin/batch_mint_moment_with_subedition.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x1b, 0x99, 0x66, 0xa8, 0x41, 0x8d, 0xe6, 0xa9, 0x6f, 0x2e, 0xd0, 0xca, 0x7d, 0xde, 0x78, 0x22, 0xad, 0x9b, 0x12, 0xd9, 0x4e, 0x76, 0xfa, 0xba, 0x95, 0x41, 0xc0, 0x19, 0x17, 0xe8, 0xd4, 0xf3}}
+	return a, nil
+}
+
+var _TransactionsAdminCreate_new_showcase_resourceCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x8c\x91\xc1\x6e\xd4\x30\x10\x86\xef\x79\x8a\x5f\x3d\xa0\xf4\xb2\xe6\x1c\x01\xd5\x8a\x22\x71\x40\xb4\xda\xec\x0b\xcc\x3a\x13\x62\x94\x78\xa2\xf1\x84\xad\x54\xf5\xdd\x91\x9d\x6c\x04\x12\x07\x72\x8c\x3d\xff\xf7\xcd\xef\x30\xcd\xa2\x86\xb3\xcc\xed\x20\x86\x5e\x65\xc2\xfb\x97\xf3\xd3\x73\xfb\xf5\xe9\x7c\x7c\x7c\x3c\x7d\x69\xdb\xaa\x72\x0e\xe7\x21\x24\x98\x52\x4c\xe4\x2d\x48\x44\x48\xe8\x45\x61\x03\x83\xba\x29\x44\x98\xc0\x2b\x93\x31\x08\x91\xaf\x48\x6c\x50\x4e\xb2\xa8\xe7\x9c\x40\xb1\x43\x32\x51\x46\x30\xe4\xfb\x03\xc3\x64\x46\xca\xe0\x34\x91\x1a\xbc\x44\x53\xf2\x56\x88\xcf\xa4\x34\xb1\xb1\xa6\xa6\x72\x2e\xff\x49\x6c\xdf\x69\xe2\xa6\x8c\x46\x9a\x18\xd2\x6f\xb0\x96\x2d\x0b\x5c\x78\x73\xe8\xaa\xea\x0f\xd9\xfa\x1e\xaf\x55\x05\x00\xce\xe1\x9b\x78\x1a\xf1\x8b\x34\xd0\x65\xe4\x7d\x09\x93\xb9\x98\x1c\xcb\x32\x72\xf9\xc9\xde\xca\xc8\xc8\xb6\x6e\x78\xe2\xbe\xc1\xbb\xad\xaa\x43\xb9\xb7\x86\xce\xca\x33\x29\xd7\xe4\xbd\x35\x38\x2e\x36\x1c\xbd\x97\x25\xda\x8e\xdd\xd0\x17\x51\x95\x2b\x08\xca\x3d\x2b\x47\x9f\xb1\x85\xbe\x52\x6f\x75\xe5\x7a\x72\x55\xf4\x83\xf7\xf1\xc4\x63\x7f\xb8\x79\xe0\x23\x32\xec\xb0\x06\x7e\xf8\x5b\xea\x53\x9d\x9f\xb1\x81\xdb\x22\xdc\x76\x5a\x0e\xef\xf7\xc0\xfc\x3d\x3c\x60\xa6\x18\x7c\x7d\xf7\x59\x96\xb1\x43\x14\xfb\x6f\xc9\xbb\x35\xea\x6d\xdd\x90\x5f\xd8\x2f\xc6\x78\xfd\xb7\xf0\x61\x7d\x96\x76\x90\xab\xa7\xc4\xa7\x2d\xa3\xbe\x65\xbc\xfd\x0e\x00\x00\xff\xff\xd1\x8f\x2c\xff\x89\x02\x00\x00"
+
+func TransactionsAdminCreate_new_showcase_resourceCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsAdminCreate_new_showcase_resourceCdc,
+		"../../../transactions/admin/create_new_showcase_resource.cdc",
+	)
+}
+
+func TransactionsAdminCreate_new_showcase_resourceCdc() (*asset, error) {
+	bytes, err := TransactionsAdminCreate_new_showcase_resourceCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/admin/create_new_showcase_resource.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x92, 0x8d, 0x92, 0x6b, 0x37, 0xd6, 0x7e, 0xf3, 0xf7, 0x61, 0x6f, 0x8d, 0xcc, 0xc6, 0xf, 0x57, 0x77, 0x4, 0x3b, 0xc3, 0x88, 0xc6, 0xd4, 0x45, 0x28, 0x8a, 0x68, 0xf9, 0xec, 0x89, 0xf1, 0x87}}
 	return a, nil
 }
 
@@ -2033,6 +2054,7 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/admin/add_plays_to_set.cdc":                     TransactionsAdminAdd_plays_to_setCdc,
 	"../../../transactions/admin/batch_mint_moment.cdc":                    TransactionsAdminBatch_mint_momentCdc,
 	"../../../transactions/admin/batch_mint_moment_with_subedition.cdc":    TransactionsAdminBatch_mint_moment_with_subeditionCdc,
+	"../../../transactions/admin/create_new_showcase_resource.cdc":         TransactionsAdminCreate_new_showcase_resourceCdc,
 	"../../../transactions/admin/create_play.cdc":                          TransactionsAdminCreate_playCdc,
 	"../../../transactions/admin/create_set.cdc":                           TransactionsAdminCreate_setCdc,
 	"../../../transactions/admin/create_set_and_play_struct.cdc":           TransactionsAdminCreate_set_and_play_structCdc,
@@ -2173,6 +2195,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 						"add_plays_to_set.cdc":                  {TransactionsAdminAdd_plays_to_setCdc, map[string]*bintree{}},
 						"batch_mint_moment.cdc":                 {TransactionsAdminBatch_mint_momentCdc, map[string]*bintree{}},
 						"batch_mint_moment_with_subedition.cdc": {TransactionsAdminBatch_mint_moment_with_subeditionCdc, map[string]*bintree{}},
+						"create_new_showcase_resource.cdc":      {TransactionsAdminCreate_new_showcase_resourceCdc, map[string]*bintree{}},
 						"create_play.cdc":                       {TransactionsAdminCreate_playCdc, map[string]*bintree{}},
 						"create_set.cdc":                        {TransactionsAdminCreate_setCdc, map[string]*bintree{}},
 						"create_set_and_play_struct.cdc":        {TransactionsAdminCreate_set_and_play_structCdc, map[string]*bintree{}},
