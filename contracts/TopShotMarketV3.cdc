@@ -226,18 +226,16 @@ pub contract TopShotMarketV3 {
                 return <-boughtMoment
 
             // If not found in this SaleCollection, check V1
-            } else {
-                if let v1Market = self.marketV1Capability {
-                    let v1MarketRef = v1Market.borrow()!
+            } else if let v1Market = self.marketV1Capability {
+                let v1MarketRef = v1Market.borrow()!
 
-                    return <-v1MarketRef.purchase(tokenID: tokenID, buyTokens: <-buyTokens)
-                } else {
-                    panic("No token matching this ID for sale!")
-                }
-            }
+                return <-v1MarketRef.purchase(tokenID: tokenID, buyTokens: <-buyTokens)
+            } 
             
-            destroy buyTokens // This line can be removed when this issue is released: https://github.com/onflow/cadence/pull/1000
+            // Refactored to avoid dead code to resolve
+            // https://github.com/dapperlabs/nba-smart-contracts/issues/165
             panic("No token matching this ID for sale!")
+
         }
 
         /// changeOwnerReceiver updates the capability for the sellers fungible token Vault
