@@ -1,9 +1,12 @@
-import TopShotRemix from 0xTOPSHOTREMIXADDRESS
+import TopShot from 0xTOPSHOTADDRESS
 
-pub fun main(nftID: UInt32): Bool {
+pub fun main(account: Address, nftID: UInt32): UInt32 {
 
-    let subedition = TopShotRemix.getMomentsSubedition(momentID: nftID)
-        ?? panic("Could not find the specified moment")
+     let publicSubEditionRef = getAccount(account).getCapability(/public/PublicSubEdition)
+        .borrow<&{TopShot.PublicSubEdition}>()
+        ?? panic("Could not get public subEdition reference")
 
-    return subedition
+    let subEdition = publicSubEditionRef.getMomentsSubEdition(momentID: nftID)
+                ?? panic("Could not find the specified moment")
+    return subEdition
 }

@@ -7,7 +7,7 @@ import TopShot from 0xTOPSHOTADDRESS
 //
 // setID: the ID of the set to be minted from
 // playID: the ID of the Play from which the Moments are minted
-// subeditionID: the ID of play's subedition
+// subEditionID: the ID of play's subEdition
 // quantity: the quantity of Moments to be minted
 // recipientAddr: the Flow address of the account receiving the collection of minted moments
 
@@ -28,7 +28,7 @@ transaction(setID: UInt32, playID: UInt32, quantity: UInt64, subeditonID: UInt32
         let setRef = self.adminRef.borrowSet(setID: setID)
 
         // Mint all the new NFTs
-        let collection <- setRef.batchMintMomentWithSubedtion(playID: playID, subeditionID: subeditionID, quantity: quantity)
+        let collection <- setRef.batchMintMomentWithSubEdition(playID: playID, subEditionID: subEditionID, quantity: quantity)
 
         // Get the account object for the recipient of the minted tokens
         let recipient = getAccount(recipientAddr)

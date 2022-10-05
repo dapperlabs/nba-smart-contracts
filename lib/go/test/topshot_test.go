@@ -86,24 +86,9 @@ func TestNFTDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	assert.NoError(t, err)
 
-	// Should be able to deploy the TopShot Remix contract
-	// as a new account with no keys.
-	topshotRemixCode := contracts.GenerateTopShotRemixContract(nftAddr.String())
-	topShotRemixAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopShotRemix",
-			Source: string(topshotRemixCode),
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
 	// Should be able to deploy the topshot contract
 	// as a new account with no keys.
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), topShotRemixAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
 	topshotAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShot",
@@ -206,19 +191,8 @@ func TestMintNFTs(t *testing.T) {
 
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
-	// Deploy TopShot Remix contract
-	topshotRemixCode := contracts.GenerateTopShotRemixContract(nftAddr.String())
-	topShotRemixAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopShotRemix",
-			Source: string(topshotRemixCode),
-		},
-	})
-
-	env.TopShotRemixAddress = topShotRemixAddr.String()
-
 	// Deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), topShotRemixAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -754,19 +728,8 @@ func TestTransferAdmin(t *testing.T) {
 
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
-	// Deploy TopShot Remix contract
-	topshotRemixCode := contracts.GenerateTopShotRemixContract(nftAddr.String())
-	topShotRemixAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopShotRemix",
-			Source: string(topshotRemixCode),
-		},
-	})
-
-	env.TopShotRemixAddress = topShotRemixAddr.String()
-
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), topShotRemixAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -882,19 +845,8 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
-	// Deploy TopShot Remix contract
-	topshotRemixCode := contracts.GenerateTopShotRemixContract(nftAddr.String())
-	topShotRemixAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopShotRemix",
-			Source: string(topshotRemixCode),
-		},
-	})
-
-	env.TopShotRemixAddress = topShotRemixAddr.String()
-
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), topShotRemixAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -1105,19 +1057,8 @@ func TestDestroyMoments(t *testing.T) {
 
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
-	// Deploy TopShot Remix contract
-	topshotRemixCode := contracts.GenerateTopShotRemixContract(nftAddr.String())
-	topShotRemixAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopShotRemix",
-			Source: string(topshotRemixCode),
-		},
-	})
-
-	env.TopShotRemixAddress = topShotRemixAddr.String()
-
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), topShotRemixAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{

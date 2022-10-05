@@ -46,7 +46,6 @@
 import NonFungibleToken from 0xNFTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
-import TopShotRemix from 0xTOPSHOTREMIXADDRESS
 
 pub contract TopShot: NonFungibleToken {
 
@@ -381,7 +380,7 @@ pub contract TopShot: NonFungibleToken {
             return <-newCollection
         }
 
-        pub fun mintMomentWithSubedition(playID: UInt32, subeditionID: UInt32): @NFT {
+        pub fun mintMomentWithSubEdition(playID: UInt32, subEditionID: UInt32): @NFT {
             pre {
                 self.retired[playID] != nil: "Cannot mint the moment: This play doesn't exist."
                 !self.retired[playID]!: "Cannot mint the moment from this play: This play has been retired."
@@ -389,27 +388,36 @@ pub contract TopShot: NonFungibleToken {
 
             // Gets the number of Moments that have been minted for this Play
             // to use as this Moment's serial number
-            let numInSubedition = TopShotRemix.getNumberMintedPerSubedition(subeditionID: subeditionID)
+            let subEditionCap = TopShot.account.getCapability<&{AdminSubEdition}>(/private/AdminSubEdition)
+            let subEditionRef = subEditionCap.borrow()!
+
+            let numInSubEdition = subEditionRef.getNumberMintedPerSubEdition(setID: self.setID,
+                                                                             playID: playID,
+                                                                             subEditionID: subEditionID)
 
             // Mint the new moment
-            let newMoment: @NFT <- create NFT(serialNumber: numInSubedition + UInt32(1),
+            let newMoment: @NFT <- create NFT(serialNumber: numInSubEdition + UInt32(1),
                                               playID: playID,
                                               setID: self.setID)
 
             // Increment the count of Moments minted for this Play
-            TopShotRemix.addToNumberMintedPerSubedition(subeditionID: subeditionID)
-            TopShotRemix.setMomentsSubedition(nftID: newMoment.id, subeditionID: subeditionID)
+            subEditionRef.addToNumberMintedPerSubEdition(setID: self.setID,
+                                                         playID: playID,
+                                                         subEditionID: subEditionID)
+            subEditionRef.setMomentsSubEdition(nftID: newMoment.id, subEditionID: subEditionID)
+
+            self.numberMintedPerPlay[playID] = self.numberMintedPerPlay[playID]! + UInt32(1)
 
             return <-newMoment
         }
 
-         pub fun batchMintMomentWithSubedition(playID: UInt32, subeditionID: UInt32, quantity: UInt64): @Collection {
+         pub fun batchMintMomentWithSubEdition(playID: UInt32, subEditionID: UInt32, quantity: UInt64): @Collection {
             let newCollection <- create Collection()
 
             var i: UInt64 = 0
             while i < quantity {
-                newCollection.deposit(token: <-self.mintMomentWithSubedition(playID: playID,
-                                                                             subeditionID: subeditionID))
+                newCollection.deposit(token: <-self.mintMomentWithSubEdition(playID: playID,
+                                                                             subEditionID: subEditionID))
                 i = i + UInt64(1)
             }
 
@@ -1188,6 +1196,56 @@ pub contract TopShot: NonFungibleToken {
         }
     }
 
+    pub resource interface AdminSubEdition {
+        pub fun getNumberMintedPerSubEdition(setID: UInt32, playID: UInt32, subEditionID: UInt32): UInt32
+        pub fun addToNumberMintedPerSubEdition(setID: UInt32, playID: UInt32, subEditionID: UInt32)
+        pub fun setMomentsSubEdition(nftID: UInt64, subEditionID: UInt32)
+    }
+
+    pub resource interface PublicSubEdition {
+        pub fun getMomentsSubEdition( nftID: UInt64):UInt32?
+    }
+
+    pub resource SubEdition:AdminSubEdition,PublicSubEdition {
+
+       access(self) var numberMintedPerSubEdition: {String:UInt32}
+
+       access(self) var momentsSubEdition: {UInt64:UInt32}
+
+       pub fun getMomentsSubEdition( nftID: UInt64):UInt32? {
+          return self.momentsSubEdition[nftID]
+       }
+
+       pub fun getNumberMintedPerSubEdition(setID: UInt32, playID: UInt32, subEditionID: UInt32): UInt32 {
+          let setPlaySubEdition = setID.toString().concat(playID.toString()).concat(subEditionID.toString())
+          if !self.numberMintedPerSubEdition.containsKey(setPlaySubEdition) {
+               self.numberMintedPerSubEdition.insert(key: setPlaySubEdition,UInt32(0))
+               return UInt32(0)
+          }
+          return self.numberMintedPerSubEdition[setPlaySubEdition]!
+       }
+
+       pub fun addToNumberMintedPerSubEdition(setID: UInt32, playID: UInt32, subEditionID: UInt32) {
+          let setPlaySubEdition = setID.toString().concat(playID.toString()).concat(subEditionID.toString())
+
+          if self.numberMintedPerSubEdition.containsKey(setPlaySubEdition) {
+            self.numberMintedPerSubEdition[setPlaySubEdition]!= self.numberMintedPerSubEdition[setPlaySubEdition]! + UInt32(1)
+          } else {
+            panic("Could not find specified SubEdition!")
+          }
+       }
+
+       pub fun setMomentsSubEdition(nftID: UInt64, subEditionID: UInt32){
+           self.momentsSubEdition[nftID] != subEditionID
+       }
+
+       init() {
+           self.momentsSubEdition = {}
+           self.numberMintedPerSubEdition = {}
+       }
+    }
+
+
     // -----------------------------------------------------------------------
     // TopShot initialization function
     // -----------------------------------------------------------------------
@@ -1210,6 +1268,11 @@ pub contract TopShot: NonFungibleToken {
 
         // Put the Minter in storage
         self.account.save<@Admin>(<- create Admin(), to: /storage/TopShotAdmin)
+
+        self.account.save<@SubEdition>(<- create SubEdition(), to: /storage/TopShotSubEdition)
+
+        self.account.link<&{AdminSubEdition}>(/private/AdminSubEdition, target: /storage/TopShotSubEdition)
+        self.account.link<&{PublicSubEdition}>(/public/PublicSubEdition, target: /storage/TopShotSubEdition)
 
         emit ContractInitialized()
     }
