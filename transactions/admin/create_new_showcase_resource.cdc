@@ -16,6 +16,6 @@ transaction() {
     }
 
     execute {
-        self.adminRef.createSubEditionResource()
+        self.adminRef.createSubeditionResource()
     }
 }

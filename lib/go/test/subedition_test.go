@@ -19,7 +19,7 @@ import (
 )
 
 // This test tests the pure functionality of the smart contract
-func TestMintWithSubEditionNFTs(t *testing.T) {
+func TestMintWithSubeditionNFTs(t *testing.T) {
 	b := newBlockchain()
 
 	serviceKeySigner, err := b.ServiceKey().Signer()
@@ -279,7 +279,7 @@ func TestMintWithSubEditionNFTs(t *testing.T) {
 	})
 
 	t.Run("Should be able to create new showcase resource", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateNewSubEditionResourceScript(env), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateNewSubeditionResourceScript(env), topshotAddr)
 
 		signAndSubmit(
 			t, b, tx,
@@ -290,7 +290,7 @@ func TestMintWithSubEditionNFTs(t *testing.T) {
 
 	// Admin mints a moment that stores it in the admin's collection
 	t.Run("Should be able to mint a moment with subedition #1", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentWithSubEditionScript(env), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentWithSubeditionScript(env), topshotAddr)
 
 		_ = tx.AddArgument(cadence.NewUInt32(1))
 		_ = tx.AddArgument(cadence.NewUInt32(1))
@@ -317,7 +317,7 @@ func TestMintWithSubEditionNFTs(t *testing.T) {
 	})
 
 	t.Run("Should be able to mint a moment with subedition #2", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentWithSubEditionScript(env), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentWithSubeditionScript(env), topshotAddr)
 
 		_ = tx.AddArgument(cadence.NewUInt32(1))
 		_ = tx.AddArgument(cadence.NewUInt32(1))
@@ -395,7 +395,7 @@ func TestMintWithSubEditionNFTs(t *testing.T) {
 
 	// Admin sends a transaction that mints a batch of moments
 	t.Run("Should be able to mint a batch of moments with subedition #1", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchMintMomentWithSubEditionScript(env), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchMintMomentWithSubeditionScript(env), topshotAddr)
 
 		_ = tx.AddArgument(cadence.NewUInt32(1))
 		_ = tx.AddArgument(cadence.NewUInt32(3))
@@ -428,8 +428,8 @@ func TestMintWithSubEditionNFTs(t *testing.T) {
 
 	})
 
-	t.Run("Should be able to mint a batch of moments with subEdition #2", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchMintMomentWithSubEditionScript(env), topshotAddr)
+	t.Run("Should be able to mint a batch of moments with subedition #2", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchMintMomentWithSubeditionScript(env), topshotAddr)
 
 		_ = tx.AddArgument(cadence.NewUInt32(1))
 		_ = tx.AddArgument(cadence.NewUInt32(3))
@@ -462,24 +462,24 @@ func TestMintWithSubEditionNFTs(t *testing.T) {
 
 	})
 
-	t.Run("Should be able to get moment's subEdition", func(t *testing.T) {
+	t.Run("Should be able to get moment's subedition", func(t *testing.T) {
 		//check separately minted moments
-		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubEditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubeditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		assert.Equal(t, cadence.NewUInt32(1), result)
 
-		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubEditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubeditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(2))})
 		assert.Equal(t, cadence.NewUInt32(2), result)
 
 		//check batch minted moments
-		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubEditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(3))})
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubeditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(3))})
 		assert.Equal(t, cadence.NewUInt32(1), result)
 
-		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubEditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(8))})
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubeditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(8))})
 		assert.Equal(t, cadence.NewUInt32(2), result)
 	})
 
 	t.Run("Should be able to mint a batch of moments with subedition and fulfill a pack", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchMintMomentWithSubEditionScript(env), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchMintMomentWithSubeditionScript(env), topshotAddr)
 
 		_ = tx.AddArgument(cadence.NewUInt32(1))
 		_ = tx.AddArgument(cadence.NewUInt32(3))
@@ -522,7 +522,7 @@ func TestMintWithSubEditionNFTs(t *testing.T) {
 		)
 
 		// Minting from this play should fail becuase it is retired
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentWithSubEditionScript(env), topshotAddr)
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentWithSubeditionScript(env), topshotAddr)
 
 		_ = tx.AddArgument(cadence.NewUInt32(1))
 		_ = tx.AddArgument(cadence.NewUInt32(1))
@@ -552,7 +552,7 @@ func TestMintWithSubEditionNFTs(t *testing.T) {
 		)
 
 		// minting should fail
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentWithSubEditionScript(env), topshotAddr)
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentWithSubeditionScript(env), topshotAddr)
 
 		_ = tx.AddArgument(cadence.NewUInt32(1))
 		_ = tx.AddArgument(cadence.NewUInt32(3))

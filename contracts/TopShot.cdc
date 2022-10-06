@@ -84,6 +84,8 @@ pub contract TopShot: NonFungibleToken {
     // Emitted when a Moment is destroyed
     pub event MomentDestroyed(id: UInt64)
 
+    pub event SubeditionCreated(id: UInt32, name: String, metadata: {String:String})
+
     // -----------------------------------------------------------------------
     // TopShot contract-level fields.
     // These contain actual values that are stored in the smart contract.
@@ -380,63 +382,63 @@ pub contract TopShot: NonFungibleToken {
             return <-newCollection
         }
 
-        // mintMomentWithSubEdition mints a new Moment with subEdition and returns the newly minted Moment
+        // mintMomentWithSubedition mints a new Moment with subedition and returns the newly minted Moment
         //
         // Parameters: playID: The ID of the Play that the Moment references
-        //             subEditionID: The ID of the subEdition within Edition that the Moment references
+        //             subeditionID: The ID of the subedition within Edition that the Moment references
         //
         // Pre-Conditions:
         // The Play must exist in the Set and be allowed to mint new Moments
         //
         // Returns: The NFT that was minted
         //
-        pub fun mintMomentWithSubEdition(playID: UInt32, subEditionID: UInt32): @NFT {
+        pub fun mintMomentWithSubedition(playID: UInt32, subeditionID: UInt32): @NFT {
             pre {
                 self.retired[playID] != nil: "Cannot mint the moment: This play doesn't exist."
                 !self.retired[playID]!: "Cannot mint the moment from this play: This play has been retired."
             }
 
-            // Gets the number of Moments that have been minted for this subEdition
+            // Gets the number of Moments that have been minted for this subedition
             // to use as this Moment's serial number
-            let subEditionRef = TopShot.account.getCapability(/private/AdminSubEdition).borrow<&{AdminSubEdition}>()!
+            let subeditionRef = TopShot.account.getCapability(/private/AdminSubedition).borrow<&{AdminSubedition}>()!
 
-            let numInSubEdition = subEditionRef.getNumberMintedPerSubEdition(setID: self.setID,
+            let numInSubedition = subeditionRef.getNumberMintedPerSubedition(setID: self.setID,
                                                                              playID: playID,
-                                                                             subEditionID: subEditionID)
+                                                                             subeditionID: subeditionID)
 
             // Mint the new moment
-            let newMoment: @NFT <- create NFT(serialNumber: numInSubEdition + UInt32(1),
+            let newMoment: @NFT <- create NFT(serialNumber: numInSubedition + UInt32(1),
                                               playID: playID,
                                               setID: self.setID)
 
-            // Increment the count of Moments minted for this subEdition
-            subEditionRef.addToNumberMintedPerSubEdition(setID: self.setID,
+            // Increment the count of Moments minted for this subedition
+            subeditionRef.addToNumberMintedPerSubedition(setID: self.setID,
                                                          playID: playID,
-                                                         subEditionID: subEditionID)
+                                                         subeditionID: subeditionID)
 
-            subEditionRef.setMomentsSubEdition(nftID: newMoment.id, subEditionID: subEditionID)
+            subeditionRef.setMomentsSubedition(nftID: newMoment.id, subeditionID: subeditionID)
 
             self.numberMintedPerPlay[playID] = self.numberMintedPerPlay[playID]! + UInt32(1)
 
             return <-newMoment
         }
 
-        // batchMintMomentWithSubEdition mints an arbitrary quantity of Moments with subEdition
+        // batchMintMomentWithSubedition mints an arbitrary quantity of Moments with subedition
         // and returns them as a Collection
         //
         // Parameters: playID: the ID of the Play that the Moments are minted for
         //             quantity: The quantity of Moments to be minted
-        //             subEditionID: The ID of the subEdition within Edition that the Moments references
+        //             subeditionID: The ID of the subedition within Edition that the Moments references
         //
         // Returns: Collection object that contains all the Moments that were minted
         //
-         pub fun batchMintMomentWithSubEdition(playID: UInt32, quantity: UInt64, subEditionID: UInt32): @Collection {
+         pub fun batchMintMomentWithSubedition(playID: UInt32, quantity: UInt64, subeditionID: UInt32): @Collection {
             let newCollection <- create Collection()
 
             var i: UInt64 = 0
             while i < quantity {
-                newCollection.deposit(token: <-self.mintMomentWithSubEdition(playID: playID,
-                                                                             subEditionID: subEditionID))
+                newCollection.deposit(token: <-self.mintMomentWithSubedition(playID: playID,
+                                                                             subeditionID: subeditionID))
                 i = i + UInt64(1)
             }
 
@@ -813,12 +815,10 @@ pub contract TopShot: NonFungibleToken {
             return TopShot.currentSeries
         }
 
-        // createSubEditionResource creates new SubEdition resource that
-        // will be used to mint Moments with SubEditions
-        pub fun createSubEditionResource() {
-            TopShot.account.save<@SubEdition>(<- create SubEdition(), to: /storage/TopShotSubEdition)
-            TopShot.account.link<&{AdminSubEdition}>(/private/AdminSubEdition, target: /storage/TopShotSubEdition)
-            TopShot.account.link<&{PublicSubEdition}>(/public/PublicSubEdition, target: /storage/TopShotSubEdition)
+        // createSubeditionResource creates new SubeditionMap resource that
+        // will be used to mint Moments with Subeditions
+        pub fun createSubeditionAdminResource() {
+            TopShot.account.save<@SubeditionAdmin>(<- create SubeditionAdmin(), to: /storage/TopShotSubeditionAdmin)
         }
 
         // createNewAdmin creates a new Admin resource
@@ -1223,98 +1223,140 @@ pub contract TopShot: NonFungibleToken {
         }
     }
 
-    // This is the interface that admin can cast SubEdition resource as
-    // to mint Moments with SubEditions
-    //
-    pub resource interface AdminSubEdition {
-        pub fun getNumberMintedPerSubEdition(setID: UInt32, playID: UInt32, subEditionID: UInt32): UInt32
-        pub fun addToNumberMintedPerSubEdition(setID: UInt32, playID: UInt32, subEditionID: UInt32)
-        pub fun setMomentsSubEdition(nftID: UInt64, subEditionID: UInt32)
+    pub fun getMomentsSubedition(nftID: UInt64):UInt32? {
+        subeditionAdmin = self.account.borrow<&SubeditionAdmin>(from: /storage/topShotSubeditionAdmin)
+        return subeditionAdmin.getMomentsSubedition( nftID: UInt64)
     }
 
-    // This is the interface that users can cast SubEdition resource as
-    // to obtain info about it resource
-    //
-    pub resource interface PublicSubEdition {
-        pub fun getMomentsSubEdition( nftID: UInt64):UInt32?
+    pub fun getAllSubeditions()[TopShot.Subedition] {
+        subeditionAdmin = self.account.borrow<&SubeditionAdmin>(from: /storage/topShotSubeditionAdmin)
+        return subeditionAdmin.subeditionDatas.values
     }
 
-    // SubEdition is a resource that allows Set to mint Moments with SubEditions
-    //
-    pub resource SubEdition:AdminSubEdition,PublicSubEdition {
+    pub fun getSubeditionByID(subeditionID: UInt32):TopShot.Subedition {
+        subeditionAdmin = self.account.borrow<&SubeditionAdmin>(from: /storage/topShotSubeditionAdmin)
+        return subeditionAdmin.subeditionDatas[subeditionID]!
+    }
 
-        // Map of number of already minted Moments using SubEdition.
-        // When a new Moment with SubEdition is minted, 1 is added to the
+    pub fun getNextSubeditionID():UInt32 {
+        subeditionAdmin = self.account.borrow<&SubeditionAdmin>(from: /storage/topShotSubeditionAdmin)
+        return subeditionAdmin.nextSubeditionID
+    }
+    // SubeditionAdmin is a resource that allows Set to mint Moments with Subeditions
+    //
+    pub struct Subedition {
+        pub let subeditionID: UInt32
+
+        pub let metadata: {String: String}
+
+        pub let name: String
+
+        init(subeditonID: UInt32, name: String, metadata: {String: String}) {
+            pre {
+                name.length != 0: "New Subedition name cannot be empty"
+                metadata.length != 0: "New Subedition metadata cannot be empty"
+            }
+            self.subeditionID = subeditionID
+            self.name = name
+            self.metadata = metadata
+        }
+    }
+
+    pub resource SubeditionAdmin {
+
+        // Map of number of already minted Moments using Subedition.
+        // When a new Moment with Subedition is minted, 1 is added to the
         // number in this map by the key, formed by concatinating of
-        // SetID, PlayID and SubEditionID
-        access(self) var numberMintedPerSubEdition: {String:UInt32}
+        // SetID, PlayID and SubeditionID
+        access(self) var numberMintedPerSubedition: {String:UInt32}
 
 
-        //Map of SubEdition which the Moment belongs to.
+        //Map of Subedition which the Moment belongs to.
         //This map updates after each minting.
-        access(self) var momentsSubEdition: {UInt64:UInt32}
+        access(contract) var momentsSubedition: {UInt64:UInt32}
 
+        access(contract) var nextSubeditionID: UInt32
 
-        // getMomentsSubEdition function that return's wich SubEdition the Moment belongs to
+        access(contract) var subeditionDatas: {UInt32: Subedition}
+
+        pub fun createSubedition(name:String, metadata:{String:String}): UInt32 {
+            var newSubedition = Subedition(subeditonID: nextSubeditionID, name: name, metadata: metadata)
+            let newID = nextSubeditionID
+
+            self.nextSubeditionID = self.nextSubeditionID + UInt32(1)
+
+            emit SubeditionCreated(id: nextSubeditionID, name: name, metadata: metadata)
+
+            self.subeditionDatas[newID] = newSubedition
+
+            return newID
+        }
+
+        // getMomentsSubedition function that return's wich Subedition the Moment belongs to
         //
         // Parameters: nftID: The ID of the NFT
         //
-        // returns: UInt32? SubEdition's ID if exists
+        // returns: UInt32? Subedition's ID if exists
         //
-        pub fun getMomentsSubEdition( nftID: UInt64):UInt32? {
-           return self.momentsSubEdition[nftID]
+        pub fun getMomentsSubedition( nftID: UInt64):UInt32? {
+           return self.momentsSubedition[nftID]
         }
 
-        // getNumberMintedPerSubEdition function that return's
-        // the number of Moments that have been minted for this subEdition
+        // getNumberMintedPerSubedition function that return's
+        // the number of Moments that have been minted for this subedition
         // to use as this Moment's serial number
         //
         // Parameters: setID: The ID of the Set Moment will be minted from
         //             playID: The ID of the Play Moment will be minted from
-        //             subEditionID: The ID of the SubEdition using which moment will be minted
+        //             subeditionID: The ID of the Subedition using which moment will be minted
         //
-        // returns: UInt32 Number of Moments, already minted for this SubEdition
+        // returns: UInt32 Number of Moments, already minted for this Subedition
         //
-        pub fun getNumberMintedPerSubEdition(setID: UInt32, playID: UInt32, subEditionID: UInt32): UInt32 {
-           let setPlaySubEdition = setID.toString().concat(playID.toString()).concat(subEditionID.toString())
-           if !self.numberMintedPerSubEdition.containsKey(setPlaySubEdition) {
-                self.numberMintedPerSubEdition.insert(key: setPlaySubEdition,UInt32(0))
+        pub fun getNumberMintedPerSubedition(setID: UInt32, playID: UInt32, subeditionID: UInt32): UInt32 {
+           let setPlaySubedition = setID.toString().concat(playID.toString()).concat(subeditionID.toString())
+           if !self.numberMintedPerSubedition.containsKey(setPlaySubedition) {
+                self.numberMintedPerSubedition.insert(key: setPlaySubedition,UInt32(0))
                 return UInt32(0)
            }
-           return self.numberMintedPerSubEdition[setPlaySubEdition]!
+           return self.numberMintedPerSubedition[setPlaySubedition]!
         }
 
-        // addToNumberMintedPerSubEdition function that increments 1 to the
-        // number of Moments that have been minted for this subEdition
+        // addToNumberMintedPerSubedition function that increments 1 to the
+        // number of Moments that have been minted for this subedition
         //
         // Parameters: setID: The ID of the Set Moment will be minted from
         //             playID: The ID of the Play Moment will be minted from
-        //             subEditionID: The ID of the SubEdition using which moment will be minted
+        //             subeditionID: The ID of the Subedition using which moment will be minted
         //
         //
-        pub fun addToNumberMintedPerSubEdition(setID: UInt32, playID: UInt32, subEditionID: UInt32) {
-           let setPlaySubEdition = setID.toString().concat(playID.toString()).concat(subEditionID.toString())
+        pub fun addToNumberMintedPerSubedition(setID: UInt32, playID: UInt32, subeditionID: UInt32) {
+           let setPlaySubedition = setID.toString().concat(playID.toString()).concat(subeditionID.toString())
 
-           if self.numberMintedPerSubEdition.containsKey(setPlaySubEdition) {
-              self.numberMintedPerSubEdition[setPlaySubEdition]!= self.numberMintedPerSubEdition[setPlaySubEdition]! + UInt32(1)
+           if self.numberMintedPerSubedition.containsKey(setPlaySubedition) {
+              self.numberMintedPerSubedition[setPlaySubedition]!= self.numberMintedPerSubedition[setPlaySubedition]! + UInt32(1)
            } else {
-             panic("Could not find specified SubEdition!")
+             panic("Could not find specified Subedition!")
            }
         }
 
 
-        // setMomentsSubEdition function that saves which SubEdition the Moment belongs to
+        // setMomentsSubedition function that saves which Subedition the Moment belongs to
         //
         // Parameters: nftID: The ID of the NFT
-        //             subEditionID: The ID of the SubEdition the Moment belongs to
+        //             subeditionID: The ID of the Subedition the Moment belongs to
         //
-        pub fun setMomentsSubEdition(nftID: UInt64, subEditionID: UInt32){
-            self.momentsSubEdition.insert(key: nftID, subEditionID)
+        pub fun setMomentsSubedition(nftID: UInt64, subeditionID: UInt32){
+            if self.momentsSubedition.containsKey(nftID) {
+                panic("Subedition for this moment already exists!")
+            }
+            self.momentsSubedition.insert(key: nftID, subeditionID)
         }
 
         init() {
-            self.momentsSubEdition = {}
-            self.numberMintedPerSubEdition = {}
+            self.momentsSubedition = {}
+            self.numberMintedPerSubedition = {}
+            self.subeditionDatas = {}
+            self.nextSubeditionID = 0
         }
     }
 

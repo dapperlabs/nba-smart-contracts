@@ -44,8 +44,8 @@ const (
 	getNFTMetadataFilename     = "get_nft_metadata.cdc"
 	getTopShotMetadataFilename = "get_topshot_metadata.cdc"
 
-	//subEdition scripts
-	getNFTSubEditionFilename = "get_nft_subedition.cdc"
+	//subedition scripts
+	getNFTSubeditionFilename = "get_nft_subedition.cdc"
 )
 
 // Global Data Gettetrs
@@ -235,9 +235,9 @@ func GenerateGetTopShotMetadataScript(env Environment) []byte {
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateGetNFTSubEditionScript creates a script that returns the subEdition for an NFT.
-func GenerateGetNFTSubEditionScript(env Environment) []byte {
-	code := assets.MustAssetString(scriptsPath + getNFTSubEditionFilename)
+// GenerateGetNFTSubeditionScript creates a script that returns the subedition for an NFT.
+func GenerateGetNFTSubeditionScript(env Environment) []byte {
+	code := assets.MustAssetString(scriptsPath + getNFTSubeditionFilename)
 
 	return []byte(replaceAddresses(code, env))
 }

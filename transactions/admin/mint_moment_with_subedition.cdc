@@ -7,10 +7,10 @@ import TopShot from 0xTOPSHOTADDRESS
 //
 // setID: the ID of a set containing the target play
 // playID: the ID of a play from which a new moment is minted
-// subEditionID: the ID of play's subEdition
+// subeditionID: the ID of play's subedition
 // recipientAddr: the Flow address of the account receiving the newly minted moment
 
-transaction(setID: UInt32, playID: UInt32, subEditionID: UInt32, recipientAddr: Address) {
+transaction(setID: UInt32, playID: UInt32, subeditionID: UInt32, recipientAddr: Address) {
     // local variable for the admin reference
     let adminRef: &TopShot.Admin
 
@@ -23,8 +23,8 @@ transaction(setID: UInt32, playID: UInt32, subEditionID: UInt32, recipientAddr: 
         // Borrow a reference to the specified set
         let setRef = self.adminRef.borrowSet(setID: setID)
 
-        // Mint a new NFT with SubEdition
-        let moment1 <- setRef.mintMomentWithSubEdition(playID: playID, subEditionID: subEditionID)
+        // Mint a new NFT with Subedition
+        let moment1 <- setRef.mintMomentWithSubedition(playID: playID, subeditionID: subeditionID)
 
         // get the public account object for the recipient
         let recipient = getAccount(recipientAddr)

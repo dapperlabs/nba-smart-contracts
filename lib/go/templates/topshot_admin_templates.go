@@ -21,9 +21,9 @@ const (
 
 	transferAdminFilename = "admin/transfer_admin.cdc"
 
-	mintMomentWithSubEditionFilename      = "admin/mint_moment_with_subedition.cdc"
-	batchMintMomentWithSubEditionFilename = "admin/batch_mint_moment_with_subedition.cdc"
-	createNewSubEditionResourceFilename   = "admin/create_new_showcase_resource.cdc"
+	mintMomentWithSubeditionFilename      = "admin/mint_moment_with_subedition.cdc"
+	batchMintMomentWithSubeditionFilename = "admin/batch_mint_moment_with_subedition.cdc"
+	createNewSubeditionResourceFilename   = "admin/create_new_showcase_resource.cdc"
 )
 
 // GenerateMintPlayScript creates a new play data struct
@@ -122,26 +122,26 @@ func GenerateCreateSetandPlayDataScript(env Environment) []byte {
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateMintMomentWithSubEditionScript generates a script to mint a new moment
-// with SubEdition from a play-set-subEdition combination
-func GenerateMintMomentWithSubEditionScript(env Environment) []byte {
-	code := assets.MustAssetString(transactionsPath + mintMomentWithSubEditionFilename)
+// GenerateMintMomentWithSubeditionScript generates a script to mint a new moment
+// with Subedition from a play-set-subedition combination
+func GenerateMintMomentWithSubeditionScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + mintMomentWithSubeditionFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateBatchMintMomentWithSubEditionScript mints multiple moments with SubEdition
-// of the same play-set-subEdition combination
-func GenerateBatchMintMomentWithSubEditionScript(env Environment) []byte {
-	code := assets.MustAssetString(transactionsPath + batchMintMomentWithSubEditionFilename)
+// GenerateBatchMintMomentWithSubeditionScript mints multiple moments with Subedition
+// of the same play-set-subedition combination
+func GenerateBatchMintMomentWithSubeditionScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + batchMintMomentWithSubeditionFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateCreateNewSubEditionResourceScript creates new SubEdition resource
-// for minting with SubEditions
-func GenerateCreateNewSubEditionResourceScript(env Environment) []byte {
-	code := assets.MustAssetString(transactionsPath + createNewSubEditionResourceFilename)
+// GenerateCreateNewSubeditionResourceScript creates new Subedition resource
+// for minting with Subeditions
+func GenerateCreateNewSubeditionResourceScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + createNewSubeditionResourceFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
