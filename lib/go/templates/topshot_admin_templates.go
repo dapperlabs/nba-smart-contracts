@@ -122,19 +122,25 @@ func GenerateCreateSetandPlayDataScript(env Environment) []byte {
 	return []byte(replaceAddresses(code, env))
 }
 
+// GenerateMintMomentWithSubEditionScript generates a script to mint a new moment
+// with SubEdition from a play-set-subEdition combination
 func GenerateMintMomentWithSubEditionScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + mintMomentWithSubEditionFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
 
+// GenerateBatchMintMomentWithSubEditionScript mints multiple moments with SubEdition
+// of the same play-set-subEdition combination
 func GenerateBatchMintMomentWithSubEditionScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + batchMintMomentWithSubEditionFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
 
-func GenerateCreateNewSubEditionResoourceScript(env Environment) []byte {
+// GenerateCreateNewSubEditionResourceScript creates new SubEdition resource
+// for minting with SubEditions
+func GenerateCreateNewSubEditionResourceScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + createNewSubEditionResourceFilename)
 
 	return []byte(replaceAddresses(code, env))

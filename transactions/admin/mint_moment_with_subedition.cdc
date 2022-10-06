@@ -23,7 +23,7 @@ transaction(setID: UInt32, playID: UInt32, subEditionID: UInt32, recipientAddr: 
         // Borrow a reference to the specified set
         let setRef = self.adminRef.borrowSet(setID: setID)
 
-        // Mint a new NFT
+        // Mint a new NFT with SubEdition
         let moment1 <- setRef.mintMomentWithSubEdition(playID: playID, subEditionID: subEditionID)
 
         // get the public account object for the recipient

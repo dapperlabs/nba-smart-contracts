@@ -1,7 +1,7 @@
 import TopShot from 0xTOPSHOTADDRESS
 
 // This transaction mints multiple moments
-// from a single set/play combination (otherwise known as edition)
+// from a single set/play/subEdition combination
 
 // Parameters:
 //
@@ -27,7 +27,7 @@ transaction(setID: UInt32, playID: UInt32, quantity: UInt64, subEditionID: UInt3
         // borrow a reference to the set to be minted from
         let setRef = self.adminRef.borrowSet(setID: setID)
 
-        // Mint all the new NFTs
+        // Mint all the new NFTs with SubEditions
         let collection <- setRef.batchMintMomentWithSubEdition(playID: playID, quantity: quantity, subEditionID: subEditionID)
 
         // Get the account object for the recipient of the minted tokens

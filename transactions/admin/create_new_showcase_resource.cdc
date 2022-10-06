@@ -1,11 +1,7 @@
 import TopShot from 0xTOPSHOTADDRESS
 
-// This transaction is for the admin to create a new set resource
+// This transaction is for the admin to create a new showcase resource
 // and store it in the top shot smart contract
-
-// Parameters:
-//
-// setName: the name of a new Set to be created
 
 transaction() {
 
@@ -20,6 +16,6 @@ transaction() {
     }
 
     execute {
-        self.adminRef.createShowcaseResource()
+        self.adminRef.createSubEditionResource()
     }
 }

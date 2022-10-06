@@ -279,7 +279,7 @@ func TestMintWithSubEditionNFTs(t *testing.T) {
 	})
 
 	t.Run("Should be able to create new showcase resource", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateNewSubEditionResoourceScript(env), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateNewSubEditionResourceScript(env), topshotAddr)
 
 		signAndSubmit(
 			t, b, tx,

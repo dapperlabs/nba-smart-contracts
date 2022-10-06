@@ -235,7 +235,7 @@ func GenerateGetTopShotMetadataScript(env Environment) []byte {
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateGetTopShotMetadataScript creates a script that returns the subEdition for an NFT.
+// GenerateGetNFTSubEditionScript creates a script that returns the subEdition for an NFT.
 func GenerateGetNFTSubEditionScript(env Environment) []byte {
 	code := assets.MustAssetString(scriptsPath + getNFTSubEditionFilename)
 
