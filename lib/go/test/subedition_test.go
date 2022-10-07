@@ -19,7 +19,7 @@ import (
 )
 
 // This test tests the pure functionality of the smart contract
-func TestMintWithSubeditionNFTs(t *testing.T) {
+func TestSubeditions(t *testing.T) {
 	b := newBlockchain()
 
 	serviceKeySigner, err := b.ServiceKey().Signer()
@@ -112,6 +112,7 @@ func TestMintWithSubeditionNFTs(t *testing.T) {
 	joshAddress, _ := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
 
 	firstName := CadenceString("FullName")
+
 	lebron := CadenceString("Lebron")
 	oladipo := CadenceString("Oladipo")
 	hayward := CadenceString("Hayward")
@@ -120,6 +121,14 @@ func TestMintWithSubeditionNFTs(t *testing.T) {
 	playType := CadenceString("PlayType")
 	dunk := CadenceString("Dunk")
 
+	playIDString := CadenceString("PlayID")
+	setIDString := CadenceString("SetID")
+	value1 := CadenceString("1")
+	value3 := CadenceString("3")
+	subedition111Name := CadenceString("Subedition PlayID:1 SetID:1 SubeditionID: 1")
+	subedition112Name := CadenceString("Subedition PlayID:1 SetID:1 SubeditionID: 2")
+	subedition133Name := CadenceString("Subedition PlayID:3 SetID:1 SubeditionID: 3")
+	subedition134Name := CadenceString("Subedition PlayID:3 SetID:1 SubeditionID: 4")
 	// Admin sends a transaction to create a play
 	t.Run("Should be able to create a new Play", func(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
@@ -278,14 +287,105 @@ func TestMintWithSubeditionNFTs(t *testing.T) {
 		)
 	})
 
-	t.Run("Should be able to create new showcase resource", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateNewSubeditionResourceScript(env), topshotAddr)
+	t.Run("Should be able to create new subedition admin resource", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateNewSubeditionAdminResourceScript(env), topshotAddr)
 
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
 			false,
 		)
+	})
+
+	t.Run("Should be able to create multiple new Subeditions", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateSubeditionScript(env), topshotAddr)
+
+		name := subedition111Name
+		metadata := []cadence.KeyValuePair{{Key: setIDString, Value: value1}, {Key: playIDString, Value: value1}}
+		subeditionMetadata := cadence.NewDictionary(metadata)
+		_ = tx.AddArgument(name)
+		_ = tx.AddArgument(subeditionMetadata)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateSubeditionScript(env), topshotAddr)
+
+		name = subedition112Name
+		metadata = []cadence.KeyValuePair{{Key: setIDString, Value: value1}, {Key: playIDString, Value: value1}}
+		subeditionMetadata = cadence.NewDictionary(metadata)
+		_ = tx.AddArgument(name)
+		_ = tx.AddArgument(subeditionMetadata)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateSubeditionScript(env), topshotAddr)
+
+		name = subedition133Name
+		metadata = []cadence.KeyValuePair{{Key: setIDString, Value: value1}, {Key: playIDString, Value: value3}}
+		subeditionMetadata = cadence.NewDictionary(metadata)
+		_ = tx.AddArgument(name)
+		_ = tx.AddArgument(subeditionMetadata)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+
+		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateSubeditionScript(env), topshotAddr)
+
+		name = subedition134Name
+		metadata = []cadence.KeyValuePair{{Key: setIDString, Value: value1}, {Key: playIDString, Value: value3}}
+		subeditionMetadata = cadence.NewDictionary(metadata)
+		_ = tx.AddArgument(name)
+		_ = tx.AddArgument(subeditionMetadata)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNextSubeditionIDScript(env), nil)
+		assert.Equal(t, cadence.NewUInt32(5), result)
+
+		// Check that the return all subeditions script works properly
+		// and that we can return metadata about the plays
+		result = executeScriptAndCheck(t, b, templates.GenerateGetAllSubeditionScript(env), nil)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetSubeditionByIDScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1))})
+
+		metadataFields := result.(cadence.Struct).Fields
+
+		metadata = []cadence.KeyValuePair{{Key: setIDString, Value: value1}, {Key: playIDString, Value: value1}}
+		subeditionMetadata = cadence.NewDictionary(metadata)
+		assert.Equal(t, cadence.NewUInt32(1), metadataFields[0])
+		assert.Equal(t, subedition111Name, metadataFields[1])
+		assert.Equal(t, subeditionMetadata, metadataFields[2])
+	})
+
+	t.Run("Should be able to link nft to subedition", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateNFTsubedtitionScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewUInt64(100))
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubeditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt64(100))})
+		assert.Equal(t, cadence.NewUInt32(1), result)
 	})
 
 	// Admin mints a moment that stores it in the admin's collection
@@ -400,7 +500,7 @@ func TestMintWithSubeditionNFTs(t *testing.T) {
 		_ = tx.AddArgument(cadence.NewUInt32(1))
 		_ = tx.AddArgument(cadence.NewUInt32(3))
 		_ = tx.AddArgument(cadence.NewUInt64(5))
-		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewUInt32(3))
 		_ = tx.AddArgument(cadence.NewAddress(topshotAddr))
 
 		signAndSubmit(
@@ -434,7 +534,7 @@ func TestMintWithSubeditionNFTs(t *testing.T) {
 		_ = tx.AddArgument(cadence.NewUInt32(1))
 		_ = tx.AddArgument(cadence.NewUInt32(3))
 		_ = tx.AddArgument(cadence.NewUInt64(5))
-		_ = tx.AddArgument(cadence.NewUInt32(2))
+		_ = tx.AddArgument(cadence.NewUInt32(4))
 		_ = tx.AddArgument(cadence.NewAddress(topshotAddr))
 
 		signAndSubmit(
@@ -464,18 +564,18 @@ func TestMintWithSubeditionNFTs(t *testing.T) {
 
 	t.Run("Should be able to get moment's subedition", func(t *testing.T) {
 		//check separately minted moments
-		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubeditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubeditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt64(1))})
 		assert.Equal(t, cadence.NewUInt32(1), result)
 
-		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubeditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubeditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt64(2))})
 		assert.Equal(t, cadence.NewUInt32(2), result)
 
 		//check batch minted moments
-		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubeditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(3))})
-		assert.Equal(t, cadence.NewUInt32(1), result)
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubeditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt64(3))})
+		assert.Equal(t, cadence.NewUInt32(3), result)
 
-		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubeditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(8))})
-		assert.Equal(t, cadence.NewUInt32(2), result)
+		result = executeScriptAndCheck(t, b, templates.GenerateGetNFTSubeditionScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt64(8))})
+		assert.Equal(t, cadence.NewUInt32(4), result)
 	})
 
 	t.Run("Should be able to mint a batch of moments with subedition and fulfill a pack", func(t *testing.T) {

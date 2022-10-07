@@ -21,9 +21,11 @@ const (
 
 	transferAdminFilename = "admin/transfer_admin.cdc"
 
-	mintMomentWithSubeditionFilename      = "admin/mint_moment_with_subedition.cdc"
-	batchMintMomentWithSubeditionFilename = "admin/batch_mint_moment_with_subedition.cdc"
-	createNewSubeditionResourceFilename   = "admin/create_new_showcase_resource.cdc"
+	mintMomentWithSubeditionFilename         = "admin/mint_moment_with_subedition.cdc"
+	batchMintMomentWithSubeditionFilename    = "admin/batch_mint_moment_with_subedition.cdc"
+	createNewSubeditionAdminResourceFilename = "admin/create_new_subedition_admin_resource.cdc"
+	createSubeditionFilename                 = "admin/create_subedition.cdc"
+	createNFTsubedition                      = "admin/set_nft_subedition.cdc"
 )
 
 // GenerateMintPlayScript creates a new play data struct
@@ -138,10 +140,24 @@ func GenerateBatchMintMomentWithSubeditionScript(env Environment) []byte {
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateCreateNewSubeditionResourceScript creates new Subedition resource
+// GenerateCreateNewSubeditionAdminResourceScript creates new Subedition admin resource
 // for minting with Subeditions
-func GenerateCreateNewSubeditionResourceScript(env Environment) []byte {
-	code := assets.MustAssetString(transactionsPath + createNewSubeditionResourceFilename)
+func GenerateCreateNewSubeditionAdminResourceScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + createNewSubeditionAdminResourceFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateCreateSubeditionScript creates new Subedition struct
+func GenerateCreateSubeditionScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + createSubeditionFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateCreateNFTsubedtitionScript creates new Subedition entity in map with NFTid as key
+func GenerateCreateNFTsubedtitionScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + createNFTsubedition)
 
 	return []byte(replaceAddresses(code, env))
 }
