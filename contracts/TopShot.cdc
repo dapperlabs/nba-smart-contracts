@@ -86,6 +86,8 @@ pub contract TopShot: NonFungibleToken {
 
     pub event SubeditionCreated(id: UInt32, name: String, metadata: {String:String})
 
+    pub event SubeditionAddedToMoment(momentID: UInt64, subeditionID: UInt32)
+
     // -----------------------------------------------------------------------
     // TopShot contract-level fields.
     // These contain actual values that are stored in the smart contract.
@@ -1341,6 +1343,8 @@ pub contract TopShot: NonFungibleToken {
 
             self.subeditionDatas[newID] = newSubedition
 
+            emit SubeditionCreated(id: newID, name: name, metadata: metadata)
+
             return newID
         }
 
@@ -1402,6 +1406,8 @@ pub contract TopShot: NonFungibleToken {
                 panic("Subedition for this moment already exists!")
             }
             self.momentsSubedition.insert(key: nftID, subeditionID)
+
+            emit SubeditionAddedToMoment(momentID: nftID, subeditionID: subeditionID)
         }
 
         init() {
