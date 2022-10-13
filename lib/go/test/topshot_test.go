@@ -6,6 +6,7 @@ import (
 
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
+	emulator "github.com/onflow/flow-emulator"
 	fungibleToken "github.com/onflow/flow-ft/lib/go/contracts"
 	fungibleTokenTemplates "github.com/onflow/flow-ft/lib/go/templates"
 
@@ -35,120 +36,17 @@ const (
 	Network                   = `"mainnet"`
 )
 
-// This test is for testing the deployment the topshot smart contracts
-func TestNFTDeployment(t *testing.T) {
-	b := newBlockchain()
-
-	// Should be able to deploy the NFT contract
-	// as a new account with no keys.
-	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "NonFungibleToken",
-			Source: string(nftCode),
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	// Should be able to deploy the MetadataViews contract
-	// as a new account with no keys.
-	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
-	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "MetadataViews",
-			Source: parsedMetadataContract,
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	// Should be able to deploy the TopShot Locking contract
-	// as a new account with no keys.
-	lockingKey, lockingSigner := test.AccountKeyGenerator().NewWithSigner()
-	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
-	topShotLockingAddr, err := b.CreateAccount([]*flow.AccountKey{lockingKey}, []sdktemplates.Contract{
-		{
-			Name:   "TopShotLocking",
-			Source: string(topshotLockingCode),
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	royaltyAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	// Should be able to deploy the topshot contract
-	// as a new account with no keys.
-	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
-	topshotAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopShot",
-			Source: string(topshotCode),
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	// Should be able to update the locking contract
-	// with the address of TopShot contract to perform runtime type checking
-	topShotLockingCodeWithRuntimeAddr := contracts.GenerateTopShotLockingContractWithTopShotRuntimeAddr(nftAddr.String(), topshotAddr.String())
-	err = updateContract(b, topShotLockingAddr, lockingSigner, "TopShotLocking", topShotLockingCodeWithRuntimeAddr)
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-
-	// deploy the sharded collection contract
-	shardedCollectionCode := contracts.GenerateTopShotShardedCollectionContract(nftAddr.String(), topshotAddr.String())
-	shardedAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopShotShardedCollection",
-			Source: string(shardedCollectionCode),
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	// Should be able to deploy the admin receiver contract
-	// as a new account with no keys.
-	adminReceiverCode := contracts.GenerateTopshotAdminReceiverContract(topshotAddr.String(), shardedAddr.String())
-	_, err = b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopshotAdminReceiver",
-			Source: string(adminReceiverCode),
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
+// topshotTestContext will expose sugar for common actions needed to bootstrap testing
+type topshotTestBlockchain struct {
+	*emulator.Blockchain
+	env                templates.Environment
+	topshotAdminAddr   flow.Address
+	serviceKeySigner   crypto.Signer
+	topshotAdminSigner crypto.Signer
+	accountKeys        *test.AccountKeys
 }
 
-// This test tests the pure functionality of the smart contract
-func TestMintNFTs(t *testing.T) {
+func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 	b := newBlockchain()
 
 	serviceKeySigner, err := b.ServiceKey().Signer()
@@ -243,6 +141,40 @@ func TestMintNFTs(t *testing.T) {
 
 	env.ShardedAddress = shardedAddr.String()
 
+	return topshotTestBlockchain{b, env, topshotAddr, serviceKeySigner, topshotSigner, accountKeys}
+}
+
+// This test is for testing the deployment the topshot smart contracts
+func TestNFTDeployment(t *testing.T) {
+	// all core contracts should be deployed on the test blockchain
+	b := NewTopShotTestBlockchain(t)
+	env := b.env
+	// Should be able to deploy the admin receiver contract
+	// as a new account with no keys.
+	adminReceiverCode := contracts.GenerateTopshotAdminReceiverContract(env.TopShotAddress, env.ShardedAddress)
+	_, err := b.CreateAccount(nil, []sdktemplates.Contract{
+		{
+			Name:   "TopshotAdminReceiver",
+			Source: string(adminReceiverCode),
+		},
+	})
+	if !assert.NoError(t, err) {
+		t.Log(err.Error())
+	}
+	_, err = b.CommitBlock()
+	assert.NoError(t, err)
+}
+
+// This test tests the pure functionality of the smart contract
+func TestMintNFTs(t *testing.T) {
+	tb := NewTopShotTestBlockchain(t)
+	b := tb.Blockchain
+	env := tb.env
+	accountKeys := tb.accountKeys
+	topshotAddr := tb.topshotAdminAddr
+	serviceKeySigner := tb.serviceKeySigner
+	topshotSigner := tb.topshotAdminSigner
+
 	// Create a new user account
 	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
 	joshAddress, _ := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
@@ -258,76 +190,31 @@ func TestMintNFTs(t *testing.T) {
 
 	// Admin sends a transaction to create a play
 	t.Run("Should be able to create a new Play", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
-
-		metadata := []cadence.KeyValuePair{{Key: firstName, Value: lebron}, {Key: playType, Value: dunk}}
-		play := cadence.NewDictionary(metadata)
-		_ = tx.AddArgument(play)
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-			false,
-		)
+		tb.CreatePlay(t, []cadence.KeyValuePair{{Key: firstName, Value: lebron}, {Key: playType, Value: dunk}})
 	})
 
 	// Admin sends transactions to create multiple plays
 	t.Run("Should be able to create multiple new Plays", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
+		metadatas := [][]cadence.KeyValuePair{
+			{{Key: firstName, Value: oladipo}},
+			{{Key: firstName, Value: hayward}},
+			{{Key: firstName, Value: durant}},
+		}
 
-		metadata := []cadence.KeyValuePair{{Key: firstName, Value: oladipo}}
-		play := cadence.NewDictionary(metadata)
-		_ = tx.AddArgument(play)
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-			false,
-		)
-
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
-
-		metadata = []cadence.KeyValuePair{{Key: firstName, Value: hayward}}
-		play = cadence.NewDictionary(metadata)
-		_ = tx.AddArgument(play)
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-			false,
-		)
-
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
-
-		metadata = []cadence.KeyValuePair{{Key: firstName, Value: durant}}
-		play = cadence.NewDictionary(metadata)
-		_ = tx.AddArgument(play)
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-			false,
-		)
-
+		for _, metadata := range metadatas {
+			tb.CreatePlay(t, metadata)
+		}
 		// Check that the return all plays script doesn't fail
 		// and that we can return metadata about the plays
 		executeScriptAndCheck(t, b, templates.GenerateGetAllPlaysScript(env), nil)
 
-		result = executeScriptAndCheck(t, b, templates.GenerateGetPlayMetadataFieldScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.String("FullName"))})
+		result := executeScriptAndCheck(t, b, templates.GenerateGetPlayMetadataFieldScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.String("FullName"))})
 		assert.Equal(t, CadenceString("Lebron"), result)
 	})
 
 	// Admin creates a new Set with the name Genesis
 	t.Run("Should be able to create a new Set", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintSetScript(env), topshotAddr)
-
-		_ = tx.AddArgument(CadenceString("Genesis"))
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-			false,
-		)
+		tb.CreateSet(t, "Genesis")
 
 		// Check that the set name, ID, and series were initialized correctly.
 		result := executeScriptAndCheck(t, b, templates.GenerateGetSetNameScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1))})
@@ -351,7 +238,7 @@ func TestMintNFTs(t *testing.T) {
 		)
 
 		// Check that the play ID and set ID were not incremented
-		result = executeScriptAndCheck(t, b, templates.GenerateGetNextPlayIDScript(env), nil)
+		result := executeScriptAndCheck(t, b, templates.GenerateGetNextPlayIDScript(env), nil)
 		assert.Equal(t, cadence.NewUInt32(5), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetNextSetIDScript(env), nil)
@@ -416,17 +303,7 @@ func TestMintNFTs(t *testing.T) {
 
 	// Admin mints a moment that stores it in the admin's collection
 	t.Run("Should be able to mint a moment", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentScript(env), topshotAddr)
-
-		_ = tx.AddArgument(cadence.NewUInt32(1))
-		_ = tx.AddArgument(cadence.NewUInt32(1))
-		_ = tx.AddArgument(cadence.NewAddress(topshotAddr))
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-			false,
-		)
+		tb.MintMoment(t, 1, 1, topshotAddr)
 
 		// make sure the moment was minted correctly and is stored in the collection with the correct data
 		result := executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
@@ -670,7 +547,7 @@ func TestMintNFTs(t *testing.T) {
 			false,
 		)
 		// make sure the user received it
-		result = executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
+		result := executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		assert.Equal(t, cadence.NewBool(true), result)
 	})
 
@@ -689,7 +566,7 @@ func TestMintNFTs(t *testing.T) {
 			false,
 		)
 		// make sure the user received them
-		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
+		result := executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
 		assert.Equal(t, cadence.NewUInt32(1), result)
 	})
 
@@ -705,7 +582,7 @@ func TestMintNFTs(t *testing.T) {
 	})
 
 	// Make sure the contract fields are correct
-	result = executeScriptAndCheck(t, b, templates.GenerateGetSeriesScript(env), nil)
+	result := executeScriptAndCheck(t, b, templates.GenerateGetSeriesScript(env), nil)
 	assert.Equal(t, cadence.NewUInt32(1), result)
 
 	result = executeScriptAndCheck(t, b, templates.GenerateGetNextPlayIDScript(env), nil)
@@ -717,6 +594,45 @@ func TestMintNFTs(t *testing.T) {
 	result = executeScriptAndCheck(t, b, templates.GenerateGetSupplyScript(env), nil)
 	assert.Equal(t, cadence.NewUInt64(11), result)
 
+}
+
+func (b *topshotTestBlockchain) CreatePlay(t *testing.T, metadata []cadence.KeyValuePair) {
+	tx := createTxWithTemplateAndAuthorizer(b.Blockchain, templates.GenerateMintPlayScript(b.env), b.topshotAdminAddr)
+	play := cadence.NewDictionary(metadata)
+	_ = tx.AddArgument(play)
+
+	signAndSubmit(
+		t, b.Blockchain, tx,
+		[]flow.Address{b.ServiceKey().Address, b.topshotAdminAddr}, []crypto.Signer{b.serviceKeySigner, b.topshotAdminSigner},
+		false,
+	)
+}
+
+func (b *topshotTestBlockchain) CreateSet(t *testing.T, setName string) {
+	tx := createTxWithTemplateAndAuthorizer(b.Blockchain, templates.GenerateMintSetScript(b.env), b.topshotAdminAddr)
+
+	_ = tx.AddArgument(CadenceString(setName))
+
+	signAndSubmit(
+		t, b.Blockchain, tx,
+		[]flow.Address{b.ServiceKey().Address, b.topshotAdminAddr}, []crypto.Signer{b.serviceKeySigner, b.topshotAdminSigner},
+		false,
+	)
+}
+
+// MintMoment will mint a moment from the supplied set and play id into the recipients account
+func (b *topshotTestBlockchain) MintMoment(t *testing.T, setID uint32, playID uint32, recipient flow.Address) {
+	tx := createTxWithTemplateAndAuthorizer(b.Blockchain, templates.GenerateMintMomentScript(b.env), b.topshotAdminAddr)
+
+	_ = tx.AddArgument(cadence.NewUInt32(setID))
+	_ = tx.AddArgument(cadence.NewUInt32(playID))
+	_ = tx.AddArgument(cadence.NewAddress(recipient))
+
+	signAndSubmit(
+		t, b.Blockchain, tx,
+		[]flow.Address{b.ServiceKey().Address, b.topshotAdminAddr}, []crypto.Signer{b.serviceKeySigner, b.topshotAdminSigner},
+		false,
+	)
 }
 
 // This test is for ensuring that admin receiver smart contract works correctly
@@ -826,93 +742,24 @@ func TestTransferAdmin(t *testing.T) {
 		)
 	})
 
+	tb := topshotTestBlockchain{b, env, adminAddr, serviceKeySigner, adminSigner, accountKeys}
 	// can create a new play with the new admin
 	t.Run("Should be able to create a new Play with the new Admin account", func(t *testing.T) {
-
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), adminAddr)
-
-		metadata := []cadence.KeyValuePair{{Key: firstName, Value: lebron}}
-		play := cadence.NewDictionary(metadata)
-		_ = tx.AddArgument(play)
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, adminAddr}, []crypto.Signer{serviceKeySigner, adminSigner},
-			false,
-		)
+		tb.CreatePlay(t, []cadence.KeyValuePair{{Key: firstName, Value: lebron}})
 	})
 }
 
 func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 	// Setup
-	b := newBlockchain()
-
-	serviceKeySigner, err := b.ServiceKey().Signer()
-	assert.NoError(t, err)
-
-	accountKeys := test.AccountKeyGenerator()
-
-	env := templates.Environment{
-		FungibleTokenAddress: emulatorFTAddress,
-		FlowTokenAddress:     emulatorFlowTokenAddress,
-	}
-
-	// Should be able to deploy a contract as a new account with no keys.
-	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "NonFungibleToken",
-			Source: string(nftCode),
-		},
-	})
-
-	env.NFTAddress = nftAddr.String()
-
-	// Should be able to deploy a contract as a new account with no keys.
-	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
-	metadataViewsAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "MetadataViews",
-			Source: parsedMetadataContract,
-		},
-	})
-
-	env.MetadataViewsAddress = metadataViewsAddr.String()
-
-	// Deploy TopShot Locking contract
-	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
-	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopShotLocking",
-			Source: string(topshotLockingCode),
-		},
-	})
-
-	royaltyAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	env.TopShotLockingAddress = topShotLockingAddr.String()
-
-	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
-	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
-	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
-		{
-			Name:   "TopShot",
-			Source: string(topshotCode),
-		},
-	})
-
-	env.TopShotAddress = topshotAddr.String()
+	tb := NewTopShotTestBlockchain(t)
+	b := tb.Blockchain
+	env := tb.env
+	serviceKeySigner := tb.serviceKeySigner
+	topshotAddr := tb.topshotAdminAddr
+	topshotSigner := tb.topshotAdminSigner
 
 	// Create a new user account
-	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
+	joshAccountKey, joshSigner := tb.accountKeys.NewWithSigner()
 	joshAddress, _ := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
 
 	// Create moment collection
@@ -930,53 +777,20 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 
 	// Create plays
 	lebronPlayID := uint32(1)
-	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
-
-	metadata := []cadence.KeyValuePair{{Key: firstName, Value: lebron}}
-	play := cadence.NewDictionary(metadata)
-	_ = tx.AddArgument(play)
-
-	signAndSubmit(
-		t, b, tx,
-		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-		false,
-	)
 	haywardPlayID := uint32(2)
-	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
-
-	metadata = []cadence.KeyValuePair{{Key: firstName, Value: hayward}}
-	play = cadence.NewDictionary(metadata)
-	_ = tx.AddArgument(play)
-
-	signAndSubmit(
-		t, b, tx,
-		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-		false,
-	)
 	antetokounmpoPlayID := uint32(3)
-	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
-
-	metadata = []cadence.KeyValuePair{{Key: firstName, Value: antetokounmpo}}
-	play = cadence.NewDictionary(metadata)
-	_ = tx.AddArgument(play)
-
-	signAndSubmit(
-		t, b, tx,
-		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-		false,
-	)
+	metadatas := [][]cadence.KeyValuePair{
+		{{Key: firstName, Value: lebron}},
+		{{Key: firstName, Value: hayward}},
+		{{Key: firstName, Value: antetokounmpo}},
+	}
+	for _, metadata := range metadatas {
+		tb.CreatePlay(t, metadata)
+	}
 
 	// Create Set
 	genesisSetID := uint32(1)
-	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintSetScript(env), topshotAddr)
-
-	_ = tx.AddArgument(CadenceString("Genesis"))
-
-	signAndSubmit(
-		t, b, tx,
-		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-		false,
-	)
+	tb.CreateSet(t, "Genesis")
 
 	// Add plays to Set
 	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateAddPlaysToSetScript(env), topshotAddr)
@@ -993,40 +807,11 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 	)
 
 	// Mint two moments to joshAddress
-	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentScript(env), topshotAddr)
-
-	_ = tx.AddArgument(cadence.NewUInt32(genesisSetID))
-	_ = tx.AddArgument(cadence.NewUInt32(lebronPlayID))
-	_ = tx.AddArgument(cadence.NewAddress(joshAddress))
-
-	signAndSubmit(
-		t, b, tx,
-		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-		false,
-	)
-	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentScript(env), topshotAddr)
-
-	_ = tx.AddArgument(cadence.NewUInt32(genesisSetID))
-	_ = tx.AddArgument(cadence.NewUInt32(haywardPlayID))
-	_ = tx.AddArgument(cadence.NewAddress(joshAddress))
-	signAndSubmit(
-		t, b, tx,
-		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-		false,
-	)
+	tb.MintMoment(t, genesisSetID, lebronPlayID, joshAddress)
+	tb.MintMoment(t, genesisSetID, haywardPlayID, joshAddress)
 
 	// Mint one moment to topshotAddress
-	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentScript(env), topshotAddr)
-
-	_ = tx.AddArgument(cadence.NewUInt32(genesisSetID))
-	_ = tx.AddArgument(cadence.NewUInt32(lebronPlayID))
-	_ = tx.AddArgument(cadence.NewAddress(topshotAddr))
-
-	signAndSubmit(
-		t, b, tx,
-		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-		false,
-	)
+	tb.MintMoment(t, genesisSetID, lebronPlayID, topshotAddr)
 
 	t.Run("Should return true if the address owns moments corresponding to each SetPlay", func(t *testing.T) {
 		script := templates.GenerateSetPlaysOwnedByAddressScript(env)
@@ -1064,71 +849,13 @@ func TestSetPlaysOwnedByAddressScript(t *testing.T) {
 
 func TestDestroyMoments(t *testing.T) {
 	// Setup
-	b := newBlockchain()
-
-	serviceKeySigner, err := b.ServiceKey().Signer()
-	assert.NoError(t, err)
-
-	accountKeys := test.AccountKeyGenerator()
-
-	env := templates.Environment{
-		FungibleTokenAddress: emulatorFTAddress,
-		FlowTokenAddress:     emulatorFlowTokenAddress,
-	}
-
-	// Should be able to deploy a contract as a new account with no keys.
-	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "NonFungibleToken",
-			Source: string(nftCode),
-		},
-	})
-
-	env.NFTAddress = nftAddr.String()
-
-	// Should be able to deploy a contract as a new account with no keys.
-	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
-	metadataViewsAddr, _ := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "MetadataViews",
-			Source: parsedMetadataContract,
-		},
-	})
-
-	env.MetadataViewsAddress = metadataViewsAddr.String()
-
-	// Deploy TopShot Locking contract
-	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
-	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopShotLocking",
-			Source: string(topshotLockingCode),
-		},
-	})
-
-	royaltyAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	env.TopShotLockingAddress = topShotLockingAddr.String()
-
-	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
-	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
-	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
-		{
-			Name:   "TopShot",
-			Source: string(topshotCode),
-		},
-	})
-
-	env.TopShotAddress = topshotAddr.String()
+	tb := NewTopShotTestBlockchain(t)
+	b := tb.Blockchain
+	serviceKeySigner := tb.serviceKeySigner
+	topshotAddr := tb.topshotAdminAddr
+	accountKeys := tb.accountKeys
+	topshotSigner := tb.topshotAdminSigner
+	env := tb.env
 
 	// Should be able to deploy the token contract
 	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage, "1000.0")
@@ -1148,7 +875,7 @@ func TestDestroyMoments(t *testing.T) {
 	env.DUCAddress = tokenAddr.String()
 
 	// Setup with the first market contract
-	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), env.DUCAddress)
+	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, env.NFTAddress, topshotAddr.String(), env.DUCAddress)
 	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "Market",
@@ -1164,7 +891,7 @@ func TestDestroyMoments(t *testing.T) {
 	env.TopShotMarketAddress = marketAddr.String()
 
 	// Should be able to deploy the third market contract
-	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), env.DUCAddress, topShotLockingAddr.String())
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, env.NFTAddress, topshotAddr.String(), marketAddr.String(), env.DUCAddress, env.TopShotLockingAddress)
 	marketV3Addr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotMarketV3",
@@ -1230,53 +957,20 @@ func TestDestroyMoments(t *testing.T) {
 
 	// Create plays
 	lebronPlayID := uint32(1)
-	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
-
-	metadata := []cadence.KeyValuePair{{Key: firstName, Value: lebron}}
-	play := cadence.NewDictionary(metadata)
-	_ = tx.AddArgument(play)
-
-	signAndSubmit(
-		t, b, tx,
-		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-		false,
-	)
 	haywardPlayID := uint32(2)
-	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
-
-	metadata = []cadence.KeyValuePair{{Key: firstName, Value: hayward}}
-	play = cadence.NewDictionary(metadata)
-	_ = tx.AddArgument(play)
-
-	signAndSubmit(
-		t, b, tx,
-		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-		false,
-	)
 	antetokounmpoPlayID := uint32(3)
-	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintPlayScript(env), topshotAddr)
 
-	metadata = []cadence.KeyValuePair{{Key: firstName, Value: antetokounmpo}}
-	play = cadence.NewDictionary(metadata)
-	_ = tx.AddArgument(play)
-
-	signAndSubmit(
-		t, b, tx,
-		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-		false,
-	)
+	for _, metadata := range [][]cadence.KeyValuePair{
+		{{Key: firstName, Value: lebron}},
+		{{Key: firstName, Value: hayward}},
+		{{Key: firstName, Value: antetokounmpo}},
+	} {
+		tb.CreatePlay(t, metadata)
+	}
 
 	// Create Set
 	genesisSetID := uint32(1)
-	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintSetScript(env), topshotAddr)
-
-	_ = tx.AddArgument(CadenceString("Genesis"))
-
-	signAndSubmit(
-		t, b, tx,
-		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-		false,
-	)
+	tb.CreateSet(t, "Genesis")
 
 	// Add plays to Set
 	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateAddPlaysToSetScript(env), topshotAddr)
@@ -1293,27 +987,8 @@ func TestDestroyMoments(t *testing.T) {
 	)
 
 	// Mint two moments to joshAddress
-	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentScript(env), topshotAddr)
-
-	_ = tx.AddArgument(cadence.NewUInt32(genesisSetID))
-	_ = tx.AddArgument(cadence.NewUInt32(lebronPlayID))
-	_ = tx.AddArgument(cadence.NewAddress(joshAddress))
-
-	signAndSubmit(
-		t, b, tx,
-		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-		false,
-	)
-	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentScript(env), topshotAddr)
-
-	_ = tx.AddArgument(cadence.NewUInt32(genesisSetID))
-	_ = tx.AddArgument(cadence.NewUInt32(haywardPlayID))
-	_ = tx.AddArgument(cadence.NewAddress(joshAddress))
-	signAndSubmit(
-		t, b, tx,
-		[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-		false,
-	)
+	tb.MintMoment(t, genesisSetID, lebronPlayID, joshAddress)
+	tb.MintMoment(t, genesisSetID, haywardPlayID, joshAddress)
 
 	//check that moments with ids 1 and 2 exist in josh's collection
 	result := executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
