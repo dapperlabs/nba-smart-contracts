@@ -1412,7 +1412,7 @@ pub contract TopShot: NonFungibleToken {
         }
     }
 
-    // getMomentsSubedition function that return's wich Subedition the Moment belongs to
+    // getMomentsSubedition returns the Subedition the Moment belongs to
     //
     // Parameters: nftID: The ID of the NFT
     //

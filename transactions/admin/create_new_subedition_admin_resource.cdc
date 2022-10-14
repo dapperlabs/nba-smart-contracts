@@ -1,6 +1,6 @@
 import TopShot from 0xTOPSHOTADDRESS
 
-// This transaction is for the admin to create a new showcase resource
+// This transaction is for the admin to create a new subedition admin resource
 // and store it in the top shot smart contract
 
 transaction() {
