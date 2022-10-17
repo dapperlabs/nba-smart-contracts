@@ -520,6 +520,38 @@ func TestSubeditions(t *testing.T) {
 		assert.Equal(t, cadence.NewUInt32(4), result)
 	})
 
+	t.Run("Should be able to check moment's serial number", func(t *testing.T) {
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSerialNumScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(3))})
+		assert.Equal(t, cadence.NewUInt32(1), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSerialNumScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(4))})
+		assert.Equal(t, cadence.NewUInt32(2), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSerialNumScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(5))})
+		assert.Equal(t, cadence.NewUInt32(3), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSerialNumScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(6))})
+		assert.Equal(t, cadence.NewUInt32(4), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSerialNumScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(7))})
+		assert.Equal(t, cadence.NewUInt32(5), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSerialNumScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(8))})
+		assert.Equal(t, cadence.NewUInt32(1), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSerialNumScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(9))})
+		assert.Equal(t, cadence.NewUInt32(2), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSerialNumScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(10))})
+		assert.Equal(t, cadence.NewUInt32(3), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSerialNumScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(11))})
+		assert.Equal(t, cadence.NewUInt32(4), result)
+
+		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSerialNumScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(12))})
+		assert.Equal(t, cadence.NewUInt32(5), result)
+	})
+
 	t.Run("Should be able to mint a batch of moments with subedition and fulfill a pack", func(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateBatchMintMomentWithSubeditionScript(env), topshotAddr)
 

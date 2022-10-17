@@ -1481,11 +1481,11 @@ pub contract TopShot: NonFungibleToken {
         // When a new Moment with Subedition is minted, 1 is added to the
         // number in this map by the key, formed by concatinating of
         // SetID, PlayID and SubeditionID
-        access(contract) var numberMintedPerSubedition: {String:UInt32}
+        access(contract) let numberMintedPerSubedition: {String:UInt32}
 
         //Map of Subedition which the Moment belongs to.
         //This map updates after each minting.
-        access(contract) var momentsSubedition: {UInt64:UInt32}
+        access(contract) let momentsSubedition: {UInt64:UInt32}
 
         // The ID that is used to create Subeditions.
         // Every time a Subeditions is created, subeditionID is assigned
@@ -1493,7 +1493,7 @@ pub contract TopShot: NonFungibleToken {
         access(contract) var nextSubeditionID: UInt32
 
         // Variable size dictionary of Subedition structs
-        access(contract) var subeditionDatas: {UInt32: Subedition}
+        access(contract) let subeditionDatas: {UInt32: Subedition}
 
         // createSubedition creates a new Subedition struct
         // and stores it in the Subeditions dictionary in the SubeditionAdmin resource
@@ -1511,8 +1511,6 @@ pub contract TopShot: NonFungibleToken {
 
             self.nextSubeditionID = self.nextSubeditionID + UInt32(1)
 
-            emit SubeditionCreated(id: newID, name: name, metadata: metadata)
-
             self.subeditionDatas[newID] = newSubedition
 
             emit SubeditionCreated(id: newID, name: name, metadata: metadata)
@@ -1526,7 +1524,7 @@ pub contract TopShot: NonFungibleToken {
         //
         // returns: UInt32? Subedition's ID if exists
         //
-        pub fun getMomentsSubedition( nftID: UInt64):UInt32? {
+        pub fun getMomentsSubedition(nftID: UInt64):UInt32? {
            return self.momentsSubedition[nftID]
         }
 
@@ -1560,11 +1558,10 @@ pub contract TopShot: NonFungibleToken {
         pub fun addToNumberMintedPerSubedition(setID: UInt32, playID: UInt32, subeditionID: UInt32) {
            let setPlaySubedition = setID.toString().concat(playID.toString()).concat(subeditionID.toString())
 
-           if self.numberMintedPerSubedition.containsKey(setPlaySubedition) {
-              self.numberMintedPerSubedition[setPlaySubedition]!= self.numberMintedPerSubedition[setPlaySubedition]! + UInt32(1)
-           } else {
+           if !self.numberMintedPerSubedition.containsKey(setPlaySubedition) {
              panic("Could not find specified Subedition!")
            }
+           self.numberMintedPerSubedition[setPlaySubedition] = self.numberMintedPerSubedition[setPlaySubedition]! + UInt32(1)
         }
 
 
@@ -1574,9 +1571,10 @@ pub contract TopShot: NonFungibleToken {
         //             subeditionID: The ID of the Subedition the Moment belongs to
         //
         pub fun setMomentsSubedition(nftID: UInt64, subeditionID: UInt32){
-            if self.momentsSubedition.containsKey(nftID) {
-                panic("Subedition for this moment already exists!")
+            pre {
+                !self.momentsSubedition.containsKey(nftID) : "Subedition for this moment already exists!"
             }
+
             self.momentsSubedition.insert(key: nftID, subeditionID)
 
             emit SubeditionAddedToMoment(momentID: nftID, subeditionID: subeditionID)
