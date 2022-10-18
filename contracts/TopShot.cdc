@@ -59,6 +59,8 @@ pub contract TopShot: NonFungibleToken {
     // The address to which royalties should be deposited
     pub fun RoyaltyAddress() : Address { return 0xTOPSHOTROYALTYADDRESS }
 
+    pub fun SubeditionAdminStoragePath() : StoragePath { return /storage/TopShotSubeditionAdmin}
+
     // -----------------------------------------------------------------------
     // TopShot contract Events
     // -----------------------------------------------------------------------
@@ -94,9 +96,11 @@ pub contract TopShot: NonFungibleToken {
     // Emitted when a Moment is destroyed
     pub event MomentDestroyed(id: UInt64)
 
+    // Emitted when a Subedition is created
     pub event SubeditionCreated(id: UInt32, name: String, metadata: {String:String})
 
-    pub event SubeditionAddedToMoment(momentID: UInt64, subeditionID: UInt32)
+    // Emitted when a Subedition is linked to the specific Moment
+    pub event SubeditionAddedToMoment(momentID: UInt64, subeditionID: UInt32, setID: UInt32, playID: UInt32)
 
     // -----------------------------------------------------------------------
     // TopShot contract-level fields.
@@ -412,7 +416,7 @@ pub contract TopShot: NonFungibleToken {
 
             // Gets the number of Moments that have been minted for this subedition
             // to use as this Moment's serial number
-            let subeditionRef = TopShot.account.borrow<&SubeditionAdmin>(from: /storage/TopShotSubeditionAdmin)
+            let subeditionRef = TopShot.account.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
             ?? panic("No subedition admin resource in storage")
 
             let numInSubedition = subeditionRef.getNumberMintedPerSubedition(setID: self.setID,
@@ -429,7 +433,7 @@ pub contract TopShot: NonFungibleToken {
                                                          playID: playID,
                                                          subeditionID: subeditionID)
 
-            subeditionRef.setMomentsSubedition(nftID: newMoment.id, subeditionID: subeditionID)
+            subeditionRef.setMomentsSubedition(nftID: newMoment.id, subeditionID: subeditionID, setID: self.setID, playID: playID)
 
             self.numberMintedPerPlay[playID] = self.numberMintedPerPlay[playID]! + UInt32(1)
 
@@ -993,18 +997,33 @@ pub contract TopShot: NonFungibleToken {
         // createSubeditionResource creates new SubeditionMap resource that
         // will be used to mint Moments with Subeditions
         pub fun createSubeditionAdminResource() {
-            TopShot.account.save<@SubeditionAdmin>(<- create SubeditionAdmin(), to: /storage/TopShotSubeditionAdmin)
+            TopShot.account.save<@SubeditionAdmin>(<- create SubeditionAdmin(), to: TopShot.SubeditionAdminStoragePath())
         }
 
-        pub fun setMomentsSubedition(nftID: UInt64, subeditionID: UInt32) {
-            let subeditionAdmin = TopShot.account.borrow<&SubeditionAdmin>(from: /storage/TopShotSubeditionAdmin)
+        // setMomentsSubedition saves which Subedition the Moment belongs to
+        //
+        // Parameters: nftID: The ID of the NFT
+        //             subeditionID: The ID of the Subedition the Moment belongs to
+        //             setID: The ID of the Set that the Moment references
+        //             playID: The ID of the Play that the Moment references
+        //
+        pub fun setMomentsSubedition(nftID: UInt64, subeditionID: UInt32, setID: UInt32, playID: UInt32) {
+            let subeditionAdmin = TopShot.account.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
                 ?? panic("No subedition admin resource in storage")
 
-            subeditionAdmin.setMomentsSubedition(nftID: nftID, subeditionID: subeditionID)
+            subeditionAdmin.setMomentsSubedition(nftID: nftID, subeditionID: subeditionID, setID: setID, playID: playID)
         }
 
+        // createSubedition creates a new Subedition struct
+        // and stores it in the Subeditions dictionary in the SubeditionAdmin resource
+        //
+        // Parameters: name: The name of the Subedition
+        //             metadata: A dictionary mapping metadata titles to their data
+        //
+        // Returns: the ID of the new Subedition object
+        //
         pub fun createSubedition(name:String, metadata:{String:String}): UInt32 {
-            let subeditionAdmin = TopShot.account.borrow<&SubeditionAdmin>(from: /storage/TopShotSubeditionAdmin)
+            let subeditionAdmin = TopShot.account.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
                 ?? panic("No subedition admin resource in storage")
 
             return subeditionAdmin.createSubedition(name:name, metadata:metadata)
@@ -1419,7 +1438,7 @@ pub contract TopShot: NonFungibleToken {
     // returns: UInt32? Subedition's ID if exists
     //
     pub fun getMomentsSubedition(nftID: UInt64):UInt32? {
-        let subeditionAdmin = self.account.borrow<&SubeditionAdmin>(from: /storage/TopShotSubeditionAdmin)
+        let subeditionAdmin = self.account.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
             ?? panic("No subedition admin resource in storage")
 
         return subeditionAdmin.getMomentsSubedition(nftID: nftID)
@@ -1429,7 +1448,7 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: An array of all the subeditions that have been created
     pub fun getAllSubeditions():[TopShot.Subedition] {
-        let subeditionAdmin = self.account.borrow<&SubeditionAdmin>(from: /storage/TopShotSubeditionAdmin)
+        let subeditionAdmin = self.account.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
             ?? panic("No subedition admin resource in storage")
         return subeditionAdmin.subeditionDatas.values
     }
@@ -1440,7 +1459,7 @@ pub contract TopShot: NonFungibleToken {
     //
     // Returns: The Subedition struct
     pub fun getSubeditionByID(subeditionID: UInt32):TopShot.Subedition {
-        let subeditionAdmin = self.account.borrow<&SubeditionAdmin>(from: /storage/TopShotSubeditionAdmin)
+        let subeditionAdmin = self.account.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
             ?? panic("No subedition admin resource in storage")
         return subeditionAdmin.subeditionDatas[subeditionID]!
     }
@@ -1451,7 +1470,7 @@ pub contract TopShot: NonFungibleToken {
     // Returns: UInt32
     // the next number in nextSubeditionID from the SubeditionAdmin resource
     pub fun getNextSubeditionID():UInt32 {
-        let subeditionAdmin = self.account.borrow<&SubeditionAdmin>(from: /storage/TopShotSubeditionAdmin)
+        let subeditionAdmin = self.account.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
             ?? panic("No subedition admin resource in storage")
         return subeditionAdmin.nextSubeditionID
     }
@@ -1467,7 +1486,6 @@ pub contract TopShot: NonFungibleToken {
         init(subeditionID: UInt32, name: String, metadata: {String: String}) {
             pre {
                 name.length != 0: "New Subedition name cannot be empty"
-                metadata.length != 0: "New Subedition metadata cannot be empty"
             }
             self.subeditionID = subeditionID
             self.name = name
@@ -1483,8 +1501,8 @@ pub contract TopShot: NonFungibleToken {
         // SetID, PlayID and SubeditionID
         access(contract) let numberMintedPerSubedition: {String:UInt32}
 
-        //Map of Subedition which the Moment belongs to.
-        //This map updates after each minting.
+        // Map of Subedition which the Moment belongs to.
+        // This map updates after each minting.
         access(contract) let momentsSubedition: {UInt64:UInt32}
 
         // The ID that is used to create Subeditions.
@@ -1565,19 +1583,21 @@ pub contract TopShot: NonFungibleToken {
         }
 
 
-        // setMomentsSubedition function that saves which Subedition the Moment belongs to
+        // setMomentsSubedition saves which Subedition the Moment belongs to
         //
         // Parameters: nftID: The ID of the NFT
         //             subeditionID: The ID of the Subedition the Moment belongs to
+        //             setID: The ID of the Set that the Moment references
+        //             playID: The ID of the Play that the Moment references
         //
-        pub fun setMomentsSubedition(nftID: UInt64, subeditionID: UInt32){
+        pub fun setMomentsSubedition(nftID: UInt64, subeditionID: UInt32, setID: UInt32, playID: UInt32){
             pre {
                 !self.momentsSubedition.containsKey(nftID) : "Subedition for this moment already exists!"
             }
 
             self.momentsSubedition.insert(key: nftID, subeditionID)
 
-            emit SubeditionAddedToMoment(momentID: nftID, subeditionID: subeditionID)
+            emit SubeditionAddedToMoment(momentID: nftID, subeditionID: subeditionID, setID: setID, playID: playID)
         }
 
         init() {

@@ -290,9 +290,11 @@ func TestSubeditions(t *testing.T) {
 	})
 
 	t.Run("Should be able to link nft to subedition", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateNFTsubedtitionScript(env), topshotAddr)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateSetNFTsubedtitionScript(env), topshotAddr)
 
 		_ = tx.AddArgument(cadence.NewUInt64(100))
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewUInt32(1))
 		_ = tx.AddArgument(cadence.NewUInt32(1))
 
 		signAndSubmit(

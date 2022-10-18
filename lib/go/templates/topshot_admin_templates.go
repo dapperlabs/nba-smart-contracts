@@ -25,7 +25,7 @@ const (
 	batchMintMomentWithSubeditionFilename    = "admin/batch_mint_moment_with_subedition.cdc"
 	createNewSubeditionAdminResourceFilename = "admin/create_new_subedition_admin_resource.cdc"
 	createSubeditionFilename                 = "admin/create_subedition.cdc"
-	createNFTsubedition                      = "admin/set_nft_subedition.cdc"
+	setNFTsubedition                         = "admin/set_nft_subedition.cdc"
 )
 
 // GenerateMintPlayScript creates a new play data struct
@@ -155,9 +155,9 @@ func GenerateCreateSubeditionScript(env Environment) []byte {
 	return []byte(replaceAddresses(code, env))
 }
 
-// GenerateCreateNFTsubedtitionScript creates new Subedition entity in map with NFTid as key
-func GenerateCreateNFTsubedtitionScript(env Environment) []byte {
-	code := assets.MustAssetString(transactionsPath + createNFTsubedition)
+// GenerateSetNFTsubedtitionScript creates new Subedition entity in map with NFTid as key
+func GenerateSetNFTsubedtitionScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + setNFTsubedition)
 
 	return []byte(replaceAddresses(code, env))
 }
