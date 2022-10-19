@@ -59,6 +59,8 @@ pub contract TopShot: NonFungibleToken {
     // The address to which royalties should be deposited
     pub fun RoyaltyAddress() : Address { return 0xTOPSHOTROYALTYADDRESS }
 
+    // The path to the Subedition Admin resource belonging to the Account
+    // which the contract is deployed on
     pub fun SubeditionAdminStoragePath() : StoragePath { return /storage/TopShotSubeditionAdmin}
 
     // -----------------------------------------------------------------------
