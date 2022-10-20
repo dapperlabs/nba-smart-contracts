@@ -17,7 +17,7 @@ type MomentMintedEvent interface {
 	PlayId() uint32
 	SetId() uint32
 	SerialNumber() uint32
-	SubeditionID() uint32
+	SubeditionId() uint32
 }
 
 type momentMintedEvent cadence.Event
@@ -38,7 +38,7 @@ func (evt momentMintedEvent) SerialNumber() uint32 {
 	return uint32(evt.Fields[3].(cadence.UInt32))
 }
 
-func (evt momentMintedEvent) SubeditionID() uint32 {
+func (evt momentMintedEvent) SubeditionId() uint32 {
 	if len(evt.Fields) < 5 {
 		return 0
 	}

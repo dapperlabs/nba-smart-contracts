@@ -63,6 +63,6 @@ func TestCadenceEvents_MomentMinted(t *testing.T) {
 	assert.Equal(t, playID, decodedMomentMintedEventType.PlayId())
 	assert.Equal(t, setID, decodedMomentMintedEventType.SetId())
 	assert.Equal(t, serialNumber, decodedMomentMintedEventType.SerialNumber())
-	assert.Equal(t, subeditionID, decodedMomentMintedEventType.SubeditionID())
+	assert.Equal(t, subeditionID, decodedMomentMintedEventType.SubeditionId())
 
 }
