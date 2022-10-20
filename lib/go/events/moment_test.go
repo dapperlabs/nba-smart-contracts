@@ -15,6 +15,7 @@ func TestCadenceEvents_MomentMinted(t *testing.T) {
 	playID := uint32(1234)
 	setID := uint32(1234)
 	serialNumber := uint32(1234)
+	subeditionID := uint32(1234)
 
 	momentMintedEventType := cadence.EventType{
 		Location:            utils.TestLocation,
@@ -36,6 +37,10 @@ func TestCadenceEvents_MomentMinted(t *testing.T) {
 				Identifier: "serialNumber",
 				Type:       cadence.UInt32Type{},
 			},
+			{
+				Identifier: "subeditionId",
+				Type:       cadence.UInt32Type{},
+			},
 		},
 		Initializer: []cadence.Parameter{},
 	}
@@ -45,6 +50,7 @@ func TestCadenceEvents_MomentMinted(t *testing.T) {
 		cadence.NewUInt32(playID),
 		cadence.NewUInt32(setID),
 		cadence.NewUInt32(serialNumber),
+		cadence.NewUInt32(subeditionID),
 	}).WithType(&momentMintedEventType)
 
 	payload, err := jsoncdc.Encode(momentMintedEvent)
@@ -57,4 +63,6 @@ func TestCadenceEvents_MomentMinted(t *testing.T) {
 	assert.Equal(t, playID, decodedMomentMintedEventType.PlayId())
 	assert.Equal(t, setID, decodedMomentMintedEventType.SetId())
 	assert.Equal(t, serialNumber, decodedMomentMintedEventType.SerialNumber())
+	assert.Equal(t, subeditionID, decodedMomentMintedEventType.SubeditionID())
+
 }

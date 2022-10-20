@@ -86,7 +86,7 @@ pub contract TopShot: NonFungibleToken {
     // Emitted when a Set is locked, meaning Plays cannot be added
     pub event SetLocked(setID: UInt32)
     // Emitted when a Moment is minted from a Set
-    pub event MomentMinted(momentID: UInt64, playID: UInt32, setID: UInt32, serialNumber: UInt32)
+    pub event MomentMinted(momentID: UInt64, playID: UInt32, setID: UInt32, serialNumber: UInt32, subeditionID: UInt32)
 
     // Events for Collection-related actions
     //
@@ -372,7 +372,8 @@ pub contract TopShot: NonFungibleToken {
             // Mint the new moment
             let newMoment: @NFT <- create NFT(serialNumber: numInPlay + UInt32(1),
                                               playID: playID,
-                                              setID: self.setID)
+                                              setID: self.setID,
+                                              subeditionID: 0)
 
             // Increment the count of Moments minted for this Play
             self.numberMintedPerPlay[playID] = numInPlay + UInt32(1)
@@ -428,7 +429,8 @@ pub contract TopShot: NonFungibleToken {
             // Mint the new moment
             let newMoment: @NFT <- create NFT(serialNumber: numInSubedition + UInt32(1),
                                               playID: playID,
-                                              setID: self.setID)
+                                              setID: self.setID,
+                                              subeditionID: subeditionID)
 
             // Increment the count of Moments minted for this subedition
             subeditionRef.addToNumberMintedPerSubedition(setID: self.setID,
@@ -652,7 +654,7 @@ pub contract TopShot: NonFungibleToken {
         // Struct of Moment metadata
         pub let data: MomentData
 
-        init(serialNumber: UInt32, playID: UInt32, setID: UInt32) {
+        init(serialNumber: UInt32, playID: UInt32, setID: UInt32, subeditionID: UInt32) {
             // Increment the global Moment IDs
             TopShot.totalSupply = TopShot.totalSupply + UInt64(1)
 
@@ -661,7 +663,11 @@ pub contract TopShot: NonFungibleToken {
             // Set the metadata struct
             self.data = MomentData(setID: setID, playID: playID, serialNumber: serialNumber)
 
-            emit MomentMinted(momentID: self.id, playID: playID, setID: self.data.setID, serialNumber: self.data.serialNumber)
+            emit MomentMinted(momentID: self.id,
+                              playID: playID,
+                              setID: self.data.setID,
+                              serialNumber: self.data.serialNumber,
+                              subeditionID: subeditionID)
         }
 
         // If the Moment is destroyed, emit an event to indicate 

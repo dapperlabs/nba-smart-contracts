@@ -17,6 +17,7 @@ type MomentMintedEvent interface {
 	PlayId() uint32
 	SetId() uint32
 	SerialNumber() uint32
+	SubeditionID() uint32
 }
 
 type momentMintedEvent cadence.Event
@@ -35,6 +36,10 @@ func (evt momentMintedEvent) SetId() uint32 {
 
 func (evt momentMintedEvent) SerialNumber() uint32 {
 	return uint32(evt.Fields[3].(cadence.UInt32))
+}
+
+func (evt momentMintedEvent) SubeditionID() uint32 {
+	return uint32(evt.Fields[4].(cadence.UInt32))
 }
 
 func (evt momentMintedEvent) validate() error {
