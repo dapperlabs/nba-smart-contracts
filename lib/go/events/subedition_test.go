@@ -26,7 +26,7 @@ func TestCadenceEvents_SubeditionCreated(t *testing.T) {
 		QualifiedIdentifier: "TopShot.SubeditionCreated",
 		Fields: []cadence.Field{
 			{
-				Identifier: "id",
+				Identifier: "subeditionId",
 				Type:       cadence.UInt32Type{},
 			},
 			{
@@ -56,7 +56,7 @@ func TestCadenceEvents_SubeditionCreated(t *testing.T) {
 	decodedSubeditionCreatedEventType, err := DecodeSubeditionCreatedEvent(payload)
 	require.NoError(t, err, "failed to decode play created cadence event")
 
-	assert.Equal(t, id, decodedSubeditionCreatedEventType.Id())
+	assert.Equal(t, id, decodedSubeditionCreatedEventType.SubeditionID())
 	assert.Equal(t, name, decodedSubeditionCreatedEventType.Name())
 	assert.Equal(t, map[interface{}]interface{}{
 		setKey:  setValue,

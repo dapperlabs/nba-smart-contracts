@@ -12,14 +12,14 @@ var (
 )
 
 type SubeditionCreatedEvent interface {
-	Id() uint32
+	SubeditionID() uint32
 	Name() string
 	MetaData() map[interface{}]interface{}
 }
 
 type subeditionCreatedEvent cadence.Event
 
-func (evt subeditionCreatedEvent) Id() uint32 {
+func (evt subeditionCreatedEvent) SubeditionID() uint32 {
 	return evt.Fields[0].(cadence.UInt32).ToGoValue().(uint32)
 }
 

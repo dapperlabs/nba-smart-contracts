@@ -39,6 +39,9 @@ func (evt momentMintedEvent) SerialNumber() uint32 {
 }
 
 func (evt momentMintedEvent) SubeditionID() uint32 {
+	if len(evt.Fields) < 5 {
+		return 0
+	}
 	return uint32(evt.Fields[4].(cadence.UInt32))
 }
 

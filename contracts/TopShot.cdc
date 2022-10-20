@@ -99,7 +99,7 @@ pub contract TopShot: NonFungibleToken {
     pub event MomentDestroyed(id: UInt64)
 
     // Emitted when a Subedition is created
-    pub event SubeditionCreated(id: UInt32, name: String, metadata: {String:String})
+    pub event SubeditionCreated(subeditionID: UInt32, name: String, metadata: {String:String})
 
     // Emitted when a Subedition is linked to the specific Moment
     pub event SubeditionAddedToMoment(momentID: UInt64, subeditionID: UInt32, setID: UInt32, playID: UInt32)
@@ -1539,7 +1539,7 @@ pub contract TopShot: NonFungibleToken {
 
             self.subeditionDatas[newID] = newSubedition
 
-            emit SubeditionCreated(id: newID, name: name, metadata: metadata)
+            emit SubeditionCreated(subeditionID: newID, name: name, metadata: metadata)
 
             return newID
         }
