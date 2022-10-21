@@ -16,6 +16,7 @@
 // ../../../transactions/admin/start_new_series.cdc (763B)
 // ../../../transactions/admin/transfer_admin.cdc (606B)
 // ../../../transactions/admin/unlock_all_moments.cdc (422B)
+// ../../../transactions/admin/update_play.cdc (974B)
 // ../../../transactions/market/change_percentage.cdc (942B)
 // ../../../transactions/market/change_price.cdc (879B)
 // ../../../transactions/market/change_receiver.cdc (810B)
@@ -472,6 +473,26 @@ func TransactionsAdminUnlock_all_momentsCdc() (*asset, error) {
 
 	info := bindataFileInfo{name: "../../../transactions/admin/unlock_all_moments.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x35, 0x2a, 0xc1, 0x48, 0x8f, 0x2e, 0x65, 0x19, 0x9c, 0xfd, 0x1d, 0x47, 0x77, 0xb1, 0x80, 0x24, 0xb8, 0x92, 0x2f, 0xe2, 0x10, 0x7a, 0x98, 0x83, 0x9e, 0x3b, 0x38, 0x9a, 0x9c, 0x33, 0xd7, 0x2}}
+	return a, nil
+}
+
+var _TransactionsAdminUpdate_playCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x6c\x93\x4f\x8b\xdb\x30\x10\xc5\xef\xfe\x14\xaf\x39\x94\x2c\x2c\x71\x69\x6f\xa6\xdb\x25\x90\x42\x17\xda\xee\xb2\x49\xe9\x79\x22\x8f\x13\x15\x5b\x32\xa3\x71\x93\x10\xf2\xdd\x8b\x24\x27\x4d\x4a\x7d\xb1\x91\xe6\xbd\xdf\xfc\x73\x61\xbb\xde\x8b\x62\xe5\xfb\xe5\xd6\x2b\x1a\xf1\x1d\xde\xed\x57\xcf\x2f\xcb\x2f\xcf\xab\xf9\x62\xf1\xfa\x79\xb9\x2c\x8a\xb2\xc4\x6a\x6b\x03\x54\xc8\x05\x32\x6a\xbd\xc3\xd0\xd7\xa4\x1c\x40\x0e\xbc\xb7\x41\xad\xdb\xa0\x6f\xe9\x80\xa0\x32\x18\x45\x14\x91\xab\x11\xd4\x0b\x07\x58\x85\x75\xd0\x2d\x47\x16\x12\x2c\x74\x24\x0a\xe3\x9d\x0a\x19\x8d\xf1\x3f\x19\x66\x10\x61\xa7\x6d\xf2\xb1\x6e\x63\x9b\x43\x52\x75\xac\x54\x93\x52\xf2\xb4\x2e\xb0\x68\xf6\x54\x9f\xee\xa3\xfc\x3a\xbd\xac\xbe\xc7\x7a\x50\xec\xc8\x29\xd4\x63\x08\x7c\x13\x43\xb2\x19\x3a\x76\x1a\x10\xbc\x77\xa9\xcc\x17\x12\xea\x58\x59\x42\x55\x94\x65\x3c\x39\x83\x2b\xcc\x51\xdb\x24\x24\x39\xc0\x37\xa0\xb6\x4d\xe8\x54\xf5\xdf\xfc\x42\xf0\xc6\x92\x72\x5d\x14\x57\xb0\xa9\xad\x2b\xfc\x78\x72\xfa\xe1\xfd\xfd\x95\xe7\x71\x99\xf2\xac\x90\xdf\xa7\x3b\x1c\x8b\x02\x00\xca\x12\x5f\xbd\xa1\x16\xbf\x49\x2c\xad\x5b\x46\xe3\x25\xe1\xd4\xf7\x21\xb6\x6f\x5e\x77\xd6\xc1\xaf\x7f\xb1\xd1\x24\x69\x59\x41\xf1\xf0\x95\x9b\x0a\x6f\xc7\x99\xce\x52\x5c\x36\xed\x85\x7b\x12\x9e\x92\x31\x5a\x61\x3e\xe8\x76\x6e\x8c\x1f\x9c\x5e\xb0\x23\x7a\xed\x45\xfc\x0e\x04\xe1\x86\x85\x9d\x89\xd8\x44\x4f\x00\x08\x07\x3f\x88\xe1\x8b\x26\x70\xdb\xcc\xce\x70\x3c\x20\x12\x66\xd9\xe5\xe3\x6d\x26\x9f\xa6\x71\xc9\x2a\x94\x71\x31\x68\xc3\xe5\x78\x9b\x2e\xef\x2e\x86\xf1\x79\x7c\x44\x4f\xce\x9a\xe9\xe4\xbb\xff\x07\x1c\x97\x69\x34\x98\x64\xd1\x29\x17\xc0\x7b\x36\x83\x32\x8e\xd7\xe5\xe4\x5d\x05\xe5\x51\xed\xac\x6e\x53\x2d\xa1\x67\x63\x1b\xcb\xf5\x65\x20\xff\xaf\x67\x96\xf5\x2f\x2d\x1d\xbe\x8d\x81\xd3\xe8\xf4\xb4\xa8\x60\xeb\x7b\xe4\x51\x9e\x3d\x6e\xd2\xe9\x7d\xd0\xab\x5c\x2e\x1f\xe7\x96\x6c\x58\xcf\xb6\x8b\x5b\xdb\x3b\xbc\x79\x80\xb3\x6d\x75\xd3\x92\x49\x0e\x40\xed\x39\x38\xcd\x7f\xde\x64\x04\x9e\xfe\x04\x00\x00\xff\xff\xbd\xcc\x76\x37\xce\x03\x00\x00"
+
+func TransactionsAdminUpdate_playCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsAdminUpdate_playCdc,
+		"../../../transactions/admin/update_play.cdc",
+	)
+}
+
+func TransactionsAdminUpdate_playCdc() (*asset, error) {
+	bytes, err := TransactionsAdminUpdate_playCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/admin/update_play.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x0, 0x45, 0x96, 0x0, 0x5c, 0xbc, 0x57, 0x3, 0xef, 0xae, 0xd1, 0xf9, 0x53, 0x97, 0xf5, 0x5f, 0x81, 0x6, 0x2, 0x7a, 0x0, 0x46, 0xfd, 0x50, 0x84, 0x10, 0x83, 0x53, 0xda, 0x1d, 0x57, 0xbf}}
 	return a, nil
 }
 
@@ -1982,6 +2003,7 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/admin/start_new_series.cdc":                     TransactionsAdminStart_new_seriesCdc,
 	"../../../transactions/admin/transfer_admin.cdc":                       TransactionsAdminTransfer_adminCdc,
 	"../../../transactions/admin/unlock_all_moments.cdc":                   TransactionsAdminUnlock_all_momentsCdc,
+	"../../../transactions/admin/update_play.cdc":                          TransactionsAdminUpdate_playCdc,
 	"../../../transactions/market/change_percentage.cdc":                   TransactionsMarketChange_percentageCdc,
 	"../../../transactions/market/change_price.cdc":                        TransactionsMarketChange_priceCdc,
 	"../../../transactions/market/change_receiver.cdc":                     TransactionsMarketChange_receiverCdc,
@@ -2119,6 +2141,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 						"start_new_series.cdc": {TransactionsAdminStart_new_seriesCdc, map[string]*bintree{}},
 						"transfer_admin.cdc": {TransactionsAdminTransfer_adminCdc, map[string]*bintree{}},
 						"unlock_all_moments.cdc": {TransactionsAdminUnlock_all_momentsCdc, map[string]*bintree{}},
+						"update_play.cdc": {TransactionsAdminUpdate_playCdc, map[string]*bintree{}},
 					}},
 					"market": {nil, map[string]*bintree{
 						"change_percentage.cdc": {TransactionsMarketChange_percentageCdc, map[string]*bintree{}},
