@@ -68,6 +68,8 @@ pub contract TopShot: NonFungibleToken {
 
     // Emitted when a new Play struct is created
     pub event PlayCreated(id: UInt32, metadata: {String:String})
+    // Emitted when a new Play's metadata is updated
+    pub event PlayUpdated(id: UInt32, metadata: {String:String})
     // Emitted when a new series has been triggered by an admin
     pub event NewSeriesStarted(newCurrentSeries: UInt32)
 
@@ -163,6 +165,14 @@ pub contract TopShot: NonFungibleToken {
             }
             self.playID = TopShot.nextPlayID
             self.metadata = metadata
+        }
+
+        access(contract) fun upsertMetadata(newData: {String: String}): UInt32 {
+            for key in newData.keys {
+                self.metadata[key] = newData[key]
+            }
+            emit PlayUpdated(id: self.playID, metadata: self.metadata)
+            return self.playID
         }
     }
 
@@ -603,8 +613,8 @@ pub contract TopShot: NonFungibleToken {
                 .concat(" ")
                 .concat(playType)
         }
-
-        pub fun description(): String {
+        
+        access(self) fun buildDescString(): String {
             let setName: String = TopShot.getSetName(setID: self.data.setID) ?? ""
             let serialNumber: String = self.data.serialNumber.toString()
             let seriesNumber: String = TopShot.getSetSeries(setID: self.data.setID)?.toString() ?? ""
@@ -614,6 +624,16 @@ pub contract TopShot: NonFungibleToken {
                 .concat(setName)
                 .concat(" moment with serial number ")
                 .concat(serialNumber)
+        }
+
+        pub fun description(): String {
+            let playDesc: String? = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "tagline")
+            
+            if let desc = playDesc {
+                return desc
+            } else {
+                return self.buildDescString()
+            }
         }
 
         // All supported metadata views for the Moment including the Core NFT Views
@@ -861,6 +881,12 @@ pub contract TopShot: NonFungibleToken {
             TopShot.playDatas[newID] = newPlay
 
             return newID
+        }
+
+        pub fun updatePlayMetadata(playID: UInt32, data: {String: String}): UInt32 {
+            let tmpPlay = TopShot.playDatas[playID] ?? panic("playID does not exist")
+            tmpPlay.upsertMetadata(newData: data)
+            return playID
         }
 
         // createSet creates a new Set resource and stores it
