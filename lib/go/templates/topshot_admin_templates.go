@@ -7,6 +7,7 @@ import (
 const (
 	transactionsPath         = "../../../transactions/"
 	createPlayFilename       = "admin/create_play.cdc"
+	updatePlayFilename       = "admin/update_play.cdc"
 	createSetFilename        = "admin/create_set.cdc"
 	addPlayFilename          = "admin/add_play_to_set.cdc"
 	addPlaysFilename         = "admin/add_plays_to_set.cdc"
@@ -32,6 +33,14 @@ const (
 // and initializes it with metadata
 func GenerateMintPlayScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + createPlayFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateMintPlayScript creates a new play data struct
+// and initializes it with metadata
+func GenerateUpdatePlayScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + updatePlayFilename)
 
 	return []byte(replaceAddresses(code, env))
 }

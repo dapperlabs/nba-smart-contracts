@@ -177,10 +177,10 @@ pub contract TopShot: NonFungibleToken {
             self.metadata = metadata
         }
 
-        access(contract) fun upsertMetadata(newData: {String: String}): UInt32 {
-            for key in newData.keys {
-                self.metadata[key] = newData[key]
-            }
+        access(contract) fun updateTagline(tagline: String): UInt32 {
+            self.metadata["tagline"] = tagline
+
+            TopShot.playDatas[self.playID] = self
             emit PlayUpdated(id: self.playID, metadata: self.metadata)
             return self.playID
         }
@@ -963,9 +963,9 @@ pub contract TopShot: NonFungibleToken {
             return newID
         }
 
-        pub fun updatePlayMetadata(playID: UInt32, data: {String: String}): UInt32 {
+        pub fun updatePlayTagline(playID: UInt32, tagline: String): UInt32 {
             let tmpPlay = TopShot.playDatas[playID] ?? panic("playID does not exist")
-            tmpPlay.upsertMetadata(newData: data)
+            tmpPlay.updateTagline(tagline: tagline)
             return playID
         }
 
