@@ -193,6 +193,15 @@ func TestMintNFTs(t *testing.T) {
 		tb.CreatePlay(t, []cadence.KeyValuePair{{Key: firstName, Value: lebron}, {Key: playType, Value: dunk}})
 	})
 
+	t.Run("Should be able to update an existing Play", func(t *testing.T) {
+		result := executeScriptAndCheck(t, b, templates.GenerateGetPlayMetadataFieldScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.String("FullName"))})
+		assert.Equal(t, CadenceString("Lebron"), result)
+
+		tb.UpdatePlay(t, 1, "lorem ipsum")
+		result = executeScriptAndCheck(t, b, templates.GenerateGetPlayMetadataFieldScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.String("tagline"))})
+		assert.Equal(t, CadenceString("lorem ipsum"), result)
+	})
+
 	// Admin sends transactions to create multiple plays
 	t.Run("Should be able to create multiple new Plays", func(t *testing.T) {
 		metadatas := [][]cadence.KeyValuePair{
@@ -321,7 +330,7 @@ func TestMintNFTs(t *testing.T) {
 	t.Run("Should be able to get moments metadata", func(t *testing.T) {
 		// Tests to ensure that all core metadataviews are resolvable
 		expectedMetadataName := "Lebron Dunk"
-		expectedMetadataDescription := "A series 0 Genesis moment with serial number 1"
+		expectedMetadataDescription := "lorem ipsum"
 		expectedMetadataThumbnail := "https://assets.nbatopshot.com/media/1?width=256"
 		expectedMetadataExternalURL := "https://nbatopshot.com/moment/1"
 		expectedStoragePath := "/storage/MomentCollection"
@@ -332,7 +341,7 @@ func TestMintNFTs(t *testing.T) {
 		expectedCollectionSquareImage := "https://nbatopshot.com/static/img/og/og.png"
 		expectedCollectionBannerImage := "https://nbatopshot.com/static/img/top-shot-logo-horizontal-white.svg"
 		expectedRoyaltyReceiversCount := 1
-		expectedTraitsCount := 5
+		expectedTraitsCount := 6
 		expectedVideoURL := "https://assets.nbatopshot.com/media/1/video"
 
 		resultNFT := executeScriptAndCheck(t, b, templates.GenerateGetNFTMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
@@ -600,6 +609,19 @@ func (b *topshotTestBlockchain) CreatePlay(t *testing.T, metadata []cadence.KeyV
 	tx := createTxWithTemplateAndAuthorizer(b.Blockchain, templates.GenerateMintPlayScript(b.env), b.topshotAdminAddr)
 	play := cadence.NewDictionary(metadata)
 	_ = tx.AddArgument(play)
+
+	signAndSubmit(
+		t, b.Blockchain, tx,
+		[]flow.Address{b.ServiceKey().Address, b.topshotAdminAddr}, []crypto.Signer{b.serviceKeySigner, b.topshotAdminSigner},
+		false,
+	)
+}
+
+func (b *topshotTestBlockchain) UpdatePlay(t *testing.T, id uint32, tagline string) {
+	tx := createTxWithTemplateAndAuthorizer(b.Blockchain, templates.GenerateUpdatePlayScript(b.env), b.topshotAdminAddr)
+	tag := CadenceString(tagline)
+	_ = tx.AddArgument(cadence.NewUInt32(id))
+	_ = tx.AddArgument(tag)
 
 	signAndSubmit(
 		t, b.Blockchain, tx,
