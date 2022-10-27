@@ -8,6 +8,8 @@ import (
 )
 
 //go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../../../transactions/... -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../../../transactions/...
+//go:generate go run ./cmd/manifest/main.go ./cmd/manifest/manifest.go manifest.testnet.json --network testnet
+//go:generate go run ./cmd/manifest/main.go ./cmd/manifest/manifest.go manifest.mainnet.json --network mainnet
 
 const (
 	placeholderFungibleTokenAddress   = "0xFUNGIBLETOKENADDRESS"

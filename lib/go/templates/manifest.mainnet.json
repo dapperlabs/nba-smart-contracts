@@ -1,0 +1,44 @@
+{
+  "network": "mainnet",
+  "templates": [
+    {
+      "id": "TS.01",
+      "name": "Set up Top Shot Collection",
+      "source": "import NonFungibleToken from 0x1d7e57aa55817448\nimport TopShot from 0x0b2a3299cc857e29\nimport MetadataViews from 0x1d7e57aa55817448\n\n// This transaction sets up an account to use Top Shot\n// by storing an empty moment collection and creating\n// a public capability for it\n\ntransaction {\n\n    prepare(acct: AuthAccount) {\n\n        // First, check to see if a moment collection already exists\n        if acct.borrow\u003c\u0026TopShot.Collection\u003e(from: /storage/MomentCollection) == nil {\n\n            // create a new TopShot Collection\n            let collection \u003c- TopShot.createEmptyCollection() as! @TopShot.Collection\n\n            // Put the new Collection in storage\n            acct.save(\u003c-collection, to: /storage/MomentCollection)\n\n            // create a public capability for the collection\n            acct.link\u003c\u0026{NonFungibleToken.CollectionPublic, TopShot.MomentCollectionPublic, MetadataViews.ResolverCollection}\u003e(/public/MomentCollection, target: /storage/MomentCollection)\n        }\n    }\n}",
+      "arguments": [],
+      "network": "mainnet",
+      "hash": "f03dcac24d32c2052c1ff3267857ca2e605f6f97081ed33a0477668d520295a1"
+    },
+    {
+      "id": "TS.02",
+      "name": "Transfer Top Shot Moment",
+      "source": "import NonFungibleToken from 0x1d7e57aa55817448\nimport TopShot from 0x0b2a3299cc857e29\n\n// This transaction transfers a moment to a recipient\n\n// This transaction is how a topshot user would transfer a moment\n// from their account to another account\n// The recipient must have a TopShot Collection object stored\n// and a public MomentCollectionPublic capability stored at\n// `/public/MomentCollection`\n\n// Parameters:\n//\n// recipient: The Flow address of the account to receive the moment.\n// withdrawID: The id of the moment to be transferred\n\ntransaction(recipient: Address, withdrawID: UInt64) {\n\n    // local variable for storing the transferred token\n    let transferToken: @NonFungibleToken.NFT\n    \n    prepare(acct: AuthAccount) {\n\n        // borrow a reference to the owner's collection\n        let collectionRef = acct.borrow\u003c\u0026TopShot.Collection\u003e(from: /storage/MomentCollection)\n            ?? panic(\"Could not borrow a reference to the stored Moment collection\")\n        \n        // withdraw the NFT\n        self.transferToken \u003c- collectionRef.withdraw(withdrawID: withdrawID)\n    }\n\n    execute {\n        \n        // get the recipient's public account object\n        let recipient = getAccount(recipient)\n\n        // get the Collection reference for the receiver\n        let receiverRef = recipient.getCapability(/public/MomentCollection).borrow\u003c\u0026{TopShot.MomentCollectionPublic}\u003e()!\n\n        // deposit the NFT in the receivers collection\n        receiverRef.deposit(token: \u003c-self.transferToken)\n    }\n}",
+      "arguments": [
+        {
+          "type": "Address",
+          "name": "recipient",
+          "label": "Recipient",
+          "sampleValues": [
+            {
+              "type": "Address",
+              "value": "0xe467b9dd11fa00df"
+            }
+          ]
+        },
+        {
+          "type": "UInt64",
+          "name": "withdrawID",
+          "label": "Moment ID",
+          "sampleValues": [
+            {
+              "type": "UInt64",
+              "value": "42"
+            }
+          ]
+        }
+      ],
+      "network": "mainnet",
+      "hash": "09d5ad21bf70dfe4f8d800db9e61a77f2f64837ae0e818c3cd67e9cea837a1cf"
+    }
+  ]
+}
