@@ -1,37 +1,39 @@
 import TopShot from 0xTOPSHOTADDRESS
 
-// This transaction updates an existing play struct 
-// and stores it in the Top Shot smart contract
-// We currently stringify the metadata and insert it into the 
-// transaction string, but want to use transaction arguments soon
+// This transaction updates multiple existing plays' taglines
+// and stores them in the Top Shot smart contract
 
 // Parameters:
 //
-// metadata: A dictionary of all the play metadata associated
+// plays: A dictionary of {playID: tagline} pairs
 
 transaction(plays: {UInt32: String}) {
 
     // Local variable for the topshot Admin object
     let adminRef: &TopShot.Admin
+    let firstKey: UInt32
+    let lastKey: UInt32
 
     prepare(acct: AuthAccount) {
 
         // borrow a reference to the admin resource
         self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("No admin resource in storage")
+        self.firstKey = plays.keys[0]
+        self.lastKey = plays.keys[plays.keys.length - 1]
     }
 
     execute {
-        // update a play with the specified metadata
+        // update multiple plays with the specified metadata
         for key in plays.keys {
             self.adminRef.updatePlayTagline(playID: key, tagline: plays[key] ?? panic("No tagline for play"))
         }
     }
 
     post {
-        for key in plays.keys {
-            TopShot.getPlayMetaDataByField(playID: key, field: "tagline") != nil:
-                "tagline doesnt exist"
-        }
+        TopShot.getPlayMetaDataByField(playID: self.firstKey, field: "tagline") != nil:
+            "first play's tagline doesnt exist"
+        TopShot.getPlayMetaDataByField(playID: self.lastKey, field: "tagline") != nil:
+            "last play's tagline doesnt exist"
     }
 }
