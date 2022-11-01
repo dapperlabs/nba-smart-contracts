@@ -9,7 +9,7 @@ import TopShot from 0xTOPSHOTADDRESS
 //
 // metadata: A dictionary of all the play metadata associated
 
-transaction(id: UInt32, tagline: String) {
+transaction(plays: {UInt32: String}) {
 
     // Local variable for the topshot Admin object
     let adminRef: &TopShot.Admin
@@ -23,11 +23,15 @@ transaction(id: UInt32, tagline: String) {
 
     execute {
         // update a play with the specified metadata
-        self.adminRef.updatePlayTagline(playID: id, tagline: tagline)
+        for key in plays.keys {
+            self.adminRef.updatePlayTagline(playID: key, tagline: plays[key] ?? panic("No tagline for play"))
+        }
     }
 
     post {
-        TopShot.getPlayMetaDataByField(playID: id, field: "tagline") != nil:
-            "tagline doesnt exist"
+        for key in plays.keys {
+            TopShot.getPlayMetaDataByField(playID: key, field: "tagline") != nil:
+                "tagline doesnt exist"
+        }
     }
 }

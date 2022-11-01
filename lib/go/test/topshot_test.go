@@ -197,7 +197,7 @@ func TestMintNFTs(t *testing.T) {
 		result := executeScriptAndCheck(t, b, templates.GenerateGetPlayMetadataFieldScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.String("FullName"))})
 		assert.Equal(t, CadenceString("Lebron"), result)
 
-		tb.UpdateTagline(t, 1, "lorem ipsum")
+		tb.UpdateTagline(t, []cadence.KeyValuePair{{Key: cadence.UInt32(1), Value: CadenceString("lorem ipsum")}})
 		result = executeScriptAndCheck(t, b, templates.GenerateGetPlayMetadataFieldScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.String("tagline"))})
 		assert.Equal(t, CadenceString("lorem ipsum"), result)
 	})
@@ -617,11 +617,10 @@ func (b *topshotTestBlockchain) CreatePlay(t *testing.T, metadata []cadence.KeyV
 	)
 }
 
-func (b *topshotTestBlockchain) UpdateTagline(t *testing.T, id uint32, tagline string) {
+func (b *topshotTestBlockchain) UpdateTagline(t *testing.T, plays []cadence.KeyValuePair) {
 	tx := createTxWithTemplateAndAuthorizer(b.Blockchain, templates.GenerateUpdateTaglineScript(b.env), b.topshotAdminAddr)
-	tag := CadenceString(tagline)
-	_ = tx.AddArgument(cadence.NewUInt32(id))
-	_ = tx.AddArgument(tag)
+	tags := cadence.NewDictionary(plays)
+	_ = tx.AddArgument(tags)
 
 	signAndSubmit(
 		t, b.Blockchain, tx,
