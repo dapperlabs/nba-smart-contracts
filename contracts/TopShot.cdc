@@ -710,10 +710,11 @@ pub contract TopShot: NonFungibleToken {
             let playDesc: String? = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "tagline")
             
             if let desc = playDesc {
-                return desc
-            } else {
-                return self.buildDescString()
+                if desc.length > 0 {
+                    return desc
+                }
             }
+            return self.buildDescString()
         }
 
         // All supported metadata views for the Moment including the Core NFT Views
