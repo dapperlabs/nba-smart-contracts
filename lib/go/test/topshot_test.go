@@ -198,7 +198,7 @@ func TestMintNFTs(t *testing.T) {
 		assert.Equal(t, CadenceString("Lebron"), result)
 
 		tb.UpdateTagline(t, []cadence.KeyValuePair{{Key: cadence.UInt32(1), Value: CadenceString("lorem ipsum")}})
-		result = executeScriptAndCheck(t, b, templates.GenerateGetPlayMetadataFieldScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.String("tagline"))})
+		result = executeScriptAndCheck(t, b, templates.GenerateGetPlayMetadataFieldScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.String("Tagline"))})
 		assert.Equal(t, CadenceString("lorem ipsum"), result)
 	})
 

@@ -178,7 +178,7 @@ pub contract TopShot: NonFungibleToken {
         }
 
         access(contract) fun updateTagline(tagline: String): UInt32 {
-            self.metadata["tagline"] = tagline
+            self.metadata["Tagline"] = tagline
 
             TopShot.playDatas[self.playID] = self
             emit PlayUpdated(id: self.playID, metadata: self.metadata)
@@ -707,7 +707,7 @@ pub contract TopShot: NonFungibleToken {
         }
 
         pub fun description(): String {
-            let playDesc: String? = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "tagline")
+            let playDesc: String? = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "Tagline")
             
             if let desc = playDesc {
                 if desc.length > 0 {
