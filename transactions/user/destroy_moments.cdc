@@ -16,10 +16,8 @@ transaction(momentIDs: [UInt64]) {
         // delist any of the moments that are listed (this delists for both MarketV1 and Marketv3)
         if let topshotSaleV3Collection = acct.borrow<&TopShotMarketV3.SaleCollection>(from: TopShotMarketV3.marketStoragePath) {
             for id in momentIDs {
-                if topshotSaleV3Collection.borrowMoment(id: id) != nil{
-                    // cancel the moment from the sale, thereby de-listing it
-                    topshotSaleV3Collection.cancelSale(tokenID: id)
-                }
+                // cancel the moment from the sale, thereby de-listing it
+                topshotSaleV3Collection.cancelSale(tokenID: id)
             }
         }
 
