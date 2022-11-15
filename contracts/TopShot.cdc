@@ -72,8 +72,6 @@ pub contract TopShot: NonFungibleToken {
 
     // Emitted when a new Play struct is created
     pub event PlayCreated(id: UInt32, metadata: {String:String})
-    // Emitted when a new Play's metadata is updated
-    pub event PlayUpdated(id: UInt32, metadata: {String:String})
     // Emitted when a new series has been triggered by an admin
     pub event NewSeriesStarted(newCurrentSeries: UInt32)
 
@@ -177,11 +175,13 @@ pub contract TopShot: NonFungibleToken {
             self.metadata = metadata
         }
 
+        // This function is intended to backfill the Play on blockchain with a more detailed
+        // description of the Play. The benefit of having the description is that anyone would
+        // be able to know the story of the Play directly from Flow
         access(contract) fun updateTagline(tagline: String): UInt32 {
             self.metadata["Tagline"] = tagline
 
             TopShot.playDatas[self.playID] = self
-            emit PlayUpdated(id: self.playID, metadata: self.metadata)
             return self.playID
         }
     }
@@ -706,6 +706,8 @@ pub contract TopShot: NonFungibleToken {
                 .concat(serialNumber)
         }
 
+        // The description of the Moment. If Tagline property of the play is empty, compose it using the buildDescString function
+        // If the Tagline property is not empty, use that as the description
         pub fun description(): String {
             let playDesc: String? = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "Tagline")
             
@@ -964,6 +966,10 @@ pub contract TopShot: NonFungibleToken {
             return newID
         }
 
+        // Temporarily enabled so the description of the play can be backfilled
+        // Parameters: playID: The ID of the play to update
+        //             tagline: A string to be used as the tagline for the play
+        // Returns: The ID of the play
         pub fun updatePlayTagline(playID: UInt32, tagline: String): UInt32 {
             let tmpPlay = TopShot.playDatas[playID] ?? panic("playID does not exist")
             tmpPlay.updateTagline(tagline: tagline)
