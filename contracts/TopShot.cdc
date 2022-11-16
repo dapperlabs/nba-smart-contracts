@@ -709,14 +709,9 @@ pub contract TopShot: NonFungibleToken {
         /// The description of the Moment. If Tagline property of the play is empty, compose it using the buildDescString function
         /// If the Tagline property is not empty, use that as the description
         pub fun description(): String {
-            let playDesc: String? = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "Tagline")
+            let playDesc: String = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "Tagline") ?? ""
             
-            if let desc = playDesc {
-                if desc.length > 0 {
-                    return desc
-                }
-            }
-            return self.buildDescString()
+            return playDesc.length > 0 ? playDesc : self.buildDescString()
         }
 
         // All supported metadata views for the Moment including the Core NFT Views
