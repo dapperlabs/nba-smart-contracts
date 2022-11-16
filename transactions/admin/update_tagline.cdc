@@ -32,8 +32,8 @@ transaction(plays: {UInt32: String}) {
 
     post {
         TopShot.getPlayMetaDataByField(playID: self.firstKey, field: "Tagline") != nil:
-            "first play's tagline doesnt exist"
+            "First play's tagline does not exist"
         TopShot.getPlayMetaDataByField(playID: self.lastKey, field: "Tagline") != nil:
-            "last play's tagline doesnt exist"
+            "Last play's tagline does not exist"
     }
 }
