@@ -46,8 +46,7 @@ pub contract TopShotTier {
         }
 
         init() {
-            self.idOverrides = {}
-            self.tiers = {}
+            self.mappings = {}
         }
     }
 
@@ -61,5 +60,6 @@ pub contract TopShotTier {
 
         self.mappings = TierMapping()
         self.account.save(<- create TierMetadataAdmin(), to: self.AdminStoragePath)
+        self.account.link<&TierMapping{TierMappingPublic}>(self.MappingPublicPath, target: self.MappingStoragePath)
     }
 }
