@@ -47,6 +47,7 @@ import FungibleToken from 0xFUNGIBLETOKENADDRESS
 import NonFungibleToken from 0xNFTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
+import TopShotTier from 0xTOPSHOTLOCKINGADDRESS
 
 pub contract TopShot: NonFungibleToken {
     // -----------------------------------------------------------------------
@@ -845,6 +846,7 @@ pub contract TopShot: NonFungibleToken {
                         "SeriesNumber": TopShot.getSetSeries(setID: self.data.setID),
                         "SetName": TopShot.getSetName(setID: self.data.setID),
                         "SerialNumber": self.data.serialNumber
+                        "Tier": TopShotTier.resolveRarity(id: self.id, setID: self.data.setID, playID: self.data.playID)
                     }
                     // add play specific data
                     let fullDictionary = self.mapPlayData(dict: traitDictionary)
