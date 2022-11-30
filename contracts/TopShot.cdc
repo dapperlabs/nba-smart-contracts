@@ -47,6 +47,7 @@ import FungibleToken from 0xFUNGIBLETOKENADDRESS
 import NonFungibleToken from 0xNFTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
+import DapperStorageRent from 0xDAPPERSTORAGERENTADDRESS
 
 pub contract TopShot: NonFungibleToken {
     // -----------------------------------------------------------------------
@@ -1158,6 +1159,12 @@ pub contract TopShot: NonFungibleToken {
 
             // Get the token's ID
             let id = token.id
+
+            // For custodial accounts, ensure there is sufficient 
+            // storage capacity to store the token
+            if self.owner?.address != nil {
+                DapperStorageRent.tryRefill(self.owner?.address)
+            }
 
             // Add the new token to the dictionary
             let oldToken <- self.ownedNFTs[id] <- token
