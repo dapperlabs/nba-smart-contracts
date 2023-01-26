@@ -230,7 +230,7 @@ func TestMintNFTs(t *testing.T) {
 		assert.Equal(t, CadenceString("Genesis"), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetSetIDsByNameScript(env), [][]byte{jsoncdc.MustEncode(cadence.String("Genesis"))})
-		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt32(1)})
+		idsArray := UInt32Array(1)
 		assert.Equal(t, idsArray, result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetSetSeriesScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1))})
@@ -286,7 +286,7 @@ func TestMintNFTs(t *testing.T) {
 
 		// Make sure the plays were added correctly and the edition isn't retired or locked
 		result := executeScriptAndCheck(t, b, templates.GenerateGetPlaysInSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1))})
-		playsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt32(1), cadence.NewUInt32(2), cadence.NewUInt32(3)})
+		playsArray := UInt32Array(1, 2, 3)
 		assert.Equal(t, playsArray, result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetIsEditionRetiredScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.UInt32(1))})
@@ -319,7 +319,7 @@ func TestMintNFTs(t *testing.T) {
 		assert.Equal(t, cadence.NewBool(true), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetCollectionIDsScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr))})
-		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt64(1)})
+		idsArray := UInt64Array(1)
 		assert.Equal(t, idsArray, result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
@@ -428,8 +428,7 @@ func TestMintNFTs(t *testing.T) {
 		assert.Equal(t, cadence.NewBool(true), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetCollectionIDsScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr))})
-		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt64(3), cadence.NewUInt64(5), cadence.NewUInt64(4), cadence.NewUInt64(2), cadence.NewUInt64(6), cadence.NewUInt64(1)})
-		assert.Equal(t, idsArray, result)
+		CadenceIntArrayContains(t, result, 1, 2, 3, 4, 5, 6)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		assert.Equal(t, cadence.NewUInt32(1), result)
