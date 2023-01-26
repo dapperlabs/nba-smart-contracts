@@ -39,6 +39,7 @@ const (
 	momentSerialNumFilename     = "collections/get_moment_serialNum.cdc"
 	momentSetNameFilename       = "collections/get_moment_setName.cdc"
 	getSetPlaysAreOwnedFilename = "collections/get_setplays_are_owned.cdc"
+	borrowNFTSafeFilename       = "collections/borrow_nft_safe.cdc"
 
 	// metadata scripts
 	getNFTMetadataFilename     = "get_nft_metadata.cdc"
@@ -262,6 +263,12 @@ func GenerateGetNextSubeditionIDScript(env Environment) []byte {
 // GenerateGetSubeditionByIDScript creates a script that returns subedition struct by ID.
 func GenerateGetSubeditionByIDScript(env Environment) []byte {
 	code := assets.MustAssetString(scriptsPath + getSubeditionByIDFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+func GenerateBorrowNFTSafeScript(env Environment) []byte {
+	code := assets.MustAssetString(scriptsPath + borrowNFTSafeFilename)
 
 	return []byte(replaceAddresses(code, env))
 }

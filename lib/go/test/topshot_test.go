@@ -44,6 +44,8 @@ type topshotTestBlockchain struct {
 	serviceKeySigner   crypto.Signer
 	topshotAdminSigner crypto.Signer
 	accountKeys        *test.AccountKeys
+
+	userAddress flow.Address
 }
 
 func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
@@ -141,7 +143,13 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 
 	env.ShardedAddress = shardedAddr.String()
 
-	return topshotTestBlockchain{b, env, topshotAddr, serviceKeySigner, topshotSigner, accountKeys}
+	return topshotTestBlockchain{
+		Blockchain:         b,
+		env:                env,
+		topshotAdminAddr:   topshotAddr,
+		serviceKeySigner:   serviceKeySigner,
+		topshotAdminSigner: topshotSigner,
+		accountKeys:        accountKeys}
 }
 
 // This test is for testing the deployment the topshot smart contracts
@@ -762,7 +770,14 @@ func TestTransferAdmin(t *testing.T) {
 		)
 	})
 
-	tb := topshotTestBlockchain{b, env, adminAddr, serviceKeySigner, adminSigner, accountKeys}
+	tb := topshotTestBlockchain{
+		Blockchain:         b,
+		env:                env,
+		topshotAdminAddr:   adminAddr,
+		serviceKeySigner:   serviceKeySigner,
+		topshotAdminSigner: adminSigner,
+		accountKeys:        accountKeys,
+	}
 	// can create a new play with the new admin
 	t.Run("Should be able to create a new Play with the new Admin account", func(t *testing.T) {
 		tb.CreatePlay(t, []cadence.KeyValuePair{{Key: firstName, Value: lebron}})

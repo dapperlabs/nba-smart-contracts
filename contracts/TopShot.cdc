@@ -1254,6 +1254,19 @@ pub contract TopShot: NonFungibleToken {
             return (&self.ownedNFTs[id] as &NonFungibleToken.NFT?)!
         }
 
+        // Safe way to borrow a reference to an NFT that does not panic
+        // Also now part of the NonFungibleToken.PublicCollection interface
+        //
+        // Parameters: id: The ID of the NFT to get the reference for
+        //
+        // Returns: An optional reference to the desired NFT, will be nil if the passed ID does not exist
+        pub fun borrowNFTSafe(id: UInt64): &NonFungibleToken.NFT? {
+            if let nftRef = &self.ownedNFTs[id] as &NonFungibleToken.NFT? {
+                return nftRef
+            }
+            return nil
+        }
+
         // borrowMoment returns a borrowed reference to a Moment
         // so that the caller can read data and call methods from it.
         // They can use this to read its setID, playID, serialNumber,
