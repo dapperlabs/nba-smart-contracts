@@ -124,8 +124,7 @@ func TestSubeditions(t *testing.T) {
 		assert.Equal(t, CadenceString("Genesis"), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetSetIDsByNameScript(env), [][]byte{jsoncdc.MustEncode(cadence.String("Genesis"))})
-		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt32(1)})
-		assert.Equal(t, idsArray, result)
+		assert.Equal(t, UInt32Array(1), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetSetSeriesScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1))})
 		assert.Equal(t, cadence.NewUInt32(0), result)
@@ -180,7 +179,7 @@ func TestSubeditions(t *testing.T) {
 
 		// Make sure the plays were added correctly and the edition isn't retired or locked
 		result := executeScriptAndCheck(t, b, templates.GenerateGetPlaysInSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1))})
-		playsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt32(1), cadence.NewUInt32(2), cadence.NewUInt32(3)})
+		playsArray := UInt32Array(1, 2, 3)
 		assert.Equal(t, playsArray, result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetIsEditionRetiredScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.UInt32(1))})
@@ -282,8 +281,8 @@ func TestSubeditions(t *testing.T) {
 
 		metadataFields := result.(cadence.Struct).Fields
 
-		metadata = []cadence.KeyValuePair{{Key: setIDString, Value: value1}, {Key: playIDString, Value: value1}}
-		subeditionMetadata = cadence.NewDictionary(metadata)
+		metadata = []cadence.KeyValuePair{{Key: playIDString, Value: value1}, {Key: setIDString, Value: value1}}
+		subeditionMetadata = CadenceStringDictionary(metadata)
 		assert.Equal(t, cadence.NewUInt32(1), metadataFields[0])
 		assert.Equal(t, subedition111Name, metadataFields[1])
 		assert.Equal(t, subeditionMetadata, metadataFields[2])
@@ -327,8 +326,7 @@ func TestSubeditions(t *testing.T) {
 		assert.Equal(t, cadence.NewBool(true), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetCollectionIDsScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr))})
-		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt64(1)})
-		assert.Equal(t, idsArray, result)
+		CadenceIntArrayContains(t, result, 1)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		assert.Equal(t, cadence.NewUInt32(1), result)
@@ -354,8 +352,7 @@ func TestSubeditions(t *testing.T) {
 		assert.Equal(t, cadence.NewBool(true), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetCollectionIDsScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr))})
-		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt64(2), cadence.NewUInt64(1)})
-		assert.Equal(t, idsArray, result)
+		CadenceIntArrayContains(t, result, 1, 2)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		assert.Equal(t, cadence.NewUInt32(1), result)
@@ -464,8 +461,7 @@ func TestSubeditions(t *testing.T) {
 		assert.Equal(t, cadence.NewBool(true), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetCollectionIDsScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr))})
-		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt64(3), cadence.NewUInt64(5), cadence.NewUInt64(4), cadence.NewUInt64(2), cadence.NewUInt64(6), cadence.NewUInt64(7), cadence.NewUInt64(1)})
-		assert.Equal(t, idsArray, result)
+		CadenceIntArrayContains(t, result, 3, 5, 4, 2, 6, 7, 1)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		assert.Equal(t, cadence.NewUInt32(1), result)
@@ -498,8 +494,7 @@ func TestSubeditions(t *testing.T) {
 		assert.Equal(t, cadence.NewBool(true), result)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetCollectionIDsScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr))})
-		idsArray := cadence.NewArray([]cadence.Value{cadence.NewUInt64(3), cadence.NewUInt64(8), cadence.NewUInt64(9), cadence.NewUInt64(10), cadence.NewUInt64(12), cadence.NewUInt64(5), cadence.NewUInt64(4), cadence.NewUInt64(2), cadence.NewUInt64(6), cadence.NewUInt64(11), cadence.NewUInt64(7), cadence.NewUInt64(1)})
-		assert.Equal(t, idsArray, result)
+		CadenceIntArrayContains(t, result, 3, 8, 9, 10, 12, 4, 2, 6, 11, 7, 1, 5)
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		assert.Equal(t, cadence.NewUInt32(1), result)
