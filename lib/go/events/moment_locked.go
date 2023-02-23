@@ -12,8 +12,8 @@ var (
 
 type MomentLockedEvent interface {
 	FlowID() uint64
-	Duration() uint64
-	ExpiryTimestamp() uint64
+	Duration() cadence.UFix64
+	ExpiryTimestamp() cadence.UFix64
 }
 
 type momentLockedEvent cadence.Event
@@ -22,12 +22,12 @@ func (evt momentLockedEvent) FlowID() uint64 {
 	return uint64(evt.Fields[0].(cadence.UInt64))
 }
 
-func (evt momentLockedEvent) Duration() uint64 {
-	return uint64(evt.Fields[1].(cadence.UInt64))
+func (evt momentLockedEvent) Duration() cadence.UFix64 {
+	return evt.Fields[1].(cadence.UFix64)
 }
 
-func (evt momentLockedEvent) ExpiryTimestamp() uint64 {
-	return uint64(evt.Fields[2].(cadence.UInt64))
+func (evt momentLockedEvent) ExpiryTimestamp() cadence.UFix64 {
+	return evt.Fields[2].(cadence.UFix64)
 }
 
 func (evt momentLockedEvent) validate() error {
