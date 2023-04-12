@@ -14,6 +14,7 @@ var addrC = "0C"
 var addrD = "0D"
 var addrE = "0E"
 var addrF = "0F"
+var addrG = "0G"
 var network = "mainnet"
 
 func TestTopShotContract(t *testing.T) {
@@ -40,7 +41,7 @@ func TestTopShotMarketContract(t *testing.T) {
 }
 
 func TestTopShotMarketV3Contract(t *testing.T) {
-	contract := contracts.GenerateTopShotMarketV3Contract(addrA, addrB, addrC, addrD, addrE, addrF)
+	contract := contracts.GenerateTopShotMarketV3Contract(addrA, addrB, addrC, addrD, addrE, addrF, addrG)
 	assert.NotNil(t, contract)
 	assert.Contains(t, string(contract), addrA)
 }

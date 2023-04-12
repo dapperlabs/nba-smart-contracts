@@ -926,7 +926,7 @@ func TestDestroyMoments(t *testing.T) {
 	env.TopShotMarketAddress = marketAddr.String()
 
 	// Should be able to deploy the third market contract
-	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, env.NFTAddress, topshotAddr.String(), marketAddr.String(), env.DUCAddress, env.TopShotLockingAddress)
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, env.NFTAddress, topshotAddr.String(), marketAddr.String(), env.DUCAddress, env.TopShotLockingAddress, env.MetadataViewsAddress)
 	marketV3Addr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotMarketV3",
