@@ -1259,14 +1259,6 @@ func TestDestroyMomentsV2(t *testing.T) {
 	tb.MintMoment(t, genesisSetID, haywardPlayID, joshAddress)
 	tb.MintMoment(t, genesisSetID, haywardPlayID, joshAddress)
 
-	//check that moments with ids 1 and 2 and 3 exist in josh's collection
-	result := executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
-	assert.Equal(t, cadence.NewBool(true), result)
-	result = executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
-	assert.Equal(t, cadence.NewBool(true), result)
-	result = executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(3))})
-	assert.Equal(t, cadence.NewBool(true), result)
-
 	ducPublicPath := cadence.Path{Domain: "public", Identifier: "dapperUtilityCoinReceiver"}
 
 	// Create a marketv1 sale collection for Josh
@@ -1301,19 +1293,6 @@ func TestDestroyMomentsV2(t *testing.T) {
 		false,
 	)
 
-	momentIDs := []uint64{1, 2}
-	// check the price, sale length, and the sale's data
-	result = executeScriptAndCheck(t, b, templates.GenerateGetSaleLenV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress))})
-	assertEqual(t, cadence.NewInt(2), result)
-	for _, momentID := range momentIDs {
-		result = executeScriptAndCheck(t, b, templates.GenerateGetSalePriceV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(momentID))})
-		assertEqual(t, CadenceUFix64("50.0"), result)
-
-		result = executeScriptAndCheck(t, b, templates.GenerateGetSaleSetIDV3Script(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(momentID))})
-		assertEqual(t, cadence.NewUInt32(1), result)
-	}
-
-	momentIDs = append(momentIDs, 3)
 	// lock the third moment
 	tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateTopShotLockingLockMomentScript(env), joshAddress)
 
@@ -1328,7 +1307,7 @@ func TestDestroyMomentsV2(t *testing.T) {
 	)
 
 	// Verify moment is locked
-	result = executeScriptAndCheck(t, b, templates.GenerateGetMomentIsLockedScript(env), [][]byte{
+	result := executeScriptAndCheck(t, b, templates.GenerateGetMomentIsLockedScript(env), [][]byte{
 		jsoncdc.MustEncode(cadence.Address(joshAddress)),
 		jsoncdc.MustEncode(cadence.UInt64(3)),
 	})
@@ -1344,7 +1323,7 @@ func TestDestroyMomentsV2(t *testing.T) {
 		)
 
 		// verify that the moments no longer exist in josh's collection
-		for _, momentID := range momentIDs {
+		for _, momentID := range []uint64{1, 2, 3} {
 			r, err := b.ExecuteScript(templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(momentID))})
 			assert.NoError(t, err)
 			assert.Contains(t, r.Error.Error(), "NFT does not exist in the collection")

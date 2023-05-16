@@ -123,7 +123,7 @@ pub contract TopShotLocking {
         return self.lockedNFTs.length
     }
 
-    // The path to the Subedition Admin resource belonging to the Account
+    // The path to the TopShotLocking Admin resource belonging to the Account
     // which the contract is deployed on
     pub fun AdminStoragePath() : StoragePath { return /storage/TopShotLockingAdmin}
 
