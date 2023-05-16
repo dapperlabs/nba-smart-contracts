@@ -10,6 +10,7 @@
 // ../../../transactions/admin/create_set_and_play_struct.cdc (296B)
 // ../../../transactions/admin/create_subedition.cdc (1.026kB)
 // ../../../transactions/admin/fulfill_pack.cdc (1.502kB)
+// ../../../transactions/admin/grant_topshot_locking_admin.cdc (570B)
 // ../../../transactions/admin/lock_set.cdc (795B)
 // ../../../transactions/admin/mark_moment_unlockable.cdc (925B)
 // ../../../transactions/admin/mint_moment.cdc (1.399kB)
@@ -364,6 +365,26 @@ func TransactionsAdminFulfill_packCdc() (*asset, error) {
 
 	info := bindataFileInfo{name: "../../../transactions/admin/fulfill_pack.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x9c, 0xc8, 0xb6, 0x13, 0x9c, 0xa8, 0x37, 0x20, 0xb8, 0x8c, 0xdc, 0x15, 0xb8, 0x56, 0x10, 0xac, 0x55, 0x75, 0x67, 0xe5, 0x73, 0xe1, 0x2b, 0xbf, 0x86, 0x89, 0x77, 0x86, 0xed, 0xc0, 0xe8, 0x94}}
+	return a, nil
+}
+
+var _TransactionsAdminGrant_topshot_locking_adminCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x8c\x90\xcf\x6e\xda\x40\x10\xc6\xef\xfb\x14\x9f\x38\x54\xb6\x44\x4d\xd5\x23\xa2\x45\x56\xa9\xda\xaa\x08\x50\xcc\x0b\x4c\xd6\x03\x5e\x01\x3b\xd6\xee\x38\x24\x8a\x78\xf7\xc8\x36\x41\x10\x71\x88\x6f\x9e\x9d\xdf\x7c\x7f\xdc\xa1\x96\xa0\x58\x4b\x5d\x54\xa2\xd8\x04\x39\xe0\xdb\xf3\x7a\xb9\x2a\xfe\x2e\xd7\xf9\x6c\xf6\xf0\xbb\x28\xcc\xed\xd2\x5c\xec\xce\xf9\xed\x87\xdd\xf9\xf2\xd7\xff\x7f\x8b\x3f\xef\x88\x19\x8d\xa0\x95\x8b\xd0\x40\x3e\x92\x55\x27\x1e\x4a\x3b\x8e\xa0\x8b\x5a\x5e\x1e\x9c\x47\xe0\x28\x4d\xb0\x0c\xf2\x25\x5a\x2e\xd2\x13\x47\x38\x85\x0a\xb4\x62\x90\xb5\xd2\x78\x45\x54\x09\xb4\x65\xc8\xe6\x7a\xdc\x12\xc7\x8a\x03\x77\x43\x2b\x5e\x03\x59\x85\x8b\x28\xb9\xde\xcb\x0b\x97\xc6\x5c\x9b\x78\x35\x00\x50\x07\xae\x29\x70\x42\xd6\xea\x18\x79\xa3\x55\xde\x9f\x1b\xb6\x77\xf5\xfb\xcd\x2c\x3d\x43\xed\xb7\xe7\xd6\xd7\x75\x11\x7d\x8a\x1f\x1d\x97\x3d\x4a\x08\x72\x9c\x7c\xb9\xed\x2a\xeb\x76\x7e\x26\x6d\x65\x63\xdc\x7b\x2b\xfa\x6c\x2b\xd2\x2a\x49\xd3\x8b\x1a\x30\x9d\xa2\x26\xef\x6c\x32\xb0\xd2\xec\x4b\x78\x51\xf4\x22\xa0\x73\x7d\x1b\x0e\xec\x2d\x0f\x52\x73\xe1\xba\x0c\x59\x5b\x64\x32\xf9\x7a\xcf\x6f\x66\x03\x93\xf2\x82\x8f\xdd\x6f\x92\x0e\xa1\xf2\x69\x6b\x27\x73\x32\x6f\x01\x00\x00\xff\xff\xa7\xd0\xb5\x76\x3a\x02\x00\x00"
+
+func TransactionsAdminGrant_topshot_locking_adminCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsAdminGrant_topshot_locking_adminCdc,
+		"../../../transactions/admin/grant_topshot_locking_admin.cdc",
+	)
+}
+
+func TransactionsAdminGrant_topshot_locking_adminCdc() (*asset, error) {
+	bytes, err := TransactionsAdminGrant_topshot_locking_adminCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/admin/grant_topshot_locking_admin.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xe, 0x86, 0x4, 0x99, 0x83, 0xb7, 0x39, 0x1c, 0xb8, 0x61, 0x5e, 0x4e, 0x28, 0x71, 0xff, 0x78, 0x14, 0xef, 0x70, 0x2f, 0x21, 0xbe, 0x70, 0xd7, 0xe7, 0x9d, 0x94, 0xf8, 0x54, 0x88, 0x7a, 0x23}}
 	return a, nil
 }
 
@@ -2228,6 +2249,7 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/admin/create_set_and_play_struct.cdc":           TransactionsAdminCreate_set_and_play_structCdc,
 	"../../../transactions/admin/create_subedition.cdc":                    TransactionsAdminCreate_subeditionCdc,
 	"../../../transactions/admin/fulfill_pack.cdc":                         TransactionsAdminFulfill_packCdc,
+	"../../../transactions/admin/grant_topshot_locking_admin.cdc":          TransactionsAdminGrant_topshot_locking_adminCdc,
 	"../../../transactions/admin/lock_set.cdc":                             TransactionsAdminLock_setCdc,
 	"../../../transactions/admin/mark_moment_unlockable.cdc":               TransactionsAdminMark_moment_unlockableCdc,
 	"../../../transactions/admin/mint_moment.cdc":                          TransactionsAdminMint_momentCdc,
@@ -2377,6 +2399,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 						"create_set_and_play_struct.cdc": {TransactionsAdminCreate_set_and_play_structCdc, map[string]*bintree{}},
 						"create_subedition.cdc": {TransactionsAdminCreate_subeditionCdc, map[string]*bintree{}},
 						"fulfill_pack.cdc": {TransactionsAdminFulfill_packCdc, map[string]*bintree{}},
+						"grant_topshot_locking_admin.cdc": {TransactionsAdminGrant_topshot_locking_adminCdc, map[string]*bintree{}},
 						"lock_set.cdc": {TransactionsAdminLock_setCdc, map[string]*bintree{}},
 						"mark_moment_unlockable.cdc": {TransactionsAdminMark_moment_unlockableCdc, map[string]*bintree{}},
 						"mint_moment.cdc": {TransactionsAdminMint_momentCdc, map[string]*bintree{}},

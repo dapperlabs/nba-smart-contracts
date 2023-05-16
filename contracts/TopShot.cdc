@@ -1235,15 +1235,21 @@ pub contract TopShot: NonFungibleToken {
         }
 
         // destroyMoments destroys moments in this collection
-        // does not check if the moments are locked
+        // unlocks the moments if they are locked
         //
         // Parameters: ids: An array of NFT IDs
         // to be destroyed from the Collection
         pub fun destroyMoments(ids: [UInt64]) {
+            let topShotLockingAdmin = TopShot.account.borrow<&TopShotLocking.Admin>(from: TopShotLocking.AdminStoragePath())
+                ?? panic("No TopShotLocking admin resource in storage")
+
             for id in ids {
                 // Remove the nft from the Collection
                 let token <- self.ownedNFTs.remove(key: id)
                     ?? panic("Cannot destroy: Moment does not exist in collection: ".concat(id.toString()))
+
+                // does nothing if the moment is not locked
+                topShotLockingAdmin.unlockByID(id: id)
 
                 destroy token
             }

@@ -123,6 +123,18 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 	err = updateContract(b, topShotLockingAddr, lockingSigner, "TopShotLocking", topShotLockingCodeWithRuntimeAddr)
 	assert.Nil(t, err)
 
+	// Grant the TopShot account a TopShotLocking admin
+	// In testnet/mainnet the TopShotLocking contract is in the same account as TopShot contract
+	tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateTopShotLockingAdminGrantAdminScript(env), topShotLockingAddr)
+	tx.AddAuthorizer(topshotAddr)
+
+	signAndSubmit(
+		t, b, tx,
+		[]flow.Address{b.ServiceKey().Address, topShotLockingAddr, topshotAddr},
+		[]crypto.Signer{serviceKeySigner, lockingSigner, topshotSigner},
+		false,
+	)
+
 	// Check that that main contract fields were initialized correctly
 	result := executeScriptAndCheck(t, b, templates.GenerateGetSeriesScript(env), nil)
 	assert.Equal(t, cadence.NewUInt32(0), result)
@@ -1247,7 +1259,7 @@ func TestDestroyMomentsV2(t *testing.T) {
 	tb.MintMoment(t, genesisSetID, haywardPlayID, joshAddress)
 	tb.MintMoment(t, genesisSetID, haywardPlayID, joshAddress)
 
-	//check that moments with ids 1 and 2 exist in josh's collection
+	//check that moments with ids 1 and 2 and 3 exist in josh's collection
 	result := executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
 	assert.Equal(t, cadence.NewBool(true), result)
 	result = executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})

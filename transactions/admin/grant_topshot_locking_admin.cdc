@@ -1,24 +1,14 @@
 import TopShot from 0xTOPSHOTADDRESS
-import TopshotAdminReceiver from 0xADMINRECEIVERADDRESS
+import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 
-// this transaction takes a TopShot Admin resource and 
-// saves it to the account storage of the account
-// where the contract is deployed
+// this transaction takes a TopShot Locking Admin resource and
+// saves it to the account storage of the account second authorizer
 
 transaction {
+    prepare(acct: AuthAccount, acct2: AuthAccount) {
+        let topShotLockingAdmin = acct.borrow<&TopShotLocking.Admin>(from: TopShotLocking.AdminStoragePath())
+          ?? panic("could not borrow admin reference")
 
-    // Local variable for the topshot Admin object
-    let adminRef: @TopShot.Admin
-
-    prepare(acct: AuthAccount) {
-
-        self.adminRef <- acct.load<@TopShot.Admin>(from: /storage/TopShotAdmin)
-            ?? panic("No topshot admin in storage")
-    }
-
-    execute {
-
-        TopshotAdminReceiver.storeAdmin(newAdmin: <-self.adminRef)
-        
+        acct2.save(<- topShotLockingAdmin.createNewAdmin(), to: TopShotLocking.AdminStoragePath())
     }
 }
