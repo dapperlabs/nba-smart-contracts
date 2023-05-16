@@ -147,7 +147,7 @@ pub contract TopShotLocking {
 
         pub fun unlockByID(id: UInt64) {
             if !TopShotLocking.lockedNFTs.containsKey(id) {
-                // nft is not locked, short circuit and return the nft
+                // nft is not locked, do nothing
                 return
             }
             TopShotLocking.lockedNFTs.remove(key: id)
