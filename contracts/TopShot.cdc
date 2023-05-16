@@ -1117,11 +1117,11 @@ pub contract TopShot: NonFungibleToken {
             }
 
             // Remove the nft from the Collection
-            let token <- self.ownedNFTs.remove(key: withdrawID) 
+            let token <- self.ownedNFTs.remove(key: withdrawID)
                 ?? panic("Cannot withdraw: Moment does not exist in the collection")
 
             emit Withdraw(id: token.id, from: self.owner?.address)
-            
+
             // Return the withdrawn token
             return <-token
         }
@@ -1231,6 +1231,21 @@ pub contract TopShot: NonFungibleToken {
             // Iterate through the ids and unlocks them
             for id in ids {
                 self.unlock(id: id)
+            }
+        }
+
+        // destroyMoments destroys moments in this collection
+        // does not check if the moments are locked
+        //
+        // Parameters: ids: An array of NFT IDs
+        // to be destroyed from the Collection
+        pub fun destroyMoments(ids: [UInt64]) {
+            for id in ids {
+                // Remove the nft from the Collection
+                let token <- self.ownedNFTs.remove(key: id)
+                    ?? panic("Cannot destroy: Moment does not exist in collection: ".concat(id.toString()))
+
+                destroy token
             }
         }
 
