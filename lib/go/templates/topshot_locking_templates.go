@@ -14,6 +14,7 @@ const (
 
 	adminMarkMomentUnlockableFilename = "admin/mark_moment_unlockable.cdc"
 	adminUnlockAllMomentsFilename     = "admin/unlock_all_moments.cdc"
+	adminGrantAdmin                   = "admin/grant_topshot_locking_admin.cdc"
 )
 
 // GenerateTopShotLockingLockMomentScript creates a script that locks a moment.
@@ -75,6 +76,13 @@ func GenerateAdminMarkMomentUnlockableScript(env Environment) []byte {
 // GenerateAdminUnlockAllMomentsScript creates a script that unlocks all moments
 func GenerateAdminUnlockAllMomentsScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + adminUnlockAllMomentsFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateTopShotLockingAdminGrantAdminScript creates a script that stores a new admin
+func GenerateTopShotLockingAdminGrantAdminScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + adminGrantAdmin)
 
 	return []byte(replaceAddresses(code, env))
 }
