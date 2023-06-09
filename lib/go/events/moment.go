@@ -23,7 +23,12 @@ type MomentMintedEvent interface {
 type momentMintedEvent cadence.Event
 
 func (evt momentMintedEvent) MomentId() uint64 {
-	return uint64(evt.Fields[0].(cadence.UInt64))
+	id64, ok := evt.Fields[0].(cadence.UInt64)
+	if ok {
+		return uint64(id64)
+	} else {
+		return uint64(evt.Fields[0].(cadence.UInt32))
+	}
 }
 
 func (evt momentMintedEvent) PlayId() uint32 {
