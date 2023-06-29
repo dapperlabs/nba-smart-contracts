@@ -19,6 +19,7 @@
 // ../../../transactions/admin/retire_all.cdc (807B)
 // ../../../transactions/admin/retire_play_from_set.cdc (1.02kB)
 // ../../../transactions/admin/set_nft_subedition.cdc (769B)
+// ../../../transactions/admin/set_nfts_lock_expiry.cdc (546B)
 // ../../../transactions/admin/start_new_series.cdc (763B)
 // ../../../transactions/admin/transfer_admin.cdc (606B)
 // ../../../transactions/admin/unlock_all_moments.cdc (422B)
@@ -545,6 +546,26 @@ func TransactionsAdminSet_nft_subeditionCdc() (*asset, error) {
 
 	info := bindataFileInfo{name: "../../../transactions/admin/set_nft_subedition.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xa2, 0x7a, 0xd3, 0x31, 0x19, 0xcd, 0xa, 0x3e, 0x60, 0xe6, 0x99, 0x31, 0x7b, 0xe1, 0x6c, 0x7e, 0x76, 0x84, 0x4c, 0x9, 0x1f, 0x88, 0x39, 0x28, 0xa3, 0x49, 0x73, 0x66, 0x45, 0x8c, 0x93, 0xe2}}
+	return a, nil
+}
+
+var _TransactionsAdminSet_nfts_lock_expiryCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x6c\x91\x4f\x6f\xe2\x30\x10\xc5\xef\xf9\x14\x23\x0e\xab\x20\xad\x92\x3d\x20\x0e\xd1\xee\xa2\x14\x68\x8b\x8a\x4a\x45\xc2\xa9\xea\xc1\xb5\x27\x30\x2a\xf1\x58\xb6\xa3\x06\x55\x7c\xf7\x2a\xe1\x4f\xf9\xe7\xe3\xf8\xe9\xbd\xdf\x9b\xa1\xd2\xb0\xf5\x90\xb3\xc9\x56\xec\xa7\x2c\x3f\x48\x2f\xa1\xb0\x5c\xc2\x9f\x3a\x9f\xbd\x64\x8f\xb3\x7c\x3a\x1b\x3e\x4d\x9e\x1f\xd2\xd1\x68\x3e\xce\xb2\x20\xf0\x56\x68\x27\xa4\x27\xd6\x21\x29\x97\xc0\xeb\x62\xa2\x7d\xbf\xf7\xf6\x1b\xb0\x36\x64\x37\x39\x95\xe8\xbc\x28\x4d\x02\x8b\x7b\xaa\xfb\xbd\x2e\x7c\x05\x00\x00\x6b\xf4\x20\x54\x49\x7a\x8e\x45\x02\xbf\xce\x53\xa3\xb4\xf9\x09\x5a\xa1\xb1\x68\x84\xc5\x50\x48\xe9\x13\x48\x2b\xbf\x4a\xa5\xe4\x4a\xfb\x83\x53\xf3\xe2\x18\x32\xbc\x62\x6f\xfd\xc1\x62\x71\xd4\x39\x5c\x17\xd1\x21\x16\xfe\x41\x63\x1a\xbd\xb3\xb5\xfc\xf9\xf7\x26\xc3\xff\xb0\x59\x40\x02\xb1\xf3\x6c\xc5\x12\xe3\x73\x51\xab\xe9\x1e\xed\x9b\x37\x18\x80\x11\x9a\x64\xd8\x19\x72\xb5\x56\xa0\xd9\x43\x41\x5a\x35\x1c\x68\x51\x4b\x04\xcf\x97\xa4\xe9\x9e\xd4\x71\x65\x25\x76\x76\x8e\xdb\xdd\x02\xb0\x46\x59\x79\x3c\x69\x5b\xb0\x05\x52\x40\x1a\x48\xb9\x93\xf9\x55\xc3\xc8\x61\x1b\x31\x6e\x6f\x71\xb7\x99\x8c\x42\x52\x09\x90\xba\x71\x9e\x8b\xc1\x4f\xa9\xed\x1e\x66\x1b\x7c\x07\x00\x00\xff\xff\x3b\x2b\xa5\x7d\x22\x02\x00\x00"
+
+func TransactionsAdminSet_nfts_lock_expiryCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsAdminSet_nfts_lock_expiryCdc,
+		"../../../transactions/admin/set_nfts_lock_expiry.cdc",
+	)
+}
+
+func TransactionsAdminSet_nfts_lock_expiryCdc() (*asset, error) {
+	bytes, err := TransactionsAdminSet_nfts_lock_expiryCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/admin/set_nfts_lock_expiry.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x94, 0x7a, 0x38, 0x3f, 0x96, 0x1e, 0x8b, 0xce, 0x11, 0x2f, 0xee, 0x4e, 0xce, 0x1a, 0x9f, 0xe3, 0x64, 0xc5, 0x38, 0x95, 0xf7, 0x6f, 0x70, 0xc9, 0x2d, 0x1c, 0xdb, 0x6b, 0x58, 0x46, 0x7c, 0xbe}}
 	return a, nil
 }
 
@@ -2258,6 +2279,7 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/admin/retire_all.cdc":                           TransactionsAdminRetire_allCdc,
 	"../../../transactions/admin/retire_play_from_set.cdc":                 TransactionsAdminRetire_play_from_setCdc,
 	"../../../transactions/admin/set_nft_subedition.cdc":                   TransactionsAdminSet_nft_subeditionCdc,
+	"../../../transactions/admin/set_nfts_lock_expiry.cdc":                 TransactionsAdminSet_nfts_lock_expiryCdc,
 	"../../../transactions/admin/start_new_series.cdc":                     TransactionsAdminStart_new_seriesCdc,
 	"../../../transactions/admin/transfer_admin.cdc":                       TransactionsAdminTransfer_adminCdc,
 	"../../../transactions/admin/unlock_all_moments.cdc":                   TransactionsAdminUnlock_all_momentsCdc,
@@ -2408,6 +2430,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 						"retire_all.cdc": {TransactionsAdminRetire_allCdc, map[string]*bintree{}},
 						"retire_play_from_set.cdc": {TransactionsAdminRetire_play_from_setCdc, map[string]*bintree{}},
 						"set_nft_subedition.cdc": {TransactionsAdminSet_nft_subeditionCdc, map[string]*bintree{}},
+						"set_nfts_lock_expiry.cdc": {TransactionsAdminSet_nfts_lock_expiryCdc, map[string]*bintree{}},
 						"start_new_series.cdc": {TransactionsAdminStart_new_seriesCdc, map[string]*bintree{}},
 						"transfer_admin.cdc": {TransactionsAdminTransfer_adminCdc, map[string]*bintree{}},
 						"unlock_all_moments.cdc": {TransactionsAdminUnlock_all_momentsCdc, map[string]*bintree{}},

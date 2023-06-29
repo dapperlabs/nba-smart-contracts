@@ -154,6 +154,19 @@ pub contract TopShotLocking {
             emit MomentUnlocked(id: id)
         }
 
+        // admin may alter the expiry of a lock on an NFT
+        pub fun setLockExpiryByID(id: UInt64, expiryTimestamp: UFix64) {
+            if expiryTimestamp < getCurrentBlock().timestamp {
+                panic("cannot set expiry in the past")
+            }
+
+            let duration = expiryTimestamp - getCurrentBlock().timestamp
+
+            TopShotLocking.lockedNFTs[id] = expiryTimestamp
+
+            emit MomentLocked(id: id, duration: duration, expiryTimestamp: expiryTimestamp)
+        }
+
         // unlocks all NFTs
         pub fun unlockAll() {
             TopShotLocking.lockedNFTs = {}
