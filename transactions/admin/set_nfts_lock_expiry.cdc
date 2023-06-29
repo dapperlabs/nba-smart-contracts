@@ -1,6 +1,6 @@
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 
-transaction(id: UInt64, expiryTimestamp: UFix64) {
+transaction(ids: [UInt64], expiryTimestamp: UFix64) {
     let adminRef: &TopShotLocking.Admin
 
     prepare(acct: AuthAccount) {
@@ -10,6 +10,8 @@ transaction(id: UInt64, expiryTimestamp: UFix64) {
     }
 
     execute {
-        self.adminRef.setLockExpiryByID(id: id, expiryTimestamp: expiryTimestamp)
+        for id in ids {
+            self.adminRef.setLockExpiryByID(id: id, expiryTimestamp: expiryTimestamp)
+        }
     }
 }

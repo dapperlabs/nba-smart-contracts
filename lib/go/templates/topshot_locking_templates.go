@@ -15,6 +15,7 @@ const (
 	adminMarkMomentUnlockableFilename = "admin/mark_moment_unlockable.cdc"
 	adminUnlockAllMomentsFilename     = "admin/unlock_all_moments.cdc"
 	adminGrantAdmin                   = "admin/grant_topshot_locking_admin.cdc"
+	adminSetLockNFTsExpiryFilename    = "admin/set_nfts_lock_expiry.cdc"
 )
 
 // GenerateTopShotLockingLockMomentScript creates a script that locks a moment.
@@ -90,6 +91,13 @@ func GenerateTopShotLockingAdminGrantAdminScript(env Environment) []byte {
 // GenerateGetLockedNFTsLengthScript creates a script that returns the number of locked NFTs in the contract
 func GenerateGetLockedNFTsLengthScript(env Environment) []byte {
 	code := assets.MustAssetString(scriptsPath + getLockedNFTsLengthFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateTopShotLockingAdminSetLockedNFTsExpiryScript creates a script that sets the lock expiry timestamp of nfts
+func GenerateTopShotLockingAdminSetLockedNFTsExpiryScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + adminSetLockNFTsExpiryFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
