@@ -844,7 +844,8 @@ pub contract TopShot: NonFungibleToken {
                     let traitDictionary: {String: AnyStruct} = {
                         "SeriesNumber": TopShot.getSetSeries(setID: self.data.setID),
                         "SetName": TopShot.getSetName(setID: self.data.setID),
-                        "SerialNumber": self.data.serialNumber
+                        "SerialNumber": self.data.serialNumber,
+                        "Locked": TopShotLocking.isLocked(nftRef: &self as! &NonFungibleToken.NFT)
                     }
                     // add play specific data
                     let fullDictionary = self.mapPlayData(dict: traitDictionary)
