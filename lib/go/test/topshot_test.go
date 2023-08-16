@@ -30,8 +30,8 @@ const (
 
 	emulatorFTAddress         = "ee82856bf20e2aa6"
 	emulatorFlowTokenAddress  = "0ae53cb6e3f42a79"
-	MetadataFTReplaceAddress  = `"./utility/FungibleToken.cdc"`
-	MetadataNFTReplaceAddress = `"./NonFungibleToken.cdc"`
+	MetadataFTReplaceAddress  = `"FungibleToken"`
+	MetadataNFTReplaceAddress = `"NonFungibleToken"`
 	Network                   = `"mainnet"`
 )
 
