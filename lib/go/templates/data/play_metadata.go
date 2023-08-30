@@ -4,24 +4,24 @@ package data
 // It also does not allow for null values, so we will be omitting them if empty
 // Reference: https://docs.google.com/spreadsheets/d/1muUZowii0pqoyi6OPK1VPNJi7keSc8_5zI9vu_QvfOY/edit#gid=375111836
 type PlayMetadata struct {
-	FullName              string
-	FirstName             string
-	LastName              string
-	Birthdate             string
-	Birthplace            string
-	JerseyNumber          string
+	FullName              string `json:",omitempty"`        // Not all plays have player information. Can be blank
+	FirstName             string `json:",omitempty"`        // Not all plays have player information. Can be blank
+	LastName              string `json:",omitempty"`        // Not all plays have player information. Can be blank
+	Birthdate             string `json:",omitempty"`        // Not all plays have player information. Can be blank
+	Birthplace            string `json:",omitempty"`        // Not all plays have player information. Can be blank
+	JerseyNumber          string `json:",omitempty"`        // Not all plays have player information. Can be blank
 	DraftTeam             string `json:",omitempty"`        // Not all plays have draft information. Can be blank
 	DraftYear             *int32 `json:",omitempty,string"` // Not all plays have draft information. Can be blank
 	DraftSelection        string `json:",omitempty"`        // Not all plays have draft information. Can be blank
 	DraftRound            string `json:",omitempty"`        // Not all plays have draft information. Can be blank
 	TeamAtMomentNBAID     string
 	TeamAtMoment          string
-	PrimaryPosition       string
-	PlayerPosition        string
-	Height                *int32 `json:",string"`
-	Weight                *int32 `json:",string"`
-	TotalYearsExperience  string
-	NbaSeason             string
+	PrimaryPosition       string `json:",omitempty"`        // Not all plays have player information. Can be blank
+	PlayerPosition        string `json:",omitempty"`        // Not all plays have player information. Can be blank
+	Height                *int32 `json:",omitempty,string"` // Not all plays have player information. Can be blank
+	Weight                *int32 `json:",omitempty,string"` // Not all plays have player information. Can be blank
+	TotalYearsExperience  string `json:",omitempty"`        // Not all plays have player information. Can be blank
+	NbaSeason             string `json:",omitempty"`        // Not all plays have player information. Can be blank
 	DateOfMoment          string
 	PlayCategory          string
 	PlayType              string
@@ -32,6 +32,8 @@ type PlayMetadata struct {
 	PlayerAutographType   string `json:",omitempty"`
 	PlayerAutographDate   string `json:",omitempty"`
 	PlayerAutographSigner string `json:",omitempty"`
+	OverrideHeadline      string `json:",omitempty"`
+	Tagline               string
 }
 
 // GenerateEmptyPlay generates a play with all its fields
@@ -62,5 +64,7 @@ func GenerateEmptyPlay(fullName string) PlayMetadata {
 		PlayerAutographType:   "",
 		PlayerAutographDate:   "",
 		PlayerAutographSigner: "",
+		OverrideHeadline:      "",
+		Tagline:               "",
 	}
 }

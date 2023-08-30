@@ -7,6 +7,7 @@ import (
 const (
 	transactionsPath         = "../../../transactions/"
 	createPlayFilename       = "admin/create_play.cdc"
+	updateTaglineFilename    = "admin/update_tagline.cdc"
 	createSetFilename        = "admin/create_set.cdc"
 	addPlayFilename          = "admin/add_play_to_set.cdc"
 	addPlaysFilename         = "admin/add_plays_to_set.cdc"
@@ -20,12 +21,26 @@ const (
 	createSetAndPlayFilename = "admin/create_set_and_play_struct.cdc"
 
 	transferAdminFilename = "admin/transfer_admin.cdc"
+
+	mintMomentWithSubeditionFilename         = "admin/mint_moment_with_subedition.cdc"
+	batchMintMomentWithSubeditionFilename    = "admin/batch_mint_moment_with_subedition.cdc"
+	createNewSubeditionAdminResourceFilename = "admin/create_new_subedition_admin_resource.cdc"
+	createSubeditionFilename                 = "admin/create_subedition.cdc"
+	setNFTsubedition                         = "admin/set_nft_subedition.cdc"
 )
 
 // GenerateMintPlayScript creates a new play data struct
 // and initializes it with metadata
 func GenerateMintPlayScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + createPlayFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateMintPlayScript creates a new play data struct
+// and initializes it with metadata
+func GenerateUpdateTaglineScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + updateTaglineFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
@@ -114,6 +129,44 @@ func GenerateChangeSeriesScript(env Environment) []byte {
 // For testing purposes only
 func GenerateCreateSetandPlayDataScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + createSetAndPlayFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateMintMomentWithSubeditionScript generates a script to mint a new moment
+// with Subedition from a play-set-subedition combination
+func GenerateMintMomentWithSubeditionScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + mintMomentWithSubeditionFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateBatchMintMomentWithSubeditionScript mints multiple moments with Subedition
+// of the same play-set-subedition combination
+func GenerateBatchMintMomentWithSubeditionScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + batchMintMomentWithSubeditionFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateCreateNewSubeditionAdminResourceScript creates new Subedition admin resource
+// for minting with Subeditions
+func GenerateCreateNewSubeditionAdminResourceScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + createNewSubeditionAdminResourceFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateCreateSubeditionScript creates new Subedition struct
+func GenerateCreateSubeditionScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + createSubeditionFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateSetNFTsubedtitionScript creates new Subedition entity in map with NFTid as key
+func GenerateSetNFTsubedtitionScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + setNFTsubedition)
 
 	return []byte(replaceAddresses(code, env))
 }

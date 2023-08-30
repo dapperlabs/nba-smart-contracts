@@ -1,6 +1,11 @@
 package test
 
 import (
+	"fmt"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
 	"github.com/onflow/cadence"
@@ -12,9 +17,6 @@ import (
 	sdktemplates "github.com/onflow/flow-go-sdk/templates"
 	"github.com/onflow/flow-go-sdk/test"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"testing"
-	"time"
 )
 
 const CadenceUFix64Factor = 100000000
@@ -66,8 +68,10 @@ func TestTopShotLocking(t *testing.T) {
 	})
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
+	topShotRoyaltyAddr, err := b.CreateAccount([]*flow.AccountKey{lockingKey}, []sdktemplates.Contract{})
+
 	// Deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
+	topshotCode := contracts.GenerateTopShotContract(defaultfungibleTokenAddr, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), topShotRoyaltyAddr.String(), Network)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -103,13 +107,14 @@ func TestTopShotLocking(t *testing.T) {
 	env.TopShotMarketAddress = marketAddr.String()
 
 	// Should be able to deploy the third market contract
-	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), env.DUCAddress, topShotLockingAddr.String())
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), env.DUCAddress, topShotLockingAddr.String(), metadataViewsAddr.String())
 	marketV3Addr, err := b.CreateAccount(nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotMarketV3",
 			Source: string(marketV3Code),
 		},
 	})
+	assert.NoError(t, err)
 	env.TopShotMarketV3Address = marketV3Addr.String()
 
 	firstName := CadenceString("FullName")
@@ -461,7 +466,7 @@ func TestTopShotLocking(t *testing.T) {
 
 	t.Run("Should not be able to lock a non-TopShot.NFT", func(t *testing.T) {
 		// Deploy a copy of the TopShot to a new address contract
-		fakeTopshotCode := contracts.GenerateTopShotContract(nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String())
+		fakeTopshotCode := contracts.GenerateTopShotContract(defaultfungibleTokenAddr, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), topShotRoyaltyAddr.String(), Network)
 		fakeTopshotAccountKey, fakeTopshotSigner := accountKeys.NewWithSigner()
 		fakeTopshotAddress, _ := b.CreateAccount([]*flow.AccountKey{fakeTopshotAccountKey}, []sdktemplates.Contract{
 			{
@@ -533,5 +538,30 @@ func TestTopShotLocking(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, fakeTopshotAddress}, []crypto.Signer{serviceKeySigner, fakeTopshotSigner},
 			true,
 		)
+	})
+
+	t.Run("Admin should be able to set the expiry of an NFT", func(t *testing.T) {
+		expectedExpiryTime := time.Now().Add(31536000 * time.Second)
+
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateTopShotLockingAdminSetLockedNFTsExpiryScript(env), topShotLockingAddr)
+		ids := []cadence.Value{cadence.NewUInt64(momentId)}
+		_ = tx.AddArgument(cadence.NewArray(ids))
+		expectedExpiryString := fmt.Sprintf("%.2f", float64(expectedExpiryTime.Unix()))
+		expiry, _ := cadence.NewUFix64(expectedExpiryString)
+		_ = tx.AddArgument(expiry)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topShotLockingAddr}, []crypto.Signer{serviceKeySigner, lockingSigner},
+			false,
+		)
+
+		// Verify moment is locked for 1 year
+		result := executeScriptAndCheck(t, b, templates.GenerateGetMomentLockExpiryScript(env), [][]byte{
+			jsoncdc.MustEncode(cadence.Address(topshotAddr)),
+			jsoncdc.MustEncode(cadence.UInt64(momentId)),
+		})
+		resultTime := time.Unix(int64(result.ToGoValue().(uint64)/CadenceUFix64Factor), 0)
+		assert.WithinDuration(t, expectedExpiryTime, resultTime, 10*time.Second)
 	})
 }
