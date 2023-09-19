@@ -35,8 +35,8 @@
 
 */
 
-import NonFungibleToken from 0x631e88ae7f1d7c20
-import TopShot from 0x877931736ee77cff
+import NonFungibleToken from 0xNFTADDRESS
+import TopShot from 0xTOPSHOTADDRESS
 
 pub contract TopShotShardedCollection {
 
