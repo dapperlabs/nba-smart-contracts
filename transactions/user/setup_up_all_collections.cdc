@@ -1,6 +1,7 @@
 import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
+import PackNFT from 0xPACKNFTADDRESS
 
 // This transaction sets up an account to use Top Shot
 // by storing an empty moment collection and creating
