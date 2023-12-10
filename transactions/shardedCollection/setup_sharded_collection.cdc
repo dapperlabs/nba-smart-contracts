@@ -1,5 +1,6 @@
 import TopShot from 0xTOPSHOTADDRESS
 import TopShotShardedCollection from 0xSHARDEDADDRESS
+import NonFungibleToken from 0xNFTADDRESS
 
 // This transaction creates and stores an empty moment collection 
 // and creates a public capability for it.
@@ -25,7 +26,7 @@ transaction(numBuckets: UInt64) {
                 acct.unlink(/public/MomentCollection)
             }
 
-            acct.link<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection, target: /storage/ShardedMomentCollection)
+            acct.link<&{NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic, TopShot.MomentCollectionPublic}>(/public/MomentCollection, target: /storage/ShardedMomentCollection)
         } else {
 
             panic("Sharded Collection already exists!")

@@ -20,7 +20,7 @@ transaction {
             acct.save(<-collection, to: /storage/MomentCollection)
 
             // create a public capability for the collection
-            acct.link<&{NonFungibleToken.CollectionPublic, TopShot.MomentCollectionPublic, MetadataViews.ResolverCollection}>(/public/MomentCollection, target: /storage/MomentCollection)
+            acct.link<&{NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic, TopShot.MomentCollectionPublic, MetadataViews.ResolverCollection}>(/public/MomentCollection, target: /storage/MomentCollection)
         }
     }
 }

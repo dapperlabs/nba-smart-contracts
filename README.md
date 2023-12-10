@@ -10,7 +10,7 @@ smart contract programming language designed for the Flow Blockchain.
 
 ### What is NBA Top Shot
 
-NBA Top Shot is the official digital collecitibles
+NBA Top Shot is the official digital collectibles
 game for the National Basketball Association. Players collect and trade
 digital collectibles that represent highlights from the best players 
 in the world. See more at nbatopshot.com
@@ -89,11 +89,11 @@ The directories here are organized into contracts, scripts, and transactions.
 Contracts contain the source code for the Top Shot contracts that are deployed to Flow.
 
 Scripts contain read-only transactions to get information about
-the state of someones Collection or about the state of the TopShot contract.
+the state of someone's Collection or about the state of the TopShot contract.
 
 Transactions contain the transactions that various admins and users can use
 to perform actions in the smart contract like creating plays and sets,
-minting Moments, and transfering Moments.
+minting Moments, and transferring Moments.
 
  - `contracts/` : Where the Top Shot related smart contracts live.
  - `transactions/` : This directory contains all the transactions and scripts
@@ -137,7 +137,7 @@ pub resource Moment {
     pub let playID: UInt32
 
     // the place in the edition that this Moment was minted
-    // Otherwise know as the serial number
+    // Otherwise known as the serial number
     pub let serialNumber: UInt32
 }
 ```
@@ -162,7 +162,7 @@ The other types that are defined in `TopShot` are as follows:
     withdraw and deposit from this collection and get information about the 
     contained Moments.
  - `Admin`: This is a resource type that can be used by admins to perform
-    various acitions in the smart contract like starting a new series, 
+    various actions in the smart contract like starting a new series, 
     creating a new play or set, and getting a reference to an existing set.
  - `QuerySetData`: A struct that contains the metadata associated with a set.
     This is currently the only way to access the metadata of a set.
