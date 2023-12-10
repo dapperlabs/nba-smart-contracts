@@ -75,6 +75,7 @@ pub contract FastBreak: NonFungibleToken {
         pub let numPlayers: UInt64
         pub var status: String
         pub var winner: Address?
+        pub let submissions: {Address: AnyStruct}?
 
         init (
             id: UInt64,
@@ -94,6 +95,7 @@ pub contract FastBreak: NonFungibleToken {
                 self.numPlayers = fb.numPlayers
                 self.status = fb.status
                 self.winner = fb.winner
+                self.submissions = fb.submissions
             } else {
                 self.id = id
                 self.name = name
@@ -103,6 +105,7 @@ pub contract FastBreak: NonFungibleToken {
                 self.numPlayers = numPlayers
                 self.status = "FAST_BREAK_OPEN"
                 self.winner = 0x0000000000000000
+                self.submissions = {}
             }
         }
 
@@ -123,8 +126,6 @@ pub contract FastBreak: NonFungibleToken {
         pub let mintingDate: UFix64
         //pub let mintedTo: Address
         pub let topShots: [UInt64]
-        pub var isWin: Bool
-        pub var score: UInt64
 
         /// Destructor
         ///
@@ -148,14 +149,21 @@ pub contract FastBreak: NonFungibleToken {
             self.serialNumber = serialNumber
             self.mintingDate = getCurrentBlock().timestamp
             self.topShots = topShots
-            self.isWin = false
-            self.score = 0
 
             emit FastBreakNFTMinted(
                 id: self.id,
                 fastBreakGameID: self.fastBreakGameID,
                 serialNumber: self.serialNumber
             )
+        }
+
+
+        pub fun isWinner() {
+            //TODO return fastbreak.submissions[address].win
+        }
+
+        pub fun points() {
+            //TODO return fastbreak.submissions[address].points
         }
     }
 
@@ -267,7 +275,6 @@ pub contract FastBreak: NonFungibleToken {
 
         pub fun mintNFT(fastBreakGameID: UInt64, topShots: [UInt64]): @FastBreak.NFT {
             pre {
-                // Make sure the fast break we are creating this NFT in exists
                 FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "No such fast break game"
             }
 
