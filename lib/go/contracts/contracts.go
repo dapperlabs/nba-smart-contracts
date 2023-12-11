@@ -27,6 +27,7 @@ const (
 	defaultTopShotLockingAddress   = "TOPSHOTLOCKINGADDRESS"
 	defaultTopShotRoyaltyAddress   = "TOPSHOTROYALTYADDRESS"
 	defaultNetwork                 = "${NETWORK}"
+	fastBreakFile                  = "FastBreak.cdc"
 )
 
 // GenerateTopShotContract returns a copy
@@ -116,6 +117,16 @@ func GenerateTopShotLockingContract(nftAddr string) []byte {
 func GenerateTopShotLockingContractWithTopShotRuntimeAddr(nftAddr string, topshotAddr string) []byte {
 	lockingCode := assets.MustAssetString(topShotLockingFile)
 	codeWithNFTAddr := strings.ReplaceAll(lockingCode, defaultNonFungibleTokenAddress, nftAddr)
+	codeWithTopShotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
+
+	return []byte(codeWithTopShotAddr)
+}
+
+// GenerateFastBreakContract returns a copy
+// of the FastBreakContract with the import addresses updated
+func GenerateFastBreakContract(nftAddr string, topshotAddr string) []byte {
+	fastBreakCode := assets.MustAssetString(fastBreakFile)
+	codeWithNFTAddr := strings.ReplaceAll(fastBreakCode, defaultNonFungibleTokenAddress, nftAddr)
 	codeWithTopShotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 
 	return []byte(codeWithTopShotAddr)

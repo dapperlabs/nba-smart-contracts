@@ -3,8 +3,8 @@
     Author: Jeremy Ahrens jer.ahrens@dapperlabs.com
 */
 
-import NonFungibleToken from 0xf8d6e0586b0a20c7
-//import TopShot from 0xTOPSHOTADDRESS
+import NonFungibleToken from 0xNFTADDRESS
+import TopShot from 0xTOPSHOTADDRESS
 
 pub contract FastBreak: NonFungibleToken {
 
@@ -33,6 +33,7 @@ pub contract FastBreak: NonFungibleToken {
     pub var nextFastBreakGameID:          UInt64
 
     access(self) let fastBreakRunByID:        {UInt64: FastBreakRun}
+
     access(self) let fastBreakGameByID:           {UInt64: FastBreakGame}
 
     pub struct FastBreakRun {

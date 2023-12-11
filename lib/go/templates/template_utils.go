@@ -33,6 +33,7 @@ type Environment struct {
 	TopShotMarketAddress   string
 	TopShotMarketV3Address string
 	ShardedAddress         string
+	FastBreakAddress       string
 	AdminReceiverAddress   string
 	DUCAddress             string
 	ForwardingAddress      string
