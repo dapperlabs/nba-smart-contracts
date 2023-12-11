@@ -176,14 +176,20 @@ pub contract FastBreak: NonFungibleToken {
         }
     }
 
+    pub resource interface FastBreakPlayer {
+        pub fun play(fastBreakGameID: UInt64, topShots: [UInt64]): @FastBreak.NFT
+    }
+
     pub resource Collection:
         NonFungibleToken.Provider,
         NonFungibleToken.Receiver,
         NonFungibleToken.CollectionPublic,
-        FastBreakNFTCollectionPublic
+        FastBreakNFTCollectionPublic,
+        FastBreakPlayer
     {
 
         pub var ownedNFTs: @{UInt64: NonFungibleToken.NFT}
+        pub var numMinted: UInt64
 
         pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT {
             let token <- self.ownedNFTs.remove(key: withdrawID) ?? panic("Could not find a fast break with the given ID in the Fast Break collection")
@@ -235,21 +241,35 @@ pub contract FastBreak: NonFungibleToken {
             }
         }
 
+        pub fun play(fastBreakGameID: UInt64, topShots: [UInt64]): @FastBreak.NFT {
+            pre {
+                FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "no such fast break game"
+            }
+
+            let fastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
+
+            let fastBreakNFT <- create NFT(
+                fastBreakGameID: fastBreakGame.id,
+                serialNumber: self.numMinted + 1,
+                topShots: topShots
+            )
+
+            FastBreak.totalSupply = FastBreak.totalSupply + 1
+            return <- fastBreakNFT
+        }
+
         destroy() {
             destroy self.ownedNFTs
         }
 
         init() {
+            self.numMinted = 0
             self.ownedNFTs <- {}
         }
     }
 
     pub fun createEmptyCollection(): @NonFungibleToken.Collection {
         return <- create Collection()
-    }
-
-    pub resource interface FastBreakGamePlayer {
-        pub fun play(fastBreakGameID: UInt64, topShots: [UInt64]): @FastBreak.NFT
     }
 
     pub resource interface GameOracle {
@@ -264,26 +284,6 @@ pub contract FastBreak: NonFungibleToken {
             numPlayers: UInt64
         ): UInt64
         pub fun updateFastBreakGameStatus(id: UInt64, status: String): UInt64
-    }
-
-    pub resource FastBreakPlayer: FastBreakGamePlayer {
-
-        pub fun play(fastBreakGameID: UInt64, topShots: [UInt64]): @FastBreak.NFT {
-            pre {
-                FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "no such fast break game"
-            }
-
-            let fastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
-
-            let fastBreakNFT <- create NFT(
-                fastBreakGameID: fastBreakGame.id,
-                serialNumber: 0, // TODO not sure what I want to do here yet
-                topShots: topShots
-            )
-
-            FastBreak.totalSupply = FastBreak.totalSupply + 1
-            return <- fastBreakNFT
-        }
     }
 
     pub resource FastBreakDaemon: GameOracle {
@@ -321,7 +321,6 @@ pub contract FastBreak: NonFungibleToken {
             submissionDeadline: UInt64,
             numPlayers: UInt64
         ): UInt64 {
-
             let fastBreakGame: FastBreak.FastBreakGame = FastBreak.FastBreakGame(
                 id: FastBreak.nextFastBreakGameID,
                 name: name,
