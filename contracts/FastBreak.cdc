@@ -4,6 +4,7 @@
 */
 
 import NonFungibleToken from 0xf8d6e0586b0a20c7
+//import TopShot from 0xTOPSHOTADDRESS
 
 pub contract FastBreak: NonFungibleToken {
 
@@ -43,7 +44,6 @@ pub contract FastBreak: NonFungibleToken {
 
         init (id: UInt64, name: String, runStart: UInt64, runEnd: UInt64) {
             if let fastBreakRun = FastBreak.fastBreakRunByID[id] {
-
                 self.id = fastBreakRun.id
                 self.name = fastBreakRun.name
                 self.status = fastBreakRun.status
@@ -117,6 +117,12 @@ pub contract FastBreak: NonFungibleToken {
         return FastBreak.fastBreakGameByID[id]
     }
 
+    pub fun validatePlaySubmission(fastBreakGame: FastBreakGame, topShots: [UInt64]): Bool {
+        if Int(fastBreakGame.numPlayers) == topShots.length {
+            return true
+        }
+        return false
+    }
 
     pub resource NFT: NonFungibleToken.INFT {
         pub let id: UInt64
@@ -242,12 +248,12 @@ pub contract FastBreak: NonFungibleToken {
         }
 
         pub fun play(fastBreakGameID: UInt64, topShots: [UInt64]): @FastBreak.NFT {
+
             pre {
-                FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "no such fast break game"
+                //FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "no such fast break game"
             }
 
             let fastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
-
             let fastBreakNFT <- create NFT(
                 fastBreakGameID: fastBreakGame.id,
                 serialNumber: self.numMinted + 1,
@@ -350,8 +356,8 @@ pub contract FastBreak: NonFungibleToken {
     }
 
     init() {
-        self.CollectionStoragePath = /storage/FastBreakNFTCollection
-        self.CollectionPublicPath = /public/FastBreakNFTCollection
+        self.CollectionStoragePath = /storage/FastBreakGame
+        self.CollectionPublicPath = /public/FastBreakGame
         self.OracleStoragePath = /storage/FastBreakDaemon
         self.OraclePrivatePath = /private/FastBreakDaemon
 
