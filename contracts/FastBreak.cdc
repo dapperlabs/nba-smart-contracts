@@ -3,10 +3,9 @@
     Author: Jeremy Ahrens jer.ahrens@dapperlabs.com
 */
 
-import NonFungibleToken from "./NonFungibleToken.cdc"
+import NonFungibleToken from 0xf8d6e0586b0a20c7
 
 pub contract FastBreak: NonFungibleToken {
-
 
     pub event ContractInitialized()
     pub event Withdraw(id: UInt64, from: Address?)
@@ -25,8 +24,8 @@ pub contract FastBreak: NonFungibleToken {
 
     pub let CollectionStoragePath:  StoragePath
     pub let CollectionPublicPath:   PublicPath
-    pub let AdminStoragePath:       StoragePath
-    pub let MinterPrivatePath:      PrivatePath
+    pub let OracleStoragePath:       StoragePath
+    pub let OraclePrivatePath:      PrivatePath
 
     pub var totalSupply:        UInt64
     pub var nextFastBreakRunID:       UInt64
@@ -127,14 +126,10 @@ pub contract FastBreak: NonFungibleToken {
         //pub let mintedTo: Address
         pub let topShots: [UInt64]
 
-        /// Destructor
-        ///
         destroy() {
             emit FastBreakNFTBurned(id: self.id, serialNumber: self.serialNumber)
         }
 
-        /// NFT initializer
-        ///
         init(
             fastBreakGameID: UInt64,
             serialNumber: UInt64,
@@ -253,11 +248,11 @@ pub contract FastBreak: NonFungibleToken {
         return <- create Collection()
     }
 
-    pub resource interface NFTMinter {
-        pub fun mintNFT(fastBreakGameID: UInt64, topShots: [UInt64]): @FastBreak.NFT
+    pub resource interface FastBreakGamePlayer {
+        pub fun play(fastBreakGameID: UInt64, topShots: [UInt64]): @FastBreak.NFT
     }
 
-    pub resource interface FastBreakDaemon {
+    pub resource interface GameOracle {
         pub fun createFastBreakRun(name: String, runStart: UInt64, runEnd: UInt64): UInt64
         pub fun updateFastBreakRunStatus(id: UInt64, status: String): UInt64
         pub fun createFastBreakGame(
@@ -271,19 +266,18 @@ pub contract FastBreak: NonFungibleToken {
         pub fun updateFastBreakGameStatus(id: UInt64, status: String): UInt64
     }
 
-    pub resource FastBreakPlayer: NFTMinter {
+    pub resource FastBreakPlayer: FastBreakGamePlayer {
 
-        pub fun mintNFT(fastBreakGameID: UInt64, topShots: [UInt64]): @FastBreak.NFT {
+        pub fun play(fastBreakGameID: UInt64, topShots: [UInt64]): @FastBreak.NFT {
             pre {
-                FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "No such fast break game"
+                FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "no such fast break game"
             }
 
             let fastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
 
-
             let fastBreakNFT <- create NFT(
                 fastBreakGameID: fastBreakGame.id,
-                serialNumber: 0,
+                serialNumber: 0, // TODO not sure what I want to do here yet
                 topShots: topShots
             )
 
@@ -292,7 +286,7 @@ pub contract FastBreak: NonFungibleToken {
         }
     }
 
-    pub resource Admin: FastBreakDaemon {
+    pub resource FastBreakDaemon: GameOracle {
 
         pub fun createFastBreakRun(name: String, runStart: UInt64, runEnd: UInt64): UInt64 {
 
@@ -354,15 +348,13 @@ pub contract FastBreak: NonFungibleToken {
             emit FastBreakGameStatusChange(id: fastBreakGame.id, newStatus: fastBreakGame.status)
             return fastBreakGame.id
         }
-
-
     }
 
     init() {
         self.CollectionStoragePath = /storage/FastBreakNFTCollection
         self.CollectionPublicPath = /public/FastBreakNFTCollection
-        self.AdminStoragePath = /storage/FastBreakAdmin
-        self.MinterPrivatePath = /private/FastBreakMinter
+        self.OracleStoragePath = /storage/FastBreakDaemon
+        self.OraclePrivatePath = /private/FastBreakDaemon
 
         self.totalSupply = 0
         self.nextFastBreakRunID = 1
@@ -371,17 +363,13 @@ pub contract FastBreak: NonFungibleToken {
         self.fastBreakRunByID = {}
         self.fastBreakGameByID = {}
 
-        // Create an Admin resource and save it to storage
-        let admin <- create Admin()
-        self.account.save(<-admin, to: self.AdminStoragePath)
-        // Link capabilites to the admin constrained to the Minter
-        // and Metadata interfaces
-        self.account.link<&FastBreak.Admin{FastBreak.FastBreakDaemon}>(
-            self.MinterPrivatePath,
-            target: self.AdminStoragePath
+        let oracle <- create FastBreakDaemon()
+        self.account.save(<-oracle, to: self.OracleStoragePath)
+        self.account.link<&FastBreak.FastBreakDaemon{FastBreak.GameOracle}>(
+            self.OraclePrivatePath,
+            target: self.OracleStoragePath
         )
 
-        // Let the world know we are here
         emit ContractInitialized()
     }
 }
