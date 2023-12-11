@@ -39,10 +39,17 @@ const (
 	momentSerialNumFilename     = "collections/get_moment_serialNum.cdc"
 	momentSetNameFilename       = "collections/get_moment_setName.cdc"
 	getSetPlaysAreOwnedFilename = "collections/get_setplays_are_owned.cdc"
+	borrowNFTSafeFilename       = "collections/borrow_nft_safe.cdc"
 
 	// metadata scripts
 	getNFTMetadataFilename     = "get_nft_metadata.cdc"
 	getTopShotMetadataFilename = "get_topshot_metadata.cdc"
+
+	//subedition scripts
+	getNFTSubeditionFilename    = "subeditions/get_nft_subedition.cdc"
+	getAllSubeditionFilename    = "subeditions/get_all_subeditions.cdc"
+	getSubeditionByIDFilename   = "subeditions/get_subedition_by_id.cdc"
+	getNextSubeditionIDFilename = "subeditions/get_nextSubeditionID.cdc"
 )
 
 // Global Data Gettetrs
@@ -228,6 +235,40 @@ func GenerateGetNFTMetadataScript(env Environment) []byte {
 // GenerateGetTopShotMetadataScript creates a script that returns the metadata for an NFT.
 func GenerateGetTopShotMetadataScript(env Environment) []byte {
 	code := assets.MustAssetString(scriptsPath + getTopShotMetadataFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateGetNFTSubeditionScript creates a script that returns the subedition for an NFT.
+func GenerateGetNFTSubeditionScript(env Environment) []byte {
+	code := assets.MustAssetString(scriptsPath + getNFTSubeditionFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateGetAllSubeditionScript creates a script that returns all subeditions.
+func GenerateGetAllSubeditionScript(env Environment) []byte {
+	code := assets.MustAssetString(scriptsPath + getAllSubeditionFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateGetNextSubeditionIDScript creates a script that returns next subedition ID that will be used.
+func GenerateGetNextSubeditionIDScript(env Environment) []byte {
+	code := assets.MustAssetString(scriptsPath + getNextSubeditionIDFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateGetSubeditionByIDScript creates a script that returns subedition struct by ID.
+func GenerateGetSubeditionByIDScript(env Environment) []byte {
+	code := assets.MustAssetString(scriptsPath + getSubeditionByIDFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+func GenerateBorrowNFTSafeScript(env Environment) []byte {
+	code := assets.MustAssetString(scriptsPath + borrowNFTSafeFilename)
 
 	return []byte(replaceAddresses(code, env))
 }

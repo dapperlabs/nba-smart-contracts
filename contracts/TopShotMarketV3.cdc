@@ -41,6 +41,7 @@ import TopShot from 0xTOPSHOTADDRESS
 import Market from 0xMARKETADDRESS
 import DapperUtilityCoin from 0xDUCADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
+import MetadataViews from 0xMETADATAVIEWSADDRESS
 
 pub contract TopShotMarketV3 {
 
@@ -53,7 +54,7 @@ pub contract TopShotMarketV3 {
     /// emitted when the price of a listed moment has changed
     pub event MomentPriceChanged(id: UInt64, newPrice: UFix64, seller: Address?)
     /// emitted when a token is purchased from the market
-    pub event MomentPurchased(id: UInt64, price: UFix64, seller: Address?)
+    pub event MomentPurchased(id: UInt64, price: UFix64, seller: Address?, momentName: String, momentDescription: String, momentThumbnailURL: String)
     /// emitted when a moment has been withdrawn from the sale
     pub event MomentWithdrawn(id: UInt64, owner: Address?)
 
@@ -218,26 +219,25 @@ pub contract TopShotMarketV3 {
                 self.ownerCapability.borrow()!
                     .deposit(from: <-buyTokens)
 
-                emit MomentPurchased(id: tokenID, price: price, seller: self.owner?.address)
-
                 // Return the purchased token
                 let boughtMoment <- self.ownerCollection.borrow()!.withdraw(withdrawID: tokenID) as! @TopShot.NFT
+
+                let momentDisplay = boughtMoment.resolveView(Type<MetadataViews.Display>())! as! MetadataViews.Display
+                emit MomentPurchased(id: tokenID, price: price, seller: self.owner?.address, momentName: momentDisplay.name, momentDescription: momentDisplay.description, momentThumbnailURL: momentDisplay.thumbnail.uri())
 
                 return <-boughtMoment
 
             // If not found in this SaleCollection, check V1
-            } else {
-                if let v1Market = self.marketV1Capability {
-                    let v1MarketRef = v1Market.borrow()!
+            } else if let v1Market = self.marketV1Capability {
+                let v1MarketRef = v1Market.borrow()!
 
-                    return <-v1MarketRef.purchase(tokenID: tokenID, buyTokens: <-buyTokens)
-                } else {
-                    panic("No token matching this ID for sale!")
-                }
-            }
+                return <-v1MarketRef.purchase(tokenID: tokenID, buyTokens: <-buyTokens)
+            } 
             
-            destroy buyTokens // This line can be removed when this issue is released: https://github.com/onflow/cadence/pull/1000
+            // Refactored to avoid dead code to resolve
+            // https://github.com/dapperlabs/nba-smart-contracts/issues/165
             panic("No token matching this ID for sale!")
+
         }
 
         /// changeOwnerReceiver updates the capability for the sellers fungible token Vault
@@ -333,3 +333,4 @@ pub contract TopShotMarketV3 {
         self.marketPublicPath = /public/topshotSalev3Collection
     }
 }
+ 
