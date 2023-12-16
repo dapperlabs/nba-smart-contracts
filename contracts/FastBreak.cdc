@@ -4,21 +4,23 @@
 */
 
 import NonFungibleToken from 0xNFTADDRESS
-import TopShot from 0xTOPSHOTADDRESS
+//import TopShot from 0xTOPSHOTADDRESS
+//import NonFungibleToken from 0xf8d6e0586b0a20c7
+
 
 pub contract FastBreak: NonFungibleToken {
 
     pub event ContractInitialized()
     pub event Withdraw(id: UInt64, from: Address?)
     pub event Deposit(id: UInt64, to: Address?)
-    pub event FastBreakRunCreated(id: UInt64, name: String)
-    pub event FastBreakRunStatusChange(id: UInt64, newStatus: String)
-    pub event FastBreakGameCreated(id: UInt64, name: String)
-    pub event FastBreakGameStatusChange(id: UInt64, newStatus: String)
+    pub event FastBreakRunCreated(id: String, name: String)
+    pub event FastBreakRunStatusChange(id: String, newStatus: String)
+    pub event FastBreakGameCreated(id: String, name: String)
+    pub event FastBreakGameStatusChange(id: String, newStatus: String)
     pub event FastBreakNFTBurned(id: UInt64, serialNumber: UInt64)
     pub event FastBreakNFTMinted(
         id: UInt64,
-        fastBreakGameID: UInt64,
+        fastBreakGameID: String,
         serialNumber: UInt64
     )
 
@@ -29,21 +31,17 @@ pub contract FastBreak: NonFungibleToken {
     pub let OraclePrivatePath:      PrivatePath
 
     pub var totalSupply:        UInt64
-    pub var nextFastBreakRunID:       UInt64
-    pub var nextFastBreakGameID:          UInt64
-
-    access(self) let fastBreakRunByID:        {UInt64: FastBreakRun}
-
-    access(self) let fastBreakGameByID:           {UInt64: FastBreakGame}
+    access(self) let fastBreakRunByID:        {String: FastBreakRun}
+    access(self) let fastBreakGameByID:           {String: FastBreakGame}
 
     pub struct FastBreakRun {
-        pub let id: UInt64
+        pub let id: String
         pub let name: String
         pub var status: String
         pub let runStart: UInt64
         pub let runEnd: UInt64
 
-        init (id: UInt64, name: String, runStart: UInt64, runEnd: UInt64) {
+        init (id: String, name: String, runStart: UInt64, runEnd: UInt64) {
             if let fastBreakRun = FastBreak.fastBreakRunByID[id] {
                 self.id = fastBreakRun.id
                 self.name = fastBreakRun.name
@@ -59,15 +57,15 @@ pub contract FastBreak: NonFungibleToken {
             }
         }
 
-        pub fun updateStatus(status: String) { self.status = status }
+        access(contract) fun updateStatus(status: String) { self.status = status }
     }
 
-    pub fun getFastBreakRun(id: UInt64): FastBreak.FastBreakRun? {
+    pub fun getFastBreakRun(id: String): FastBreak.FastBreakRun? {
         return FastBreak.fastBreakRunByID[id]
     }
 
     pub struct FastBreakGame {
-        pub let id: UInt64
+        pub let id: String
         pub let name: String
         pub let fatigueModeOn: Bool
         pub let isPublic: Bool
@@ -75,12 +73,13 @@ pub contract FastBreak: NonFungibleToken {
         pub let numPlayers: UInt64
         pub var status: String
         pub var winner: Address?
-        pub let submissions: {Address: AnyStruct}?
+        pub let submissions: {Address: FastBreak.FastBreakSubmission}
+        pub let fastBreakRunID: String
 
         init (
-            id: UInt64,
+            id: String,
             name: String,
-            fastBreakRunId: UInt64,
+            fastBreakRunID: String,
             fatigueModeOn: Bool,
             isPublic: Bool,
             submissionDeadline: UInt64,
@@ -96,6 +95,7 @@ pub contract FastBreak: NonFungibleToken {
                 self.status = fb.status
                 self.winner = fb.winner
                 self.submissions = fb.submissions
+                self.fastBreakRunID = fb.fastBreakRunID
             } else {
                 self.id = id
                 self.name = name
@@ -106,15 +106,50 @@ pub contract FastBreak: NonFungibleToken {
                 self.status = "FAST_BREAK_OPEN"
                 self.winner = 0x0000000000000000
                 self.submissions = {}
+                self.fastBreakRunID = fastBreakRunID
             }
         }
 
-        pub fun updateStatus(status: String) { self.status = status }
+        pub fun getFastBreakSubmissionByWallet(wallet: Address): FastBreak.FastBreakSubmission? {
+            let fastBreakSubmissions = self.submissions!
 
-        pub fun updateWinner(winner: Address) { self.winner = winner }
+            return fastBreakSubmissions[wallet]
+        }
+
+        access(contract) fun updateStatus(status: String) { self.status = status }
+
+        access(contract) fun updateWinner(winner: Address) { self.winner = winner }
+
+        access(contract) fun submitFastBreak(submission: FastBreak.FastBreakSubmission) {
+            pre {
+                self.submissionDeadline > UInt64(getCurrentBlock().timestamp): "submission missed deadline"
+            }
+
+            self.submissions[submission.wallet] = submission
+        }
     }
 
-    pub fun getFastBreakGame(id: UInt64): FastBreak.FastBreakGame? {
+    pub struct FastBreakSubmission {
+        pub let wallet: Address
+        pub var submittedAt: UInt64
+        pub let fastBreakGameId: String
+        pub var topShots: [UInt64]
+
+        init (
+            wallet: Address,
+            fastBreakGameID: String,
+            topShots: [UInt64],
+        ) {
+            self.wallet = wallet
+            self.fastBreakGameId = fastBreakGameID
+            self.topShots = topShots
+            self.submittedAt = UInt64(getCurrentBlock().timestamp)
+
+            // TODO event
+        }
+    }
+
+    pub fun getFastBreakGame(id: String): FastBreak.FastBreakGame? {
         return FastBreak.fastBreakGameByID[id]
     }
 
@@ -127,10 +162,10 @@ pub contract FastBreak: NonFungibleToken {
 
     pub resource NFT: NonFungibleToken.INFT {
         pub let id: UInt64
-        pub let fastBreakGameID: UInt64
+        pub let fastBreakGameID: String
         pub let serialNumber: UInt64
         pub let mintingDate: UFix64
-        //pub let mintedTo: Address
+        pub let mintedTo: Address
         pub let topShots: [UInt64]
 
         destroy() {
@@ -138,9 +173,10 @@ pub contract FastBreak: NonFungibleToken {
         }
 
         init(
-            fastBreakGameID: UInt64,
+            fastBreakGameID: String,
             serialNumber: UInt64,
-            topShots: [UInt64]
+            topShots: [UInt64],
+            mintedTo: Address,
         ) {
             pre {
                 FastBreak.fastBreakGameByID[fastBreakGameID] != nil: "no such fast break"
@@ -151,6 +187,7 @@ pub contract FastBreak: NonFungibleToken {
             self.serialNumber = serialNumber
             self.mintingDate = getCurrentBlock().timestamp
             self.topShots = topShots
+            self.mintedTo = mintedTo
 
             emit FastBreakNFTMinted(
                 id: self.id,
@@ -184,7 +221,7 @@ pub contract FastBreak: NonFungibleToken {
     }
 
     pub resource interface FastBreakPlayer {
-        pub fun play(fastBreakGameID: UInt64, topShots: [UInt64]): @FastBreak.NFT
+        pub fun play(fastBreakGameID: String, topShots: [UInt64]): @FastBreak.NFT
     }
 
     pub resource Collection:
@@ -248,18 +285,28 @@ pub contract FastBreak: NonFungibleToken {
             }
         }
 
-        pub fun play(fastBreakGameID: UInt64, topShots: [UInt64]): @FastBreak.NFT {
+        pub fun play(fastBreakGameID: String, topShots: [UInt64]): @FastBreak.NFT {
 
             pre {
-                //FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "no such fast break game"
+                FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "no such fast break game"
             }
 
             let fastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
+
             let fastBreakNFT <- create NFT(
                 fastBreakGameID: fastBreakGame.id,
                 serialNumber: self.numMinted + 1,
-                topShots: topShots
+                topShots: topShots,
+                mintedTo: self.owner?.address!
             )
+
+            let fastBreakSubmission = FastBreak.FastBreakSubmission(
+                wallet: self.owner?.address!,
+                fastBreakGameID: fastBreakNFT.fastBreakGameID,
+                topShots: fastBreakNFT.topShots
+            )
+
+            fastBreakGame.submitFastBreak(submission: fastBreakSubmission)
 
             FastBreak.totalSupply = FastBreak.totalSupply + 1
             return <- fastBreakNFT
@@ -280,25 +327,26 @@ pub contract FastBreak: NonFungibleToken {
     }
 
     pub resource interface GameOracle {
-        pub fun createFastBreakRun(name: String, runStart: UInt64, runEnd: UInt64): UInt64
-        pub fun updateFastBreakRunStatus(id: UInt64, status: String): UInt64
+        pub fun createFastBreakRun(id: String, name: String, runStart: UInt64, runEnd: UInt64)
+        pub fun updateFastBreakRunStatus(id: String, status: String)
         pub fun createFastBreakGame(
+            id: String,
             name: String,
-            fastBreakRunId: UInt64,
+            fastBreakRunID: String,
             fatigueModeOn: Bool,
             isPublic: Bool,
             submissionDeadline: UInt64,
             numPlayers: UInt64
-        ): UInt64
-        pub fun updateFastBreakGameStatus(id: UInt64, status: String): UInt64
+        )
+        pub fun updateFastBreakGameStatus(id: String, status: String)
     }
 
     pub resource FastBreakDaemon: GameOracle {
 
-        pub fun createFastBreakRun(name: String, runStart: UInt64, runEnd: UInt64): UInt64 {
+        pub fun createFastBreakRun(id: String, name: String, runStart: UInt64, runEnd: UInt64) {
 
             let fastBreakRun = FastBreak.FastBreakRun(
-                id: FastBreak.nextFastBreakRunID,
+                id: id,
                 name: name,
                 runStart: runStart,
                 runEnd: runEnd
@@ -308,51 +356,45 @@ pub contract FastBreak: NonFungibleToken {
                 id: fastBreakRun.id,
                 name: fastBreakRun.name
             )
-            FastBreak.nextFastBreakRunID = fastBreakRun.id + 1 as UInt64
-            return fastBreakRun.id
         }
 
-        pub fun updateFastBreakRunStatus(id: UInt64, status: String): UInt64 {
+        pub fun updateFastBreakRunStatus(id: String, status: String) {
             let fastBreakRun = (&FastBreak.fastBreakRunByID[id] as &FastBreak.FastBreakRun?)!
 
             fastBreakRun.updateStatus(status: status)
             emit FastBreakRunStatusChange(id: fastBreakRun.id, newStatus: fastBreakRun.status)
-            return fastBreakRun.id
         }
 
         pub fun createFastBreakGame(
+            id: String,
             name: String,
-            fastBreakRunId: UInt64,
+            fastBreakRunID: String,
             fatigueModeOn: Bool,
             isPublic: Bool,
             submissionDeadline: UInt64,
             numPlayers: UInt64
-        ): UInt64 {
+        ) {
             let fastBreakGame: FastBreak.FastBreakGame = FastBreak.FastBreakGame(
-                id: FastBreak.nextFastBreakGameID,
+                id: id,
                 name: name,
-                fastBreakRunId: fastBreakRunId,
+                fastBreakRunID: fastBreakRunID,
                 fatigueModeOn: fatigueModeOn,
                 isPublic: isPublic,
                 submissionDeadline: submissionDeadline,
                 numPlayers: numPlayers
-
             )
             FastBreak.fastBreakGameByID[fastBreakGame.id] = fastBreakGame
             emit FastBreakGameCreated(
                 id: fastBreakGame.id,
                 name: fastBreakGame.name
             )
-            FastBreak.nextFastBreakGameID = fastBreakGame.id + 1 as UInt64
-            return fastBreakGame.id
         }
 
-        pub fun updateFastBreakGameStatus(id: UInt64, status: String): UInt64 {
+        pub fun updateFastBreakGameStatus(id: String, status: String) {
             let fastBreakGame: &FastBreak.FastBreakGame = (&FastBreak.fastBreakGameByID[id] as &FastBreak.FastBreakGame?)!
 
             fastBreakGame.updateStatus(status: status)
             emit FastBreakGameStatusChange(id: fastBreakGame.id, newStatus: fastBreakGame.status)
-            return fastBreakGame.id
         }
     }
 
@@ -363,9 +405,6 @@ pub contract FastBreak: NonFungibleToken {
         self.OraclePrivatePath = /private/FastBreakDaemon
 
         self.totalSupply = 0
-        self.nextFastBreakRunID = 1
-        self.nextFastBreakGameID = 1
-
         self.fastBreakRunByID = {}
         self.fastBreakGameByID = {}
 
