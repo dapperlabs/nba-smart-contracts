@@ -20,7 +20,14 @@ pub contract FastBreak: NonFungibleToken {
         fatigueModeOn: Bool
     )
     pub event FastBreakRunStatusChange(id: String, newStatus: String)
-    pub event FastBreakGameCreated(id: String, name: String)
+    pub event FastBreakGameCreated(
+        id: String,
+        name: String,
+        fastBreakRunID: String,
+        isPublic: Bool,
+        submissionDeadline: UInt64,
+        numPlayers: UInt64
+    )
     pub event FastBreakGameStatusChange(id: String, newStatus: String)
     pub event FastBreakNFTBurned(id: UInt64, serialNumber: UInt64)
     pub event FastBreakNFTMinted(
@@ -91,7 +98,6 @@ pub contract FastBreak: NonFungibleToken {
     pub struct FastBreakGame {
         pub let id: String
         pub let name: String
-        pub let fatigueModeOn: Bool
         pub let isPublic: Bool
         pub let submissionDeadline: UInt64
         pub let numPlayers: UInt64
@@ -104,7 +110,6 @@ pub contract FastBreak: NonFungibleToken {
             id: String,
             name: String,
             fastBreakRunID: String,
-            fatigueModeOn: Bool,
             isPublic: Bool,
             submissionDeadline: UInt64,
             numPlayers: UInt64
@@ -112,7 +117,6 @@ pub contract FastBreak: NonFungibleToken {
             if let fb = FastBreak.fastBreakGameByID[id] {
                 self.id = fb.id
                 self.name = fb.name
-                self.fatigueModeOn = fb.fatigueModeOn
                 self.isPublic = fb.isPublic
                 self.submissionDeadline = fb.submissionDeadline
                 self.numPlayers = fb.numPlayers
@@ -123,7 +127,6 @@ pub contract FastBreak: NonFungibleToken {
             } else {
                 self.id = id
                 self.name = name
-                self.fatigueModeOn = fatigueModeOn
                 self.isPublic = isPublic
                 self.submissionDeadline = submissionDeadline
                 self.numPlayers = numPlayers
@@ -339,9 +342,9 @@ pub contract FastBreak: NonFungibleToken {
         }
 
         pub fun play(fastBreakGameID: String, topShots: [UInt64]): @FastBreak.NFT {
-
             pre {
                 FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "no such fast break game"
+                FastBreak.fastBreakGameByID[fastBreakGameID]!.isPublic: "fast break game is private"
             }
 
             let fastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
@@ -386,7 +389,6 @@ pub contract FastBreak: NonFungibleToken {
             id: String,
             name: String,
             fastBreakRunID: String,
-            fatigueModeOn: Bool,
             isPublic: Bool,
             submissionDeadline: UInt64,
             numPlayers: UInt64
@@ -428,7 +430,6 @@ pub contract FastBreak: NonFungibleToken {
             id: String,
             name: String,
             fastBreakRunID: String,
-            fatigueModeOn: Bool,
             isPublic: Bool,
             submissionDeadline: UInt64,
             numPlayers: UInt64
@@ -437,7 +438,6 @@ pub contract FastBreak: NonFungibleToken {
                 id: id,
                 name: name,
                 fastBreakRunID: fastBreakRunID,
-                fatigueModeOn: fatigueModeOn,
                 isPublic: isPublic,
                 submissionDeadline: submissionDeadline,
                 numPlayers: numPlayers
@@ -445,7 +445,11 @@ pub contract FastBreak: NonFungibleToken {
             FastBreak.fastBreakGameByID[fastBreakGame.id] = fastBreakGame
             emit FastBreakGameCreated(
                 id: fastBreakGame.id,
-                name: fastBreakGame.name
+                name: fastBreakGame.name,
+                fastBreakRunID: fastBreakGame.fastBreakRunID,
+                isPublic: fastBreakGame.isPublic,
+                submissionDeadline: fastBreakGame.submissionDeadline,
+                numPlayers: fastBreakGame.numPlayers
             )
         }
 
