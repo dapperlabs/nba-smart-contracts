@@ -24,6 +24,7 @@
 // ../../../transactions/admin/transfer_admin.cdc (606B)
 // ../../../transactions/admin/unlock_all_moments.cdc (422B)
 // ../../../transactions/admin/update_tagline.cdc (1.243kB)
+// ../../../transactions/fastbreak/oracle/create_run.cdc (659B)
 // ../../../transactions/market/change_percentage.cdc (942B)
 // ../../../transactions/market/change_price.cdc (879B)
 // ../../../transactions/market/change_receiver.cdc (810B)
@@ -646,6 +647,26 @@ func TransactionsAdminUpdate_taglineCdc() (*asset, error) {
 
 	info := bindataFileInfo{name: "../../../transactions/admin/update_tagline.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xf5, 0xb4, 0x41, 0x41, 0xce, 0xa6, 0xfd, 0x9a, 0x8f, 0xbb, 0xde, 0x56, 0x22, 0xdf, 0xc3, 0x47, 0x8a, 0x7f, 0xc1, 0xa6, 0xce, 0x6, 0xe5, 0x53, 0x6e, 0xff, 0x44, 0x3c, 0x82, 0x23, 0x59, 0x44}}
+	return a, nil
+}
+
+var _TransactionsFastbreakOracleCreate_runCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x52\xd1\x8a\x9b\x50\x10\x7d\xf7\x2b\xa6\x3e\x14\x03\x45\xfa\x50\xfa\x20\x4d\x83\x69\x12\x28\xa5\xa4\x68\xf7\x03\x26\xd7\xd1\x5c\x56\xef\xc8\x38\x97\x0d\x2c\xf9\xf7\xc5\x68\x34\x61\x37\xf3\xa0\x33\x32\x9c\x73\xe6\x1c\x6d\xd3\xb2\x28\xec\xb0\xd3\xb5\x10\x3e\x43\x29\xdc\xc0\xd7\xd3\x2e\xcd\xff\xaf\xb3\x6d\xfa\x27\xdd\x6c\xb2\x6d\x9e\x07\x41\xa0\x82\xae\x43\xa3\x96\x5d\x64\x8b\x04\x72\x15\xeb\xaa\x2f\xe0\xb0\xa1\x79\x12\xef\x72\x45\xd1\x04\x9e\x7e\x3b\xfd\xfe\xed\xf2\x65\xeb\x8a\x79\x2e\x51\x6d\xe5\xe9\x2f\x17\xb4\x77\x09\xac\x99\xeb\x05\xbc\x06\x01\x00\x40\x4d\x0a\x2c\x68\x6a\xca\xa8\x4c\xe0\xf3\xa4\x2b\x9e\xba\x0d\x52\xc3\x6e\x58\x6f\x85\x5a\x14\x8a\xd0\x18\x4d\x20\xf5\x7a\x4c\x8d\x61\xef\xb4\x07\x84\xb1\x3a\xaa\xcb\x78\x02\x85\x25\xf4\xdb\xf1\x81\x45\xf8\xe5\xc7\x63\x86\x9f\x51\x6f\x45\x32\x5b\x13\xef\x2f\x18\xb9\xb2\x60\x45\xff\x50\x8f\x8b\x89\xa3\xaf\xd5\x0a\x5a\x74\xd6\x44\xe1\x2f\xf6\x75\x01\x8e\x15\x06\x16\x40\x10\x2a\x49\xc8\x19\x02\x65\xd0\x23\x8d\x57\x82\x50\xc7\x5e\x0c\x85\x03\xd6\x79\xb8\x8b\x4e\x64\xbc\xd2\xc3\x23\x62\x23\x84\x4a\x93\xb4\xcc\x0f\x91\xd8\xe2\x1a\x47\xff\xbc\x0d\xe3\xda\xcd\x71\x0c\xef\x77\x71\xdc\x8d\x77\xa2\x5a\xee\xf4\x46\xd1\xec\x4b\x45\xfa\x81\x92\xc5\x2a\xee\x45\x7c\x82\xe5\x72\xd4\x14\x9a\xc9\x97\xd2\xba\x02\x4a\xec\x14\x0e\x97\xbf\x4e\xbc\x0b\x47\xae\xf3\x5b\x00\x00\x00\xff\xff\xed\x0a\xc2\x29\x93\x02\x00\x00"
+
+func TransactionsFastbreakOracleCreate_runCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakOracleCreate_runCdc,
+		"../../../transactions/fastbreak/oracle/create_run.cdc",
+	)
+}
+
+func TransactionsFastbreakOracleCreate_runCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakOracleCreate_runCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/oracle/create_run.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x2d, 0xd2, 0xf, 0xb5, 0x1f, 0xb4, 0x5b, 0x88, 0x51, 0xee, 0xdb, 0x86, 0x52, 0x82, 0x89, 0x73, 0x79, 0x11, 0x74, 0x21, 0x26, 0xc5, 0x79, 0x79, 0x65, 0x9b, 0x45, 0x73, 0x5a, 0x5f, 0xc3, 0x6d}}
 	return a, nil
 }
 
@@ -2284,6 +2305,7 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/admin/transfer_admin.cdc":                       TransactionsAdminTransfer_adminCdc,
 	"../../../transactions/admin/unlock_all_moments.cdc":                   TransactionsAdminUnlock_all_momentsCdc,
 	"../../../transactions/admin/update_tagline.cdc":                       TransactionsAdminUpdate_taglineCdc,
+	"../../../transactions/fastbreak/oracle/create_run.cdc":                TransactionsFastbreakOracleCreate_runCdc,
 	"../../../transactions/market/change_percentage.cdc":                   TransactionsMarketChange_percentageCdc,
 	"../../../transactions/market/change_price.cdc":                        TransactionsMarketChange_priceCdc,
 	"../../../transactions/market/change_receiver.cdc":                     TransactionsMarketChange_receiverCdc,
@@ -2435,6 +2457,11 @@ var _bintree = &bintree{nil, map[string]*bintree{
 						"transfer_admin.cdc": {TransactionsAdminTransfer_adminCdc, map[string]*bintree{}},
 						"unlock_all_moments.cdc": {TransactionsAdminUnlock_all_momentsCdc, map[string]*bintree{}},
 						"update_tagline.cdc": {TransactionsAdminUpdate_taglineCdc, map[string]*bintree{}},
+					}},
+					"fastbreak": {nil, map[string]*bintree{
+						"oracle": {nil, map[string]*bintree{
+							"create_run.cdc": {TransactionsFastbreakOracleCreate_runCdc, map[string]*bintree{}},
+						}},
 					}},
 					"market": {nil, map[string]*bintree{
 						"change_percentage.cdc": {TransactionsMarketChange_percentageCdc, map[string]*bintree{}},
