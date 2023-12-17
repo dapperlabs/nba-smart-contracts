@@ -4,8 +4,7 @@
 */
 
 import NonFungibleToken from 0xNFTADDRESS
-//import TopShot from 0xTOPSHOTADDRESS
-//import NonFungibleToken from 0xf8d6e0586b0a20c7
+import TopShot from 0xTOPSHOTADDRESS
 
 pub contract FastBreak: NonFungibleToken {
 
@@ -311,7 +310,10 @@ pub contract FastBreak: NonFungibleToken {
     }
 
     pub resource interface FastBreakPlayer {
-        pub fun play(fastBreakGameID: String, topShots: [UInt64]): @FastBreak.NFT
+        pub fun play(
+            fastBreakGameID: String,
+            topShots: [UInt64]
+        ): @FastBreak.NFT
     }
 
     pub resource Collection:
@@ -375,13 +377,34 @@ pub contract FastBreak: NonFungibleToken {
             }
         }
 
-        pub fun play(fastBreakGameID: String, topShots: [UInt64]): @FastBreak.NFT {
+        pub fun play(
+            fastBreakGameID: String,
+            topShots: [UInt64]
+        ): @FastBreak.NFT {
             pre {
                 FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "no such fast break game"
                 FastBreak.fastBreakGameByID[fastBreakGameID]!.isPublic: "fast break game is private"
             }
 
+            let acct = getAccount(self.owner?.address!)
+            let collectionRef = acct.getCapability(/public/MomentCollection)
+                                    .borrow<&{TopShot.MomentCollectionPublic}>()!
+
+            for flowId in topShots {
+                if !collectionRef.getIDs().contains(flowId) {
+                    panic("top shot not owned in collection")
+                }
+            }
+
             let fastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
+
+            let fastBreakSubmission = FastBreak.FastBreakSubmission(
+                wallet: self.owner?.address!,
+                fastBreakGameID: fastBreakGame.id,
+                topShots: topShots
+            )
+
+            fastBreakGame.submitFastBreak(submission: fastBreakSubmission)
 
             let fastBreakNFT <- create NFT(
                 fastBreakGameID: fastBreakGame.id,
@@ -389,14 +412,6 @@ pub contract FastBreak: NonFungibleToken {
                 topShots: topShots,
                 mintedTo: self.owner?.address!
             )
-
-            let fastBreakSubmission = FastBreak.FastBreakSubmission(
-                wallet: self.owner?.address!,
-                fastBreakGameID: fastBreakNFT.fastBreakGameID,
-                topShots: fastBreakNFT.topShots
-            )
-
-            fastBreakGame.submitFastBreak(submission: fastBreakSubmission)
 
             FastBreak.totalSupply = FastBreak.totalSupply + 1
             return <- fastBreakNFT
@@ -436,7 +451,6 @@ pub contract FastBreak: NonFungibleToken {
     pub resource FastBreakDaemon: GameOracle {
 
         pub fun createFastBreakRun(id: String, name: String, runStart: UInt64, runEnd: UInt64, fatigueModeOn: Bool) {
-
             let fastBreakRun = FastBreak.FastBreakRun(
                 id: id,
                 name: name,
