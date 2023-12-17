@@ -12,7 +12,13 @@ pub contract FastBreak: NonFungibleToken {
     pub event ContractInitialized()
     pub event Withdraw(id: UInt64, from: Address?)
     pub event Deposit(id: UInt64, to: Address?)
-    pub event FastBreakRunCreated(id: String, name: String)
+    pub event FastBreakRunCreated(
+        id: String,
+        name: String,
+        runStart: UInt64,
+        runEnd: UInt64,
+        fatigueModeOn: Bool
+    )
     pub event FastBreakRunStatusChange(id: String, newStatus: String)
     pub event FastBreakGameCreated(id: String, name: String)
     pub event FastBreakGameStatusChange(id: String, newStatus: String)
@@ -20,7 +26,16 @@ pub contract FastBreak: NonFungibleToken {
     pub event FastBreakNFTMinted(
         id: UInt64,
         fastBreakGameID: String,
-        serialNumber: UInt64
+        serialNumber: UInt64,
+        mintingDate: UInt64,
+        topShots: [UInt64],
+        mintedTo: Address
+    )
+    pub event FastBreakSubmissionSent(
+        wallet: Address,
+        submittedAt: UInt64,
+        fastBreakGameID: String,
+        topShots: [UInt64]
     )
 
     pub let CollectionStoragePath:  StoragePath
@@ -39,8 +54,9 @@ pub contract FastBreak: NonFungibleToken {
         pub let runStart: UInt64
         pub let runEnd: UInt64
         pub let leaderboard: {Address: UInt64}
+        pub let fatigueModeOn: Bool
 
-        init (id: String, name: String, runStart: UInt64, runEnd: UInt64) {
+        init (id: String, name: String, runStart: UInt64, runEnd: UInt64, fatigueModeOn: Bool) {
             if let fastBreakRun = FastBreak.fastBreakRunByID[id] {
                 self.id = fastBreakRun.id
                 self.name = fastBreakRun.name
@@ -48,6 +64,7 @@ pub contract FastBreak: NonFungibleToken {
                 self.runStart = fastBreakRun.runStart
                 self.runEnd = fastBreakRun.runEnd
                 self.leaderboard = fastBreakRun.leaderboard
+                self.fatigueModeOn = fastBreakRun.fatigueModeOn
             } else {
                 self.id = id
                 self.name = name
@@ -55,6 +72,7 @@ pub contract FastBreak: NonFungibleToken {
                 self.runStart = runStart
                 self.runEnd = runEnd
                 self.leaderboard = {}
+                self.fatigueModeOn = fatigueModeOn
             }
         }
 
@@ -163,7 +181,12 @@ pub contract FastBreak: NonFungibleToken {
             self.points = 0
             self.win = false
 
-            // TODO event
+            emit FastBreakSubmissionSent(
+                wallet: self.wallet,
+                submittedAt: self.submittedAt,
+                fastBreakGameID: self.fastBreakGameID,
+                topShots: self.topShots
+            )
         }
 
         access(contract) fun setPoints(points: UInt64, win: Bool) {
@@ -188,7 +211,7 @@ pub contract FastBreak: NonFungibleToken {
         pub let id: UInt64
         pub let fastBreakGameID: String
         pub let serialNumber: UInt64
-        pub let mintingDate: UFix64
+        pub let mintingDate: UInt64
         pub let mintedTo: Address
         pub let topShots: [UInt64]
 
@@ -209,24 +232,30 @@ pub contract FastBreak: NonFungibleToken {
             self.id = self.uuid
             self.fastBreakGameID = fastBreakGameID
             self.serialNumber = serialNumber
-            self.mintingDate = getCurrentBlock().timestamp
+            self.mintingDate = UInt64(getCurrentBlock().timestamp)
             self.topShots = topShots
             self.mintedTo = mintedTo
 
             emit FastBreakNFTMinted(
                 id: self.id,
                 fastBreakGameID: self.fastBreakGameID,
-                serialNumber: self.serialNumber
+                serialNumber: self.serialNumber,
+                mintingDate: self.mintingDate,
+                topShots: self.topShots,
+                mintedTo: self.mintedTo
             )
         }
 
-
-        pub fun isWinner() {
-            //TODO return fastbreak.submissions[address].win
+        pub fun isWinner(): Bool {
+            let fastBreak : FastBreak.FastBreakGame = FastBreak.fastBreakGameByID[self.fastBreakGameID]!
+            let submission : FastBreak.FastBreakSubmission = fastBreak.submissions[self.mintedTo]!
+            return submission.win
         }
 
-        pub fun points() {
-            //TODO return fastbreak.submissions[address].points
+        pub fun points(): UInt64 {
+            let fastBreak : FastBreak.FastBreakGame = FastBreak.fastBreakGameByID[self.fastBreakGameID]!
+            let submission : FastBreak.FastBreakSubmission = fastBreak.submissions[self.mintedTo]!
+            return submission.points
         }
     }
 
@@ -351,7 +380,7 @@ pub contract FastBreak: NonFungibleToken {
     }
 
     pub resource interface GameOracle {
-        pub fun createFastBreakRun(id: String, name: String, runStart: UInt64, runEnd: UInt64)
+        pub fun createFastBreakRun(id: String, name: String, runStart: UInt64, runEnd: UInt64, fatigueModeOn: Bool)
         pub fun updateFastBreakRunStatus(id: String, status: String)
         pub fun createFastBreakGame(
             id: String,
@@ -369,18 +398,22 @@ pub contract FastBreak: NonFungibleToken {
 
     pub resource FastBreakDaemon: GameOracle {
 
-        pub fun createFastBreakRun(id: String, name: String, runStart: UInt64, runEnd: UInt64) {
+        pub fun createFastBreakRun(id: String, name: String, runStart: UInt64, runEnd: UInt64, fatigueModeOn: Bool) {
 
             let fastBreakRun = FastBreak.FastBreakRun(
                 id: id,
                 name: name,
                 runStart: runStart,
-                runEnd: runEnd
+                runEnd: runEnd,
+                fatigueModeOn: fatigueModeOn
             )
             FastBreak.fastBreakRunByID[fastBreakRun.id] = fastBreakRun
             emit FastBreakRunCreated(
                 id: fastBreakRun.id,
-                name: fastBreakRun.name
+                name: fastBreakRun.name,
+                runStart: fastBreakRun.runStart,
+                runEnd: fastBreakRun.runEnd,
+                fatigueModeOn: fastBreakRun.fatigueModeOn
             )
         }
 
