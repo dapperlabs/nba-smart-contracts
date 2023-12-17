@@ -1,17 +1,18 @@
 package test
 
 import (
+	"fmt"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
 	"github.com/onflow/cadence"
 	"github.com/onflow/flow-go-sdk"
+	"github.com/onflow/flow-go-sdk/crypto"
 	sdktemplates "github.com/onflow/flow-go-sdk/templates"
 	"github.com/onflow/flow-go-sdk/test"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
-
-	"github.com/onflow/flow-go-sdk/crypto"
+	"time"
 )
 
 // Tests all the main functionality of the TopShot Locking contract
@@ -89,6 +90,8 @@ func TestFastBreak(t *testing.T) {
 		},
 	})
 	env.FastBreakAddress = fastBreakAddr.String()
+	fmt.Println("blah")
+	fmt.Println(err)
 	assert.Nil(t, err)
 
 	firstName := CadenceString("FullName")
@@ -153,13 +156,27 @@ func TestFastBreak(t *testing.T) {
 	//momentId := uint64(1)
 
 	var (
-		fastBreakRunId          = "abc-123"
-		fastBreakRunName        = "R0"
-		runStart         uint64 = 1702847010
-		runEnd           uint64 = 1703227010
-		fatigueModeOn           = true
+		//fast break run
+		fastBreakRunId   = "abc-123"
+		fastBreakRunName = "R0"
+		runStart         = time.Now().Add(-10).Unix()
+		runEnd           = time.Now().Add(10).Unix()
+		fatigueModeOn    = true
+
+		//fast break
+		fastBreakID               = "def-456"
+		fastBreakName             = "fb0"
+		isPublic                  = true
+		submissionDeadline        = time.Now().Add(1).Unix()
+		numPlayers         uint64 = 1
+
+		//fast break stat
+		statName           = "POINTS"
+		statType           = "INDIVIDUAL"
+		valueNeeded uint64 = 30
 	)
-	t.Run("Oracle should be able to create a Fast Break Run", func(t *testing.T) {
+
+	t.Run("oracle should be able to create a fast break run", func(t *testing.T) {
 
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateRunScript(env), fastBreakAddr)
 		cdcId, _ := cadence.NewString(fastBreakRunId)
@@ -167,8 +184,8 @@ func TestFastBreak(t *testing.T) {
 
 		_ = tx.AddArgument(cdcId)
 		_ = tx.AddArgument(cdcName)
-		_ = tx.AddArgument(cadence.NewUInt64(runStart))
-		_ = tx.AddArgument(cadence.NewUInt64(runEnd))
+		_ = tx.AddArgument(cadence.NewUInt64(uint64(runStart)))
+		_ = tx.AddArgument(cadence.NewUInt64(uint64(runEnd)))
 		_ = tx.AddArgument(cadence.NewBool(fatigueModeOn))
 
 		signAndSubmit(
@@ -177,13 +194,48 @@ func TestFastBreak(t *testing.T) {
 			false,
 		)
 
-		//// Verify moment is locked
-		//result := executeScriptAndCheck(t, b, templates.GenerateGetMomentIsLockedScript(env), [][]byte{
-		//	jsoncdc.MustEncode(cadence.Address(topshotAddr)),
-		//	jsoncdc.MustEncode(cadence.UInt64(momentId)),
-		//})
-		//assertEqual(t, cadence.NewBool(true), result)
-		//assert.Equal(t, 1, 1)
+	})
+
+	t.Run("oracle should be able to create a fast break game", func(t *testing.T) {
+
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateGameScript(env), fastBreakAddr)
+		cdcId, _ := cadence.NewString(fastBreakID)
+		cdcName, _ := cadence.NewString(fastBreakName)
+		cdcFbrId, _ := cadence.NewString(fastBreakRunId)
+
+		_ = tx.AddArgument(cdcId)
+		_ = tx.AddArgument(cdcName)
+		_ = tx.AddArgument(cdcFbrId)
+		_ = tx.AddArgument(cadence.NewBool(isPublic))
+		_ = tx.AddArgument(cadence.NewUInt64(uint64(submissionDeadline)))
+		_ = tx.AddArgument(cadence.NewUInt64(numPlayers))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+
+	})
+
+	t.Run("oracle should be able to add a stat to a fast break game", func(t *testing.T) {
+
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateAddStatToGameScript(env), fastBreakAddr)
+		cdcId, _ := cadence.NewString(fastBreakID)
+		cdcName, _ := cadence.NewString(statName)
+		cdcType, _ := cadence.NewString(statType)
+
+		_ = tx.AddArgument(cdcId)
+		_ = tx.AddArgument(cdcName)
+		_ = tx.AddArgument(cdcType)
+		_ = tx.AddArgument(cadence.NewUInt64(valueNeeded))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+
 	})
 
 }
