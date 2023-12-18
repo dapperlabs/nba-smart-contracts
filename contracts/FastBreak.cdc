@@ -258,10 +258,16 @@ pub contract FastBreak: NonFungibleToken {
     }
 
     pub fun validatePlaySubmission(fastBreakGame: FastBreakGame, topShots: [UInt64]): Bool {
-        if Int(fastBreakGame.numPlayers) == topShots.length {
-            return true
+
+        if (topShots.length < 1) {
+            return false
         }
-        return false
+
+        if topShots.length > Int(fastBreakGame.numPlayers) {
+            return false
+        }
+
+        return true
     }
 
     pub resource NFT: NonFungibleToken.INFT {
@@ -418,6 +424,11 @@ pub contract FastBreak: NonFungibleToken {
             }
 
             let fastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
+
+            let existingSubmission = fastBreakGame.getFastBreakSubmissionByWallet(wallet: self.owner?.address!)
+            if existingSubmission != nil {
+                panic("wallet already submitted to fast break")
+            }
 
             let fastBreakSubmission = FastBreak.FastBreakSubmission(
                 wallet: self.owner?.address!,
