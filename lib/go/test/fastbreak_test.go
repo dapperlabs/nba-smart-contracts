@@ -267,6 +267,24 @@ func TestFastBreak(t *testing.T) {
 		)
 	}
 
+	t.Run("player should not be able play fast break without top shots", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePlayFastBreakScript(env), jerAddress)
+		cdcId, _ := cadence.NewString(fastBreakID)
+		ids := []cadence.Value{cadence.NewUInt64(2)}
+
+		_ = tx.AddArgument(cdcId)
+		_ = tx.AddArgument(cadence.NewArray(ids))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
+			true,
+		)
+
+		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakTokenCountScript(env), nil)
+		assert.Equal(t, cadence.NewUInt64(0), result)
+	})
+
 	t.Run("player should be able to play fast break", func(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePlayFastBreakScript(env), jerAddress)
 		cdcId, _ := cadence.NewString(fastBreakID)
@@ -279,6 +297,24 @@ func TestFastBreak(t *testing.T) {
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
 			false,
+		)
+
+		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakTokenCountScript(env), nil)
+		assert.Equal(t, cadence.NewUInt64(1), result)
+	})
+
+	t.Run("player should not be able to resubmit fast break", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePlayFastBreakScript(env), jerAddress)
+		cdcId, _ := cadence.NewString(fastBreakID)
+		ids := []cadence.Value{cadence.NewUInt64(1)}
+
+		_ = tx.AddArgument(cdcId)
+		_ = tx.AddArgument(cadence.NewArray(ids))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
+			true,
 		)
 
 		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakTokenCountScript(env), nil)
