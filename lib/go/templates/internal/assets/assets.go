@@ -27,6 +27,10 @@
 // ../../../transactions/fastbreak/oracle/add_stat_to_game.cdc (729B)
 // ../../../transactions/fastbreak/oracle/create_game.cdc (853B)
 // ../../../transactions/fastbreak/oracle/create_run.cdc (659B)
+// ../../../transactions/fastbreak/scripts/get_fast_break.cdc (143B)
+// ../../../transactions/fastbreak/scripts/get_token_count.cdc (102B)
+// ../../../transactions/fastbreak/user/play.cdc (926B)
+// ../../../transactions/fastbreak/user/setup_game.cdc (628B)
 // ../../../transactions/market/change_percentage.cdc (942B)
 // ../../../transactions/market/change_price.cdc (879B)
 // ../../../transactions/market/change_receiver.cdc (810B)
@@ -709,6 +713,86 @@ func TransactionsFastbreakOracleCreate_runCdc() (*asset, error) {
 
 	info := bindataFileInfo{name: "../../../transactions/fastbreak/oracle/create_run.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x2d, 0xd2, 0xf, 0xb5, 0x1f, 0xb4, 0x5b, 0x88, 0x51, 0xee, 0xdb, 0x86, 0x52, 0x82, 0x89, 0x73, 0x79, 0x11, 0x74, 0x21, 0x26, 0xc5, 0x79, 0x79, 0x65, 0x9b, 0x45, 0x73, 0x5a, 0x5f, 0xc3, 0x6d}}
+	return a, nil
+}
+
+var _TransactionsFastbreakScriptsGet_fast_breakCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xca\xcc\x2d\xc8\x2f\x2a\x51\x70\x4b\x2c\x2e\x71\x2a\x4a\x4d\xcc\x56\x48\x2b\xca\xcf\x55\x30\xa8\x70\x73\x0c\x0e\x71\x0a\x72\x75\xf4\x76\x74\x71\x09\x72\x0d\x0e\xe6\xe2\x2a\x28\x4d\x52\x48\x2b\xcd\x53\xc8\x4d\xcc\xcc\xd3\xc8\x4c\xb1\x52\x08\x2e\x29\xca\xcc\x4b\xd7\xb4\x42\x68\xd6\x83\xb3\xdc\x13\x73\x53\xed\x15\xaa\xb9\xb8\x14\x14\x14\x14\x8a\x52\x4b\x4a\x8b\xf2\x90\x94\xa5\xa7\x96\xa0\xa8\x04\x1b\x97\x99\xa2\xc9\x55\x0b\x08\x00\x00\xff\xff\xf8\x7c\xa4\x99\x8f\x00\x00\x00"
+
+func TransactionsFastbreakScriptsGet_fast_breakCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakScriptsGet_fast_breakCdc,
+		"../../../transactions/fastbreak/scripts/get_fast_break.cdc",
+	)
+}
+
+func TransactionsFastbreakScriptsGet_fast_breakCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakScriptsGet_fast_breakCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/scripts/get_fast_break.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xb2, 0x4a, 0xa6, 0xb6, 0xe5, 0x6f, 0xe9, 0xda, 0x72, 0x75, 0xa2, 0xe6, 0xbc, 0x5, 0xc1, 0x3b, 0x20, 0x62, 0xd8, 0x83, 0x6e, 0x97, 0xb9, 0x1d, 0x24, 0x96, 0x8d, 0x75, 0x7c, 0x38, 0x6d, 0xb9}}
+	return a, nil
+}
+
+var _TransactionsFastbreakScriptsGet_token_countCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xca\xcc\x2d\xc8\x2f\x2a\x51\x70\x4b\x2c\x2e\x71\x2a\x4a\x4d\xcc\x56\x48\x2b\xca\xcf\x55\x30\xa8\x70\x73\x0c\x0e\x71\x0a\x72\x75\xf4\x76\x74\x71\x09\x72\x0d\x0e\xe6\xe2\x2a\x28\x4d\x52\x48\x2b\xcd\x53\xc8\x4d\xcc\xcc\xd3\xd0\xb4\x52\x08\xf5\xcc\x2b\x31\x33\x51\xa8\xe6\xe2\x52\x50\x50\x50\x28\x4a\x2d\x29\x2d\xca\x43\x98\xa3\x57\x92\x5f\x92\x98\x13\x5c\x5a\x50\x90\x53\xc9\x55\x0b\x08\x00\x00\xff\xff\x4f\x98\x48\x88\x66\x00\x00\x00"
+
+func TransactionsFastbreakScriptsGet_token_countCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakScriptsGet_token_countCdc,
+		"../../../transactions/fastbreak/scripts/get_token_count.cdc",
+	)
+}
+
+func TransactionsFastbreakScriptsGet_token_countCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakScriptsGet_token_countCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/scripts/get_token_count.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x3f, 0xf8, 0x4d, 0x6b, 0x99, 0x92, 0x6a, 0x6f, 0xbc, 0x19, 0xab, 0x7f, 0x34, 0x7d, 0x4b, 0x5d, 0x8f, 0xd3, 0x33, 0x86, 0xc6, 0x38, 0xea, 0x2b, 0x6e, 0x1, 0xe9, 0x36, 0x51, 0xd0, 0xdc, 0x8f}}
+	return a, nil
+}
+
+var _TransactionsFastbreakUserPlayCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xa4\x93\xcf\x6a\xdc\x40\x0c\xc6\xef\x7e\x0a\xb1\x87\x74\x0c\xa9\xe9\xa1\xf4\x60\xd2\xa4\x4e\x36\x2e\xa1\xb0\x84\xb5\x7b\x2a\x3d\x68\x27\xb2\x77\xc8\xec\x68\x18\xcb\x4d\x42\xc8\xbb\x17\xef\xfa\x0f\x4e\xb6\x50\x88\x4f\x83\xf5\x8d\xf4\xd3\x27\x8d\xd9\x79\x0e\x02\x2b\x76\x79\xeb\x6a\xb3\xb1\x54\xf2\x3d\x39\xa8\x02\xef\xe0\xd3\xe3\x2a\x2f\xb3\xe5\x72\x7d\x5d\x14\x51\xaf\xcc\xb1\x91\xcb\x40\x78\x3f\x48\xf2\xac\x28\x2f\xd7\xd7\xd9\x8f\x41\x18\x49\x40\xd7\xa0\x16\xc3\x4e\x45\x00\x00\xd5\x70\xe7\x3b\xee\xe8\x66\x99\x42\x21\xc1\xb8\xfa\x74\x1f\x14\xf6\xc5\x96\xa5\x49\xe1\xd7\xcf\x1b\x27\x5f\x3e\xff\x8e\x62\x78\x8e\xf6\x31\x4b\x02\x35\xee\x68\x4d\x55\x0a\x27\x63\xe9\xe4\x8a\xad\xa5\x7d\x81\x51\x16\x48\x1b\x6f\xc8\x49\x0a\x27\xcf\x93\x72\x3c\xad\xf2\x72\xba\x75\xdb\x6e\xac\xd1\x2f\x87\x22\x3e\x90\xc7\x40\x0a\xb5\x96\x14\xb2\x56\xb6\x99\xd6\xdc\x3a\xe9\x30\xa0\xff\x1a\xb2\x55\xd2\xa3\xc0\x57\xe8\xb4\x63\xac\xfb\x92\x0d\x87\xc0\x0f\x67\x47\x21\xcf\x55\xe7\x55\x0a\xc7\x62\x85\x70\xc0\x9a\x6e\x51\xb6\xf1\x2c\xe3\xc5\x05\x78\x74\x46\xab\x85\xe6\xd6\xde\x81\x63\x81\x43\x11\x40\x08\x54\x51\x20\xa7\x09\x84\x41\xb6\x04\xfc\xe0\x28\x7c\x68\x40\x8f\x89\x17\x71\x34\xa7\x1f\x1d\xea\xf9\x93\x9a\xe4\x0a\x3d\x6e\x8c\x35\xf2\xa4\x8e\xc1\x1d\x7c\x7a\xcb\x36\x76\xfb\xbf\x4e\x9f\xab\xf7\x34\x37\x35\xd5\x8d\x99\xcc\x1f\x0a\x8b\x43\xbe\x7e\x84\xf4\x48\xba\x15\x1a\xd6\x66\xd8\x09\x57\x09\x9c\x7d\x9c\xcd\x2e\xf1\x16\x9f\xd4\x8c\xe5\xcd\x76\xbe\xfa\x71\x3a\x53\x4f\xeb\x3a\x9c\xc6\x70\xfc\x0f\xbf\x93\x3b\xf2\xdc\x18\x51\xd2\x3d\xad\xb4\x43\x52\x1d\x1a\x36\xf0\xed\xf5\xc3\x4b\x56\x79\x19\x0f\xbd\xbd\xfc\x0d\x00\x00\xff\xff\x2c\xd3\x61\xe0\x9e\x03\x00\x00"
+
+func TransactionsFastbreakUserPlayCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakUserPlayCdc,
+		"../../../transactions/fastbreak/user/play.cdc",
+	)
+}
+
+func TransactionsFastbreakUserPlayCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakUserPlayCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/user/play.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xbd, 0xfe, 0xd2, 0x70, 0x81, 0x1d, 0xd5, 0x19, 0xae, 0xe, 0x8c, 0x23, 0x3a, 0xc2, 0xc5, 0xfe, 0x58, 0x8e, 0x86, 0x69, 0xbc, 0xdd, 0x4c, 0x8c, 0xaa, 0x47, 0x58, 0x83, 0x45, 0x69, 0x2b, 0x16}}
+	return a, nil
+}
+
+var _TransactionsFastbreakUserSetup_gameCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x84\x91\xdd\x8a\xbb\x30\x10\xc5\xef\x7d\x8a\xb9\xfa\xa3\xd0\x96\xff\x75\x69\x0b\x76\x5b\x6f\x16\xa4\x54\x5f\x20\x86\xa9\x0d\xc6\x44\xc6\x71\x3f\x10\xdf\x7d\x71\xb5\x7e\x74\x85\xce\x45\x08\xcc\x6f\xce\x39\x93\xa8\xbc\xb0\xc4\x10\x5a\x13\x54\x26\x55\x89\xc6\xd8\x66\x68\xe0\x46\x36\x87\xff\x5f\x61\x10\xfb\xa7\xd3\xf5\x1c\x45\x4e\x4f\x06\xa2\xe4\x23\xa1\xc8\x1e\x48\xe0\x47\xf1\xf1\x7a\xf6\xdf\x1f\xa0\xc3\x24\x4c\x29\x24\x2b\x6b\xa0\x76\x00\x00\x0a\xc2\x42\x10\xba\xa5\x4a\x0d\xd2\x16\xfc\x8a\xef\xbe\x94\xb6\x32\xec\xf5\x48\x5b\xea\x06\x1d\xb1\x49\x2c\x91\xfd\xdc\xfd\x1b\xdc\x36\x6f\x56\x6b\xfc\xd5\x3c\xb8\xad\xf3\x16\x96\x7a\x11\x5b\x12\x29\x5e\x04\xdf\x3d\xd8\xef\xc1\x28\x0d\xb5\x33\x18\xb4\xa5\x91\x41\x0e\x03\xb0\x5b\x4f\x84\x24\xa1\x60\x3c\xe7\x05\x7f\x8f\x9a\xae\x37\x9b\xef\x13\x96\xe2\x03\xdd\xdd\x7a\x54\x5a\x01\xdb\xd7\xa1\x96\xa4\xb4\x32\xd9\xf2\xaa\xf5\xf3\xbf\x4c\x7a\x97\x2a\xd1\x4a\xae\x26\x8e\xc3\x2d\x0c\xe2\x67\xae\x39\xb8\x33\xeb\xb6\x96\x1c\x3b\xba\x8d\xba\xfa\xc3\xb3\xa0\x14\xf9\xe5\x8e\xb3\x39\x6f\x7c\xfc\xc6\xe9\xce\xe6\x27\x00\x00\xff\xff\x63\x01\x46\x5b\x74\x02\x00\x00"
+
+func TransactionsFastbreakUserSetup_gameCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakUserSetup_gameCdc,
+		"../../../transactions/fastbreak/user/setup_game.cdc",
+	)
+}
+
+func TransactionsFastbreakUserSetup_gameCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakUserSetup_gameCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/user/setup_game.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x4, 0xeb, 0x6f, 0xc0, 0x77, 0x8f, 0xa4, 0x25, 0x9, 0x5f, 0x19, 0xef, 0xad, 0xd8, 0x7b, 0x5e, 0x15, 0x6, 0x32, 0x5c, 0xc1, 0xde, 0x18, 0x36, 0x68, 0xcc, 0x27, 0xb, 0x7b, 0xd0, 0x52, 0x49}}
 	return a, nil
 }
 
@@ -2350,6 +2434,10 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/fastbreak/oracle/add_stat_to_game.cdc":          TransactionsFastbreakOracleAdd_stat_to_gameCdc,
 	"../../../transactions/fastbreak/oracle/create_game.cdc":               TransactionsFastbreakOracleCreate_gameCdc,
 	"../../../transactions/fastbreak/oracle/create_run.cdc":                TransactionsFastbreakOracleCreate_runCdc,
+	"../../../transactions/fastbreak/scripts/get_fast_break.cdc":           TransactionsFastbreakScriptsGet_fast_breakCdc,
+	"../../../transactions/fastbreak/scripts/get_token_count.cdc":          TransactionsFastbreakScriptsGet_token_countCdc,
+	"../../../transactions/fastbreak/user/play.cdc":                        TransactionsFastbreakUserPlayCdc,
+	"../../../transactions/fastbreak/user/setup_game.cdc":                  TransactionsFastbreakUserSetup_gameCdc,
 	"../../../transactions/market/change_percentage.cdc":                   TransactionsMarketChange_percentageCdc,
 	"../../../transactions/market/change_price.cdc":                        TransactionsMarketChange_priceCdc,
 	"../../../transactions/market/change_receiver.cdc":                     TransactionsMarketChange_receiverCdc,
@@ -2507,6 +2595,14 @@ var _bintree = &bintree{nil, map[string]*bintree{
 							"add_stat_to_game.cdc": {TransactionsFastbreakOracleAdd_stat_to_gameCdc, map[string]*bintree{}},
 							"create_game.cdc": {TransactionsFastbreakOracleCreate_gameCdc, map[string]*bintree{}},
 							"create_run.cdc": {TransactionsFastbreakOracleCreate_runCdc, map[string]*bintree{}},
+						}},
+						"scripts": {nil, map[string]*bintree{
+							"get_fast_break.cdc": {TransactionsFastbreakScriptsGet_fast_breakCdc, map[string]*bintree{}},
+							"get_token_count.cdc": {TransactionsFastbreakScriptsGet_token_countCdc, map[string]*bintree{}},
+						}},
+						"user": {nil, map[string]*bintree{
+							"play.cdc": {TransactionsFastbreakUserPlayCdc, map[string]*bintree{}},
+							"setup_game.cdc": {TransactionsFastbreakUserSetup_gameCdc, map[string]*bintree{}},
 						}},
 					}},
 					"market": {nil, map[string]*bintree{

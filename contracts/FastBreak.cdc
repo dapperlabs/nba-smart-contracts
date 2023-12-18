@@ -170,7 +170,7 @@ pub contract FastBreak: NonFungibleToken {
 
         access(contract) fun submitFastBreak(submission: FastBreak.FastBreakSubmission) {
             pre {
-                self.submissionDeadline > UInt64(getCurrentBlock().timestamp): "submission missed deadline"
+                FastBreak.isValidSubmission(submissionDeadline: self.submissionDeadline) : "submission missed deadline"
             }
 
             self.submissions[submission.wallet] = submission
@@ -187,6 +187,14 @@ pub contract FastBreak: NonFungibleToken {
             self.submissions[wallet] = submission
             return isNewWin
         }
+    }
+
+    pub fun isValidSubmission(submissionDeadline: UInt64): Bool {
+        if submissionDeadline > UInt64(getCurrentBlock().timestamp) {
+            return true
+        }
+
+        return false
     }
 
     pub fun getFastBreakGame(id: String): FastBreak.FastBreakGame? {
@@ -554,6 +562,7 @@ pub contract FastBreak: NonFungibleToken {
                 fastBreakRun.incrementLeaderboardWins(wallet: wallet)
 
                 let submission = fastBreakGame.submissions[wallet]!
+
                 emit FastBreakGameWinner(
                     wallet: submission.wallet,
                     submittedAt: submission.submittedAt,

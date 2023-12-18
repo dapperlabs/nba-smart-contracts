@@ -5,6 +5,7 @@ import (
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
 	"github.com/onflow/cadence"
+	jsoncdc "github.com/onflow/cadence/encoding/json"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 	sdktemplates "github.com/onflow/flow-go-sdk/templates"
@@ -90,9 +91,12 @@ func TestFastBreak(t *testing.T) {
 		},
 	})
 	env.FastBreakAddress = fastBreakAddr.String()
-	fmt.Println("blah")
 	fmt.Println(err)
 	assert.Nil(t, err)
+
+	// create a new user account
+	jerAccountKey, jerSigner := accountKeys.NewWithSigner()
+	jerAddress, _ := b.CreateAccount([]*flow.AccountKey{jerAccountKey}, nil)
 
 	firstName := CadenceString("FullName")
 	lebron := CadenceString("Lebron")
@@ -139,35 +143,23 @@ func TestFastBreak(t *testing.T) {
 		)
 	}
 
-	// Mint Moment 1
-	{
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentScript(env), topshotAddr)
-
-		_ = tx.AddArgument(cadence.NewUInt32(1))
-		_ = tx.AddArgument(cadence.NewUInt32(1))
-		_ = tx.AddArgument(cadence.NewAddress(topshotAddr))
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
-			false,
-		)
-	}
-	//momentId := uint64(1)
-
 	var (
 		//fast break run
+
+		tomorrow         = time.Now().Add(24 * time.Hour)
+		nextWeek         = time.Now().Add(7 * 24 * time.Hour)
+		lastWeek         = time.Now().Add(-7 * 24 * time.Hour)
 		fastBreakRunId   = "abc-123"
 		fastBreakRunName = "R0"
-		runStart         = time.Now().Add(-10).Unix()
-		runEnd           = time.Now().Add(10).Unix()
+		runStart         = lastWeek.Unix()
+		runEnd           = nextWeek.Unix()
 		fatigueModeOn    = true
 
 		//fast break
 		fastBreakID               = "def-456"
 		fastBreakName             = "fb0"
 		isPublic                  = true
-		submissionDeadline        = time.Now().Add(1).Unix()
+		submissionDeadline        = tomorrow.Unix()
 		numPlayers         uint64 = 1
 
 		//fast break stat
@@ -216,6 +208,10 @@ func TestFastBreak(t *testing.T) {
 			false,
 		)
 
+		// Check that that main contract fields were initialized correctly
+		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakScript(env), [][]byte{jsoncdc.MustEncode(cdcId)})
+		fmt.Println(result)
+		assert.NotNil(t, result)
 	})
 
 	t.Run("oracle should be able to add a stat to a fast break game", func(t *testing.T) {
@@ -236,6 +232,57 @@ func TestFastBreak(t *testing.T) {
 			false,
 		)
 
+	})
+
+	t.Run("player should be able to create a moment collection", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(env), jerAddress)
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
+			false,
+		)
+	})
+
+	t.Run("player should be able to setup game wallet", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateFastBreakCreateAccountScript(env), jerAddress)
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
+			false,
+		)
+	})
+
+	// mint moment 1 to jer
+	{
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentScript(env), topshotAddr)
+
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewUInt32(1))
+		_ = tx.AddArgument(cadence.NewAddress(jerAddress))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+	}
+
+	t.Run("player should be able to play fast break", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePlayFastBreakScript(env), jerAddress)
+		cdcId, _ := cadence.NewString(fastBreakID)
+		ids := []cadence.Value{cadence.NewUInt64(1)}
+
+		_ = tx.AddArgument(cdcId)
+		_ = tx.AddArgument(cadence.NewArray(ids))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
+			false,
+		)
+
+		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakTokenCountScript(env), nil)
+		assert.Equal(t, cadence.NewUInt64(1), result)
 	})
 
 }
