@@ -6,8 +6,12 @@
 import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 
+/// Game & Oracle Contract for Fast Break
+///
 pub contract FastBreak: NonFungibleToken {
 
+    /// Contract events
+    ///
     pub event ContractInitialized()
     pub event Withdraw(id: UInt64, from: Address?)
     pub event Deposit(id: UInt64, to: Address?)
@@ -56,15 +60,24 @@ pub contract FastBreak: NonFungibleToken {
         valueNeeded: UInt64
     )
 
+    /// Named Paths
+    ///
     pub let CollectionStoragePath:  StoragePath
     pub let CollectionPublicPath:   PublicPath
     pub let OracleStoragePath:       StoragePath
     pub let OraclePrivatePath:      PrivatePath
 
+    /// Contract variables
+    ///
     pub var totalSupply:        UInt64
+
+    /// Metadata Dictionaries
+    ///
     access(self) let fastBreakRunByID:        {String: FastBreakRun}
     access(self) let fastBreakGameByID:           {String: FastBreakGame}
 
+    /// A top-level Fast Break Run, the container for Fast Break Games
+    ///
     pub struct FastBreakRun {
         pub let id: String
         pub let name: String
@@ -94,8 +107,12 @@ pub contract FastBreak: NonFungibleToken {
             }
         }
 
+        /// Update status of the Fast Break Run
+        ///
         access(contract) fun updateStatus(status: String) { self.status = status }
 
+        /// Write a new win to the Fast Break Run leaderboard
+        ///
         access(contract) fun incrementLeaderboardWins(wallet: Address) {
             let leaderboard = self.leaderboard
             var wins = leaderboard[wallet] ?? 0
@@ -104,10 +121,14 @@ pub contract FastBreak: NonFungibleToken {
         }
     }
 
+    /// Get a Fast Break Run by Id
+    ///
     pub fun getFastBreakRun(id: String): FastBreak.FastBreakRun? {
         return FastBreak.fastBreakRunByID[id]
     }
 
+    /// A single Game of Fast Break
+    ///
     pub struct FastBreakGame {
         pub let id: String
         pub let name: String
@@ -153,21 +174,29 @@ pub contract FastBreak: NonFungibleToken {
             }
         }
 
+        /// Get a wallet's active Fast Break Submission
+        ///
         pub fun getFastBreakSubmissionByWallet(wallet: Address): FastBreak.FastBreakSubmission? {
             let fastBreakSubmissions = self.submissions!
 
             return fastBreakSubmissions[wallet]
         }
 
+        /// Add a statistic to the Fast Break during game creation
+        ///
         access(contract) fun addStat(stat: FastBreak.FastBreakStat) {
             self.stats.append(stat)
         }
 
+        /// Update status and winner of a Fast Break
+        ///
         access(contract) fun update(status: String, winner: Address) {
             self.status = status
             self.winner = winner
         }
 
+        /// Submit a Fast Break
+        ///
         access(contract) fun submitFastBreak(submission: FastBreak.FastBreakSubmission) {
             pre {
                 FastBreak.isValidSubmission(submissionDeadline: self.submissionDeadline) : "submission missed deadline"
@@ -176,6 +205,8 @@ pub contract FastBreak: NonFungibleToken {
             self.submissions[submission.wallet] = submission
         }
 
+        /// Update the Fast Break score of a wallet
+        ///
         access(contract) fun updateScore(wallet: Address, points: UInt64, win: Bool): Bool {
             var isNewWin = false
             let submissions = self.submissions
@@ -189,6 +220,8 @@ pub contract FastBreak: NonFungibleToken {
         }
     }
 
+    /// Validate Fast Break Submission
+    ///
     pub fun isValidSubmission(submissionDeadline: UInt64): Bool {
         if submissionDeadline > UInt64(getCurrentBlock().timestamp) {
             return true
@@ -197,15 +230,21 @@ pub contract FastBreak: NonFungibleToken {
         return false
     }
 
+    /// Get a Fast Break Game by Id
+    ///
     pub fun getFastBreakGame(id: String): FastBreak.FastBreakGame? {
         return FastBreak.fastBreakGameByID[id]
     }
 
+    /// Get the game stats of a Fast Break
+    ///
     pub fun getFastBreakGameStats(id: String): [FastBreak.FastBreakStat] {
         let fastBreak = FastBreak.getFastBreakGame(id: id)!
         return fastBreak.stats
     }
 
+    /// A statistical structure used in Fast Break Games
+    ///
     pub struct FastBreakStat {
         pub let name: String
         pub let type: String
@@ -222,6 +261,8 @@ pub contract FastBreak: NonFungibleToken {
         }
     }
 
+    /// A wallet submission to a Fast Break
+    ///
     pub struct FastBreakSubmission {
         pub let wallet: Address
         pub var submittedAt: UInt64
@@ -250,6 +291,8 @@ pub contract FastBreak: NonFungibleToken {
             )
         }
 
+        /// Set the points of a submission
+        ///
         access(contract) fun setPoints(points: UInt64, win: Bool) {
             self.points = points
             self.win = win
@@ -257,6 +300,8 @@ pub contract FastBreak: NonFungibleToken {
 
     }
 
+    /// Validate Fast Break Submission topShots
+    ///
     pub fun validatePlaySubmission(fastBreakGame: FastBreakGame, topShots: [UInt64]): Bool {
 
         if (topShots.length < 1) {
@@ -270,6 +315,8 @@ pub contract FastBreak: NonFungibleToken {
         return true
     }
 
+    /// The Fast Break game token
+    ///
     pub resource NFT: NonFungibleToken.INFT {
         pub let id: UInt64
         pub let fastBreakGameID: String
@@ -322,6 +369,8 @@ pub contract FastBreak: NonFungibleToken {
         }
     }
 
+    /// The Fast Break game token collection
+    ///
     pub resource interface FastBreakNFTCollectionPublic {
         pub fun deposit(token: @NonFungibleToken.NFT)
         pub fun batchDeposit(tokens: @NonFungibleToken.Collection)
@@ -336,6 +385,8 @@ pub contract FastBreak: NonFungibleToken {
         }
     }
 
+    /// Capabilities of Fast Break Players
+    ///
     pub resource interface FastBreakPlayer {
         pub fun play(
             fastBreakGameID: String,
@@ -343,6 +394,8 @@ pub contract FastBreak: NonFungibleToken {
         ): @FastBreak.NFT
     }
 
+    /// Fast Break game collection
+    ///
     pub resource Collection:
         NonFungibleToken.Provider,
         NonFungibleToken.Receiver,
@@ -404,6 +457,8 @@ pub contract FastBreak: NonFungibleToken {
             }
         }
 
+        /// Play the game of Fast Break with an array of Top Shots
+        ///
         pub fun play(
             fastBreakGameID: String,
             topShots: [UInt64]
@@ -463,6 +518,8 @@ pub contract FastBreak: NonFungibleToken {
         return <- create Collection()
     }
 
+    /// Capabilities of the Game Oracle
+    ///
     pub resource interface GameOracle {
         pub fun createFastBreakRun(id: String, name: String, runStart: UInt64, runEnd: UInt64, fatigueModeOn: Bool)
         pub fun updateFastBreakRunStatus(id: String, status: String)
@@ -480,8 +537,12 @@ pub contract FastBreak: NonFungibleToken {
         pub fun addStatToFastBreakGame(fastBreakGameID: String, name: String, type: String, valueNeeded: UInt64)
     }
 
+    /// Fast Break Daemon game oracle implementation
+    ///
     pub resource FastBreakDaemon: GameOracle {
 
+        /// Create a Fast Break Run
+        ///
         pub fun createFastBreakRun(id: String, name: String, runStart: UInt64, runEnd: UInt64, fatigueModeOn: Bool) {
             let fastBreakRun = FastBreak.FastBreakRun(
                 id: id,
@@ -500,6 +561,8 @@ pub contract FastBreak: NonFungibleToken {
             )
         }
 
+        /// Update the status of a Fast Break Run
+        ///
         pub fun updateFastBreakRunStatus(id: String, status: String) {
             let fastBreakRun = (&FastBreak.fastBreakRunByID[id] as &FastBreak.FastBreakRun?)!
 
@@ -507,6 +570,8 @@ pub contract FastBreak: NonFungibleToken {
             emit FastBreakRunStatusChange(id: fastBreakRun.id, newStatus: fastBreakRun.status)
         }
 
+        /// Create a game of Fast Break
+        ///
         pub fun createFastBreakGame(
             id: String,
             name: String,
@@ -534,6 +599,8 @@ pub contract FastBreak: NonFungibleToken {
             )
         }
 
+        /// Add a Fast Break Statistic to a game of Fast Break during game creation
+        ///
         pub fun addStatToFastBreakGame(fastBreakGameID: String, name: String, type: String, valueNeeded: UInt64) {
             let fastBreakGame: &FastBreak.FastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
             let fastBreakStat : FastBreak.FastBreakStat = FastBreak.FastBreakStat(
@@ -551,6 +618,8 @@ pub contract FastBreak: NonFungibleToken {
             )
         }
 
+        /// Update the status and winner of a Fast Break
+        ///
         pub fun updateFastBreakGame(id: String, status: String, winner: Address) {
             let fastBreakGame: &FastBreak.FastBreakGame = (&FastBreak.fastBreakGameByID[id] as &FastBreak.FastBreakGame?)!
 
@@ -558,11 +627,15 @@ pub contract FastBreak: NonFungibleToken {
             emit FastBreakGameStatusChange(id: fastBreakGame.id, newStatus: fastBreakGame.status, winner: winner)
         }
 
+        /// Submit a Fast Break on behalf of a wallet
+        ///
         pub fun submitFastBreak(wallet: Address, submission: FastBreak.FastBreakSubmission) {
             let fastBreakGame: &FastBreak.FastBreakGame = (&FastBreak.fastBreakGameByID[submission.fastBreakGameID] as &FastBreak.FastBreakGame?)!
             fastBreakGame.submitFastBreak(submission: submission)
         }
 
+        /// Updates the submission scores of a Fast Break
+        ///
         pub fun updateFastBreakScore(fastBreakGameID: String, wallet: Address, points: UInt64, win: Bool) {
             let fastBreakGame: &FastBreak.FastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
             let isNewWin = fastBreakGame.updateScore(wallet: wallet, points: points, win: win)
