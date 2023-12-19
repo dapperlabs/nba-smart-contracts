@@ -31,7 +31,7 @@ pub contract FastBreak: NonFungibleToken {
         submissionDeadline: UInt64,
         numPlayers: UInt64
     )
-    pub event FastBreakGameStatusChange(id: String, newStatus: String, winner: Address)
+    pub event FastBreakGameStatusChange(id: String, newStatus: String)
     pub event FastBreakNFTBurned(id: UInt64, serialNumber: UInt64)
     pub event FastBreakNFTMinted(
         id: UInt64,
@@ -48,7 +48,7 @@ pub contract FastBreak: NonFungibleToken {
         topShots: [UInt64]
     )
     pub event FastBreakGameWinner(
-        wallet: Address,
+        wallet: Address?,
         submittedAt: UInt64,
         fastBreakGameID: String,
         topShots: [UInt64]
@@ -190,7 +190,7 @@ pub contract FastBreak: NonFungibleToken {
 
         /// Update status and winner of a Fast Break
         ///
-        access(contract) fun update(status: String, winner: Address) {
+        access(contract) fun update(status: String, winner: Address?) {
             self.status = status
             self.winner = winner
         }
@@ -472,6 +472,7 @@ pub contract FastBreak: NonFungibleToken {
             let collectionRef = acct.getCapability(/public/MomentCollection)
                                     .borrow<&{TopShot.MomentCollectionPublic}>()!
 
+            /// Must own Top Shots to play Fast Break
             for flowId in topShots {
                 if !collectionRef.getIDs().contains(flowId) {
                     panic("top shot not owned in collection")
@@ -480,6 +481,7 @@ pub contract FastBreak: NonFungibleToken {
 
             let fastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
 
+            /// Cannot mint two tokens for the same Fast Break
             let existingSubmission = fastBreakGame.getFastBreakSubmissionByWallet(wallet: self.owner?.address!)
             if existingSubmission != nil {
                 panic("wallet already submitted to fast break")
@@ -531,7 +533,7 @@ pub contract FastBreak: NonFungibleToken {
             submissionDeadline: UInt64,
             numPlayers: UInt64
         )
-        pub fun updateFastBreakGame(id: String, status: String, winner: Address)
+        pub fun updateFastBreakGame(id: String, status: String, winner: Address?)
         pub fun submitFastBreak(wallet: Address, submission: FastBreak.FastBreakSubmission)
         pub fun updateFastBreakScore(fastBreakGameID: String, wallet: Address, points: UInt64, win: Bool)
         pub fun addStatToFastBreakGame(fastBreakGameID: String, name: String, type: String, valueNeeded: UInt64)
@@ -618,13 +620,13 @@ pub contract FastBreak: NonFungibleToken {
             )
         }
 
-        /// Update the status and winner of a Fast Break
+        /// Update the status of a Fast Break
         ///
-        pub fun updateFastBreakGame(id: String, status: String, winner: Address) {
+        pub fun updateFastBreakGame(id: String, status: String, winner: Address?) {
             let fastBreakGame: &FastBreak.FastBreakGame = (&FastBreak.fastBreakGameByID[id] as &FastBreak.FastBreakGame?)!
 
             fastBreakGame.update(status: status, winner: winner)
-            emit FastBreakGameStatusChange(id: fastBreakGame.id, newStatus: fastBreakGame.status, winner: winner)
+            emit FastBreakGameStatusChange(id: fastBreakGame.id, newStatus: fastBreakGame.status)
         }
 
         /// Submit a Fast Break on behalf of a wallet
@@ -641,7 +643,8 @@ pub contract FastBreak: NonFungibleToken {
             let isNewWin = fastBreakGame.updateScore(wallet: wallet, points: points, win: win)
             if isNewWin {
 
-                let fastBreakRun: &FastBreak.FastBreakRun = (&FastBreak.fastBreakRunByID[fastBreakGame.id] as &FastBreak.FastBreakRun?)!
+                let fastBreakRun: &FastBreak.FastBreakRun =
+                    (&FastBreak.fastBreakRunByID[fastBreakGame.fastBreakRunID] as &FastBreak.FastBreakRun?)!
 
                 fastBreakRun.incrementLeaderboardWins(wallet: wallet)
 

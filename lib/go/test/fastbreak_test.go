@@ -156,11 +156,12 @@ func TestFastBreak(t *testing.T) {
 		fatigueModeOn    = true
 
 		//fast break
-		fastBreakID               = "def-456"
-		fastBreakName             = "fb0"
-		isPublic                  = true
-		submissionDeadline        = tomorrow.Unix()
-		numPlayers         uint64 = 1
+		fastBreakID                  = "def-456"
+		fastBreakName                = "fb0"
+		isPublic                     = true
+		submissionDeadline           = tomorrow.Unix()
+		numPlayers            uint64 = 1
+		fastBreakStartedState        = "FAST_BREAK_STARTED"
 
 		//fast break stat
 		statName           = "POINTS"
@@ -319,6 +320,42 @@ func TestFastBreak(t *testing.T) {
 
 		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakTokenCountScript(env), nil)
 		assert.Equal(t, cadence.NewUInt64(1), result)
+	})
+
+	t.Run("oracle should be able to update status of fast break", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateUpdateFastBreakGameScript(env), fastBreakAddr)
+		cdcId, _ := cadence.NewString(fastBreakID)
+		cdcState, _ := cadence.NewString(fastBreakStartedState)
+
+		_ = tx.AddArgument(cdcId)
+		_ = tx.AddArgument(cdcState)
+		_ = tx.AddArgument(cadence.NewAddress(jerAddress))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+	})
+
+	t.Run("oracle should be to score a submission to fast break", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateScoreFastBreakSubmissionScript(env), fastBreakAddr)
+
+		cdcId, _ := cadence.NewString(fastBreakID)
+
+		_ = tx.AddArgument(cdcId)
+		_ = tx.AddArgument(cadence.NewAddress(jerAddress))
+		_ = tx.AddArgument(cadence.NewUInt64(100))
+		_ = tx.AddArgument(cadence.NewBool(true))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
+
+		result := executeScriptAndCheck(t, b, templates.GenerateGetScoreByWalletScript(env), [][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(cadence.Address(jerAddress))})
+		assert.Equal(t, cadence.NewUInt64(100), result)
 	})
 
 }
