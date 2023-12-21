@@ -123,6 +123,10 @@ pub contract TopShotLocking {
         return self.lockedNFTs.length
     }
 
+    // The path to the TopShotLocking Admin resource belonging to the Account
+    // which the contract is deployed on
+    pub fun AdminStoragePath() : StoragePath { return /storage/TopShotLockingAdmin}
+
     // Admin is a special authorization resource that 
     // allows the owner to override the lock on a moment
     //
@@ -139,6 +143,28 @@ pub contract TopShotLocking {
         //
         pub fun markNFTUnlockable(nftRef: &NonFungibleToken.NFT) {
             TopShotLocking.unlockableNFTs[nftRef.id] = true
+        }
+
+        pub fun unlockByID(id: UInt64) {
+            if !TopShotLocking.lockedNFTs.containsKey(id) {
+                // nft is not locked, do nothing
+                return
+            }
+            TopShotLocking.lockedNFTs.remove(key: id)
+            emit MomentUnlocked(id: id)
+        }
+
+        // admin may alter the expiry of a lock on an NFT
+        pub fun setLockExpiryByID(id: UInt64, expiryTimestamp: UFix64) {
+            if expiryTimestamp < getCurrentBlock().timestamp {
+                panic("cannot set expiry in the past")
+            }
+
+            let duration = expiryTimestamp - getCurrentBlock().timestamp
+
+            TopShotLocking.lockedNFTs[id] = expiryTimestamp
+
+            emit MomentLocked(id: id, duration: duration, expiryTimestamp: expiryTimestamp)
         }
 
         // unlocks all NFTs
@@ -160,6 +186,6 @@ pub contract TopShotLocking {
         let admin <- create Admin()
 
         // Store it in private account storage in `init` so only the admin can use it
-        self.account.save(<-admin, to: /storage/TopShotLockingAdmin)
+        self.account.save(<-admin, to: TopShotLocking.AdminStoragePath())
     }
 }

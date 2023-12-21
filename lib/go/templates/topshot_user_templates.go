@@ -5,12 +5,13 @@ import (
 )
 
 const (
-	setupAccountFilename   = "user/setup_account.cdc"
+	setupAccountFilename   = "user/setup_collection.cdc"
 	transferMomentFilename = "user/transfer_moment.cdc"
 	batchTransferFilename  = "user/batch_transfer.cdc"
 
 	transferMomentV3Filename = "user/transfer_moment_v3_sale.cdc"
-	destroyMomentsFilename = "user/destroy_moments.cdc"
+	destroyMomentsFilename   = "user/destroy_moments.cdc"
+	destroyMomentsV2Filename = "user/destroy_moments_v2.cdc"
 )
 
 // GenerateSetupAccountScript creates a script that sets up an account to use topshot
@@ -46,6 +47,14 @@ func GenerateTransferMomentV3Script(env Environment) []byte {
 // moments from a user's collection
 func GenerateDestroyMomentsScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + destroyMomentsFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateDestroyMomentsV2Script creates a script that destroys select
+// moments from a user's collection using the Top Shot contract destroyMoments function
+func GenerateDestroyMomentsV2Script(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + destroyMomentsV2Filename)
 
 	return []byte(replaceAddresses(code, env))
 }

@@ -681,7 +681,7 @@ pub contract TopShot: NonFungibleToken {
         }
 
         // If the Moment is destroyed, emit an event to indicate 
-        // to outside ovbservers that it has been destroyed
+        // to outside observers that it has been destroyed
         destroy() {
             emit MomentDestroyed(id: self.id)
         }
@@ -844,7 +844,8 @@ pub contract TopShot: NonFungibleToken {
                     let traitDictionary: {String: AnyStruct} = {
                         "SeriesNumber": TopShot.getSetSeries(setID: self.data.setID),
                         "SetName": TopShot.getSetName(setID: self.data.setID),
-                        "SerialNumber": self.data.serialNumber
+                        "SerialNumber": self.data.serialNumber,
+                        "Locked": TopShotLocking.isLocked(nftRef: &self as! &NonFungibleToken.NFT)
                     }
                     // add play specific data
                     let fullDictionary = self.mapPlayData(dict: traitDictionary)
@@ -1117,11 +1118,11 @@ pub contract TopShot: NonFungibleToken {
             }
 
             // Remove the nft from the Collection
-            let token <- self.ownedNFTs.remove(key: withdrawID) 
+            let token <- self.ownedNFTs.remove(key: withdrawID)
                 ?? panic("Cannot withdraw: Moment does not exist in the collection")
 
             emit Withdraw(id: token.id, from: self.owner?.address)
-            
+
             // Return the withdrawn token
             return <-token
         }
@@ -1231,6 +1232,27 @@ pub contract TopShot: NonFungibleToken {
             // Iterate through the ids and unlocks them
             for id in ids {
                 self.unlock(id: id)
+            }
+        }
+
+        // destroyMoments destroys moments in this collection
+        // unlocks the moments if they are locked
+        //
+        // Parameters: ids: An array of NFT IDs
+        // to be destroyed from the Collection
+        pub fun destroyMoments(ids: [UInt64]) {
+            let topShotLockingAdmin = TopShot.account.borrow<&TopShotLocking.Admin>(from: TopShotLocking.AdminStoragePath())
+                ?? panic("No TopShotLocking admin resource in storage")
+
+            for id in ids {
+                // Remove the nft from the Collection
+                let token <- self.ownedNFTs.remove(key: id)
+                    ?? panic("Cannot destroy: Moment does not exist in collection: ".concat(id.toString()))
+
+                // does nothing if the moment is not locked
+                topShotLockingAdmin.unlockByID(id: id)
+
+                destroy token
             }
         }
 

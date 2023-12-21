@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -537,5 +538,30 @@ func TestTopShotLocking(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, fakeTopshotAddress}, []crypto.Signer{serviceKeySigner, fakeTopshotSigner},
 			true,
 		)
+	})
+
+	t.Run("Admin should be able to set the expiry of an NFT", func(t *testing.T) {
+		expectedExpiryTime := time.Now().Add(31536000 * time.Second)
+
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateTopShotLockingAdminSetLockedNFTsExpiryScript(env), topShotLockingAddr)
+		ids := []cadence.Value{cadence.NewUInt64(momentId)}
+		_ = tx.AddArgument(cadence.NewArray(ids))
+		expectedExpiryString := fmt.Sprintf("%.2f", float64(expectedExpiryTime.Unix()))
+		expiry, _ := cadence.NewUFix64(expectedExpiryString)
+		_ = tx.AddArgument(expiry)
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topShotLockingAddr}, []crypto.Signer{serviceKeySigner, lockingSigner},
+			false,
+		)
+
+		// Verify moment is locked for 1 year
+		result := executeScriptAndCheck(t, b, templates.GenerateGetMomentLockExpiryScript(env), [][]byte{
+			jsoncdc.MustEncode(cadence.Address(topshotAddr)),
+			jsoncdc.MustEncode(cadence.UInt64(momentId)),
+		})
+		resultTime := time.Unix(int64(result.ToGoValue().(uint64)/CadenceUFix64Factor), 0)
+		assert.WithinDuration(t, expectedExpiryTime, resultTime, 10*time.Second)
 	})
 }
