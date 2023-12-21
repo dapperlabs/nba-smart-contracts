@@ -30,8 +30,8 @@ const (
 
 	emulatorFTAddress         = "ee82856bf20e2aa6"
 	emulatorFlowTokenAddress  = "0ae53cb6e3f42a79"
-	MetadataFTReplaceAddress  = `"./utility/FungibleToken.cdc"`
-	MetadataNFTReplaceAddress = `"./NonFungibleToken.cdc"`
+	MetadataFTReplaceAddress  = `"FungibleToken"`
+	MetadataNFTReplaceAddress = `"NonFungibleToken"`
 	Network                   = `"mainnet"`
 )
 
@@ -366,7 +366,7 @@ func TestMintNFTs(t *testing.T) {
 		expectedCollectionSquareImage := "https://nbatopshot.com/static/img/og/og.png"
 		expectedCollectionBannerImage := "https://nbatopshot.com/static/img/top-shot-logo-horizontal-white.svg"
 		expectedRoyaltyReceiversCount := 1
-		expectedTraitsCount := 6
+		expectedTraitsCount := 7
 		expectedVideoURL := "https://assets.nbatopshot.com/media/1/video"
 
 		resultNFT := executeScriptAndCheck(t, b, templates.GenerateGetNFTMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})

@@ -373,7 +373,7 @@ func TestSubeditions(t *testing.T) {
 		expectedCollectionSquareImage := "https://nbatopshot.com/static/img/og/og.png"
 		expectedCollectionBannerImage := "https://nbatopshot.com/static/img/top-shot-logo-horizontal-white.svg"
 		expectedRoyaltyReceiversCount := 1
-		expectedTraitsCount := 5
+		expectedTraitsCount := 6
 		expectedVideoURL := "https://assets.nbatopshot.com/media/1/video"
 
 		resultNFT := executeScriptAndCheck(t, b, templates.GenerateGetNFTMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
