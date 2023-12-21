@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	setupAccountFilename   = "user/setup_account.cdc"
+	setupAccountFilename   = "user/setup_collection.cdc"
 	transferMomentFilename = "user/transfer_moment.cdc"
 	batchTransferFilename  = "user/batch_transfer.cdc"
 
