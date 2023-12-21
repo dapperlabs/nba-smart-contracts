@@ -16,6 +16,7 @@ const (
 	upgradeSaleFilename           = "marketV3/upgrade_sale.cdc"
 
 	purchaseBothMarketsFilename = "marketV3/purchase_both_markets.cdc"
+	purchaseGroupOfMoments      = "marketV3/purchase_group_of_moments.cdc"
 
 	// scripts
 	getSalePriceV3Filename      = "marketV3/scripts/get_sale_price.cdc"
@@ -98,6 +99,12 @@ func GenerateUpgradeSaleV3Script(env Environment) []byte {
 
 func GenerateMultiContractP2PPurchaseScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + purchaseBothMarketsFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+func GeneratePurchaseGroupOfMomentsScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + purchaseGroupOfMoments)
 
 	return []byte(replaceAddresses(code, env))
 }

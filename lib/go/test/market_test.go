@@ -916,7 +916,7 @@ func TestMarketV3(t *testing.T) {
 
 		_ = tx.AddArgument(cadence.NewUInt32(1))
 		_ = tx.AddArgument(cadence.NewUInt32(1))
-		_ = tx.AddArgument(cadence.NewUInt64(6))
+		_ = tx.AddArgument(cadence.NewUInt64(17))
 		_ = tx.AddArgument(cadence.NewAddress(topshotAddr))
 
 		signAndSubmit(
@@ -1230,5 +1230,196 @@ func TestMarketV3(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{serviceKeySigner, tokenSigner},
 			false,
 		)
+	})
+
+	t.Run("Purchase a group of moments from market v1", func(t *testing.T) {
+		// transfer and start sale for 2 moments with a price of 50.00 each
+		// starting at moment index 6 for josh via market v1
+		transferAndStartSale(t,
+			b,
+			env,
+			1,
+			6,
+			2,
+			"50.00",
+			topshotAddr,
+			topshotSigner,
+			joshAddress,
+			joshSigner,
+			serviceKeySigner)
+
+		// transfer and start sale for 2 moments with a price of 100.00 each
+		// starting at moment index 8 for bastian via market v1
+		transferAndStartSale(t,
+			b,
+			env,
+			1,
+			8,
+			2,
+			"100.00",
+			topshotAddr,
+			topshotSigner,
+			bastianAddress,
+			bastianSigner,
+			serviceKeySigner)
+
+		// Buy group of moments from both josh & bastian
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePurchaseGroupOfMomentsScript(env), tokenAddr)
+
+		joshMomentIDs := []cadence.Value{cadence.NewUInt64(6), cadence.NewUInt64(7)}
+		bastianMomentIDs := []cadence.Value{cadence.NewUInt64(8), cadence.NewUInt64(9)}
+
+		group := cadence.NewDictionary([]cadence.KeyValuePair{
+			{Key: cadence.NewAddress(joshAddress), Value: cadence.NewArray(joshMomentIDs)},
+			{Key: cadence.NewAddress(bastianAddress), Value: cadence.NewArray(bastianMomentIDs)},
+		})
+
+		_ = tx.AddArgument(group)
+		_ = tx.AddArgument(CadenceUFix64("300.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{serviceKeySigner, tokenSigner},
+			false,
+		)
+
+		// make sure non-fungible receiver received the purchased moments
+		for i := 6; i < 10; i++ {
+			result := executeScriptAndCheck(t,
+				b,
+				templates.GenerateIsIDInCollectionScript(env),
+				[][]byte{jsoncdc.MustEncode(cadence.Address(tokenAddr)),
+					jsoncdc.MustEncode(cadence.UInt64(i))},
+			)
+			assert.Equal(t, cadence.NewBool(true), result)
+		}
+	})
+
+	t.Run("Purchase a group of moments from market V1 or V3", func(t *testing.T) {
+		// transfer and start sale for 2 moments with a price of 50.00 each
+		// starting at index 10 for josh via market v1
+		transferAndStartSale(t,
+			b,
+			env,
+			1,
+			10,
+			2,
+			"50.00",
+			topshotAddr,
+			topshotSigner,
+			joshAddress,
+			joshSigner,
+			serviceKeySigner)
+
+		// transfer and start sale for 2 moments with a price of 100.00 each
+		// starting at index 12 for bastian via market v3
+		transferAndStartSale(t,
+			b,
+			env,
+			3,
+			12,
+			2,
+			"100.00",
+			topshotAddr,
+			topshotSigner,
+			bastianAddress,
+			bastianSigner,
+			serviceKeySigner)
+
+		// Buy group of moments from both josh & bastian
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePurchaseGroupOfMomentsScript(env), tokenAddr)
+
+		joshMomentIDs := []cadence.Value{cadence.NewUInt64(10), cadence.NewUInt64(11)}
+		bastianMomentIDs := []cadence.Value{cadence.NewUInt64(12), cadence.NewUInt64(13)}
+
+		group := cadence.NewDictionary([]cadence.KeyValuePair{
+			{Key: cadence.NewAddress(joshAddress), Value: cadence.NewArray(joshMomentIDs)},
+			{Key: cadence.NewAddress(bastianAddress), Value: cadence.NewArray(bastianMomentIDs)},
+		})
+
+		_ = tx.AddArgument(group)
+		_ = tx.AddArgument(CadenceUFix64("300.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{serviceKeySigner, tokenSigner},
+			false,
+		)
+
+		// make sure non-fungible receiver received the purchased moments from both markets
+		for i := 10; i < 14; i++ {
+			result := executeScriptAndCheck(t,
+				b,
+				templates.GenerateIsIDInCollectionScript(env),
+				[][]byte{jsoncdc.MustEncode(cadence.Address(tokenAddr)),
+					jsoncdc.MustEncode(cadence.UInt64(i))},
+			)
+			assert.Equal(t, cadence.NewBool(true), result)
+		}
+	})
+
+	t.Run("Should fail: Purchase a group of moments with a purchaseAmount lesser than the sum of all moment prices", func(t *testing.T) {
+		// transfer and start sale for 2 moments with a price of 50.00 each
+		// starting at index 14 for josh via market v1
+		transferAndStartSale(t,
+			b,
+			env,
+			1,
+			14,
+			2,
+			"50.00",
+			topshotAddr,
+			topshotSigner,
+			joshAddress,
+			joshSigner,
+			serviceKeySigner)
+
+		// transfer and start sale for 2 moments with a price of 100.00 each
+		// starting at index 16 for bastian via market v1
+		transferAndStartSale(t,
+			b,
+			env,
+			1,
+			16,
+			2,
+			"100.00",
+			topshotAddr,
+			topshotSigner,
+			bastianAddress,
+			bastianSigner,
+			serviceKeySigner)
+
+		// Buy group of moments from both josh & bastian
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePurchaseGroupOfMomentsScript(env), tokenAddr)
+
+		joshMomentIDs := []cadence.Value{cadence.NewUInt64(14), cadence.NewUInt64(15)}
+		bastianMomentIDs := []cadence.Value{cadence.NewUInt64(16), cadence.NewUInt64(17)}
+
+		group := cadence.NewDictionary([]cadence.KeyValuePair{
+			{Key: cadence.NewAddress(joshAddress), Value: cadence.NewArray(joshMomentIDs)},
+			{Key: cadence.NewAddress(bastianAddress), Value: cadence.NewArray(bastianMomentIDs)},
+		})
+
+		_ = tx.AddArgument(group)
+		_ = tx.AddArgument(CadenceUFix64("200.0"))
+
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, tokenAddr}, []crypto.Signer{serviceKeySigner, tokenSigner},
+			true,
+		)
+
+		// make sure non-fungible receiver did not receive the purchased moments from the failed TX
+		for i := 14; i < 18; i++ {
+			result := executeScriptAndCheckShouldFail(
+				t,
+				b,
+				templates.GenerateIsIDInCollectionScript(env),
+				[][]byte{jsoncdc.MustEncode(cadence.Address(tokenAddr)),
+					jsoncdc.MustEncode(cadence.UInt64(i))},
+				true,
+			)
+			assert.Equal(t, true, result)
+		}
 	})
 }
