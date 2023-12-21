@@ -1,12 +1,12 @@
 package test
 
 import (
-	"testing"
-
 	"github.com/onflow/flow-go-sdk"
 	sdk "github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 	sdktemplates "github.com/onflow/flow-go-sdk/templates"
+	"github.com/stretchr/testify/assert"
+	"testing"
 
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
@@ -156,5 +156,43 @@ func transferAndStartSale(
 			[]flow.Address{b.ServiceKey().Address, userAddress}, []crypto.Signer{serviceKeySigner, signer},
 			false,
 		)
+	}
+}
+
+func VariableArray(cadenceType cadence.Type, values ...cadence.Value) cadence.Array {
+	return cadence.NewArray(values).WithType(cadence.NewVariableSizedArrayType(cadenceType))
+}
+
+func UInt32Array(values ...int) cadence.Array {
+	mapped := make([]cadence.Value, len(values))
+	for i, v := range values {
+		mapped[i] = cadence.NewUInt32(uint32(v))
+	}
+	return VariableArray(cadence.NewUInt32Type(), mapped...)
+}
+
+func UInt64Array(values ...int) cadence.Array {
+	mapped := make([]cadence.Value, len(values))
+	for i, v := range values {
+		mapped[i] = cadence.NewUInt64(uint64(v))
+	}
+	return VariableArray(cadence.NewUInt64Type(), mapped...)
+}
+
+func CadenceStringDictionary(pairs []cadence.KeyValuePair) cadence.Dictionary {
+	return cadence.NewDictionary(pairs).
+		WithType(cadence.DictionaryType{KeyType: cadence.StringType{}, ElementType: cadence.StringType{}})
+}
+
+func CadenceIntArrayContains(t assert.TestingT, result cadence.Value, vals ...int) {
+	interfaceArray := result.ToGoValue().([]interface{})
+	assert.Equal(t, len(vals), len(interfaceArray))
+	for _, intValue := range interfaceArray {
+		switch v := intValue.(type) {
+		case uint64:
+			assert.Contains(t, vals, int(v))
+		case int:
+			assert.Contains(t, vals, v)
+		}
 	}
 }

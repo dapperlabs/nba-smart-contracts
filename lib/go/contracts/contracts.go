@@ -25,21 +25,29 @@ const (
 	defaultMarketAddress           = "MARKETADDRESS"
 	defaultMetadataviewsAddress    = "METADATAVIEWSADDRESS"
 	defaultTopShotLockingAddress   = "TOPSHOTLOCKINGADDRESS"
+	defaultTopShotRoyaltyAddress   = "TOPSHOTROYALTYADDRESS"
+	defaultNetwork                 = "${NETWORK}"
 )
 
 // GenerateTopShotContract returns a copy
 // of the topshot contract with the import addresses updated
-func GenerateTopShotContract(nftAddr string, metadataViewsAddr string, topShotLockingAddr string) []byte {
+func GenerateTopShotContract(ftAddr string, nftAddr string, metadataViewsAddr string, topShotLockingAddr string, royaltyAddr string, network string) []byte {
 
 	topShotCode := assets.MustAssetString(topshotFile)
 
-	codeWithNFTAddr := strings.ReplaceAll(topShotCode, defaultNonFungibleTokenAddress, nftAddr)
+	codeWithFTAddr := strings.ReplaceAll(topShotCode, defaultFungibleTokenAddress, ftAddr)
+
+	codeWithNFTAddr := strings.ReplaceAll(codeWithFTAddr, defaultNonFungibleTokenAddress, nftAddr)
 
 	codeWithMetadataViewsAddr := strings.ReplaceAll(codeWithNFTAddr, defaultMetadataviewsAddress, metadataViewsAddr)
 
 	codeWithTopShotLockingAddr := strings.ReplaceAll(codeWithMetadataViewsAddr, defaultTopShotLockingAddress, topShotLockingAddr)
 
-	return []byte(codeWithTopShotLockingAddr)
+	codeWithTopShotRoyaltyAddr := strings.ReplaceAll(codeWithTopShotLockingAddr, defaultTopShotRoyaltyAddress, royaltyAddr)
+
+	codeWithNetwork := strings.ReplaceAll(codeWithTopShotRoyaltyAddr, defaultNetwork, network)
+
+	return []byte(codeWithNetwork)
 }
 
 // GenerateTopShotShardedCollectionContract returns a copy
@@ -79,7 +87,7 @@ func GenerateTopShotMarketContract(ftAddr, nftAddr, topshotAddr, ducTokenAddr st
 
 // GenerateTopShotMarketV3Contract returns a copy
 // of the third version TopShotMarketContract with the import addresses updated
-func GenerateTopShotMarketV3Contract(ftAddr, nftAddr, topshotAddr, marketAddr, ducTokenAddr string, topShotLockingAddr string) []byte {
+func GenerateTopShotMarketV3Contract(ftAddr, nftAddr, topshotAddr, marketAddr, ducTokenAddr, topShotLockingAddr, metadataViewsAddr string) []byte {
 
 	marketCode := assets.MustAssetString(marketV3File)
 	codeWithNFTAddr := strings.ReplaceAll(marketCode, defaultNonFungibleTokenAddress, nftAddr)
@@ -88,8 +96,9 @@ func GenerateTopShotMarketV3Contract(ftAddr, nftAddr, topshotAddr, marketAddr, d
 	codeWithMarketV3Addr := strings.ReplaceAll(codeWithFTAddr, defaultMarketAddress, marketAddr)
 	codeWithTokenAddr := strings.ReplaceAll(codeWithMarketV3Addr, "DUCADDRESS", ducTokenAddr)
 	codeWithTopShotLockingAddr := strings.ReplaceAll(codeWithTokenAddr, defaultTopShotLockingAddress, topShotLockingAddr)
+	codeWithMetadataViewAddr := strings.ReplaceAll(codeWithTopShotLockingAddr, defaultMetadataviewsAddress, metadataViewsAddr)
 
-	return []byte(codeWithTopShotLockingAddr)
+	return []byte(codeWithMetadataViewAddr)
 }
 
 // GenerateTopShotLockingContract returns a copy
