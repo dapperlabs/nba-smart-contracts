@@ -130,9 +130,7 @@ pub contract FastBreak: NonFungibleToken {
         ///
         access(contract) fun incrementLeaderboardWins(wallet: Address) {
             let leaderboard = self.leaderboard
-            var wins = leaderboard[wallet] ?? 0
-            wins = wins + 1
-            leaderboard[wallet] = wins
+            leaderboard[wallet] = (leaderboard[wallet] ?? 0) + 1
         }
     }
 
