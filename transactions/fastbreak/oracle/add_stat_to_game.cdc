@@ -18,8 +18,4 @@ transaction(fastBreakGameID: String, name: String, type: String, valueNeeded: UI
             valueNeeded: valueNeeded
         )
     }
-
-    post {
-        FastBreak.getFastBreakGameStats(id: fastBreakGameID).length != 0: "could not find fast break stat"
-    }
 }

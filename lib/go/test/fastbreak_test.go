@@ -1,6 +1,7 @@
 package test
 
 import (
+	"fmt"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
 	"github.com/onflow/cadence"
@@ -97,6 +98,8 @@ func TestFastBreak(t *testing.T) {
 			Source: string(fastBreakCode),
 		},
 	})
+	fmt.Println("blah")
+	fmt.Println(fastBreakAddrErr)
 	assert.Nil(t, fastBreakAddrErr)
 	env.FastBreakAddress = fastBreakAddr.String()
 	assert.Nil(t, err)
@@ -176,7 +179,7 @@ func TestFastBreak(t *testing.T) {
 		isPublic                     = true
 		submissionDeadline           = tomorrow.Unix()
 		numPlayers            uint64 = 1
-		fastBreakStartedState        = "FAST_BREAK_STARTED"
+		fastBreakStartedState uint8  = 1
 
 		//fast break stat
 		statName           = "POINTS"
@@ -254,7 +257,10 @@ func TestFastBreak(t *testing.T) {
 
 		// Check that that main contract fields were initialized correctly
 		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakScript(env), [][]byte{jsoncdc.MustEncode(cdcId)})
+		interfaceArray := result.ToGoValue().([]interface{})
+		resultId := interfaceArray[0].(string)
 		assert.NotNil(t, result)
+		assert.Equal(t, fastBreakID, resultId)
 	})
 
 	t.Run("oracle should be able to add a stat to a fast break game", func(t *testing.T) {
@@ -287,6 +293,11 @@ func TestFastBreak(t *testing.T) {
 			false,
 		)
 
+		// Check that that main contract fields were initialized correctly
+		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakStatsScript(env), [][]byte{jsoncdc.MustEncode(cdcId)})
+		interfaceArray := result.ToGoValue().([]interface{})
+		assert.Equal(t, 1, len(interfaceArray))
+		assert.NotNil(t, result)
 	})
 
 	t.Run("player should be able to create a moment collection", func(t *testing.T) {
@@ -393,7 +404,7 @@ func TestFastBreak(t *testing.T) {
 	t.Run("oracle should be able to update status of fast break", func(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateUpdateFastBreakGameScript(env), fastBreakAddr)
 		cdcId, _ := cadence.NewString(fastBreakID)
-		cdcState, _ := cadence.NewString(fastBreakStartedState)
+		cdcState := cadence.NewUInt8(fastBreakStartedState)
 
 		arg0Err := tx.AddArgument(cdcId)
 		assert.Nil(t, arg0Err)

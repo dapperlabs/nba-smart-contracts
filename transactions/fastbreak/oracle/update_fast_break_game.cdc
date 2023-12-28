@@ -1,6 +1,6 @@
 import FastBreak from 0xFASTBREAKADDRESS
 
-transaction(id: String, status: String, winner: Address?) {
+transaction(id: String, status: UInt8, winner: Address?) {
 
     let oracleRef: &FastBreak.FastBreakDaemon
 
@@ -16,9 +16,5 @@ transaction(id: String, status: String, winner: Address?) {
             status: status,
             winner: winner
         )
-    }
-
-    post {
-        FastBreak.getFastBreakGame(id: id)?.status! == status: "failed to update status"
     }
 }

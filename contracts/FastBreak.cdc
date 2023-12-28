@@ -22,7 +22,7 @@ pub contract FastBreak: NonFungibleToken {
         runEnd: UInt64,
         fatigueModeOn: Bool
     )
-    pub event FastBreakRunStatusChange(id: String, newStatus: String)
+    pub event FastBreakRunStatusChange(id: String, newRawStatus: UInt8)
     pub event FastBreakGameCreated(
         id: String,
         name: String,
@@ -31,7 +31,7 @@ pub contract FastBreak: NonFungibleToken {
         submissionDeadline: UInt64,
         numPlayers: UInt64
     )
-    pub event FastBreakGameStatusChange(id: String, newStatus: String)
+    pub event FastBreakGameStatusChange(id: String, newRawStatus: UInt8)
     pub event FastBreakNFTBurned(id: UInt64, serialNumber: UInt64)
     pub event FastBreakNFTMinted(
         id: UInt64,
@@ -71,6 +71,21 @@ pub contract FastBreak: NonFungibleToken {
     ///
     pub var totalSupply:        UInt64
 
+    /// Game Enums
+    ///
+    pub enum GameStatus: UInt8 {
+        pub case SCHEDULED
+        pub case OPEN
+        pub case STARTED
+        pub case CLOSED
+    }
+
+    pub enum RunStatus: UInt8 {
+        pub case SCHEDULED
+        pub case RUNNING
+        pub case CLOSED
+    }
+
     /// Metadata Dictionaries
     ///
     access(self) let fastBreakRunByID:        {String: FastBreakRun}
@@ -81,7 +96,7 @@ pub contract FastBreak: NonFungibleToken {
     pub struct FastBreakRun {
         pub let id: String
         pub let name: String
-        pub var status: String
+        pub var status: FastBreak.RunStatus
         pub let runStart: UInt64
         pub let runEnd: UInt64
         pub let leaderboard: {Address: UInt64}
@@ -99,7 +114,7 @@ pub contract FastBreak: NonFungibleToken {
             } else {
                 self.id = id
                 self.name = name
-                self.status = "FAST_BREAK_RUN_OPEN"
+                self.status = FastBreak.RunStatus.SCHEDULED
                 self.runStart = runStart
                 self.runEnd = runEnd
                 self.leaderboard = {}
@@ -109,7 +124,7 @@ pub contract FastBreak: NonFungibleToken {
 
         /// Update status of the Fast Break Run
         ///
-        access(contract) fun updateStatus(status: String) { self.status = status }
+        access(contract) fun updateStatus(status: FastBreak.RunStatus) { self.status = status }
 
         /// Write a new win to the Fast Break Run leaderboard
         ///
@@ -135,7 +150,7 @@ pub contract FastBreak: NonFungibleToken {
         pub let isPublic: Bool
         pub let submissionDeadline: UInt64
         pub let numPlayers: UInt64
-        pub var status: String
+        pub var status: FastBreak.GameStatus
         pub var winner: Address?
         pub var submissions: {Address: FastBreak.FastBreakSubmission}
         pub let fastBreakRunID: String
@@ -166,7 +181,7 @@ pub contract FastBreak: NonFungibleToken {
                 self.isPublic = isPublic
                 self.submissionDeadline = submissionDeadline
                 self.numPlayers = numPlayers
-                self.status = "FAST_BREAK_OPEN"
+                self.status = FastBreak.GameStatus.SCHEDULED
                 self.submissions = {}
                 self.fastBreakRunID = fastBreakRunID
                 self.stats = []
@@ -190,7 +205,7 @@ pub contract FastBreak: NonFungibleToken {
 
         /// Update status and winner of a Fast Break
         ///
-        access(contract) fun update(status: String, winner: Address?) {
+        access(contract) fun update(status: FastBreak.GameStatus, winner: Address?) {
             self.status = status
             self.winner = winner
         }
@@ -524,7 +539,7 @@ pub contract FastBreak: NonFungibleToken {
     ///
     pub resource interface GameOracle {
         pub fun createFastBreakRun(id: String, name: String, runStart: UInt64, runEnd: UInt64, fatigueModeOn: Bool)
-        pub fun updateFastBreakRunStatus(id: String, status: String)
+        pub fun updateFastBreakRunStatus(id: String, status: UInt8)
         pub fun createFastBreakGame(
             id: String,
             name: String,
@@ -533,7 +548,7 @@ pub contract FastBreak: NonFungibleToken {
             submissionDeadline: UInt64,
             numPlayers: UInt64
         )
-        pub fun updateFastBreakGame(id: String, status: String, winner: Address?)
+        pub fun updateFastBreakGame(id: String, status: UInt8, winner: Address?)
         pub fun submitFastBreak(wallet: Address, submission: FastBreak.FastBreakSubmission)
         pub fun updateFastBreakScore(fastBreakGameID: String, wallet: Address, points: UInt64, win: Bool)
         pub fun addStatToFastBreakGame(fastBreakGameID: String, name: String, type: String, valueNeeded: UInt64)
@@ -565,11 +580,12 @@ pub contract FastBreak: NonFungibleToken {
 
         /// Update the status of a Fast Break Run
         ///
-        pub fun updateFastBreakRunStatus(id: String, status: String) {
+        pub fun updateFastBreakRunStatus(id: String, status: UInt8) {
             let fastBreakRun = (&FastBreak.fastBreakRunByID[id] as &FastBreak.FastBreakRun?)!
+            let runStatus: FastBreak.RunStatus = FastBreak.RunStatus(rawValue: status)!
 
-            fastBreakRun.updateStatus(status: status)
-            emit FastBreakRunStatusChange(id: fastBreakRun.id, newStatus: fastBreakRun.status)
+            fastBreakRun.updateStatus(status: runStatus)
+            emit FastBreakRunStatusChange(id: fastBreakRun.id, newRawStatus: fastBreakRun.status.rawValue)
         }
 
         /// Create a game of Fast Break
@@ -622,11 +638,12 @@ pub contract FastBreak: NonFungibleToken {
 
         /// Update the status of a Fast Break
         ///
-        pub fun updateFastBreakGame(id: String, status: String, winner: Address?) {
+        pub fun updateFastBreakGame(id: String, status: UInt8, winner: Address?) {
             let fastBreakGame: &FastBreak.FastBreakGame = (&FastBreak.fastBreakGameByID[id] as &FastBreak.FastBreakGame?)!
+            let fastBreakStatus: FastBreak.GameStatus = FastBreak.GameStatus(rawValue: status)!
 
-            fastBreakGame.update(status: status, winner: winner)
-            emit FastBreakGameStatusChange(id: fastBreakGame.id, newStatus: fastBreakGame.status)
+            fastBreakGame.update(status: fastBreakStatus, winner: winner)
+            emit FastBreakGameStatusChange(id: fastBreakGame.id, newRawStatus: fastBreakGame.status.rawValue)
         }
 
         /// Submit a Fast Break on behalf of a wallet

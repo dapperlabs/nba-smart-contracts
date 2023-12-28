@@ -27,8 +27,4 @@ transaction(
             numPlayers: numPlayers
         )
     }
-
-    post {
-        FastBreak.getFastBreakGame(id: id)?.name! == name: "could not find fast break game"
-    }
 }
