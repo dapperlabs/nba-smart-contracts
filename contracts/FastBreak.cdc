@@ -308,6 +308,21 @@ pub contract FastBreak: NonFungibleToken {
         }
     }
 
+    /// A player of Fast Break
+    ///
+    pub struct FastBreakPlayer {
+        pub let username: String
+        pub let accountAddress: Address
+
+        init (
+            username: String,
+            accountAddress: Address,
+        ) {
+            self.username = username
+            self.accountAddress = createdFrom
+        }
+    }
+
     /// An account submission to a Fast Break
     ///
     pub struct FastBreakSubmission {
@@ -428,6 +443,9 @@ pub contract FastBreak: NonFungibleToken {
     /// Capabilities of Fast Break Players
     ///
     pub resource interface FastBreakPlayer {
+        pub fun createPlayer(
+            username: String,
+        )
         pub fun play(
             fastBreakGameID: String,
             topShots: [UInt64]
@@ -495,6 +513,10 @@ pub contract FastBreak: NonFungibleToken {
             } else {
                 return nil
             }
+        }
+
+        pub fun createPlayer() {
+
         }
 
         /// Play the game of Fast Break with an array of Top Shots
