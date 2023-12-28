@@ -1,6 +1,6 @@
 import FastBreak from 0xFASTBREAKADDRESS
 
-transaction(fastBreakGameID: String, wallet: Address, points: UInt64, win: Bool) {
+transaction(fastBreakGameID: String, accountAddress: Address, points: UInt64, win: Bool) {
 
     let oracleRef: &FastBreak.FastBreakDaemon
 
@@ -13,7 +13,7 @@ transaction(fastBreakGameID: String, wallet: Address, points: UInt64, win: Bool)
 
         self.oracleRef.updateFastBreakScore(
             fastBreakGameID: fastBreakGameID,
-            wallet: wallet,
+            accountAddress: accountAddress,
             points: points,
             win: win
         )

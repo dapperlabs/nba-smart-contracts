@@ -42,7 +42,7 @@ pub contract FastBreak: NonFungibleToken {
         mintedTo: Address
     )
     pub event FastBreakGameWinner(
-        wallet: Address?,
+        accountAddress: Address?,
         submittedAt: UInt64,
         fastBreakGameID: String,
         topShots: [UInt64]
@@ -122,9 +122,9 @@ pub contract FastBreak: NonFungibleToken {
 
         /// Write a new win to the Fast Break Run leaderboard
         ///
-        access(contract) fun incrementLeaderboardWins(wallet: Address) {
+        access(contract) fun incrementLeaderboardWins(accountAddress: Address) {
             let leaderboard = self.leaderboard
-            leaderboard[wallet] = (leaderboard[wallet] ?? 0) + 1
+            leaderboard[accountAddress] = (leaderboard[accountAddress] ?? 0) + 1
         }
     }
 
@@ -181,12 +181,12 @@ pub contract FastBreak: NonFungibleToken {
             }
         }
 
-        /// Get a wallet's active Fast Break Submission
+        /// Get a account's active Fast Break Submission
         ///
-        pub fun getFastBreakSubmissionByWallet(wallet: Address): FastBreak.FastBreakSubmission? {
+        pub fun getFastBreakSubmissionByAccount(accountAddress: Address): FastBreak.FastBreakSubmission? {
             let fastBreakSubmissions = self.submissions!
 
-            return fastBreakSubmissions[wallet]
+            return fastBreakSubmissions[accountAddress]
         }
 
         /// Add a statistic to the Fast Break during game creation
@@ -209,20 +209,20 @@ pub contract FastBreak: NonFungibleToken {
                 FastBreak.isValidSubmission(submissionDeadline: self.submissionDeadline) : "submission missed deadline"
             }
 
-            self.submissions[submission.wallet] = submission
+            self.submissions[submission.accountAddress] = submission
         }
 
-        /// Update the Fast Break score of a wallet
+        /// Update the Fast Break score of a account
         ///
-        access(contract) fun updateScore(wallet: Address, points: UInt64, win: Bool): Bool {
+        access(contract) fun updateScore(accountAddress: Address, points: UInt64, win: Bool): Bool {
             var isNewWin = false
             let submissions = self.submissions
-            let submission: FastBreak.FastBreakSubmission = submissions[wallet]!
+            let submission: FastBreak.FastBreakSubmission = submissions[accountAddress]!
             if win && !submission.win {
                 isNewWin = true
             }
             submission.setPoints(points: points, win: win)
-            self.submissions[wallet] = submission
+            self.submissions[accountAddress] = submission
             return isNewWin
         }
     }
@@ -268,10 +268,10 @@ pub contract FastBreak: NonFungibleToken {
         }
     }
 
-    /// A wallet submission to a Fast Break
+    /// An account submission to a Fast Break
     ///
     pub struct FastBreakSubmission {
-        pub let wallet: Address
+        pub let accountAddress: Address
         pub var submittedAt: UInt64
         pub let fastBreakGameID: String
         pub var topShots: [UInt64]
@@ -279,11 +279,11 @@ pub contract FastBreak: NonFungibleToken {
         pub var win: Bool
 
         init (
-            wallet: Address,
+            accountAddress: Address,
             fastBreakGameID: String,
             topShots: [UInt64],
         ) {
-            self.wallet = wallet
+            self.accountAddress = accountAddress
             self.fastBreakGameID = fastBreakGameID
             self.topShots = topShots
             self.submittedAt = UInt64(getCurrentBlock().timestamp)
@@ -482,13 +482,13 @@ pub contract FastBreak: NonFungibleToken {
             let fastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
 
             /// Cannot mint two tokens for the same Fast Break
-            let existingSubmission = fastBreakGame.getFastBreakSubmissionByWallet(wallet: self.owner?.address!)
+            let existingSubmission = fastBreakGame.getFastBreakSubmissionByAccount(accountAddress: self.owner?.address!)
             if existingSubmission != nil {
-                panic("wallet already submitted to fast break")
+                panic("account already submitted to fast break")
             }
 
             let fastBreakSubmission = FastBreak.FastBreakSubmission(
-                wallet: self.owner?.address!,
+                accountAddress: self.owner?.address!,
                 fastBreakGameID: fastBreakGame.id,
                 topShots: topShots
             )
@@ -534,7 +534,7 @@ pub contract FastBreak: NonFungibleToken {
             numPlayers: UInt64
         )
         pub fun updateFastBreakGame(id: String, status: UInt8, winner: Address?)
-        pub fun updateFastBreakScore(fastBreakGameID: String, wallet: Address, points: UInt64, win: Bool)
+        pub fun updateFastBreakScore(fastBreakGameID: String, accountAddress: Address, points: UInt64, win: Bool)
         pub fun addStatToFastBreakGame(fastBreakGameID: String, name: String, type: String, valueNeeded: UInt64)
     }
 
@@ -632,20 +632,20 @@ pub contract FastBreak: NonFungibleToken {
 
         /// Updates the submission scores of a Fast Break
         ///
-        pub fun updateFastBreakScore(fastBreakGameID: String, wallet: Address, points: UInt64, win: Bool) {
+        pub fun updateFastBreakScore(fastBreakGameID: String, accountAddress: Address, points: UInt64, win: Bool) {
             let fastBreakGame: &FastBreak.FastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
-            let isNewWin = fastBreakGame.updateScore(wallet: wallet, points: points, win: win)
+            let isNewWin = fastBreakGame.updateScore(accountAddress: accountAddress, points: points, win: win)
             if isNewWin {
 
                 let fastBreakRun: &FastBreak.FastBreakRun =
                     (&FastBreak.fastBreakRunByID[fastBreakGame.fastBreakRunID] as &FastBreak.FastBreakRun?)!
 
-                fastBreakRun.incrementLeaderboardWins(wallet: wallet)
+                fastBreakRun.incrementLeaderboardWins(accountAddress: accountAddress)
 
-                let submission = fastBreakGame.submissions[wallet]!
+                let submission = fastBreakGame.submissions[accountAddress]!
 
                 emit FastBreakGameWinner(
-                    wallet: submission.wallet,
+                    accountAddress: submission.accountAddress,
                     submittedAt: submission.submittedAt,
                     fastBreakGameID: submission.fastBreakGameID,
                     topShots: submission.topShots
