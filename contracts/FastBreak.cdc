@@ -370,8 +370,8 @@ pub contract FastBreak: NonFungibleToken {
         }
 
         pub fun isWinner(): Bool {
-            let fastBreak : FastBreak.FastBreakGame = FastBreak.fastBreakGameByID[self.fastBreakGameID]!
-            let submission : FastBreak.FastBreakSubmission = fastBreak.submissions[self.mintedTo]!
+            let fastBreak = FastBreak.fastBreakGameByID[self.fastBreakGameID]!
+            let submission = fastBreak.submissions[self.mintedTo]!
             return submission.win
         }
 
