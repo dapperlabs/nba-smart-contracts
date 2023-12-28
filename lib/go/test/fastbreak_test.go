@@ -183,7 +183,7 @@ func TestFastBreak(t *testing.T) {
 
 		//fast break stat
 		statName           = "POINTS"
-		statType           = "INDIVIDUAL"
+		statRawType uint8  = 0
 		valueNeeded uint64 = 30
 	)
 
@@ -272,8 +272,7 @@ func TestFastBreak(t *testing.T) {
 		cdcName, cdcNameErr := cadence.NewString(statName)
 		assert.Nil(t, cdcNameErr)
 
-		cdcType, cdcTypeErr := cadence.NewString(statType)
-		assert.Nil(t, cdcTypeErr)
+		cdcType := cadence.NewUInt8(statRawType)
 
 		arg0Err := tx.AddArgument(cdcId)
 		assert.Nil(t, arg0Err)

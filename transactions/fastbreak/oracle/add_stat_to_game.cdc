@@ -1,6 +1,6 @@
 import FastBreak from 0xFASTBREAKADDRESS
 
-transaction(fastBreakGameID: String, name: String, type: String, valueNeeded: UInt64) {
+transaction(fastBreakGameID: String, name: String, rawType: UInt8, valueNeeded: UInt64) {
 
     let oracleRef: &FastBreak.FastBreakDaemon
 
@@ -14,7 +14,7 @@ transaction(fastBreakGameID: String, name: String, type: String, valueNeeded: UI
         self.oracleRef.addStatToFastBreakGame(
             fastBreakGameID: fastBreakGameID,
             name: name,
-            type: type,
+            rawType: rawType,
             valueNeeded: valueNeeded
         )
     }

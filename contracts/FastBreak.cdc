@@ -1,6 +1,14 @@
 /*
-    Fast Break Game Contract
-    Author: Jeremy Ahrens jer.ahrens@dapperlabs.com
+      _____                 __    ___.                         __
+    _/ ____\____    _______/  |_  \_ |_________   ____ _____  |  | __
+    \   __\\__  \  /  ___/\   __\  | __ \_  __ \_/ __ \\__  \ |  |/ /
+     |  |   / __ \_\___ \  |  |    | \_\ \  | \/\  ___/ / __ \|    <
+     |__|  (____  /____  > |__|    |___  /__|    \___  >____  /__|_ \
+                \/     \/              \/            \/     \/     \/
+
+    fast break game contract & oracle
+    micro coder: jer ahrens <jer.ahrens@dapperlabs.com>
+
 */
 
 import NonFungibleToken from 0xNFTADDRESS
@@ -13,8 +21,11 @@ pub contract FastBreak: NonFungibleToken {
     /// Contract events
     ///
     pub event ContractInitialized()
+
     pub event Withdraw(id: UInt64, from: Address?)
+
     pub event Deposit(id: UInt64, to: Address?)
+
     pub event FastBreakRunCreated(
         id: String,
         name: String,
@@ -22,7 +33,9 @@ pub contract FastBreak: NonFungibleToken {
         runEnd: UInt64,
         fatigueModeOn: Bool
     )
+
     pub event FastBreakRunStatusChange(id: String, newRawStatus: UInt8)
+
     pub event FastBreakGameCreated(
         id: String,
         name: String,
@@ -31,8 +44,11 @@ pub contract FastBreak: NonFungibleToken {
         submissionDeadline: UInt64,
         numPlayers: UInt64
     )
+
     pub event FastBreakGameStatusChange(id: String, newRawStatus: UInt8)
+
     pub event FastBreakNFTBurned(id: UInt64, serialNumber: UInt64)
+
     pub event FastBreakGameTokenMinted(
         id: UInt64,
         fastBreakGameID: String,
@@ -41,16 +57,18 @@ pub contract FastBreak: NonFungibleToken {
         topShots: [UInt64],
         mintedTo: Address
     )
+
     pub event FastBreakGameWinner(
         accountAddress: Address?,
         submittedAt: UInt64,
         fastBreakGameID: String,
         topShots: [UInt64]
     )
+
     pub event FastBreakGameStatAdded(
         fastBreakGameID: String,
         name: String,
-        type: String,
+        type: UInt8,
         valueNeeded: UInt64
     )
 
@@ -67,17 +85,29 @@ pub contract FastBreak: NonFungibleToken {
 
     /// Game Enums
     ///
+
+    /// A game of Fast Break has the following status transitions
+    ///
     pub enum GameStatus: UInt8 {
         pub case SCHEDULED
-        pub case OPEN
-        pub case STARTED
-        pub case CLOSED
+        pub case OPEN /// Game is open for submission
+        pub case STARTED /// Game has started
+        pub case CLOSED /// Game is over and rewards are being distributed
     }
 
+    /// A Fast Break Run has the following status transitions
+    ///
     pub enum RunStatus: UInt8 {
         pub case SCHEDULED
-        pub case RUNNING
-        pub case CLOSED
+        pub case RUNNING /// The first Fast Break game of the run has started
+        pub case CLOSED /// The last Fast Break game of the run has ended
+    }
+
+    /// A Fast Break Statistic can be met by an individual or group of top shots
+    ///
+    pub enum StatisticType: UInt8 {
+        pub case INDIVIDUAL /// Each top shot must meet or exceed this statistical value
+        pub case CUMMULATIVE /// All top shots in the submission must meet or exceed this statistical value
     }
 
     /// Metadata Dictionaries
@@ -86,15 +116,18 @@ pub contract FastBreak: NonFungibleToken {
     access(self) let fastBreakGameByID:     {String: FastBreakGame}
 
     /// A top-level Fast Break Run, the container for Fast Break Games
+    /// A Fast Break Run contains many Fast Break games & is a mini-season.
+    /// Fatigue mode applies submission limitations for the off-chain version of the game
+    /// Fatigue mode limits top shot usage by tier. 4 uses legendary. 2 uses rare. 1 use other.
     ///
     pub struct FastBreakRun {
-        pub let id: String
-        pub let name: String
-        pub var status: FastBreak.RunStatus
-        pub let runStart: UInt64
-        pub let runEnd: UInt64
-        pub let leaderboard: {Address: UInt64}
-        pub let fatigueModeOn: Bool
+        pub let id: String /// The off-chain uuid of the Fast Break Run
+        pub let name: String /// The name of the Run (R0, R1, etc)
+        pub var status: FastBreak.RunStatus /// The status of the run
+        pub let runStart: UInt64 /// The block timestamp starting the run
+        pub let runEnd: UInt64 /// The block timestamp ending the run
+        pub let leaderboard: {Address: UInt64} /// Leaderboard containing number of wins by address
+        pub let fatigueModeOn: Bool /// Fatigue mode is a game rule limiting usage of top shots by tier
 
         init (id: String, name: String, runStart: UInt64, runEnd: UInt64, fatigueModeOn: Bool) {
             if let fastBreakRun = FastBreak.fastBreakRunByID[id] {
@@ -135,18 +168,22 @@ pub contract FastBreak: NonFungibleToken {
     }
 
     /// A single Game of Fast Break
+    /// A Fast Break is played on any day NBA games are scheduled
+    /// It is the intention of this contract to allow private & public Fast Break games
+    /// A private Fast Break is visible on-chain but is restricted to private accounts
+    /// A public Fast Break can be played by custodial and non-custodial accounts
     ///
     pub struct FastBreakGame {
-        pub let id: String
-        pub let name: String
-        pub let isPublic: Bool
-        pub let submissionDeadline: UInt64
-        pub let numPlayers: UInt64
-        pub var status: FastBreak.GameStatus
-        pub var winner: Address?
-        pub var submissions: {Address: FastBreak.FastBreakSubmission}
-        pub let fastBreakRunID: String
-        pub var stats: [FastBreakStat]
+        pub let id: String /// The off-chain uuid of the Fast Break
+        pub let name: String /// The name of the Fast Break (eg FB0, FB1, FB2)
+        pub let isPublic: Bool /// Indicates if the Fast Break is open to non-custodial play.
+        pub let submissionDeadline: UInt64 /// The block timestamp restricting submission to the Fast Break
+        pub let numPlayers: UInt64 /// The number of top shots a player should submit to the Fast Break
+        pub var status: FastBreak.GameStatus /// The game status
+        pub var winner: Address? /// The address of the winner of Fast Break
+        pub var submissions: {Address: FastBreak.FastBreakSubmission} /// Map of each submission to the Fast break
+        pub let fastBreakRunID: String /// The off-chain uuid of the Fast Break Run containing this Fast Break
+        pub var stats: [FastBreakStat] /// The NBA statistical requirements for this Fast Break
 
         init (
             id: String,
@@ -212,7 +249,7 @@ pub contract FastBreak: NonFungibleToken {
             self.submissions[submission.accountAddress] = submission
         }
 
-        /// Update the Fast Break score of a account
+        /// Update the Fast Break score of an account
         ///
         access(contract) fun updateScore(accountAddress: Address, points: UInt64, win: Bool): Bool {
             var isNewWin = false
@@ -251,15 +288,18 @@ pub contract FastBreak: NonFungibleToken {
     }
 
     /// A statistical structure used in Fast Break Games
+    /// This structure names the NBA statistic top shots must match or exceed
+    /// An example is points as the statistic and 30 as the value
+    /// A top shot or group of top shots must meet or exceed 30 points
     ///
     pub struct FastBreakStat {
         pub let name: String
-        pub let type: String
+        pub let type: FastBreak.StatisticType
         pub let valueNeeded: UInt64
 
         init (
             name: String,
-            type: String,
+            type: FastBreak.StatisticType,
             valueNeeded: UInt64
         ) {
             self.name = name
@@ -319,11 +359,11 @@ pub contract FastBreak: NonFungibleToken {
     ///
     pub resource NFT: NonFungibleToken.INFT {
         pub let id: UInt64
-        pub let fastBreakGameID: String
-        pub let serialNumber: UInt64
-        pub let mintingDate: UInt64
-        pub let mintedTo: Address
-        pub let topShots: [UInt64]
+        pub let fastBreakGameID: String /// The uuid of the Fast Break Game
+        pub let serialNumber: UInt64 /// Each account mints game tokens from 1 => n
+        pub let mintingDate: UInt64 /// The block timestamp of the tokens minting
+        pub let mintedTo: Address /// The address of the minter. Used for composability.
+        pub let topShots: [UInt64] /// The top shot ids of the game tokens submission
 
         destroy() {
             emit FastBreakNFTBurned(id: self.id, serialNumber: self.serialNumber)
@@ -535,7 +575,7 @@ pub contract FastBreak: NonFungibleToken {
         )
         pub fun updateFastBreakGame(id: String, status: UInt8, winner: Address?)
         pub fun updateFastBreakScore(fastBreakGameID: String, accountAddress: Address, points: UInt64, win: Bool)
-        pub fun addStatToFastBreakGame(fastBreakGameID: String, name: String, type: String, valueNeeded: UInt64)
+        pub fun addStatToFastBreakGame(fastBreakGameID: String, name: String, rawType: UInt8, valueNeeded: UInt64)
     }
 
     /// Fast Break Daemon game oracle implementation
@@ -603,11 +643,12 @@ pub contract FastBreak: NonFungibleToken {
 
         /// Add a Fast Break Statistic to a game of Fast Break during game creation
         ///
-        pub fun addStatToFastBreakGame(fastBreakGameID: String, name: String, type: String, valueNeeded: UInt64) {
+        pub fun addStatToFastBreakGame(fastBreakGameID: String, name: String, rawType: UInt8, valueNeeded: UInt64) {
             let fastBreakGame: &FastBreak.FastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)!
+            let statType: FastBreak.StatisticType = FastBreak.StatisticType(rawValue: rawType)!
             let fastBreakStat : FastBreak.FastBreakStat = FastBreak.FastBreakStat(
                 name: name,
-                type: type,
+                type: statType,
                 valueNeeded: valueNeeded
             )
 
@@ -615,7 +656,7 @@ pub contract FastBreak: NonFungibleToken {
             emit FastBreakGameStatAdded(
                 fastBreakGameID: fastBreakGame.id,
                 name: fastBreakStat.name,
-                type: fastBreakStat.type,
+                type: fastBreakStat.type.rawValue,
                 valueNeeded: fastBreakStat.valueNeeded
             )
         }
