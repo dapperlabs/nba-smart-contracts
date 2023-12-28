@@ -33,19 +33,13 @@ pub contract FastBreak: NonFungibleToken {
     )
     pub event FastBreakGameStatusChange(id: String, newRawStatus: UInt8)
     pub event FastBreakNFTBurned(id: UInt64, serialNumber: UInt64)
-    pub event FastBreakNFTMinted(
+    pub event FastBreakGameTokenMinted(
         id: UInt64,
         fastBreakGameID: String,
         serialNumber: UInt64,
         mintingDate: UInt64,
         topShots: [UInt64],
         mintedTo: Address
-    )
-    pub event FastBreakSubmissionSent(
-        wallet: Address,
-        submittedAt: UInt64,
-        fastBreakGameID: String,
-        topShots: [UInt64]
     )
     pub event FastBreakGameWinner(
         wallet: Address?,
@@ -62,10 +56,10 @@ pub contract FastBreak: NonFungibleToken {
 
     /// Named Paths
     ///
-    pub let CollectionStoragePath:  StoragePath
-    pub let CollectionPublicPath:   PublicPath
-    pub let OracleStoragePath:       StoragePath
-    pub let OraclePrivatePath:      PrivatePath
+    pub let CollectionStoragePath:      StoragePath
+    pub let CollectionPublicPath:       PublicPath
+    pub let OracleStoragePath:          StoragePath
+    pub let OraclePrivatePath:          PrivatePath
 
     /// Contract variables
     ///
@@ -88,8 +82,8 @@ pub contract FastBreak: NonFungibleToken {
 
     /// Metadata Dictionaries
     ///
-    access(self) let fastBreakRunByID:        {String: FastBreakRun}
-    access(self) let fastBreakGameByID:           {String: FastBreakGame}
+    access(self) let fastBreakRunByID:      {String: FastBreakRun}
+    access(self) let fastBreakGameByID:     {String: FastBreakGame}
 
     /// A top-level Fast Break Run, the container for Fast Break Games
     ///
@@ -295,13 +289,6 @@ pub contract FastBreak: NonFungibleToken {
             self.submittedAt = UInt64(getCurrentBlock().timestamp)
             self.points = 0
             self.win = false
-
-            emit FastBreakSubmissionSent(
-                wallet: self.wallet,
-                submittedAt: self.submittedAt,
-                fastBreakGameID: self.fastBreakGameID,
-                topShots: self.topShots
-            )
         }
 
         /// Set the points of a submission
@@ -359,7 +346,7 @@ pub contract FastBreak: NonFungibleToken {
             self.topShots = topShots
             self.mintedTo = mintedTo
 
-            emit FastBreakNFTMinted(
+            emit FastBreakGameTokenMinted(
                 id: self.id,
                 fastBreakGameID: self.fastBreakGameID,
                 serialNumber: self.serialNumber,
@@ -547,7 +534,6 @@ pub contract FastBreak: NonFungibleToken {
             numPlayers: UInt64
         )
         pub fun updateFastBreakGame(id: String, status: UInt8, winner: Address?)
-        pub fun submitFastBreak(wallet: Address, submission: FastBreak.FastBreakSubmission)
         pub fun updateFastBreakScore(fastBreakGameID: String, wallet: Address, points: UInt64, win: Bool)
         pub fun addStatToFastBreakGame(fastBreakGameID: String, name: String, type: String, valueNeeded: UInt64)
     }
@@ -642,13 +628,6 @@ pub contract FastBreak: NonFungibleToken {
 
             fastBreakGame.update(status: fastBreakStatus, winner: winner)
             emit FastBreakGameStatusChange(id: fastBreakGame.id, newRawStatus: fastBreakGame.status.rawValue)
-        }
-
-        /// Submit a Fast Break on behalf of a wallet
-        ///
-        pub fun submitFastBreak(wallet: Address, submission: FastBreak.FastBreakSubmission) {
-            let fastBreakGame: &FastBreak.FastBreakGame = (&FastBreak.fastBreakGameByID[submission.fastBreakGameID] as &FastBreak.FastBreakGame?)!
-            fastBreakGame.submitFastBreak(submission: submission)
         }
 
         /// Updates the submission scores of a Fast Break
