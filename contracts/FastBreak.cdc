@@ -498,6 +498,7 @@ pub contract FastBreak: NonFungibleToken {
         }
 
         /// Play the game of Fast Break with an array of Top Shots
+        /// Each account must own a top shot collection to play fast break
         ///
         pub fun play(
             fastBreakGameID: String,
