@@ -524,10 +524,12 @@ pub contract FastBreak: NonFungibleToken {
                 .borrow<&{TopShot.MomentCollectionPublic}>() ?? panic("player does not have top shot collection")
 
             /// Must own Top Shots to play Fast Break
+            /// more efficient to borrow ref than to loop
+            ///
             for flowId in topShots {
-                if !collectionRef.getIDs().contains(flowId) {
-                    panic("top shot not owned in collection")
-                }
+                let topShotRef = collectionRef.borrowMoment(id: flowId)
+                    ?? panic("top shot not owned in collection")
+
             }
 
             let fastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)
