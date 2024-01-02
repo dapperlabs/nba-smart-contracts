@@ -4,7 +4,6 @@ transaction(
     id: String,
     name: String,
     fastBreakRunID: String,
-    isPublic: Bool,
     submissionDeadline: UInt64,
     numPlayers: UInt64
 ) {
@@ -22,7 +21,6 @@ transaction(
             id: id,
             name: name,
             fastBreakRunID: fastBreakRunID,
-            isPublic: isPublic,
             submissionDeadline: submissionDeadline,
             numPlayers: numPlayers
         )

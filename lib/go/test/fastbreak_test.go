@@ -176,7 +176,6 @@ func TestFastBreak(t *testing.T) {
 		//fast break
 		fastBreakID                  = "def-456"
 		fastBreakName                = "fb0"
-		isPublic                     = true
 		submissionDeadline           = tomorrow.Unix()
 		numPlayers            uint64 = 1
 		fastBreakStartedState uint8  = 1
@@ -240,14 +239,11 @@ func TestFastBreak(t *testing.T) {
 		arg2Err := tx.AddArgument(cdcFbrId)
 		assert.Nil(t, arg2Err)
 
-		arg3Err := tx.AddArgument(cadence.NewBool(isPublic))
+		arg3Err := tx.AddArgument(cadence.NewUInt64(uint64(submissionDeadline)))
 		assert.Nil(t, arg3Err)
 
-		arg4Err := tx.AddArgument(cadence.NewUInt64(uint64(submissionDeadline)))
+		arg4Err := tx.AddArgument(cadence.NewUInt64(numPlayers))
 		assert.Nil(t, arg4Err)
-
-		arg5Err := tx.AddArgument(cadence.NewUInt64(numPlayers))
-		assert.Nil(t, arg5Err)
 
 		signAndSubmit(
 			t, b, tx,

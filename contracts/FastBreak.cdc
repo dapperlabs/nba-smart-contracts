@@ -40,7 +40,6 @@ pub contract FastBreak: NonFungibleToken {
         id: String,
         name: String,
         fastBreakRunID: String,
-        isPublic: Bool,
         submissionDeadline: UInt64,
         numPlayers: UInt64
     )
@@ -126,7 +125,7 @@ pub contract FastBreak: NonFungibleToken {
         pub var status: FastBreak.RunStatus /// The status of the run
         pub let runStart: UInt64 /// The block timestamp starting the run
         pub let runEnd: UInt64 /// The block timestamp ending the run
-        pub let leaderboard: {Address: UInt64} /// Leaderboard containing number of wins by address
+        pub let runWinCount: {Address: UInt64} /// win count by address
         pub let fatigueModeOn: Bool /// Fatigue mode is a game rule limiting usage of top shots by tier
 
         init (id: String, name: String, runStart: UInt64, runEnd: UInt64, fatigueModeOn: Bool) {
@@ -136,7 +135,7 @@ pub contract FastBreak: NonFungibleToken {
                 self.status = fastBreakRun.status
                 self.runStart = fastBreakRun.runStart
                 self.runEnd = fastBreakRun.runEnd
-                self.leaderboard = fastBreakRun.leaderboard
+                self.runWinCount = fastBreakRun.runWinCount
                 self.fatigueModeOn = fastBreakRun.fatigueModeOn
             } else {
                 self.id = id
@@ -144,7 +143,7 @@ pub contract FastBreak: NonFungibleToken {
                 self.status = FastBreak.RunStatus.SCHEDULED
                 self.runStart = runStart
                 self.runEnd = runEnd
-                self.leaderboard = {}
+                self.runWinCount = {}
                 self.fatigueModeOn = fatigueModeOn
             }
         }
@@ -153,11 +152,11 @@ pub contract FastBreak: NonFungibleToken {
         ///
         access(contract) fun updateStatus(status: FastBreak.RunStatus) { self.status = status }
 
-        /// Write a new win to the Fast Break Run leaderboard
+        /// Write a new win to the Fast Break Run runWinCount
         ///
-        access(contract) fun incrementLeaderboardWins(accountAddress: Address) {
-            let leaderboard = self.leaderboard
-            leaderboard[accountAddress] = (leaderboard[accountAddress] ?? 0) + 1
+        access(contract) fun incrementRunWinCount(accountAddress: Address) {
+            let runWinCount = self.runWinCount
+            runWinCount[accountAddress] = (runWinCount[accountAddress] ?? 0) + 1
         }
     }
 
@@ -176,7 +175,6 @@ pub contract FastBreak: NonFungibleToken {
     pub struct FastBreakGame {
         pub let id: String /// The off-chain uuid of the Fast Break
         pub let name: String /// The name of the Fast Break (eg FB0, FB1, FB2)
-        pub let isPublic: Bool /// Indicates if the Fast Break is open to non-custodial play.
         pub let submissionDeadline: UInt64 /// The block timestamp restricting submission to the Fast Break
         pub let numPlayers: UInt64 /// The number of top shots a player should submit to the Fast Break
         pub var status: FastBreak.GameStatus /// The game status
@@ -189,14 +187,12 @@ pub contract FastBreak: NonFungibleToken {
             id: String,
             name: String,
             fastBreakRunID: String,
-            isPublic: Bool,
             submissionDeadline: UInt64,
             numPlayers: UInt64
         ) {
             if let fb = FastBreak.fastBreakGameByID[id] {
                 self.id = fb.id
                 self.name = fb.name
-                self.isPublic = fb.isPublic
                 self.submissionDeadline = fb.submissionDeadline
                 self.numPlayers = fb.numPlayers
                 self.status = fb.status
@@ -207,7 +203,6 @@ pub contract FastBreak: NonFungibleToken {
             } else {
                 self.id = id
                 self.name = name
-                self.isPublic = isPublic
                 self.submissionDeadline = submissionDeadline
                 self.numPlayers = numPlayers
                 self.status = FastBreak.GameStatus.SCHEDULED
@@ -506,7 +501,6 @@ pub contract FastBreak: NonFungibleToken {
         ): @FastBreak.NFT {
             pre {
                 FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "no such fast break game"
-                FastBreak.fastBreakGameByID[fastBreakGameID]!.isPublic: "fast break game is private"
             }
 
             let acct = getAccount(self.owner?.address!)
@@ -570,7 +564,6 @@ pub contract FastBreak: NonFungibleToken {
             id: String,
             name: String,
             fastBreakRunID: String,
-            isPublic: Bool,
             submissionDeadline: UInt64,
             numPlayers: UInt64
         )
@@ -619,7 +612,6 @@ pub contract FastBreak: NonFungibleToken {
             id: String,
             name: String,
             fastBreakRunID: String,
-            isPublic: Bool,
             submissionDeadline: UInt64,
             numPlayers: UInt64
         ) {
@@ -627,7 +619,6 @@ pub contract FastBreak: NonFungibleToken {
                 id: id,
                 name: name,
                 fastBreakRunID: fastBreakRunID,
-                isPublic: isPublic,
                 submissionDeadline: submissionDeadline,
                 numPlayers: numPlayers
             )
@@ -636,7 +627,6 @@ pub contract FastBreak: NonFungibleToken {
                 id: fastBreakGame.id,
                 name: fastBreakGame.name,
                 fastBreakRunID: fastBreakGame.fastBreakRunID,
-                isPublic: fastBreakGame.isPublic,
                 submissionDeadline: fastBreakGame.submissionDeadline,
                 numPlayers: fastBreakGame.numPlayers
             )
@@ -682,7 +672,7 @@ pub contract FastBreak: NonFungibleToken {
                 let fastBreakRun: &FastBreak.FastBreakRun =
                     (&FastBreak.fastBreakRunByID[fastBreakGame.fastBreakRunID] as &FastBreak.FastBreakRun?)!
 
-                fastBreakRun.incrementLeaderboardWins(accountAddress: accountAddress)
+                fastBreakRun.incrementRunWinCount(accountAddress: accountAddress)
 
                 let submission = fastBreakGame.submissions[accountAddress]!
 
