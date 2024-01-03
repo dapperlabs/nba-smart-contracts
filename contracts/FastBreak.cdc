@@ -268,11 +268,7 @@ pub contract FastBreak: NonFungibleToken {
     /// Validate Fast Break Submission
     ///
     pub fun isValidSubmission(submissionDeadline: UInt64): Bool {
-        if submissionDeadline > UInt64(getCurrentBlock().timestamp) {
-            return true
-        }
-
-        return false
+        return submissionDeadline > UInt64(getCurrentBlock().timestamp) 
     }
 
     /// Get a Fast Break Game by Id
