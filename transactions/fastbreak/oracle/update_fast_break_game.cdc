@@ -1,6 +1,6 @@
 import FastBreak from 0xFASTBREAKADDRESS
 
-transaction(id: String, status: UInt8, winner: Address?) {
+transaction(id: String, status: UInt8, winner: UInt64) {
 
     let oracleRef: &FastBreak.FastBreakDaemon
 

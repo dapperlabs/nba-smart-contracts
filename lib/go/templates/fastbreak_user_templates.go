@@ -5,8 +5,8 @@ import (
 )
 
 const (
-	fastBreakSetupGameFilename = "fastbreak/user/setup_game.cdc"
-	fastBreakPlayFilename      = "fastbreak/user/play.cdc"
+	fastBreakSetupGameFilename = "fastbreak/player/create_player.cdc"
+	fastBreakPlayFilename      = "fastbreak/player/play.cdc"
 )
 
 func GenerateFastBreakCreateAccountScript(env Environment) []byte {

@@ -98,7 +98,6 @@ func TestFastBreak(t *testing.T) {
 			Source: string(fastBreakCode),
 		},
 	})
-	fmt.Println("blah")
 	fmt.Println(fastBreakAddrErr)
 	assert.Nil(t, fastBreakAddrErr)
 	env.FastBreakAddress = fastBreakAddr.String()
@@ -179,6 +178,7 @@ func TestFastBreak(t *testing.T) {
 		submissionDeadline           = tomorrow.Unix()
 		numPlayers            uint64 = 1
 		fastBreakStartedState uint8  = 1
+		playerId              uint64
 
 		//fast break stat
 		statName           = "POINTS"
@@ -306,11 +306,24 @@ func TestFastBreak(t *testing.T) {
 
 	t.Run("player should be able to setup game wallet", func(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateFastBreakCreateAccountScript(env), jerAddress)
+		playerName, playerNameErr := cadence.NewString("houseofhufflepuff")
+		assert.Nil(t, playerNameErr)
+
+		arg0Err := tx.AddArgument(playerName)
+		assert.Nil(t, arg0Err)
+
+		arg1Err := tx.AddArgument(cadence.NewUInt64(500))
+		assert.Nil(t, arg1Err)
+
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
 			false,
 		)
+
+		result := executeScriptAndCheck(t, b, templates.GenerateCurrentPlayerScript(env), nil)
+		playerId = result.ToGoValue().(uint64)
+		assert.Equal(t, cadence.NewUInt64(1), result)
 	})
 
 	// mint moment 1 to jer
@@ -357,12 +370,12 @@ func TestFastBreak(t *testing.T) {
 	t.Run("player should be able to play fast break", func(t *testing.T) {
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePlayFastBreakScript(env), jerAddress)
 		cdcId, _ := cadence.NewString(fastBreakID)
-		ids := []cadence.Value{cadence.NewUInt64(1)}
+		cdcTopShots := []cadence.Value{cadence.NewUInt64(1)}
 
 		arg0Err := tx.AddArgument(cdcId)
 		assert.Nil(t, arg0Err)
 
-		arg1Err := tx.AddArgument(cadence.NewArray(ids))
+		arg1Err := tx.AddArgument(cadence.NewArray(cdcTopShots))
 		assert.Nil(t, arg1Err)
 
 		signAndSubmit(
@@ -407,7 +420,7 @@ func TestFastBreak(t *testing.T) {
 		arg1Err := tx.AddArgument(cdcState)
 		assert.Nil(t, arg1Err)
 
-		arg2Err := tx.AddArgument(cadence.NewAddress(jerAddress))
+		arg2Err := tx.AddArgument(cadence.NewUInt64(playerId))
 		assert.Nil(t, arg2Err)
 
 		signAndSubmit(
@@ -425,7 +438,7 @@ func TestFastBreak(t *testing.T) {
 		arg0Err := tx.AddArgument(cdcId)
 		assert.Nil(t, arg0Err)
 
-		arg1Err := tx.AddArgument(cadence.NewAddress(jerAddress))
+		arg1Err := tx.AddArgument(cadence.NewUInt64(playerId))
 		assert.Nil(t, arg1Err)
 
 		arg2Err := tx.AddArgument(cadence.NewUInt64(100))
@@ -440,7 +453,12 @@ func TestFastBreak(t *testing.T) {
 			false,
 		)
 
-		result := executeScriptAndCheck(t, b, templates.GenerateGetScoreByWalletScript(env), [][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(cadence.Address(jerAddress))})
+		result := executeScriptAndCheck(
+			t,
+			b,
+			templates.GenerateGetPlayerScoreScript(env),
+			[][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(cadence.UInt64(playerId))},
+		)
 		assert.Equal(t, cadence.NewUInt64(100), result)
 	})
 

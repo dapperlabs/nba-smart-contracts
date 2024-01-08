@@ -1,7 +1,8 @@
 import NonFungibleToken from 0xNFTADDRESS
 import FastBreak from 0xFASTBREAKADDRESS
 
-transaction {
+transaction(playerName: String, avatar: UInt64) {
+
     prepare(signer: AuthAccount) {
         if signer.borrow<&FastBreak.Collection>(from: FastBreak.CollectionStoragePath) == nil {
 
@@ -12,6 +13,16 @@ transaction {
                 target: FastBreak.CollectionStoragePath
             )
 
+        }
+
+        if signer.borrow<&FastBreak.Player>(from: FastBreak.PlayerStoragePath) == nil {
+
+            let player <- FastBreak.createPlayer(playerName: playerName, avatar: avatar)
+            signer.save(<-player, to: FastBreak.PlayerStoragePath)
+            signer.link<&FastBreak.Player{FastBreak.FastBreakPlayer}>(
+                FastBreak.PlayerPrivatePath,
+                target: FastBreak.PlayerStoragePath
+            )
         }
     }
 }

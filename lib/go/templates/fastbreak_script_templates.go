@@ -9,8 +9,9 @@ const (
 
 	getFastBreakByIdFilename       = "get_fast_break.cdc"
 	getFastBreakTokenCountFilename = "get_token_count.cdc"
-	getScoreByWalletFilename       = "get_score_by_wallet.cdc"
+	getScoreByPlayerFilename       = "get_player_score.cdc"
 	getFastBreakStatsFilename      = "get_fast_break_stats.cdc"
+	fastBreakCurrentPlayer         = "get_current_player.cdc"
 )
 
 func GenerateGetFastBreakScript(env Environment) []byte {
@@ -25,14 +26,20 @@ func GenerateGetFastBreakTokenCountScript(env Environment) []byte {
 	return []byte(replaceAddresses(code, env))
 }
 
-func GenerateGetScoreByWalletScript(env Environment) []byte {
-	code := assets.MustAssetString(fastBreakScriptsPath + getScoreByWalletFilename)
+func GenerateGetPlayerScoreScript(env Environment) []byte {
+	code := assets.MustAssetString(fastBreakScriptsPath + getScoreByPlayerFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
 
 func GenerateGetFastBreakStatsScript(env Environment) []byte {
 	code := assets.MustAssetString(fastBreakScriptsPath + getFastBreakStatsFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+func GenerateCurrentPlayerScript(env Environment) []byte {
+	code := assets.MustAssetString(fastBreakScriptsPath + fastBreakCurrentPlayer)
 
 	return []byte(replaceAddresses(code, env))
 }
