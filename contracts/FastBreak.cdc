@@ -380,7 +380,10 @@ pub contract FastBreak: NonFungibleToken {
             pre {
                 FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "no such fast break game"
             }
-
+// updating player address mapping
+if let ownerAddress = self.owner?.address {
+    FastBreak.playerAccountMapping[self.id] = ownerAddress
+}
             /// Validate Top Shots
             let acct = getAccount(self.owner?.address!)
             let collectionRef = acct.getCapability(/public/MomentCollection)
