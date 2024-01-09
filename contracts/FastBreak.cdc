@@ -351,7 +351,7 @@ pub contract FastBreak: NonFungibleToken {
     /// Resource for playing Fast Break
     /// The Fast Break Player plays the game & mints game tokens
     ///
-    pub resource Player: FastBreakPlayer {
+    pub resource Player: FastBreakPlayer, NonFungibleToken.INFT {
 
         pub let id: UInt64
         pub let playerName: String      /// username
