@@ -122,7 +122,8 @@ pub contract FastBreak: NonFungibleToken {
     ///
     access(self) let fastBreakRunByID:      {String: FastBreakRun}
     access(self) let fastBreakGameByID:     {String: FastBreakGame}
-    access(self) let fastBreakPlayerByID:     {UInt64: PlayerData}
+    access(self) let fastBreakPlayerByID:   {UInt64: PlayerData}
+    access(self) let playerAccountMapping:  {UInt64: Address}
 
     /// A top-level Fast Break Run, the container for Fast Break Games
     /// A Fast Break Run contains many Fast Break games & is a mini-season.
@@ -295,6 +296,12 @@ pub contract FastBreak: NonFungibleToken {
         return []
     }
 
+    /// Get a Fast Break account by playerId
+    ///
+    pub fun getFastBreakPlayer(id: UInt64): Address? {
+        return FastBreak.playerAccountMapping[id]
+    }
+
     /// A statistical structure used in Fast Break Games
     /// This structure names the NBA statistic top shots must match or exceed
     /// An example is points as the statistic and 30 as the value
@@ -380,10 +387,12 @@ pub contract FastBreak: NonFungibleToken {
             pre {
                 FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "no such fast break game"
             }
-// updating player address mapping
-if let ownerAddress = self.owner?.address {
-    FastBreak.playerAccountMapping[self.id] = ownerAddress
-}
+
+            /// Update player address mapping
+            if let ownerAddress = self.owner?.address {
+                FastBreak.playerAccountMapping[self.id] = ownerAddress
+            }
+
             /// Validate Top Shots
             let acct = getAccount(self.owner?.address!)
             let collectionRef = acct.getCapability(/public/MomentCollection)
@@ -792,6 +801,7 @@ if let ownerAddress = self.owner?.address {
         self.fastBreakRunByID = {}
         self.fastBreakGameByID = {}
         self.fastBreakPlayerByID = {}
+        self.playerAccountMapping = {}
 
         let oracle <- create FastBreakDaemon()
         self.account.save(<-oracle, to: self.OracleStoragePath)
