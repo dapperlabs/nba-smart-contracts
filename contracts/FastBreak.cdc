@@ -249,7 +249,7 @@ pub contract FastBreak: NonFungibleToken {
         ///
         access(contract) fun submitFastBreak(submission: FastBreak.FastBreakSubmission) {
             pre {
-                FastBreak.isValidSubmission(submissionDeadline: self.submissionDeadline) : "submission missed deadline"
+                FastBreak.isValidSubmission(submissionDeadline: self.submissionDeadline) : "Submission missed deadline"
             }
 
             self.submissions[submission.playerId] = submission
@@ -261,7 +261,7 @@ pub contract FastBreak: NonFungibleToken {
             let submissions = self.submissions
 
             let submission: FastBreak.FastBreakSubmission = submissions[playerId]
-                ?? panic("unable to find fast break submission for playerId")
+                ?? panic("Unable to find fast break submission for playerId: ".concat(playerId.toString()))
 
             submission.setPoints(points: points, win: win)
 
@@ -385,7 +385,7 @@ pub contract FastBreak: NonFungibleToken {
             topShots: [UInt64]
         ): @FastBreak.NFT {
             pre {
-                FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "no such fast break game"
+                FastBreak.fastBreakGameByID.containsKey(fastBreakGameID): "No such fast break game with gameId: ".concat(fastBreakGameID)
             }
 
             /// Update player address mapping
@@ -396,23 +396,23 @@ pub contract FastBreak: NonFungibleToken {
             /// Validate Top Shots
             let acct = getAccount(self.owner?.address!)
             let collectionRef = acct.getCapability(/public/MomentCollection)
-                .borrow<&{TopShot.MomentCollectionPublic}>() ?? panic("player does not have top shot collection")
+                .borrow<&{TopShot.MomentCollectionPublic}>() ?? panic("Player does not have top shot collection")
 
             /// Must own Top Shots to play Fast Break
             /// more efficient to borrow ref than to loop
             ///
             for flowId in topShots {
                 let topShotRef = collectionRef.borrowMoment(id: flowId)
-                    ?? panic("top shot not owned in collection")
+                    ?? panic("Top shot not owned in collection with flowId: ".concat(flowId.toString()))
             }
 
             let fastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)
-                 ?? panic("fast break does not exist")
+                 ?? panic("Fast break does not exist with gameId: ".concat(fastBreakGameID))
 
             /// Cannot mint two tokens for the same Fast Break
             let existingSubmission = fastBreakGame.getFastBreakSubmissionByPlayerId(playerId: self.id)
             if existingSubmission != nil {
-                panic("account already submitted to fast break")
+                panic("Account already submitted to fast break with playerId: ".concat(self.id.toString()))
             }
 
             let fastBreakSubmission = FastBreak.FastBreakSubmission(
@@ -497,7 +497,7 @@ pub contract FastBreak: NonFungibleToken {
             mintedTo: UInt64,
         ) {
             pre {
-                FastBreak.fastBreakGameByID[fastBreakGameID] != nil: "no such fast break"
+                FastBreak.fastBreakGameByID[fastBreakGameID] != nil: "No such fast break with gameId: ".concat(fastBreakGameID)
             }
 
             self.id = self.uuid
@@ -564,7 +564,8 @@ pub contract FastBreak: NonFungibleToken {
         pub var ownedNFTs: @{UInt64: NonFungibleToken.NFT}
 
         pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT {
-            let token <- self.ownedNFTs.remove(key: withdrawID) ?? panic("Could not find a fast break with the given ID in the Fast Break collection")
+            let token <- self.ownedNFTs.remove(key: withdrawID) 
+                ?? panic("Could not find a fast break with the given ID in the Fast Break collection. Fast break Id: ".concat(withdrawID.toString()))
 
             emit Withdraw(id: token.id, from: self.owner?.address)
 
@@ -683,10 +684,10 @@ pub contract FastBreak: NonFungibleToken {
         ///
         pub fun updateFastBreakRunStatus(id: String, status: UInt8) {
             let fastBreakRun = (&FastBreak.fastBreakRunByID[id] as &FastBreak.FastBreakRun?)
-                ?? panic("fast break run does not exist")
+                ?? panic("Fast break run does not exist with Id: ".concat(id))
 
             let runStatus: FastBreak.RunStatus = FastBreak.RunStatus(rawValue: status)
-                ?? panic("run status does not exist")
+                ?? panic("Run status does not exist with rawValue: ".concat(status.toString()))
 
             fastBreakRun.updateStatus(status: runStatus)
 
@@ -724,10 +725,10 @@ pub contract FastBreak: NonFungibleToken {
         pub fun addStatToFastBreakGame(fastBreakGameID: String, name: String, rawType: UInt8, valueNeeded: UInt64) {
 
             let fastBreakGame: &FastBreak.FastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)
-                ?? panic("fast break does not exist")
+                ?? panic("Fast break does not exist with Id: ".concat(fastBreakGameID))
 
             let statType: FastBreak.StatisticType = FastBreak.StatisticType(rawValue: rawType)
-                ?? panic("fast break stat type does not exist")
+                ?? panic("Fast break stat type does not exist with rawType: ".concat(rawType.toString()))
 
             let fastBreakStat : FastBreak.FastBreakStat = FastBreak.FastBreakStat(
                 name: name,
@@ -750,10 +751,10 @@ pub contract FastBreak: NonFungibleToken {
         pub fun updateFastBreakGame(id: String, status: UInt8, winner: UInt64) {
 
             let fastBreakGame: &FastBreak.FastBreakGame = (&FastBreak.fastBreakGameByID[id] as &FastBreak.FastBreakGame?)
-                ?? panic("fast break does not exist")
+                ?? panic("Fast break does not exist with Id: ".concat(id))
 
             let fastBreakStatus: FastBreak.GameStatus = FastBreak.GameStatus(rawValue: status)
-                ?? panic("fast break status does not exist")
+                ?? panic("Fast break status does not exist with rawValue: ".concat(status.toString()))
 
             fastBreakGame.update(status: fastBreakStatus, winner: winner)
 
@@ -765,13 +766,13 @@ pub contract FastBreak: NonFungibleToken {
         ///
         pub fun updateFastBreakScore(fastBreakGameID: String, playerId: UInt64, points: UInt64, win: Bool) {
             let fastBreakGame: &FastBreak.FastBreakGame = (&FastBreak.fastBreakGameByID[fastBreakGameID] as &FastBreak.FastBreakGame?)
-                ?? panic("fast break does not exist")
+                ?? panic("Fast break does not exist with Id: ".concat(fastBreakGameID))
 
             let isNewWin = fastBreakGame.updateScore(playerId: playerId, points: points, win: win)
 
             if isNewWin {
                 let fastBreakRun = (&FastBreak.fastBreakRunByID[fastBreakGame.fastBreakRunID] as &FastBreak.FastBreakRun?)
-                    ?? panic("could not obtain reference to fast break run")
+                    ?? panic("Could not obtain reference to fast break run with Id: ".concat(fastBreakGame.fastBreakRunID))
 
                 fastBreakRun.incrementRunWinCount(playerId: playerId)
 
