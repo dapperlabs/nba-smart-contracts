@@ -22,6 +22,7 @@ const (
 	placeholderForwardingAddress      = "0xFORWARDINGADDRESS"
 	placeholderMetadataViewsAddress   = "0xMETADATAVIEWSADDRESS"
 	placeholderTopShotLockingAddress  = "0xTOPSHOTLOCKINGADDRESS"
+	placeholderFastBreakAddress       = "0xFASTBREAKADDRESS"
 )
 
 type Environment struct {
@@ -33,6 +34,7 @@ type Environment struct {
 	TopShotMarketAddress   string
 	TopShotMarketV3Address string
 	ShardedAddress         string
+	FastBreakAddress       string
 	AdminReceiverAddress   string
 	DUCAddress             string
 	ForwardingAddress      string
@@ -133,6 +135,12 @@ func replaceAddresses(code string, env Environment) string {
 		code,
 		placeholderTopShotLockingAddress,
 		withHexPrefix(env.TopShotLockingAddress),
+	)
+
+	code = strings.ReplaceAll(
+		code,
+		placeholderFastBreakAddress,
+		withHexPrefix(env.FastBreakAddress),
 	)
 
 	return code

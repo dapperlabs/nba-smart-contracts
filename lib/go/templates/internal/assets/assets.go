@@ -24,6 +24,18 @@
 // ../../../transactions/admin/transfer_admin.cdc (606B)
 // ../../../transactions/admin/unlock_all_moments.cdc (422B)
 // ../../../transactions/admin/update_tagline.cdc (1.243kB)
+// ../../../transactions/fastbreak/oracle/add_stat_to_game.cdc (612B)
+// ../../../transactions/fastbreak/oracle/create_game.cdc (691B)
+// ../../../transactions/fastbreak/oracle/create_run.cdc (659B)
+// ../../../transactions/fastbreak/oracle/score_fast_break_submission.cdc (595B)
+// ../../../transactions/fastbreak/oracle/update_fast_break_game.cdc (514B)
+// ../../../transactions/fastbreak/player/create_player.cdc (1.103kB)
+// ../../../transactions/fastbreak/player/play.cdc (912B)
+// ../../../transactions/fastbreak/scripts/get_current_player.cdc (103B)
+// ../../../transactions/fastbreak/scripts/get_fast_break.cdc (143B)
+// ../../../transactions/fastbreak/scripts/get_fast_break_stats.cdc (175B)
+// ../../../transactions/fastbreak/scripts/get_player_score.cdc (299B)
+// ../../../transactions/fastbreak/scripts/get_token_count.cdc (102B)
 // ../../../transactions/market/change_percentage.cdc (942B)
 // ../../../transactions/market/change_price.cdc (879B)
 // ../../../transactions/market/change_receiver.cdc (810B)
@@ -649,6 +661,246 @@ func TransactionsAdminUpdate_taglineCdc() (*asset, error) {
 
 	info := bindataFileInfo{name: "../../../transactions/admin/update_tagline.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xf5, 0xb4, 0x41, 0x41, 0xce, 0xa6, 0xfd, 0x9a, 0x8f, 0xbb, 0xde, 0x56, 0x22, 0xdf, 0xc3, 0x47, 0x8a, 0x7f, 0xc1, 0xa6, 0xce, 0x6, 0xe5, 0x53, 0x6e, 0xff, 0x44, 0x3c, 0x82, 0x23, 0x59, 0x44}}
+	return a, nil
+}
+
+var _TransactionsFastbreakOracleAdd_stat_to_gameCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x51\xd1\x4a\xc3\x50\x0c\x7d\xef\x57\x84\x3d\x48\x07\xa3\xf8\x20\x22\x45\x1d\x9d\xdd\x64\x08\x2a\xeb\xfc\x80\x78\x9b\x6e\xc5\xf6\xa6\xa4\xa9\x9b\xc8\xfe\x5d\x6a\xb7\xbb\xd5\x61\x1e\x2e\x49\xee\xe1\x24\x27\x27\x2f\x2b\x16\x85\x19\xd6\x3a\x11\xc2\x0f\xc8\x84\x4b\xb8\xdc\xce\xa2\x64\x39\x59\x4c\xa3\xa7\x28\x8e\x17\xd3\x24\xf1\x3c\x15\xb4\x35\x1a\xcd\xd9\xfa\xd9\x01\xfe\x88\x25\xcd\xe3\x10\x12\x95\xdc\xae\x46\x60\xb1\xa4\x63\x25\xb8\x59\x7e\x55\x14\xc2\xdb\xdc\xea\xcd\x08\x3e\xb1\x68\xe8\x99\x28\xa5\xb4\xeb\x5d\x5f\x0d\xe1\xdb\xf3\x00\x00\x0a\x52\x60\x41\x53\xd0\x82\xb2\x10\x2e\xdc\x46\x81\xcb\x62\xa4\x92\x6d\x07\xaf\x84\x2a\x14\xf2\xd1\x18\x0d\x21\x6a\x74\x1d\x19\xc3\x8d\xd5\x96\x10\xf6\x51\x53\x91\x05\x8e\x14\xee\xa0\x45\x07\xef\x2c\xc2\x9b\xdb\xff\x27\xdc\xfb\xed\x11\xc2\xe3\x51\x82\x97\x5f\x8e\x44\x59\x70\x45\xaf\xa8\xeb\xa1\x9b\xd1\xc6\x78\x0c\x15\xda\xdc\xf8\x83\x07\x6e\x8a\x14\x2c\x2b\x74\x53\x00\x41\x28\x23\x21\x6b\x08\x94\x41\xd7\xb4\x57\x09\x42\x35\x37\x62\x68\xd0\x71\xed\x3a\x5d\xb4\x25\xd3\x28\x1d\xae\x72\xae\x22\xc0\x34\x4d\x14\x75\xc9\xb3\x53\x13\xfc\xde\x42\x67\xfe\xfc\x69\x8c\x7a\xe8\xce\xb4\xf6\xed\xf7\x9d\x7d\xfb\xa4\xff\xdb\x33\xf3\xa4\x70\xa0\x83\xae\xdd\x4f\x00\x00\x00\xff\xff\xda\xb0\x17\xf2\x64\x02\x00\x00"
+
+func TransactionsFastbreakOracleAdd_stat_to_gameCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakOracleAdd_stat_to_gameCdc,
+		"../../../transactions/fastbreak/oracle/add_stat_to_game.cdc",
+	)
+}
+
+func TransactionsFastbreakOracleAdd_stat_to_gameCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakOracleAdd_stat_to_gameCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/oracle/add_stat_to_game.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x4, 0xc1, 0x82, 0x92, 0xe8, 0x5b, 0x99, 0x70, 0x2c, 0xed, 0xbe, 0x8b, 0x67, 0x61, 0xf, 0x7a, 0x92, 0x19, 0x3e, 0xc9, 0x4d, 0x92, 0xff, 0xf5, 0xa3, 0x2e, 0x68, 0x61, 0x3b, 0x39, 0x35, 0x7}}
+	return a, nil
+}
+
+var _TransactionsFastbreakOracleCreate_gameCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x51\xc1\x6a\xe3\x30\x10\xbd\xfb\x2b\x86\x1c\x16\x07\x82\xd9\xc3\xb2\x07\xb3\xdb\xe0\xd4\x49\x09\x3d\x34\xd8\xed\x07\x4c\xe4\x71\x22\x6a\x4b\x66\x34\xa2\x29\x25\xff\x5e\x1c\xc7\x4e\x9d\xb4\x3a\x08\xe9\xcd\xf0\xde\xbc\x79\xba\x6e\x2c\x0b\xac\xd0\xc9\x82\x09\x5f\xa1\x64\x5b\xc3\xef\xc3\x2a\xc9\x9f\x17\xd9\x32\x79\x4c\xd2\x34\x5b\xe6\x79\x10\x08\xa3\x71\xa8\x44\x5b\x13\x06\x00\x00\xba\x88\x21\x17\xd6\x66\x37\x3b\xfd\x0d\xd6\x34\x46\xca\x9e\x35\xf3\x66\x9d\x8e\x6b\xce\x6f\x6b\xed\x9c\xb6\x26\x25\x2c\x2a\x6d\x28\x86\x97\xb5\x91\xbf\x7f\xce\x6c\xbe\xde\x54\xf8\x4e\xec\x7a\x3c\x98\xc2\x47\x70\xaa\x55\x24\x60\x19\x55\x45\x19\x95\x31\xfc\x1a\xa6\x8f\x86\x57\x8a\x54\x5b\xd3\xb5\x37\x4c\x0d\x32\x85\xa8\x94\xc4\x90\x78\xd9\x27\x4a\x59\x6f\xa4\x25\x84\xf3\x71\x54\x95\xd1\x40\x0a\xff\xa1\xed\x8e\xb6\x96\xd9\xbe\xfd\xfb\x59\xe1\x2e\x6c\x17\x16\x5f\x16\x18\x3d\x9d\x38\x72\xb1\x8c\x3b\xda\xa0\xec\xa7\x83\x46\x7b\xe6\x73\x68\xd0\x68\x15\x4e\xee\xad\xaf\x0a\x30\x56\xa0\x53\x01\x04\xa6\x92\x98\x8c\x22\x10\x0b\xb2\xa7\xb3\x4b\x60\x72\xd6\xb3\xa2\x49\xc7\x75\xec\x7c\xd1\x81\x94\x17\xea\xb7\x72\xeb\x22\x52\x4c\x28\x34\xcc\xf6\x80\x35\x85\xa3\x69\xda\x0c\x75\x31\x1b\x61\x5d\x8e\xed\x3d\xc6\xaf\xd3\x1c\xff\xc7\xbd\xdf\xa5\x7b\x8b\x5d\xe9\x7e\x49\xfc\xf2\x1e\x5a\x7a\xeb\xc7\xcf\x00\x00\x00\xff\xff\x23\x8b\x38\x59\xb3\x02\x00\x00"
+
+func TransactionsFastbreakOracleCreate_gameCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakOracleCreate_gameCdc,
+		"../../../transactions/fastbreak/oracle/create_game.cdc",
+	)
+}
+
+func TransactionsFastbreakOracleCreate_gameCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakOracleCreate_gameCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/oracle/create_game.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xa9, 0x37, 0xf6, 0xd9, 0x3, 0xf7, 0x11, 0x5b, 0xa6, 0xf9, 0x51, 0x11, 0x53, 0x34, 0x43, 0xce, 0x78, 0xbe, 0xd4, 0x38, 0x57, 0x2f, 0x5b, 0x8e, 0x39, 0xe0, 0xbc, 0x83, 0xf2, 0x17, 0xf1, 0x40}}
+	return a, nil
+}
+
+var _TransactionsFastbreakOracleCreate_runCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x52\xd1\x8a\x9b\x50\x10\x7d\xf7\x2b\xa6\x3e\x14\x03\x45\xfa\x50\xfa\x20\x4d\x83\x69\x12\x28\xa5\xa4\x68\xf7\x03\x26\xd7\xd1\x5c\x56\xef\xc8\x38\x97\x0d\x2c\xf9\xf7\xc5\x68\x34\x61\x37\xf3\xa0\x33\x32\x9c\x73\xe6\x1c\x6d\xd3\xb2\x28\xec\xb0\xd3\xb5\x10\x3e\x43\x29\xdc\xc0\xd7\xd3\x2e\xcd\xff\xaf\xb3\x6d\xfa\x27\xdd\x6c\xb2\x6d\x9e\x07\x41\xa0\x82\xae\x43\xa3\x96\x5d\x64\x8b\x04\x72\x15\xeb\xaa\x2f\xe0\xb0\xa1\x79\x12\xef\x72\x45\xd1\x04\x9e\x7e\x3b\xfd\xfe\xed\xf2\x65\xeb\x8a\x79\x2e\x51\x6d\xe5\xe9\x2f\x17\xb4\x77\x09\xac\x99\xeb\x05\xbc\x06\x01\x00\x40\x4d\x0a\x2c\x68\x6a\xca\xa8\x4c\xe0\xf3\xa4\x2b\x9e\xba\x0d\x52\xc3\x6e\x58\x6f\x85\x5a\x14\x8a\xd0\x18\x4d\x20\xf5\x7a\x4c\x8d\x61\xef\xb4\x07\x84\xb1\x3a\xaa\xcb\x78\x02\x85\x25\xf4\xdb\xf1\x81\x45\xf8\xe5\xc7\x63\x86\x9f\x51\x6f\x45\x32\x5b\x13\xef\x2f\x18\xb9\xb2\x60\x45\xff\x50\x8f\x8b\x89\xa3\xaf\xd5\x0a\x5a\x74\xd6\x44\xe1\x2f\xf6\x75\x01\x8e\x15\x06\x16\x40\x10\x2a\x49\xc8\x19\x02\x65\xd0\x23\x8d\x57\x82\x50\xc7\x5e\x0c\x85\x03\xd6\x79\xb8\x8b\x4e\x64\xbc\xd2\xc3\x23\x62\x23\x84\x4a\x93\xb4\xcc\x0f\x91\xd8\xe2\x1a\x47\xff\xbc\x0d\xe3\xda\xcd\x71\x0c\xef\x77\x71\xdc\x8d\x77\xa2\x5a\xee\xf4\x46\xd1\xec\x4b\x45\xfa\x81\x92\xc5\x2a\xee\x45\x7c\x82\xe5\x72\xd4\x14\x9a\xc9\x97\xd2\xba\x02\x4a\xec\x14\x0e\x97\xbf\x4e\xbc\x0b\x47\xae\xf3\x5b\x00\x00\x00\xff\xff\xed\x0a\xc2\x29\x93\x02\x00\x00"
+
+func TransactionsFastbreakOracleCreate_runCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakOracleCreate_runCdc,
+		"../../../transactions/fastbreak/oracle/create_run.cdc",
+	)
+}
+
+func TransactionsFastbreakOracleCreate_runCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakOracleCreate_runCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/oracle/create_run.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x2d, 0xd2, 0xf, 0xb5, 0x1f, 0xb4, 0x5b, 0x88, 0x51, 0xee, 0xdb, 0x86, 0x52, 0x82, 0x89, 0x73, 0x79, 0x11, 0x74, 0x21, 0x26, 0xc5, 0x79, 0x79, 0x65, 0x9b, 0x45, 0x73, 0x5a, 0x5f, 0xc3, 0x6d}}
+	return a, nil
+}
+
+var _TransactionsFastbreakOracleScore_fast_break_submissionCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x51\xc1\x6a\xeb\x40\x0c\xbc\xfb\x2b\x44\x0e\x0f\x07\x82\x79\x87\xd2\x83\x69\x1b\x1c\x9c\x94\xd0\x43\x4b\xdc\x7e\x80\xba\x91\x93\xa5\xf6\x6a\x91\x65\x92\x52\xf2\xef\xc5\x71\xb2\xc1\x09\xd5\x65\xb5\xd2\x30\xd2\x68\x6c\xed\x59\x14\x16\xd8\xe8\x4c\x08\xbf\xa0\x14\xae\xe1\xff\x7e\x91\x15\xef\xb3\xd5\x3c\x7b\xc9\xf2\x7c\x35\x2f\x8a\x28\x52\x41\xd7\xa0\x51\xcb\x2e\x2e\xcf\xf0\x67\xac\x69\x99\xa7\x50\xa8\x58\xb7\x99\x80\xaf\xf0\x9b\x64\xb9\x4e\xe1\x63\xe9\xf4\xfe\x6e\x02\x9e\xad\xd3\xe6\xf2\xdf\x59\x97\xc2\x8c\xb9\x1a\xc3\x4f\x14\x01\x00\x54\xa4\xc0\x82\xa6\xa2\x15\x95\x29\xfc\x0b\xbb\x24\x21\xcb\x91\x6a\x76\x3d\xdc\x0b\x79\x14\x8a\xd1\x18\x4d\x21\x6b\x75\x9b\x19\xc3\xad\xd3\x8e\x10\x4e\xd1\x50\x55\x26\x81\x14\x1e\xa1\x43\x27\x9f\x2c\xc2\xbb\x87\xbf\x27\x3c\xc5\x9d\xfc\xf4\x72\x8e\xe4\xf5\xc8\x51\x28\x0b\x6e\xe8\x0d\x75\x3b\x0e\x33\xba\x98\x4e\xc1\xa3\xb3\x26\x1e\x19\x6e\xab\x35\x38\x56\xe8\xa7\x00\x82\x50\x49\x42\xce\x10\x28\x83\x6e\xe9\xa4\x12\x84\x1a\x6e\xc5\xd0\xa8\xe7\x3a\xf4\xba\x68\x4f\xa6\x55\x3a\x5f\xe5\x56\x45\xd2\xfa\x35\x2a\x85\xdd\x0a\xc3\x42\xf1\x60\x9d\x1b\x5f\xae\x0a\x93\x01\xfa\x62\xd6\x39\xbb\xea\x9f\xac\xeb\xdf\x61\xef\x68\xe3\xce\xba\x50\x0c\x5a\x0e\xbf\x01\x00\x00\xff\xff\x08\x5d\x96\x90\x53\x02\x00\x00"
+
+func TransactionsFastbreakOracleScore_fast_break_submissionCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakOracleScore_fast_break_submissionCdc,
+		"../../../transactions/fastbreak/oracle/score_fast_break_submission.cdc",
+	)
+}
+
+func TransactionsFastbreakOracleScore_fast_break_submissionCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakOracleScore_fast_break_submissionCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/oracle/score_fast_break_submission.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x30, 0x26, 0x21, 0x1c, 0x51, 0xe5, 0xfc, 0x6b, 0x96, 0x94, 0x49, 0x38, 0xe9, 0xc9, 0x10, 0x9f, 0xc7, 0xb4, 0x76, 0x9d, 0x60, 0xf2, 0x46, 0x2, 0x1d, 0x11, 0xa7, 0x86, 0x3d, 0x2, 0xae, 0x9f}}
+	return a, nil
+}
+
+var _TransactionsFastbreakOracleUpdate_fast_break_gameCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x51\xcd\x6a\xe3\x40\x0c\xbe\xfb\x29\x3e\x72\x58\x1c\x08\x66\x0f\xcb\xb2\x98\x6d\x83\x43\x92\x52\x7a\x68\x89\xdb\x07\x50\xc7\x72\x32\xd4\x9e\x31\xb2\x86\x04\x4a\xde\xbd\xb8\x13\xbb\x84\x52\x5d\x34\x23\x89\xef\x47\xb2\x6d\xe7\x45\xb1\xa5\x5e\x57\xc2\xf4\x86\x5a\x7c\x8b\xdf\xa7\x6d\x51\x3e\xaf\x76\x9b\xe2\xa1\x58\xaf\x77\x9b\xb2\x4c\x12\x15\x72\x3d\x19\xb5\xde\xa5\xb6\xca\x51\xaa\x58\xb7\x5f\xa0\x57\xd2\xd0\xe7\x78\xb9\x77\xfa\x6f\x81\xa3\x75\x8e\x25\x7e\xff\xfe\x99\xe3\x3d\x49\x00\xa0\x61\x85\x17\x32\x0d\xef\xb8\xce\xf1\x6b\x22\xcc\xa6\xd7\x9a\xb8\xf5\x2e\x8e\x77\xc2\x1d\x09\xa7\x64\x8c\xe6\x28\x82\x1e\x0a\x63\x7c\x70\x3a\x00\xe2\x12\x3d\x37\x75\x36\x81\xe2\x06\xc3\x74\xf6\xea\x45\xfc\xf1\xff\xcf\x0c\xb7\xe9\xe0\x31\xff\xf2\x9c\x3d\x7e\x62\x94\xea\x85\xf6\xfc\x44\x7a\x98\x4f\x1c\x43\x2c\x97\xe8\xc8\x59\x93\xce\x8c\x0f\x4d\x05\xe7\x15\x91\x05\x04\xe1\x9a\x85\x9d\x61\xa8\x87\x1e\xf8\xe2\x12\xc2\xbd\x0f\x62\x78\x16\xb1\xce\xd1\x17\x9f\xd8\x04\xe5\x71\x2b\xdf\x5d\x64\xa1\xab\x48\x79\xd2\x76\x47\x2d\xa7\x57\x6a\x86\xdd\xdb\x6a\x71\x55\x1b\x6f\x10\xf3\x75\x6f\x3c\x48\xcc\x53\x6b\x94\x75\xfe\x08\x00\x00\xff\xff\x12\x21\xd1\xd9\x02\x02\x00\x00"
+
+func TransactionsFastbreakOracleUpdate_fast_break_gameCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakOracleUpdate_fast_break_gameCdc,
+		"../../../transactions/fastbreak/oracle/update_fast_break_game.cdc",
+	)
+}
+
+func TransactionsFastbreakOracleUpdate_fast_break_gameCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakOracleUpdate_fast_break_gameCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/oracle/update_fast_break_game.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xe5, 0xf7, 0x5d, 0xeb, 0xeb, 0x4, 0xcf, 0x21, 0x6c, 0x21, 0x7b, 0xfc, 0xb5, 0x96, 0x5f, 0x1c, 0xcb, 0x5d, 0xe8, 0xf0, 0x6d, 0xd8, 0x79, 0xeb, 0x15, 0xb2, 0xb1, 0x4a, 0xa4, 0x9e, 0x1, 0xf4}}
+	return a, nil
+}
+
+var _TransactionsFastbreakPlayerCreate_playerCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x8c\x92\x6f\xeb\xa2\x40\x10\xc7\x9f\xfb\x2a\xe6\xd1\xa1\x60\x71\x0f\x8e\x7b\x20\x15\xd8\x95\x70\x1c\x88\xa4\xf7\x02\x36\xd9\x6c\x69\xdd\x95\x71\xec\x2e\xa2\xf7\xfe\xc3\x36\x33\xff\x50\xee\x03\x5d\x9c\xef\xcc\x7c\xc7\xcf\x88\xbc\xd0\x48\x10\x6a\x15\x54\x2a\x13\x7b\xc9\x13\x7d\xe2\x0a\x0e\xa8\x73\xf8\xfe\x3f\x0c\x12\x7f\xb3\xd9\x6d\xe3\xd8\x7a\x28\x03\x56\xd2\x1a\x39\x3b\x35\x92\xc0\x8f\x93\xf5\x6e\xeb\xff\x69\x84\x16\x21\x53\x25\x4b\x49\x68\x65\x17\x92\x5d\x38\x86\x2c\xe7\x1e\xc4\x84\x42\x65\x2e\xb0\x33\x23\x86\x1e\xfc\xfd\xad\xe8\xe7\x0f\x07\xae\x96\x05\x00\x50\x20\x2f\x18\x72\xbb\x14\x99\xe2\xe8\x81\x5f\xd1\xd1\x4f\x53\x5d\x29\xaa\x35\xf0\x38\xe2\x00\x46\x31\xdf\x6b\x44\xfd\x6f\xf1\xed\x69\x69\xfe\x4b\x4b\xc9\xef\x8d\x57\x76\x6d\xcf\x83\xb1\x58\x4c\x1a\x59\xc6\x23\x46\x47\x07\x96\x4b\x50\x42\x36\x1e\x9a\x23\x39\x41\xfa\x4c\x80\xc5\xec\xa5\x50\x8a\x9c\x11\xdf\xe6\x05\x5d\xda\x9a\xb6\xd3\xc9\x7f\x38\x2c\xd9\x99\xdb\x8b\x59\x5b\xc9\x05\xd2\x9f\x4d\x8d\x95\x92\x42\x9d\xc6\x47\xbd\xf6\xe1\xbd\xc4\xa2\x6a\x2f\x45\xea\xbe\x74\x7c\xde\xc2\x20\xe9\xeb\x6e\x2b\xbb\xd3\xba\x3e\x63\x1d\x8d\xba\xb6\xea\x0e\xf4\xc4\x30\xe3\xf4\x71\xc6\x4e\x9e\xd3\xfe\xfc\x9b\x35\x09\x74\x74\x5f\xab\x21\x64\xf3\x7d\x22\x60\xb3\x9b\x63\x70\x4d\x99\xce\xf2\xb6\xf7\x76\x81\xcd\xfb\x1d\x79\x93\xd5\xa7\x3e\x74\x39\x85\xb8\xc9\xba\x8e\xa0\x34\x91\xf7\xf4\x8c\x26\x42\x71\xae\xe7\x9b\x88\x6e\x60\xb4\x87\xad\xa5\x66\x9e\xb7\xaf\x00\x00\x00\xff\xff\x1e\xdc\x9d\xde\x4f\x04\x00\x00"
+
+func TransactionsFastbreakPlayerCreate_playerCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakPlayerCreate_playerCdc,
+		"../../../transactions/fastbreak/player/create_player.cdc",
+	)
+}
+
+func TransactionsFastbreakPlayerCreate_playerCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakPlayerCreate_playerCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/player/create_player.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x65, 0x70, 0x36, 0xf8, 0xb7, 0x15, 0xa5, 0x1, 0xd3, 0x88, 0xcf, 0x71, 0x7f, 0x46, 0x6e, 0x66, 0xee, 0xc7, 0x5d, 0xbb, 0x16, 0xd9, 0xa4, 0x5f, 0x44, 0xf7, 0x60, 0x4e, 0xe4, 0x16, 0xbd, 0x3c}}
+	return a, nil
+}
+
+var _TransactionsFastbreakPlayerPlayCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xa4\x93\xc1\x6a\xdc\x30\x10\x86\xef\x7e\x8a\x21\x87\x20\x43\x6a\x7a\x28\x3d\x98\x34\xa9\x93\x8d\x4b\x28\x2c\xcb\xda\x3d\x95\x1e\x66\x95\xb1\x57\x44\xab\x11\xf2\xb8\x4d\x08\x79\xf7\xa2\x8d\xed\xc5\xbb\x14\x0a\xd1\x49\x68\x7e\x8d\xbe\xf9\x67\x64\x76\x9e\x83\xc0\x92\x5d\xd9\xbb\xd6\x6c\x2c\xd5\xfc\x48\x0e\x9a\xc0\x3b\xf8\xf8\xb4\x2c\xeb\x62\xb1\x58\xdf\x55\x55\x32\x28\x4b\xec\xe4\x26\x10\x3e\x8e\x92\xb2\xa8\xea\x9b\xf5\x5d\xf1\x7d\x14\x26\x12\xd0\x75\xa8\xc5\xb0\x53\x09\x00\x40\x33\xde\xf9\x86\x3b\xba\x5f\xe4\x50\x49\x30\xae\xbd\xd8\x07\x85\x7d\xb5\x65\xe9\x72\xf8\xf9\xe3\xde\xc9\xe7\x4f\xbf\x92\x14\x5e\x92\x7d\xcc\x92\x40\x8b\x3b\x5a\x53\x93\xc3\xf9\xf4\x74\xb6\xb2\xf8\x4c\x61\x92\x04\xd2\xc6\x1b\x72\x92\xc3\xf9\xcb\x41\x35\xed\x96\x65\x7d\xcb\xd6\xd2\x1e\x69\xd5\x6f\xac\xd1\xaf\x6f\x0f\xf8\x40\x1e\x03\x29\xd4\x5a\x72\x28\x7a\xd9\x16\x5a\x73\xef\x24\x22\xc0\xb0\x3a\xb2\x4d\x36\x60\xc0\x17\x88\xda\x29\x16\x57\xb6\xe1\x10\xf8\xcf\xe5\x09\xe0\x95\x8a\x1e\xe5\x70\x7c\x5e\x09\x07\x6c\x69\x85\xb2\x4d\x67\x99\xae\xaf\xc1\xa3\x33\x5a\x9d\x69\xee\xed\x03\x38\x16\x78\x4b\x0e\x08\x81\x1a\x0a\xe4\x34\x81\x30\xc8\x96\x22\x48\x44\xed\xc0\xef\xb3\x9e\xa5\xc9\x1c\x79\xb2\x65\x80\xce\x5a\x92\x5b\xf4\xb8\x31\xd6\xc8\xb3\x3a\x50\x1d\x9b\x73\x0a\x36\x95\xf8\xbf\xf6\x5e\xa9\xf7\x54\xa6\xa7\x74\xb1\xb7\x64\x7e\x1f\xaa\x1b\x1a\x47\x4f\xa4\x7b\xa1\x71\x50\xc6\x49\x70\x8d\xc0\xe5\x87\x59\xc7\xb2\xe8\x8e\x9a\xc1\x9c\xcc\xe3\xd1\xc1\xc5\x4c\x7d\x18\xd0\x71\x37\x85\xd3\x7f\x18\x9e\x3d\x90\xe7\xce\x88\x92\xf8\x99\xf2\x88\xa4\x22\x1a\x76\xf0\xf5\xf8\xab\x65\xcb\xb2\x4e\xd3\xa1\xb6\xd7\xbf\x01\x00\x00\xff\xff\xa6\x15\x0f\x0b\x90\x03\x00\x00"
+
+func TransactionsFastbreakPlayerPlayCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakPlayerPlayCdc,
+		"../../../transactions/fastbreak/player/play.cdc",
+	)
+}
+
+func TransactionsFastbreakPlayerPlayCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakPlayerPlayCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/player/play.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x8c, 0xea, 0xde, 0xea, 0xd9, 0xca, 0x6a, 0xc1, 0x4b, 0x4d, 0x76, 0x9c, 0xe0, 0x49, 0x62, 0xc6, 0x8d, 0x57, 0x3e, 0xdb, 0xe2, 0x82, 0xee, 0x3f, 0x73, 0x55, 0x93, 0x7f, 0xfc, 0xdd, 0x21, 0xb8}}
+	return a, nil
+}
+
+var _TransactionsFastbreakScriptsGet_current_playerCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xca\xcc\x2d\xc8\x2f\x2a\x51\x70\x4b\x2c\x2e\x71\x2a\x4a\x4d\xcc\x56\x48\x2b\xca\xcf\x55\x30\xa8\x70\x73\x0c\x0e\x71\x0a\x72\x75\xf4\x76\x74\x71\x09\x72\x0d\x0e\xe6\xe2\x2a\x28\x4d\x52\x48\x2b\xcd\x53\xc8\x4d\xcc\xcc\xd3\xd0\xb4\x52\x08\xf5\xcc\x2b\x31\x33\x51\xa8\xe6\xe2\x52\x50\x50\x50\x28\x4a\x2d\x29\x2d\xca\x43\x98\xa3\x97\x97\x5a\x51\x12\x90\x93\x58\x99\x5a\xe4\x99\xc2\x55\x0b\x08\x00\x00\xff\xff\x8a\x0f\xd5\xfe\x67\x00\x00\x00"
+
+func TransactionsFastbreakScriptsGet_current_playerCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakScriptsGet_current_playerCdc,
+		"../../../transactions/fastbreak/scripts/get_current_player.cdc",
+	)
+}
+
+func TransactionsFastbreakScriptsGet_current_playerCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakScriptsGet_current_playerCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/scripts/get_current_player.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x1c, 0x35, 0xb7, 0x9, 0x45, 0xa, 0x86, 0xba, 0x42, 0x10, 0xac, 0x45, 0xba, 0x30, 0xb5, 0x68, 0xdc, 0x44, 0xcb, 0xeb, 0x22, 0x3, 0x61, 0x21, 0x5d, 0xf3, 0x72, 0x9, 0x2d, 0x29, 0x9f, 0x1e}}
+	return a, nil
+}
+
+var _TransactionsFastbreakScriptsGet_fast_breakCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xca\xcc\x2d\xc8\x2f\x2a\x51\x70\x4b\x2c\x2e\x71\x2a\x4a\x4d\xcc\x56\x48\x2b\xca\xcf\x55\x30\xa8\x70\x73\x0c\x0e\x71\x0a\x72\x75\xf4\x76\x74\x71\x09\x72\x0d\x0e\xe6\xe2\x2a\x28\x4d\x52\x48\x2b\xcd\x53\xc8\x4d\xcc\xcc\xd3\xc8\x4c\xb1\x52\x08\x2e\x29\xca\xcc\x4b\xd7\xb4\x42\x68\xd6\x83\xb3\xdc\x13\x73\x53\xed\x15\xaa\xb9\xb8\x14\x14\x14\x14\x8a\x52\x4b\x4a\x8b\xf2\x90\x94\xa5\xa7\x96\xa0\xa8\x04\x1b\x97\x99\xa2\xc9\x55\x0b\x08\x00\x00\xff\xff\xf8\x7c\xa4\x99\x8f\x00\x00\x00"
+
+func TransactionsFastbreakScriptsGet_fast_breakCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakScriptsGet_fast_breakCdc,
+		"../../../transactions/fastbreak/scripts/get_fast_break.cdc",
+	)
+}
+
+func TransactionsFastbreakScriptsGet_fast_breakCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakScriptsGet_fast_breakCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/scripts/get_fast_break.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xb2, 0x4a, 0xa6, 0xb6, 0xe5, 0x6f, 0xe9, 0xda, 0x72, 0x75, 0xa2, 0xe6, 0xbc, 0x5, 0xc1, 0x3b, 0x20, 0x62, 0xd8, 0x83, 0x6e, 0x97, 0xb9, 0x1d, 0x24, 0x96, 0x8d, 0x75, 0x7c, 0x38, 0x6d, 0xb9}}
+	return a, nil
+}
+
+var _TransactionsFastbreakScriptsGet_fast_break_statsCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xca\xcc\x2d\xc8\x2f\x2a\x51\x70\x4b\x2c\x2e\x71\x2a\x4a\x4d\xcc\x56\x48\x2b\xca\xcf\x55\x30\xa8\x70\x73\x0c\x0e\x71\x0a\x72\x75\xf4\x76\x74\x71\x09\x72\x0d\x0e\xe6\xe2\x2a\x28\x4d\x52\x48\x2b\xcd\x53\xc8\x4d\xcc\xcc\xd3\x48\x83\xa9\x77\x4f\xcc\x4d\xf5\x74\xb1\x52\x08\x2e\x29\xca\xcc\x4b\xd7\xb4\x52\x88\x86\x1b\xa5\x07\x67\x05\x97\x24\x96\xc4\x2a\x54\x73\x71\x29\x28\x28\x28\x14\xa5\x96\x94\x16\xe5\x21\x6c\xd4\x4b\x4f\x2d\x71\x43\x36\x0e\xa4\xba\x58\x23\x33\xc5\x4a\x01\xcd\x16\x4d\xae\x5a\x40\x00\x00\x00\xff\xff\xa6\x0e\x5d\x0d\xaf\x00\x00\x00"
+
+func TransactionsFastbreakScriptsGet_fast_break_statsCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakScriptsGet_fast_break_statsCdc,
+		"../../../transactions/fastbreak/scripts/get_fast_break_stats.cdc",
+	)
+}
+
+func TransactionsFastbreakScriptsGet_fast_break_statsCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakScriptsGet_fast_break_statsCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/scripts/get_fast_break_stats.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x79, 0xf4, 0xbb, 0x9a, 0x85, 0x32, 0x53, 0x1, 0xac, 0xef, 0xe5, 0xcd, 0x1b, 0x40, 0xe3, 0x76, 0x95, 0x7e, 0x7f, 0x80, 0xa6, 0x6b, 0x3a, 0x74, 0x96, 0xdb, 0xaf, 0x4a, 0x49, 0x8c, 0x1b, 0xbd}}
+	return a, nil
+}
+
+var _TransactionsFastbreakScriptsGet_player_scoreCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x54\x8e\xbd\x6a\x80\x30\x14\x85\xf7\x3c\xc5\x75\x53\x28\xd2\xa1\x74\x10\x1c\x14\xb5\x48\x97\x62\xda\x07\x88\x18\xe5\x52\xf3\x43\x72\x03\x95\xd2\x77\x2f\x48\x4d\xec\x76\x42\xee\xf9\xbe\x83\xca\x1a\x47\x30\x08\x4f\xad\x93\xe2\x13\x56\x67\x14\x3c\x7e\x0d\x0d\x7f\x6f\xa7\xbe\x79\x6d\xba\x6e\xea\x39\x67\xcc\x86\x19\xd6\xa0\x41\x09\xd4\x39\x2e\x15\x70\x72\xa8\xb7\x07\xb0\xbb\x38\xa4\x1b\x97\x0a\x3e\x46\x4d\xcf\x4f\xc5\x15\xe0\x9b\x01\x00\xec\x92\x60\x8d\xfc\x3a\xb9\xca\x4d\x52\x7c\xbc\x08\x25\x4f\x2c\x2e\x45\x16\x7b\x3e\xcc\x0a\xbd\x47\xa3\xa1\xba\x15\x63\xe2\xe9\xbf\x4e\x92\x7f\xe0\x74\xd2\x1e\x6f\x7f\x53\xf3\xb4\xf9\x4a\x45\xc6\x4e\xab\x93\x14\x9c\xbe\x89\x4b\x6b\x50\x93\x67\x3f\xbf\x01\x00\x00\xff\xff\x09\xd6\xb9\xa2\x2b\x01\x00\x00"
+
+func TransactionsFastbreakScriptsGet_player_scoreCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakScriptsGet_player_scoreCdc,
+		"../../../transactions/fastbreak/scripts/get_player_score.cdc",
+	)
+}
+
+func TransactionsFastbreakScriptsGet_player_scoreCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakScriptsGet_player_scoreCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/scripts/get_player_score.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0xaf, 0x35, 0x57, 0x73, 0xc6, 0x84, 0xec, 0xac, 0xf7, 0x73, 0x3, 0x39, 0xef, 0x9, 0xf3, 0xcc, 0x40, 0x5e, 0xb4, 0xeb, 0x5d, 0x35, 0x45, 0x58, 0xec, 0x7b, 0x4, 0x2f, 0x6b, 0x1c, 0x4f, 0xdb}}
+	return a, nil
+}
+
+var _TransactionsFastbreakScriptsGet_token_countCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\xca\xcc\x2d\xc8\x2f\x2a\x51\x70\x4b\x2c\x2e\x71\x2a\x4a\x4d\xcc\x56\x48\x2b\xca\xcf\x55\x30\xa8\x70\x73\x0c\x0e\x71\x0a\x72\x75\xf4\x76\x74\x71\x09\x72\x0d\x0e\xe6\xe2\x2a\x28\x4d\x52\x48\x2b\xcd\x53\xc8\x4d\xcc\xcc\xd3\xd0\xb4\x52\x08\xf5\xcc\x2b\x31\x33\x51\xa8\xe6\xe2\x52\x50\x50\x50\x28\x4a\x2d\x29\x2d\xca\x43\x98\xa3\x57\x92\x5f\x92\x98\x13\x5c\x5a\x50\x90\x53\xc9\x55\x0b\x08\x00\x00\xff\xff\x4f\x98\x48\x88\x66\x00\x00\x00"
+
+func TransactionsFastbreakScriptsGet_token_countCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakScriptsGet_token_countCdc,
+		"../../../transactions/fastbreak/scripts/get_token_count.cdc",
+	)
+}
+
+func TransactionsFastbreakScriptsGet_token_countCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakScriptsGet_token_countCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/scripts/get_token_count.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x3f, 0xf8, 0x4d, 0x6b, 0x99, 0x92, 0x6a, 0x6f, 0xbc, 0x19, 0xab, 0x7f, 0x34, 0x7d, 0x4b, 0x5d, 0x8f, 0xd3, 0x33, 0x86, 0xc6, 0x38, 0xea, 0x2b, 0x6e, 0x1, 0xe9, 0x36, 0x51, 0xd0, 0xdc, 0x8f}}
 	return a, nil
 }
 
@@ -2323,109 +2575,121 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"../../../transactions/admin/add_play_to_set.cdc":                      TransactionsAdminAdd_play_to_setCdc,
-	"../../../transactions/admin/add_plays_to_set.cdc":                     TransactionsAdminAdd_plays_to_setCdc,
-	"../../../transactions/admin/batch_mint_moment.cdc":                    TransactionsAdminBatch_mint_momentCdc,
-	"../../../transactions/admin/batch_mint_moment_with_subedition.cdc":    TransactionsAdminBatch_mint_moment_with_subeditionCdc,
-	"../../../transactions/admin/create_new_subedition_admin_resource.cdc": TransactionsAdminCreate_new_subedition_admin_resourceCdc,
-	"../../../transactions/admin/create_play.cdc":                          TransactionsAdminCreate_playCdc,
-	"../../../transactions/admin/create_set.cdc":                           TransactionsAdminCreate_setCdc,
-	"../../../transactions/admin/create_set_and_play_struct.cdc":           TransactionsAdminCreate_set_and_play_structCdc,
-	"../../../transactions/admin/create_subedition.cdc":                    TransactionsAdminCreate_subeditionCdc,
-	"../../../transactions/admin/fulfill_pack.cdc":                         TransactionsAdminFulfill_packCdc,
-	"../../../transactions/admin/grant_topshot_locking_admin.cdc":          TransactionsAdminGrant_topshot_locking_adminCdc,
-	"../../../transactions/admin/lock_set.cdc":                             TransactionsAdminLock_setCdc,
-	"../../../transactions/admin/mark_moment_unlockable.cdc":               TransactionsAdminMark_moment_unlockableCdc,
-	"../../../transactions/admin/mint_moment.cdc":                          TransactionsAdminMint_momentCdc,
-	"../../../transactions/admin/mint_moment_with_subedition.cdc":          TransactionsAdminMint_moment_with_subeditionCdc,
-	"../../../transactions/admin/retireAll_plays_from_set.cdc":             TransactionsAdminRetireall_plays_from_setCdc,
-	"../../../transactions/admin/retire_all.cdc":                           TransactionsAdminRetire_allCdc,
-	"../../../transactions/admin/retire_play_from_set.cdc":                 TransactionsAdminRetire_play_from_setCdc,
-	"../../../transactions/admin/set_nft_subedition.cdc":                   TransactionsAdminSet_nft_subeditionCdc,
-	"../../../transactions/admin/set_nfts_lock_expiry.cdc":                 TransactionsAdminSet_nfts_lock_expiryCdc,
-	"../../../transactions/admin/start_new_series.cdc":                     TransactionsAdminStart_new_seriesCdc,
-	"../../../transactions/admin/transfer_admin.cdc":                       TransactionsAdminTransfer_adminCdc,
-	"../../../transactions/admin/unlock_all_moments.cdc":                   TransactionsAdminUnlock_all_momentsCdc,
-	"../../../transactions/admin/update_tagline.cdc":                       TransactionsAdminUpdate_taglineCdc,
-	"../../../transactions/market/change_percentage.cdc":                   TransactionsMarketChange_percentageCdc,
-	"../../../transactions/market/change_price.cdc":                        TransactionsMarketChange_priceCdc,
-	"../../../transactions/market/change_receiver.cdc":                     TransactionsMarketChange_receiverCdc,
-	"../../../transactions/market/create_sale.cdc":                         TransactionsMarketCreate_saleCdc,
-	"../../../transactions/market/create_start_sale.cdc":                   TransactionsMarketCreate_start_saleCdc,
-	"../../../transactions/market/mint_and_purchase.cdc":                   TransactionsMarketMint_and_purchaseCdc,
-	"../../../transactions/market/purchase_moment.cdc":                     TransactionsMarketPurchase_momentCdc,
-	"../../../transactions/market/scripts/get_sale_len.cdc":                TransactionsMarketScriptsGet_sale_lenCdc,
-	"../../../transactions/market/scripts/get_sale_percentage.cdc":         TransactionsMarketScriptsGet_sale_percentageCdc,
-	"../../../transactions/market/scripts/get_sale_price.cdc":              TransactionsMarketScriptsGet_sale_priceCdc,
-	"../../../transactions/market/scripts/get_sale_set_id.cdc":             TransactionsMarketScriptsGet_sale_set_idCdc,
-	"../../../transactions/market/start_sale.cdc":                          TransactionsMarketStart_saleCdc,
-	"../../../transactions/market/stop_sale.cdc":                           TransactionsMarketStop_saleCdc,
-	"../../../transactions/marketV3/change_price.cdc":                      TransactionsMarketv3Change_priceCdc,
-	"../../../transactions/marketV3/change_receiver.cdc":                   TransactionsMarketv3Change_receiverCdc,
-	"../../../transactions/marketV3/create_sale.cdc":                       TransactionsMarketv3Create_saleCdc,
-	"../../../transactions/marketV3/create_start_sale.cdc":                 TransactionsMarketv3Create_start_saleCdc,
-	"../../../transactions/marketV3/mint_and_purchase.cdc":                 TransactionsMarketv3Mint_and_purchaseCdc,
-	"../../../transactions/marketV3/purchase_both_markets.cdc":             TransactionsMarketv3Purchase_both_marketsCdc,
-	"../../../transactions/marketV3/purchase_group_of_moments.cdc":         TransactionsMarketv3Purchase_group_of_momentsCdc,
-	"../../../transactions/marketV3/purchase_moment.cdc":                   TransactionsMarketv3Purchase_momentCdc,
-	"../../../transactions/marketV3/scripts/get_sale_len.cdc":              TransactionsMarketv3ScriptsGet_sale_lenCdc,
-	"../../../transactions/marketV3/scripts/get_sale_percentage.cdc":       TransactionsMarketv3ScriptsGet_sale_percentageCdc,
-	"../../../transactions/marketV3/scripts/get_sale_price.cdc":            TransactionsMarketv3ScriptsGet_sale_priceCdc,
-	"../../../transactions/marketV3/scripts/get_sale_set_id.cdc":           TransactionsMarketv3ScriptsGet_sale_set_idCdc,
-	"../../../transactions/marketV3/start_sale.cdc":                        TransactionsMarketv3Start_saleCdc,
-	"../../../transactions/marketV3/stop_sale.cdc":                         TransactionsMarketv3Stop_saleCdc,
-	"../../../transactions/marketV3/upgrade_sale.cdc":                      TransactionsMarketv3Upgrade_saleCdc,
-	"../../../transactions/scripts/collections/borrow_nft_safe.cdc":        TransactionsScriptsCollectionsBorrow_nft_safeCdc,
-	"../../../transactions/scripts/collections/get_collection_ids.cdc":     TransactionsScriptsCollectionsGet_collection_idsCdc,
-	"../../../transactions/scripts/collections/get_id_in_Collection.cdc":   TransactionsScriptsCollectionsGet_id_in_collectionCdc,
-	"../../../transactions/scripts/collections/get_locked_nfts_length.cdc": TransactionsScriptsCollectionsGet_locked_nfts_lengthCdc,
-	"../../../transactions/scripts/collections/get_metadata.cdc":           TransactionsScriptsCollectionsGet_metadataCdc,
-	"../../../transactions/scripts/collections/get_metadata_field.cdc":     TransactionsScriptsCollectionsGet_metadata_fieldCdc,
-	"../../../transactions/scripts/collections/get_moment_isLocked.cdc":    TransactionsScriptsCollectionsGet_moment_islockedCdc,
-	"../../../transactions/scripts/collections/get_moment_lockExpiry.cdc":  TransactionsScriptsCollectionsGet_moment_lockexpiryCdc,
-	"../../../transactions/scripts/collections/get_moment_playID.cdc":      TransactionsScriptsCollectionsGet_moment_playidCdc,
-	"../../../transactions/scripts/collections/get_moment_serialNum.cdc":   TransactionsScriptsCollectionsGet_moment_serialnumCdc,
-	"../../../transactions/scripts/collections/get_moment_series.cdc":      TransactionsScriptsCollectionsGet_moment_seriesCdc,
-	"../../../transactions/scripts/collections/get_moment_setID.cdc":       TransactionsScriptsCollectionsGet_moment_setidCdc,
-	"../../../transactions/scripts/collections/get_moment_setName.cdc":     TransactionsScriptsCollectionsGet_moment_setnameCdc,
-	"../../../transactions/scripts/collections/get_setplays_are_owned.cdc": TransactionsScriptsCollectionsGet_setplays_are_ownedCdc,
-	"../../../transactions/scripts/get_currentSeries.cdc":                  TransactionsScriptsGet_currentseriesCdc,
-	"../../../transactions/scripts/get_nft_metadata.cdc":                   TransactionsScriptsGet_nft_metadataCdc,
-	"../../../transactions/scripts/get_topshot_metadata.cdc":               TransactionsScriptsGet_topshot_metadataCdc,
-	"../../../transactions/scripts/get_totalSupply.cdc":                    TransactionsScriptsGet_totalsupplyCdc,
-	"../../../transactions/scripts/plays/get_all_plays.cdc":                TransactionsScriptsPlaysGet_all_playsCdc,
-	"../../../transactions/scripts/plays/get_nextPlayID.cdc":               TransactionsScriptsPlaysGet_nextplayidCdc,
-	"../../../transactions/scripts/plays/get_play_metadata.cdc":            TransactionsScriptsPlaysGet_play_metadataCdc,
-	"../../../transactions/scripts/plays/get_play_metadata_field.cdc":      TransactionsScriptsPlaysGet_play_metadata_fieldCdc,
-	"../../../transactions/scripts/sets/get_edition_retired.cdc":           TransactionsScriptsSetsGet_edition_retiredCdc,
-	"../../../transactions/scripts/sets/get_nextSetID.cdc":                 TransactionsScriptsSetsGet_nextsetidCdc,
-	"../../../transactions/scripts/sets/get_numMoments_in_edition.cdc":     TransactionsScriptsSetsGet_nummoments_in_editionCdc,
-	"../../../transactions/scripts/sets/get_plays_in_set.cdc":              TransactionsScriptsSetsGet_plays_in_setCdc,
-	"../../../transactions/scripts/sets/get_setIDs_by_name.cdc":            TransactionsScriptsSetsGet_setids_by_nameCdc,
-	"../../../transactions/scripts/sets/get_setName.cdc":                   TransactionsScriptsSetsGet_setnameCdc,
-	"../../../transactions/scripts/sets/get_setSeries.cdc":                 TransactionsScriptsSetsGet_setseriesCdc,
-	"../../../transactions/scripts/sets/get_set_data.cdc":                  TransactionsScriptsSetsGet_set_dataCdc,
-	"../../../transactions/scripts/sets/get_set_locked.cdc":                TransactionsScriptsSetsGet_set_lockedCdc,
-	"../../../transactions/scripts/subeditions/get_all_subeditions.cdc":    TransactionsScriptsSubeditionsGet_all_subeditionsCdc,
-	"../../../transactions/scripts/subeditions/get_nextSubeditionID.cdc":   TransactionsScriptsSubeditionsGet_nextsubeditionidCdc,
-	"../../../transactions/scripts/subeditions/get_nft_subedition.cdc":     TransactionsScriptsSubeditionsGet_nft_subeditionCdc,
-	"../../../transactions/scripts/subeditions/get_subedition_by_id.cdc":   TransactionsScriptsSubeditionsGet_subedition_by_idCdc,
-	"../../../transactions/scripts/users/is_account_all_set_up.cdc":        TransactionsScriptsUsersIs_account_all_set_upCdc,
-	"../../../transactions/shardedCollection/batch_from_sharded.cdc":       TransactionsShardedcollectionBatch_from_shardedCdc,
-	"../../../transactions/shardedCollection/setup_sharded_collection.cdc": TransactionsShardedcollectionSetup_sharded_collectionCdc,
-	"../../../transactions/shardedCollection/transfer_from_sharded.cdc":    TransactionsShardedcollectionTransfer_from_shardedCdc,
-	"../../../transactions/user/batch_lock_moments.cdc":                    TransactionsUserBatch_lock_momentsCdc,
-	"../../../transactions/user/batch_transfer.cdc":                        TransactionsUserBatch_transferCdc,
-	"../../../transactions/user/batch_unlock_moments.cdc":                  TransactionsUserBatch_unlock_momentsCdc,
-	"../../../transactions/user/destroy_moments.cdc":                       TransactionsUserDestroy_momentsCdc,
-	"../../../transactions/user/destroy_moments_v2.cdc":                    TransactionsUserDestroy_moments_v2Cdc,
-	"../../../transactions/user/lock_fake_nft.cdc":                         TransactionsUserLock_fake_nftCdc,
-	"../../../transactions/user/lock_moment.cdc":                           TransactionsUserLock_momentCdc,
-	"../../../transactions/user/setup_collection.cdc":                      TransactionsUserSetup_collectionCdc,
-	"../../../transactions/user/setup_up_all_collections.cdc":              TransactionsUserSetup_up_all_collectionsCdc,
-	"../../../transactions/user/transfer_moment.cdc":                       TransactionsUserTransfer_momentCdc,
-	"../../../transactions/user/transfer_moment_v3_sale.cdc":               TransactionsUserTransfer_moment_v3_saleCdc,
-	"../../../transactions/user/unlock_moment.cdc":                         TransactionsUserUnlock_momentCdc,
+	"../../../transactions/admin/add_play_to_set.cdc":                        TransactionsAdminAdd_play_to_setCdc,
+	"../../../transactions/admin/add_plays_to_set.cdc":                       TransactionsAdminAdd_plays_to_setCdc,
+	"../../../transactions/admin/batch_mint_moment.cdc":                      TransactionsAdminBatch_mint_momentCdc,
+	"../../../transactions/admin/batch_mint_moment_with_subedition.cdc":      TransactionsAdminBatch_mint_moment_with_subeditionCdc,
+	"../../../transactions/admin/create_new_subedition_admin_resource.cdc":   TransactionsAdminCreate_new_subedition_admin_resourceCdc,
+	"../../../transactions/admin/create_play.cdc":                            TransactionsAdminCreate_playCdc,
+	"../../../transactions/admin/create_set.cdc":                             TransactionsAdminCreate_setCdc,
+	"../../../transactions/admin/create_set_and_play_struct.cdc":             TransactionsAdminCreate_set_and_play_structCdc,
+	"../../../transactions/admin/create_subedition.cdc":                      TransactionsAdminCreate_subeditionCdc,
+	"../../../transactions/admin/fulfill_pack.cdc":                           TransactionsAdminFulfill_packCdc,
+	"../../../transactions/admin/grant_topshot_locking_admin.cdc":            TransactionsAdminGrant_topshot_locking_adminCdc,
+	"../../../transactions/admin/lock_set.cdc":                               TransactionsAdminLock_setCdc,
+	"../../../transactions/admin/mark_moment_unlockable.cdc":                 TransactionsAdminMark_moment_unlockableCdc,
+	"../../../transactions/admin/mint_moment.cdc":                            TransactionsAdminMint_momentCdc,
+	"../../../transactions/admin/mint_moment_with_subedition.cdc":            TransactionsAdminMint_moment_with_subeditionCdc,
+	"../../../transactions/admin/retireAll_plays_from_set.cdc":               TransactionsAdminRetireall_plays_from_setCdc,
+	"../../../transactions/admin/retire_all.cdc":                             TransactionsAdminRetire_allCdc,
+	"../../../transactions/admin/retire_play_from_set.cdc":                   TransactionsAdminRetire_play_from_setCdc,
+	"../../../transactions/admin/set_nft_subedition.cdc":                     TransactionsAdminSet_nft_subeditionCdc,
+	"../../../transactions/admin/set_nfts_lock_expiry.cdc":                   TransactionsAdminSet_nfts_lock_expiryCdc,
+	"../../../transactions/admin/start_new_series.cdc":                       TransactionsAdminStart_new_seriesCdc,
+	"../../../transactions/admin/transfer_admin.cdc":                         TransactionsAdminTransfer_adminCdc,
+	"../../../transactions/admin/unlock_all_moments.cdc":                     TransactionsAdminUnlock_all_momentsCdc,
+	"../../../transactions/admin/update_tagline.cdc":                         TransactionsAdminUpdate_taglineCdc,
+	"../../../transactions/fastbreak/oracle/add_stat_to_game.cdc":            TransactionsFastbreakOracleAdd_stat_to_gameCdc,
+	"../../../transactions/fastbreak/oracle/create_game.cdc":                 TransactionsFastbreakOracleCreate_gameCdc,
+	"../../../transactions/fastbreak/oracle/create_run.cdc":                  TransactionsFastbreakOracleCreate_runCdc,
+	"../../../transactions/fastbreak/oracle/score_fast_break_submission.cdc": TransactionsFastbreakOracleScore_fast_break_submissionCdc,
+	"../../../transactions/fastbreak/oracle/update_fast_break_game.cdc":      TransactionsFastbreakOracleUpdate_fast_break_gameCdc,
+	"../../../transactions/fastbreak/player/create_player.cdc":               TransactionsFastbreakPlayerCreate_playerCdc,
+	"../../../transactions/fastbreak/player/play.cdc":                        TransactionsFastbreakPlayerPlayCdc,
+	"../../../transactions/fastbreak/scripts/get_current_player.cdc":         TransactionsFastbreakScriptsGet_current_playerCdc,
+	"../../../transactions/fastbreak/scripts/get_fast_break.cdc":             TransactionsFastbreakScriptsGet_fast_breakCdc,
+	"../../../transactions/fastbreak/scripts/get_fast_break_stats.cdc":       TransactionsFastbreakScriptsGet_fast_break_statsCdc,
+	"../../../transactions/fastbreak/scripts/get_player_score.cdc":           TransactionsFastbreakScriptsGet_player_scoreCdc,
+	"../../../transactions/fastbreak/scripts/get_token_count.cdc":            TransactionsFastbreakScriptsGet_token_countCdc,
+	"../../../transactions/market/change_percentage.cdc":                     TransactionsMarketChange_percentageCdc,
+	"../../../transactions/market/change_price.cdc":                          TransactionsMarketChange_priceCdc,
+	"../../../transactions/market/change_receiver.cdc":                       TransactionsMarketChange_receiverCdc,
+	"../../../transactions/market/create_sale.cdc":                           TransactionsMarketCreate_saleCdc,
+	"../../../transactions/market/create_start_sale.cdc":                     TransactionsMarketCreate_start_saleCdc,
+	"../../../transactions/market/mint_and_purchase.cdc":                     TransactionsMarketMint_and_purchaseCdc,
+	"../../../transactions/market/purchase_moment.cdc":                       TransactionsMarketPurchase_momentCdc,
+	"../../../transactions/market/scripts/get_sale_len.cdc":                  TransactionsMarketScriptsGet_sale_lenCdc,
+	"../../../transactions/market/scripts/get_sale_percentage.cdc":           TransactionsMarketScriptsGet_sale_percentageCdc,
+	"../../../transactions/market/scripts/get_sale_price.cdc":                TransactionsMarketScriptsGet_sale_priceCdc,
+	"../../../transactions/market/scripts/get_sale_set_id.cdc":               TransactionsMarketScriptsGet_sale_set_idCdc,
+	"../../../transactions/market/start_sale.cdc":                            TransactionsMarketStart_saleCdc,
+	"../../../transactions/market/stop_sale.cdc":                             TransactionsMarketStop_saleCdc,
+	"../../../transactions/marketV3/change_price.cdc":                        TransactionsMarketv3Change_priceCdc,
+	"../../../transactions/marketV3/change_receiver.cdc":                     TransactionsMarketv3Change_receiverCdc,
+	"../../../transactions/marketV3/create_sale.cdc":                         TransactionsMarketv3Create_saleCdc,
+	"../../../transactions/marketV3/create_start_sale.cdc":                   TransactionsMarketv3Create_start_saleCdc,
+	"../../../transactions/marketV3/mint_and_purchase.cdc":                   TransactionsMarketv3Mint_and_purchaseCdc,
+	"../../../transactions/marketV3/purchase_both_markets.cdc":               TransactionsMarketv3Purchase_both_marketsCdc,
+	"../../../transactions/marketV3/purchase_group_of_moments.cdc":           TransactionsMarketv3Purchase_group_of_momentsCdc,
+	"../../../transactions/marketV3/purchase_moment.cdc":                     TransactionsMarketv3Purchase_momentCdc,
+	"../../../transactions/marketV3/scripts/get_sale_len.cdc":                TransactionsMarketv3ScriptsGet_sale_lenCdc,
+	"../../../transactions/marketV3/scripts/get_sale_percentage.cdc":         TransactionsMarketv3ScriptsGet_sale_percentageCdc,
+	"../../../transactions/marketV3/scripts/get_sale_price.cdc":              TransactionsMarketv3ScriptsGet_sale_priceCdc,
+	"../../../transactions/marketV3/scripts/get_sale_set_id.cdc":             TransactionsMarketv3ScriptsGet_sale_set_idCdc,
+	"../../../transactions/marketV3/start_sale.cdc":                          TransactionsMarketv3Start_saleCdc,
+	"../../../transactions/marketV3/stop_sale.cdc":                           TransactionsMarketv3Stop_saleCdc,
+	"../../../transactions/marketV3/upgrade_sale.cdc":                        TransactionsMarketv3Upgrade_saleCdc,
+	"../../../transactions/scripts/collections/borrow_nft_safe.cdc":          TransactionsScriptsCollectionsBorrow_nft_safeCdc,
+	"../../../transactions/scripts/collections/get_collection_ids.cdc":       TransactionsScriptsCollectionsGet_collection_idsCdc,
+	"../../../transactions/scripts/collections/get_id_in_Collection.cdc":     TransactionsScriptsCollectionsGet_id_in_collectionCdc,
+	"../../../transactions/scripts/collections/get_locked_nfts_length.cdc":   TransactionsScriptsCollectionsGet_locked_nfts_lengthCdc,
+	"../../../transactions/scripts/collections/get_metadata.cdc":             TransactionsScriptsCollectionsGet_metadataCdc,
+	"../../../transactions/scripts/collections/get_metadata_field.cdc":       TransactionsScriptsCollectionsGet_metadata_fieldCdc,
+	"../../../transactions/scripts/collections/get_moment_isLocked.cdc":      TransactionsScriptsCollectionsGet_moment_islockedCdc,
+	"../../../transactions/scripts/collections/get_moment_lockExpiry.cdc":    TransactionsScriptsCollectionsGet_moment_lockexpiryCdc,
+	"../../../transactions/scripts/collections/get_moment_playID.cdc":        TransactionsScriptsCollectionsGet_moment_playidCdc,
+	"../../../transactions/scripts/collections/get_moment_serialNum.cdc":     TransactionsScriptsCollectionsGet_moment_serialnumCdc,
+	"../../../transactions/scripts/collections/get_moment_series.cdc":        TransactionsScriptsCollectionsGet_moment_seriesCdc,
+	"../../../transactions/scripts/collections/get_moment_setID.cdc":         TransactionsScriptsCollectionsGet_moment_setidCdc,
+	"../../../transactions/scripts/collections/get_moment_setName.cdc":       TransactionsScriptsCollectionsGet_moment_setnameCdc,
+	"../../../transactions/scripts/collections/get_setplays_are_owned.cdc":   TransactionsScriptsCollectionsGet_setplays_are_ownedCdc,
+	"../../../transactions/scripts/get_currentSeries.cdc":                    TransactionsScriptsGet_currentseriesCdc,
+	"../../../transactions/scripts/get_nft_metadata.cdc":                     TransactionsScriptsGet_nft_metadataCdc,
+	"../../../transactions/scripts/get_topshot_metadata.cdc":                 TransactionsScriptsGet_topshot_metadataCdc,
+	"../../../transactions/scripts/get_totalSupply.cdc":                      TransactionsScriptsGet_totalsupplyCdc,
+	"../../../transactions/scripts/plays/get_all_plays.cdc":                  TransactionsScriptsPlaysGet_all_playsCdc,
+	"../../../transactions/scripts/plays/get_nextPlayID.cdc":                 TransactionsScriptsPlaysGet_nextplayidCdc,
+	"../../../transactions/scripts/plays/get_play_metadata.cdc":              TransactionsScriptsPlaysGet_play_metadataCdc,
+	"../../../transactions/scripts/plays/get_play_metadata_field.cdc":        TransactionsScriptsPlaysGet_play_metadata_fieldCdc,
+	"../../../transactions/scripts/sets/get_edition_retired.cdc":             TransactionsScriptsSetsGet_edition_retiredCdc,
+	"../../../transactions/scripts/sets/get_nextSetID.cdc":                   TransactionsScriptsSetsGet_nextsetidCdc,
+	"../../../transactions/scripts/sets/get_numMoments_in_edition.cdc":       TransactionsScriptsSetsGet_nummoments_in_editionCdc,
+	"../../../transactions/scripts/sets/get_plays_in_set.cdc":                TransactionsScriptsSetsGet_plays_in_setCdc,
+	"../../../transactions/scripts/sets/get_setIDs_by_name.cdc":              TransactionsScriptsSetsGet_setids_by_nameCdc,
+	"../../../transactions/scripts/sets/get_setName.cdc":                     TransactionsScriptsSetsGet_setnameCdc,
+	"../../../transactions/scripts/sets/get_setSeries.cdc":                   TransactionsScriptsSetsGet_setseriesCdc,
+	"../../../transactions/scripts/sets/get_set_data.cdc":                    TransactionsScriptsSetsGet_set_dataCdc,
+	"../../../transactions/scripts/sets/get_set_locked.cdc":                  TransactionsScriptsSetsGet_set_lockedCdc,
+	"../../../transactions/scripts/subeditions/get_all_subeditions.cdc":      TransactionsScriptsSubeditionsGet_all_subeditionsCdc,
+	"../../../transactions/scripts/subeditions/get_nextSubeditionID.cdc":     TransactionsScriptsSubeditionsGet_nextsubeditionidCdc,
+	"../../../transactions/scripts/subeditions/get_nft_subedition.cdc":       TransactionsScriptsSubeditionsGet_nft_subeditionCdc,
+	"../../../transactions/scripts/subeditions/get_subedition_by_id.cdc":     TransactionsScriptsSubeditionsGet_subedition_by_idCdc,
+	"../../../transactions/scripts/users/is_account_all_set_up.cdc":          TransactionsScriptsUsersIs_account_all_set_upCdc,
+	"../../../transactions/shardedCollection/batch_from_sharded.cdc":         TransactionsShardedcollectionBatch_from_shardedCdc,
+	"../../../transactions/shardedCollection/setup_sharded_collection.cdc":   TransactionsShardedcollectionSetup_sharded_collectionCdc,
+	"../../../transactions/shardedCollection/transfer_from_sharded.cdc":      TransactionsShardedcollectionTransfer_from_shardedCdc,
+	"../../../transactions/user/batch_lock_moments.cdc":                      TransactionsUserBatch_lock_momentsCdc,
+	"../../../transactions/user/batch_transfer.cdc":                          TransactionsUserBatch_transferCdc,
+	"../../../transactions/user/batch_unlock_moments.cdc":                    TransactionsUserBatch_unlock_momentsCdc,
+	"../../../transactions/user/destroy_moments.cdc":                         TransactionsUserDestroy_momentsCdc,
+	"../../../transactions/user/destroy_moments_v2.cdc":                      TransactionsUserDestroy_moments_v2Cdc,
+	"../../../transactions/user/lock_fake_nft.cdc":                           TransactionsUserLock_fake_nftCdc,
+	"../../../transactions/user/lock_moment.cdc":                             TransactionsUserLock_momentCdc,
+	"../../../transactions/user/setup_collection.cdc":                        TransactionsUserSetup_collectionCdc,
+	"../../../transactions/user/setup_up_all_collections.cdc":                TransactionsUserSetup_up_all_collectionsCdc,
+	"../../../transactions/user/transfer_moment.cdc":                         TransactionsUserTransfer_momentCdc,
+	"../../../transactions/user/transfer_moment_v3_sale.cdc":                 TransactionsUserTransfer_moment_v3_saleCdc,
+	"../../../transactions/user/unlock_moment.cdc":                           TransactionsUserUnlock_momentCdc,
 }
 
 // AssetDebug is true if the assets were built with the debug flag enabled.
@@ -2501,6 +2765,26 @@ var _bintree = &bintree{nil, map[string]*bintree{
 						"transfer_admin.cdc": {TransactionsAdminTransfer_adminCdc, map[string]*bintree{}},
 						"unlock_all_moments.cdc": {TransactionsAdminUnlock_all_momentsCdc, map[string]*bintree{}},
 						"update_tagline.cdc": {TransactionsAdminUpdate_taglineCdc, map[string]*bintree{}},
+					}},
+					"fastbreak": {nil, map[string]*bintree{
+						"oracle": {nil, map[string]*bintree{
+							"add_stat_to_game.cdc": {TransactionsFastbreakOracleAdd_stat_to_gameCdc, map[string]*bintree{}},
+							"create_game.cdc": {TransactionsFastbreakOracleCreate_gameCdc, map[string]*bintree{}},
+							"create_run.cdc": {TransactionsFastbreakOracleCreate_runCdc, map[string]*bintree{}},
+							"score_fast_break_submission.cdc": {TransactionsFastbreakOracleScore_fast_break_submissionCdc, map[string]*bintree{}},
+							"update_fast_break_game.cdc": {TransactionsFastbreakOracleUpdate_fast_break_gameCdc, map[string]*bintree{}},
+						}},
+						"player": {nil, map[string]*bintree{
+							"create_player.cdc": {TransactionsFastbreakPlayerCreate_playerCdc, map[string]*bintree{}},
+							"play.cdc": {TransactionsFastbreakPlayerPlayCdc, map[string]*bintree{}},
+						}},
+						"scripts": {nil, map[string]*bintree{
+							"get_current_player.cdc": {TransactionsFastbreakScriptsGet_current_playerCdc, map[string]*bintree{}},
+							"get_fast_break.cdc": {TransactionsFastbreakScriptsGet_fast_breakCdc, map[string]*bintree{}},
+							"get_fast_break_stats.cdc": {TransactionsFastbreakScriptsGet_fast_break_statsCdc, map[string]*bintree{}},
+							"get_player_score.cdc": {TransactionsFastbreakScriptsGet_player_scoreCdc, map[string]*bintree{}},
+							"get_token_count.cdc": {TransactionsFastbreakScriptsGet_token_countCdc, map[string]*bintree{}},
+						}},
 					}},
 					"market": {nil, map[string]*bintree{
 						"change_percentage.cdc": {TransactionsMarketChange_percentageCdc, map[string]*bintree{}},
