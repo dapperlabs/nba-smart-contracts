@@ -312,9 +312,6 @@ func TestFastBreak(t *testing.T) {
 		arg0Err := tx.AddArgument(playerName)
 		assert.Nil(t, arg0Err)
 
-		arg1Err := tx.AddArgument(cadence.NewUInt64(500))
-		assert.Nil(t, arg1Err)
-
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
