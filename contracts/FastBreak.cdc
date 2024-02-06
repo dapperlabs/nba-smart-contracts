@@ -28,8 +28,7 @@ pub contract FastBreak: NonFungibleToken {
 
     pub event FastBreakPlayerCreated(
         id: UInt64,
-        playerName: String,
-        avatar: UInt64
+        playerName: String
     )
 
     pub event FastBreakRunCreated(
@@ -362,19 +361,17 @@ pub contract FastBreak: NonFungibleToken {
 
         pub let id: UInt64
         pub let playerName: String      /// username
-        pub let avatar: UInt64          /// flowId of avatar
         pub var tokensMinted: UInt64    /// num games played
 
         access(contract) var gameTokensPlayed: [UInt64]
 
-        init(playerName: String, avatar: UInt64) {
+        init(playerName: String) {
             self.id = FastBreak.nextPlayerId
             self.playerName = playerName
-            self.avatar = avatar
             self.gameTokensPlayed = []
             self.tokensMinted = 0
 
-            FastBreak.fastBreakPlayerByID[self.id] = PlayerData(playerName: playerName, avatar: avatar)
+            FastBreak.fastBreakPlayerByID[self.id] = PlayerData(playerName: playerName)
         }
 
         /// Play the game of Fast Break with an array of Top Shots
@@ -451,12 +448,10 @@ pub contract FastBreak: NonFungibleToken {
 
         pub let id: UInt64
         pub let playerName: String
-        pub let avatar: UInt64
 
-        init(playerName: String, avatar: UInt64) {
+        init(playerName: String) {
             self.id = FastBreak.nextPlayerId
             self.playerName = playerName
-            self.avatar = avatar
         }
     }
 
@@ -627,16 +622,15 @@ pub contract FastBreak: NonFungibleToken {
         return <- create Collection()
     }
 
-    pub fun createPlayer(playerName: String, avatar: UInt64): @FastBreak.Player {
+    pub fun createPlayer(playerName: String): @FastBreak.Player {
         FastBreak.nextPlayerId = FastBreak.nextPlayerId + UInt64(1)
 
         emit FastBreakPlayerCreated(
             id: FastBreak.nextPlayerId,
             playerName: playerName,
-            avatar: avatar
         )
 
-        return <- create FastBreak.Player(playerName: playerName, avatar: avatar)
+        return <- create FastBreak.Player(playerName: playerName)
     }
 
     /// Capabilities of the Game Oracle
