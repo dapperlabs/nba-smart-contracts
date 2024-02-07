@@ -312,9 +312,6 @@ func TestFastBreak(t *testing.T) {
 		arg0Err := tx.AddArgument(playerName)
 		assert.Nil(t, arg0Err)
 
-		arg1Err := tx.AddArgument(cadence.NewUInt64(500))
-		assert.Nil(t, arg1Err)
-
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
@@ -420,6 +417,7 @@ func TestFastBreak(t *testing.T) {
 		arg1Err := tx.AddArgument(cdcState)
 		assert.Nil(t, arg1Err)
 
+		// winner
 		arg2Err := tx.AddArgument(cadence.NewUInt64(playerId))
 		assert.Nil(t, arg2Err)
 
@@ -438,7 +436,7 @@ func TestFastBreak(t *testing.T) {
 		arg0Err := tx.AddArgument(cdcId)
 		assert.Nil(t, arg0Err)
 
-		arg1Err := tx.AddArgument(cadence.NewUInt64(playerId))
+		arg1Err := tx.AddArgument(cadence.NewAddress(jerAddress))
 		assert.Nil(t, arg1Err)
 
 		arg2Err := tx.AddArgument(cadence.NewUInt64(100))
@@ -457,7 +455,7 @@ func TestFastBreak(t *testing.T) {
 			t,
 			b,
 			templates.GenerateGetPlayerScoreScript(env),
-			[][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(cadence.UInt64(playerId))},
+			[][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(cadence.NewAddress(jerAddress))},
 		)
 		assert.Equal(t, cadence.NewUInt64(100), result)
 	})
