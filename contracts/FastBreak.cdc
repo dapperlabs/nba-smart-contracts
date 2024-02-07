@@ -635,7 +635,7 @@ pub contract FastBreak: NonFungibleToken {
 
         emit FastBreakPlayerCreated(
             id: FastBreak.nextPlayerId,
-            playerName: playerName
+            playerName: playerName,
         )
 
         return <- create FastBreak.Player(playerName: playerName)
