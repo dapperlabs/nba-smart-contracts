@@ -457,7 +457,7 @@ pub contract FastBreak: NonFungibleToken {
         }
     }
 
-    /// Get a Fast Break Run by Id
+    /// Get a PlayerId by Address
     ///
     pub fun getPlayerIdByAccount(accountAddress: Address): UInt64 {
         return FastBreak.accountPlayerMapping[accountAddress]!
