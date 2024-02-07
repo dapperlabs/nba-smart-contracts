@@ -123,6 +123,7 @@ pub contract FastBreak: NonFungibleToken {
     access(self) let fastBreakGameByID:     {String: FastBreakGame}
     access(self) let fastBreakPlayerByID:   {UInt64: PlayerData}
     access(self) let playerAccountMapping:  {UInt64: Address}
+    access(self) let accountPlayerMapping:  {Address: UInt64}
 
     /// A top-level Fast Break Run, the container for Fast Break Games
     /// A Fast Break Run contains many Fast Break games & is a mini-season.
@@ -388,6 +389,7 @@ pub contract FastBreak: NonFungibleToken {
             /// Update player address mapping
             if let ownerAddress = self.owner?.address {
                 FastBreak.playerAccountMapping[self.id] = ownerAddress
+                FastBreak.accountPlayerMapping[ownerAddress] = self.id
             }
 
             /// Validate Top Shots
@@ -453,6 +455,12 @@ pub contract FastBreak: NonFungibleToken {
             self.id = FastBreak.nextPlayerId
             self.playerName = playerName
         }
+    }
+
+    /// Get a Fast Break Run by Id
+    ///
+    pub fun getPlayerIdByAccount(accountAddress: Address): UInt64 {
+        return FastBreak.accountPlayerMapping[accountAddress]!
     }
 
     /// Validate Fast Break Submission topShots
@@ -797,6 +805,7 @@ pub contract FastBreak: NonFungibleToken {
         self.fastBreakGameByID = {}
         self.fastBreakPlayerByID = {}
         self.playerAccountMapping = {}
+        self.accountPlayerMapping = {}
 
         let oracle <- create FastBreakDaemon()
         self.account.save(<-oracle, to: self.OracleStoragePath)
