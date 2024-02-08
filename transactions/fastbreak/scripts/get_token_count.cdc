@@ -1,6 +1,6 @@
-import FastBreak from 0xFASTBREAKADDRESS
+import FastBreakV1 from 0xFASTBREAKADDRESS
 
 pub fun main(): UInt64 {
 
-    return FastBreak.totalSupply
+    return FastBreakV1.totalSupply
 }

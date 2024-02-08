@@ -1,6 +1,6 @@
-import FastBreak from 0xFASTBREAKADDRESS
+import FastBreakV1 from 0xFASTBREAKADDRESS
 
-pub fun main(id: String): FastBreak.FastBreakGame? {
+pub fun main(id: String): FastBreakV1.FastBreakGame? {
 
-    return FastBreak.getFastBreakGame(id: id)
+    return FastBreakV1.getFastBreakGame(id: id)
 }
