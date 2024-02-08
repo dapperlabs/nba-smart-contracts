@@ -1,21 +1,21 @@
 import NonFungibleToken from 0xNFTADDRESS
-import FastBreak from 0xFASTBREAKADDRESS
+import FastBreakV1 from 0xFASTBREAKADDRESS
 
 transaction(
     fastBreakGameID: String,
     topShots: [UInt64]
 ) {
 
-    let gameRef: &FastBreak.Player
-    let recipient: &{FastBreak.FastBreakNFTCollectionPublic}
+    let gameRef: &FastBreakV1.Player
+    let recipient: &{FastBreakV1.FastBreakNFTCollectionPublic}
 
     prepare(acct: AuthAccount) {
         self.gameRef = acct
-            .borrow<&FastBreak.Player>(from: FastBreak.PlayerStoragePath)
+            .borrow<&FastBreakV1.Player>(from: FastBreakV1.PlayerStoragePath)
             ?? panic("could not borrow a reference to the accounts player")
 
-        self.recipient = acct.getCapability(FastBreak.CollectionPublicPath)
-            .borrow<&{FastBreak.FastBreakNFTCollectionPublic}>()
+        self.recipient = acct.getCapability(FastBreakV1.CollectionPublicPath)
+            .borrow<&{FastBreakV1.FastBreakNFTCollectionPublic}>()
             ?? panic("could not borrow a reference to the collection receiver")
 
     }

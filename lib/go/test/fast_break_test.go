@@ -94,7 +94,7 @@ func TestFastBreak(t *testing.T) {
 	fastBreakCode := contracts.GenerateFastBreakContract(nftAddr.String(), topshotAddr.String())
 	fastBreakAddr, fastBreakAddrErr := b.CreateAccount([]*flow.AccountKey{fastBreakKey}, []sdktemplates.Contract{
 		{
-			Name:   "FastBreak",
+			Name:   "FastBreakV1",
 			Source: string(fastBreakCode),
 		},
 	})

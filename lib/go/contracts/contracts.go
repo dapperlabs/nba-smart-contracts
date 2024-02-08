@@ -27,7 +27,7 @@ const (
 	defaultTopShotLockingAddress   = "TOPSHOTLOCKINGADDRESS"
 	defaultTopShotRoyaltyAddress   = "TOPSHOTROYALTYADDRESS"
 	defaultNetwork                 = "${NETWORK}"
-	fastBreakFile                  = "FastBreak.cdc"
+	fastBreakFile                  = "FastBreakV1.cdc"
 )
 
 // GenerateTopShotContract returns a copy

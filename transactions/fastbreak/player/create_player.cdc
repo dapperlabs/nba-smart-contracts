@@ -1,27 +1,27 @@
 import NonFungibleToken from 0xNFTADDRESS
-import FastBreak from 0xFASTBREAKADDRESS
+import FastBreakV1 from 0xFASTBREAKADDRESS
 
 transaction(playerName: String) {
 
     prepare(signer: AuthAccount) {
-        if signer.borrow<&FastBreak.Collection>(from: FastBreak.CollectionStoragePath) == nil {
+        if signer.borrow<&FastBreakV1.Collection>(from: FastBreakV1.CollectionStoragePath) == nil {
 
-            let collection <- FastBreak.createEmptyCollection()
-            signer.save(<-collection, to: FastBreak.CollectionStoragePath)
-            signer.link<&FastBreak.Collection{NonFungibleToken.CollectionPublic, FastBreak.FastBreakNFTCollectionPublic}>(
-                FastBreak.CollectionPublicPath,
-                target: FastBreak.CollectionStoragePath
+            let collection <- FastBreakV1.createEmptyCollection()
+            signer.save(<-collection, to: FastBreakV1.CollectionStoragePath)
+            signer.link<&FastBreakV1.Collection{NonFungibleToken.CollectionPublic, FastBreakV1.FastBreakNFTCollectionPublic}>(
+                FastBreakV1.CollectionPublicPath,
+                target: FastBreakV1.CollectionStoragePath
             )
 
         }
 
-        if signer.borrow<&FastBreak.Player>(from: FastBreak.PlayerStoragePath) == nil {
+        if signer.borrow<&FastBreakV1.Player>(from: FastBreakV1.PlayerStoragePath) == nil {
 
-            let player <- FastBreak.createPlayer(playerName: playerName)
-            signer.save(<-player, to: FastBreak.PlayerStoragePath)
-            signer.link<&FastBreak.Player{FastBreak.FastBreakPlayer}>(
-                FastBreak.PlayerPrivatePath,
-                target: FastBreak.PlayerStoragePath
+            let player <- FastBreakV1.createPlayer(playerName: playerName)
+            signer.save(<-player, to: FastBreakV1.PlayerStoragePath)
+            signer.link<&FastBreakV1.Player{FastBreakV1.FastBreakPlayer}>(
+                FastBreakV1.PlayerPrivatePath,
+                target: FastBreakV1.PlayerStoragePath
             )
         }
     }

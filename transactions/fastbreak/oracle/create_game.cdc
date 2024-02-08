@@ -1,4 +1,4 @@
-import FastBreak from 0xFASTBREAKADDRESS
+import FastBreakV1 from 0xFASTBREAKADDRESS
 
 transaction(
     id: String,
@@ -8,10 +8,10 @@ transaction(
     numPlayers: UInt64
 ) {
 
-    let oracleRef: &FastBreak.FastBreakDaemon
+    let oracleRef: &FastBreakV1.FastBreakDaemon
 
     prepare(acct: AuthAccount) {
-        self.oracleRef = acct.borrow<&FastBreak.FastBreakDaemon>(from: FastBreak.OracleStoragePath)
+        self.oracleRef = acct.borrow<&FastBreakV1.FastBreakDaemon>(from: FastBreakV1.OracleStoragePath)
             ?? panic("Could not borrow a reference to the oracle resource")
     }
 
