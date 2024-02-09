@@ -62,6 +62,12 @@ pub contract FastBreakV1: NonFungibleToken {
         mintedTo: UInt64
     )
 
+    pub event FastBreakGameSubmissionUpdated(
+        playerId: UInt64,
+        fastBreakGameID: String,
+        topShots: [UInt64],
+    )
+
     pub event FastBreakGameWinner(
         playerId: UInt64,
         submittedAt: UInt64,
@@ -255,6 +261,19 @@ pub contract FastBreakV1: NonFungibleToken {
             self.submissions[submission.playerId] = submission
         }
 
+        /// Update a Fast Break with new topshot moments
+        ///
+        access(contract) fun updateFastBreakTopshots(playerId: UInt64, topshotMoments: [UInt64]) {
+            pre {
+                FastBreakV1.isValidSubmission(submissionDeadline: self.submissionDeadline) : "Submission update missed deadline"
+            }
+
+            let submission = &self.submissions[playerId] as &FastBreakV1.FastBreakSubmission?
+                ?? panic("Could not find submission for playerId: ".concat(playerId.toString()))
+
+            submission.updateTopshots(topshotMomentIds: topshotMoments)
+        }
+
         /// Update the Fast Break score of an account
         ///
         access(contract) fun updateScore(playerId: UInt64, points: UInt64, win: Bool): Bool {
@@ -353,6 +372,9 @@ pub contract FastBreakV1: NonFungibleToken {
             self.win = win
         }
 
+        access(contract) fun updateTopshots(topshotMomentIds: [UInt64]) {
+            self.topShots = topshotMomentIds
+        }
     }
 
     /// Resource for playing Fast Break
@@ -443,6 +465,58 @@ pub contract FastBreakV1: NonFungibleToken {
 
             FastBreakV1.totalSupply = FastBreakV1.totalSupply + 1
             return <- fastBreakNFT
+        }
+
+        /// Update FastBreak Game Submission with an array of Top Shots
+        /// Each account must have a submission before being able to update
+        ///
+        pub fun updateSubmission(
+            fastBreakGameID: String,
+            topShots: [UInt64]
+        ) {
+            pre {
+                FastBreakV1.fastBreakGameByID.containsKey(fastBreakGameID): "No such fast break game with gameId: ".concat(fastBreakGameID)
+            }
+
+            /// Update player address mapping
+            if let ownerAddress = self.owner?.address {
+                FastBreakV1.playerAccountMapping[self.id] = ownerAddress
+                FastBreakV1.accountPlayerMapping[ownerAddress] = self.id
+            }
+
+            /// Validate Top Shots
+            let acct = getAccount(self.owner?.address!)
+            let collectionRef = acct.getCapability(/public/MomentCollection)
+                .borrow<&{TopShot.MomentCollectionPublic}>() ?? panic("Player does not have top shot collection")
+
+            /// Must own Top Shots to play Fast Break
+            /// more efficient to borrow ref than to loop
+            ///
+            for flowId in topShots {
+                let topShotRef = collectionRef.borrowMoment(id: flowId)
+                    ?? panic("Top shot not owned in collection with flowId: ".concat(flowId.toString()))
+            }
+
+            let fastBreakGame = (&FastBreakV1.fastBreakGameByID[fastBreakGameID] as &FastBreakV1.FastBreakGame?)
+                ?? panic("Fast break does not exist with gameId: ".concat(fastBreakGameID))
+
+            /// Check that the user has a submission for Fast Break game we can update
+            let pastSubmission = fastBreakGame.getFastBreakSubmissionByPlayerId(playerId: self.id)
+                ?? panic("Account already with playerID: ".concat(self.id.toString())
+                    .concat(" has not played FastBreak with ID: ".concat(fastBreakGameID)))
+
+            fastBreakGame.updateFastBreakTopshots(playerId: self.id, topshotMoments: topShots)
+
+            // Get the updated submission with new topshot moment Ids
+            let updatedSubmission = fastBreakGame.getFastBreakSubmissionByPlayerId(playerId: self.id)
+                ?? panic("Account already with playerID: ".concat(self.id.toString())
+                    .concat(" has not played FastBreak with ID: ".concat(fastBreakGameID)))
+
+            emit FastBreakGameSubmissionUpdated(
+                playerId: self.id,
+                fastBreakGameID: fastBreakGameID,
+                topShots: updatedSubmission.topShots,
+            )
         }
     }
 
