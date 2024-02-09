@@ -31,6 +31,7 @@
 // ../../../transactions/fastbreak/oracle/update_fast_break_game.cdc (522B)
 // ../../../transactions/fastbreak/player/create_player.cdc (1.105kB)
 // ../../../transactions/fastbreak/player/play.cdc (926B)
+// ../../../transactions/fastbreak/player/update_submission.cdc (537B)
 // ../../../transactions/fastbreak/scripts/get_current_player.cdc (107B)
 // ../../../transactions/fastbreak/scripts/get_fast_break.cdc (149B)
 // ../../../transactions/fastbreak/scripts/get_fast_break_stats.cdc (181B)
@@ -801,6 +802,26 @@ func TransactionsFastbreakPlayerPlayCdc() (*asset, error) {
 
 	info := bindataFileInfo{name: "../../../transactions/fastbreak/player/play.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x54, 0x8b, 0xe1, 0x6d, 0x1, 0x3c, 0xbc, 0x34, 0x70, 0xdd, 0x24, 0xf9, 0x5d, 0x43, 0x6d, 0x13, 0x87, 0x90, 0xc2, 0xf9, 0xf0, 0x1d, 0x1f, 0xfb, 0xa6, 0xbe, 0xb1, 0xdc, 0xe5, 0x32, 0x1d, 0x7c}}
+	return a, nil
+}
+
+var _TransactionsFastbreakPlayerUpdate_submissionCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x6c\x91\x4f\x4b\xf3\x40\x10\xc6\xef\xf9\x14\x43\x0f\x2f\x09\xbc\x04\x05\xf1\x10\xd4\x92\xd2\x46\x8a\x58\x4a\x53\xbd\x88\x87\xe9\x76\xf2\x87\x26\x3b\xcb\xee\x2c\x56\x4a\xbf\xbb\xc4\xb4\x45\x6d\xe7\xb2\xb0\xf3\xf0\x7b\x9e\x99\xa9\x5b\xc3\x56\x20\x43\x27\x23\x4b\xb8\x79\xbd\x86\xc2\x72\x0b\x57\xdb\x2c\xcd\x97\xa3\xc5\x24\x7d\x4a\xc7\xe3\xc5\x24\xcf\x83\x83\x74\xc6\x3a\xf3\xba\xac\x57\x0d\x2d\x79\x43\xfa\xa8\x9f\x65\xcb\xa3\x32\x10\x8b\xda\xa1\x92\x9a\x75\x58\x1c\xd1\x8f\xd8\xd2\x74\x9c\x40\x2e\xb6\xd6\xe5\x7f\x10\x36\x79\xc5\xf2\xcc\x2d\x69\x99\xae\x5d\x02\x6f\x2f\x53\x2d\xb7\x37\xef\x11\xec\x82\x00\x00\xa0\x21\x81\x12\x5b\x5a\x50\x91\xc0\xbf\x1f\x21\xe3\x79\x83\x9f\x64\x7b\x95\xb1\x64\xd0\x52\x88\x4a\x49\x02\xa9\x97\x2a\x55\x8a\xbd\x96\x13\xa7\x2b\x47\x4d\x11\x1f\x60\x70\x0f\x9d\xf8\xd4\xeb\x2a\x5e\xb1\xb5\xfc\x71\x77\xc1\xe6\x21\xec\x66\x4c\xe0\xbc\x93\x0b\x5b\x2c\x69\x8e\x52\x45\xbf\x68\xc3\x21\x18\xd4\xb5\x0a\x07\x8a\x7d\xb3\x06\xcd\x02\xbd\x01\x20\x58\x2a\xc8\x92\x56\x04\xc2\x20\x15\x75\x61\xba\xbc\x0e\xcc\x37\x75\x10\xf5\xb1\xf7\xfd\x43\x5b\x52\x5e\x08\x76\x17\x67\x89\xbd\x59\xa3\x50\xee\x57\x6d\xed\xdc\xc5\x8d\xff\xf9\x38\xad\xde\x25\x67\x47\x88\x0e\xc6\xfb\xaf\x00\x00\x00\xff\xff\xaf\x6a\xb7\x4a\x19\x02\x00\x00"
+
+func TransactionsFastbreakPlayerUpdate_submissionCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsFastbreakPlayerUpdate_submissionCdc,
+		"../../../transactions/fastbreak/player/update_submission.cdc",
+	)
+}
+
+func TransactionsFastbreakPlayerUpdate_submissionCdc() (*asset, error) {
+	bytes, err := TransactionsFastbreakPlayerUpdate_submissionCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/fastbreak/player/update_submission.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x4d, 0xe7, 0xa3, 0xa0, 0xe0, 0x56, 0xb2, 0x3b, 0xa3, 0x28, 0x8b, 0x3f, 0xef, 0x9, 0x97, 0xac, 0x9e, 0xc3, 0x7d, 0xa0, 0xc2, 0xce, 0xe9, 0x38, 0xcf, 0x4c, 0xb8, 0xc0, 0x86, 0x4, 0xaf, 0xc9}}
 	return a, nil
 }
 
@@ -2606,6 +2627,7 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/fastbreak/oracle/update_fast_break_game.cdc":      TransactionsFastbreakOracleUpdate_fast_break_gameCdc,
 	"../../../transactions/fastbreak/player/create_player.cdc":               TransactionsFastbreakPlayerCreate_playerCdc,
 	"../../../transactions/fastbreak/player/play.cdc":                        TransactionsFastbreakPlayerPlayCdc,
+	"../../../transactions/fastbreak/player/update_submission.cdc":           TransactionsFastbreakPlayerUpdate_submissionCdc,
 	"../../../transactions/fastbreak/scripts/get_current_player.cdc":         TransactionsFastbreakScriptsGet_current_playerCdc,
 	"../../../transactions/fastbreak/scripts/get_fast_break.cdc":             TransactionsFastbreakScriptsGet_fast_breakCdc,
 	"../../../transactions/fastbreak/scripts/get_fast_break_stats.cdc":       TransactionsFastbreakScriptsGet_fast_break_statsCdc,
@@ -2777,6 +2799,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 						"player": {nil, map[string]*bintree{
 							"create_player.cdc": {TransactionsFastbreakPlayerCreate_playerCdc, map[string]*bintree{}},
 							"play.cdc": {TransactionsFastbreakPlayerPlayCdc, map[string]*bintree{}},
+							"update_submission.cdc": {TransactionsFastbreakPlayerUpdate_submissionCdc, map[string]*bintree{}},
 						}},
 						"scripts": {nil, map[string]*bintree{
 							"get_current_player.cdc": {TransactionsFastbreakScriptsGet_current_playerCdc, map[string]*bintree{}},
