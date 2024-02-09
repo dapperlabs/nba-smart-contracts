@@ -282,11 +282,13 @@ pub contract FastBreakV1: NonFungibleToken {
             let submission: FastBreakV1.FastBreakSubmission = submissions[playerId]
                 ?? panic("Unable to find fast break submission for playerId: ".concat(playerId.toString()))
 
+            let isPrevSubmissionWin = submission.win
+
             submission.setPoints(points: points, win: win)
 
             self.submissions[playerId] = submission
 
-            if win && !submission.win {
+            if win && !isPrevSubmissionWin {
                 return true
             }
 
