@@ -1249,6 +1249,10 @@ pub contract TopShot: NonFungibleToken {
                 let token <- self.ownedNFTs.remove(key: id)
                     ?? panic("Cannot destroy: Moment does not exist in collection: ".concat(id.toString()))
 
+                // Emit a withdraw event here so that platforms do not have to understand TopShot-specific events to see ownership change
+                // A withdraw without a corresponding deposit means the NFT in question has no owner address
+                emit Withdraw(id: id, from: self.owner?.address)
+
                 // does nothing if the moment is not locked
                 topShotLockingAdmin.unlockByID(id: id)
 
