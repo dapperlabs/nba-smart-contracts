@@ -37,37 +37,41 @@ import DapperUtilityCoin from 0xDUCADDRESS
 import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 
-pub contract Market {
+access(all) contract Market {
+
+    access(all) entitlement Create
+    access(all) entitlement Withdraw
+    access(all) entitlement Update
 
     // -----------------------------------------------------------------------
     // TopShot Market contract Event definitions
     // -----------------------------------------------------------------------
 
     // emitted when a TopShot moment is listed for sale
-    pub event MomentListed(id: UInt64, price: UFix64, seller: Address?)
+    access(all) event MomentListed(id: UInt64, price: UFix64, seller: Address?)
     // emitted when the price of a listed moment has changed
-    pub event MomentPriceChanged(id: UInt64, newPrice: UFix64, seller: Address?)
+    access(all) event MomentPriceChanged(id: UInt64, newPrice: UFix64, seller: Address?)
     // emitted when a token is purchased from the market
-    pub event MomentPurchased(id: UInt64, price: UFix64, seller: Address?)
+    access(all) event MomentPurchased(id: UInt64, price: UFix64, seller: Address?)
     // emitted when a moment has been withdrawn from the sale
-    pub event MomentWithdrawn(id: UInt64, owner: Address?)
+    access(all) event MomentWithdrawn(id: UInt64, owner: Address?)
     // emitted when the cut percentage of the sale has been changed by the owner
-    pub event CutPercentageChanged(newPercent: UFix64, seller: Address?)
+    access(all) event CutPercentageChanged(newPercent: UFix64, seller: Address?)
 
     // SalePublic
     //
     // The interface that a user can publish their sale as
     // to allow others to access their sale
-    pub resource interface SalePublic {
-        pub var cutPercentage: UFix64
-        pub fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
+    access(all) resource interface SalePublic {
+        access(all) var cutPercentage: UFix64
+        access(all) fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
             post {
                 result.id == tokenID: "The ID of the withdrawn token must be the same as the requested ID"
             }
         }
-        pub fun getPrice(tokenID: UInt64): UFix64?
-        pub fun getIDs(): [UInt64]
-        pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
+        access(all) fun getPrice(tokenID: UInt64): UFix64?
+        access(all) fun getIDs(): [UInt64]
+        access(all) fun borrowMoment(id: UInt64): &TopShot.NFT? {
             // If the result isn't nil, the id of the returned reference
             // should be the same as the argument to the function
             post {
@@ -86,7 +90,7 @@ pub contract Market {
     //
     // When a token is purchased, a cut is taken from the tokens that are used to
     // purchase and sent to the beneficiary, then the rest are sent to the seller
-    pub resource SaleCollection: SalePublic {
+    access(all) resource SaleCollection: SalePublic {
 
         // A collection of the moments that the user has for sale
         access(self) var forSale: @TopShot.Collection
@@ -106,7 +110,7 @@ pub contract Market {
         // the percentage that is taken from every purchase for the beneficiary
         // This is a literal percentage
         // For example, if the percentage is 15%, cutPercentage = 0.15
-        pub var cutPercentage: UFix64
+        access(all) var cutPercentage: UFix64
 
         init (ownerCapability: Capability, beneficiaryCapability: Capability, cutPercentage: UFix64) {
             pre {
@@ -118,7 +122,7 @@ pub contract Market {
                     "Beneficiary's Receiver Capability is invalid!"
             }
 
-            self.forSale <- TopShot.createEmptyCollection() as! @TopShot.Collection
+            self.forSale <- TopShot.createEmptyCollection(nftType: Type<@TopShot.NFT>()) as! @TopShot.Collection
             self.ownerCapability = ownerCapability
             self.beneficiaryCapability = beneficiaryCapability
             self.prices = {}
@@ -127,7 +131,7 @@ pub contract Market {
 
         // listForSale lists an NFT for sale in this sale collection
         // at the specified price
-        pub fun listForSale(token: @TopShot.NFT, price: UFix64) {
+        access(Create) fun listForSale(token: @TopShot.NFT, price: UFix64) {
 
             // get the ID of the token
             let id = token.id
@@ -142,7 +146,7 @@ pub contract Market {
         }
 
         // Withdraw removes a moment that was listed for sale
-        pub fun withdraw(tokenID: UInt64): @TopShot.NFT {
+        access(Withdraw) fun withdraw(tokenID: UInt64): @TopShot.NFT {
 
             // remove and return the token
             // will revert if the token doesn't exist
@@ -163,7 +167,7 @@ pub contract Market {
 
         // purchase lets a user send tokens to purchase an NFT that is for sale
         // the purchased NFT is returned to the transaction context that called it
-        pub fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
+        access(all) fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
             pre {
                 self.forSale.ownedNFTs[tokenID] != nil && self.prices[tokenID] != nil:
                     "No token matching this ID for sale!"
@@ -195,7 +199,7 @@ pub contract Market {
         }
 
         // changePrice changes the price of a token that is currently for sale
-        pub fun changePrice(tokenID: UInt64, newPrice: UFix64) {
+        access(Update) fun changePrice(tokenID: UInt64, newPrice: UFix64) {
             pre {
                 self.prices[tokenID] != nil: "Cannot change the price for a token that is not for sale"
             }
@@ -206,14 +210,14 @@ pub contract Market {
         }
 
         // changePercentage changes the cut percentage of the tokens that are for sale
-        pub fun changePercentage(_ newPercent: UFix64) {
+        access(Update) fun changePercentage(_ newPercent: UFix64) {
             self.cutPercentage = newPercent
 
             emit CutPercentageChanged(newPercent: newPercent, seller: self.owner?.address)
         }
 
         // changeOwnerReceiver updates the capability for the sellers fungible token Vault
-        pub fun changeOwnerReceiver(_ newOwnerCapability: Capability) {
+        access(Update) fun changeOwnerReceiver(_ newOwnerCapability: Capability) {
             pre {
                 newOwnerCapability.borrow<&{FungibleToken.Receiver}>() != nil:
                     "Owner's Receiver Capability is invalid!"
@@ -222,38 +226,34 @@ pub contract Market {
         }
 
         // changeBeneficiaryReceiver updates the capability for the beneficiary of the cut of the sale
-        pub fun changeBeneficiaryReceiver(_ newBeneficiaryCapability: Capability) {
+        access(Update) fun changeBeneficiaryReceiver(_ newBeneficiaryCapability: Capability) {
             pre {
-                newBeneficiaryCapability.borrow<&DapperUtilityCoin.Vault{FungibleToken.Receiver}>() != nil:
+                newBeneficiaryCapability.borrow<&DapperUtilityCoin.Vault>() != nil:
                     "Beneficiary's Receiver Capability is invalid!"
             }
             self.beneficiaryCapability = newBeneficiaryCapability
         }
 
         // getPrice returns the price of a specific token in the sale
-        pub fun getPrice(tokenID: UInt64): UFix64? {
+        view access(all) fun getPrice(tokenID: UInt64): UFix64? {
             return self.prices[tokenID]
         }
 
         // getIDs returns an array of token IDs that are for sale
-        pub fun getIDs(): [UInt64] {
+        view access(all) fun getIDs(): [UInt64] {
             return self.forSale.getIDs()
         }
 
         // borrowMoment Returns a borrowed reference to a Moment in the collection
         // so that the caller can read data from it
-        pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
+        view access(all) fun borrowMoment(id: UInt64): &TopShot.NFT? {
             let ref = self.forSale.borrowMoment(id: id)
             return ref
-        }
-
-        destroy() {
-            destroy self.forSale
         }
     }
 
     // createCollection returns a new collection resource to the caller
-    pub fun createSaleCollection(ownerCapability: Capability, beneficiaryCapability: Capability, cutPercentage: UFix64): @SaleCollection {
+    access(all) fun createSaleCollection(ownerCapability: Capability, beneficiaryCapability: Capability, cutPercentage: UFix64): @SaleCollection {
         return <- create SaleCollection(ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: cutPercentage)
     }
 }

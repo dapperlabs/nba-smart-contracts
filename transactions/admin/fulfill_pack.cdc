@@ -12,25 +12,24 @@ import TopShotShardedCollection from 0xSHARDEDADDRESS
 
 transaction(recipientAddr: Address, momentIDs: [UInt64]) {
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
         
         // get the recipient's public account object
         let recipient = getAccount(recipientAddr)
 
         // borrow a reference to the recipient's moment collection
-        let receiverRef = recipient.getCapability(/public/MomentCollection)
-            .borrow<&{TopShot.MomentCollectionPublic}>()
-            ?? panic("Could not borrow reference to receiver's collection")
+        let receiverRef = recipient.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
+            ?? panic("Cannot borrow a reference to the recipient's collection")
 
         
 
         // borrow a reference to the owner's moment collection
-        if let collection = acct.borrow<&TopShotShardedCollection.ShardedCollection>(from: /storage/ShardedMomentCollection) {
+        if let collection = acct.storage.borrow<auth(NonFungibleToken.Withdraw) &TopShotShardedCollection.ShardedCollection>(from: /storage/ShardedMomentCollection) {
             
             receiverRef.batchDeposit(tokens: <-collection.batchWithdraw(ids: momentIDs))
         } else {
 
-            let collection = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)! 
+            let collection = acct.storage.borrow<auth(NonFungibleToken.Withdraw) &TopShot.Collection>(from: /storage/MomentCollection)!
 
             // Deposit the pack of moments to the recipient's collection
             receiverRef.batchDeposit(tokens: <-collection.batchWithdraw(ids: momentIDs))

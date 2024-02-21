@@ -1,6 +1,9 @@
 package test
 
 import (
+	"context"
+	"github.com/onflow/flow-emulator/adapters"
+	"github.com/rs/zerolog"
 	"testing"
 
 	"github.com/onflow/cadence"
@@ -25,7 +28,9 @@ func TestSubeditions(t *testing.T) {
 
 	// Create a new user account
 	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
-	joshAddress, _ := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
+	logger := zerolog.Nop()
+	adapter := adapters.NewSDKAdapter(&logger, b)
+	joshAddress, _ := adapter.CreateAccount(context.Background(), []*flow.AccountKey{joshAccountKey}, nil)
 
 	firstName := CadenceString("FullName")
 
@@ -367,7 +372,6 @@ func TestSubeditions(t *testing.T) {
 		expectedMetadataExternalURL := "https://nbatopshot.com/moment/1"
 		expectedStoragePath := "/storage/MomentCollection"
 		expectedPublicPath := "/public/MomentCollection"
-		expectedPrivatePath := "/private/MomentCollection"
 		expectedCollectionName := "NBA-Top-Shot"
 		expectedCollectionDescription := "NBA Top Shot is your chance to own, sell, and trade official digital collectibles of the NBA and WNBA's greatest plays and players"
 		expectedCollectionSquareImage := "https://nbatopshot.com/static/img/og/og.png"
@@ -384,14 +388,13 @@ func TestSubeditions(t *testing.T) {
 		assert.Equal(t, cadence.String(expectedMetadataExternalURL), metadataViewNFT.Fields[5])
 		assert.Equal(t, cadence.String(expectedStoragePath), metadataViewNFT.Fields[6])
 		assert.Equal(t, cadence.String(expectedPublicPath), metadataViewNFT.Fields[7])
-		assert.Equal(t, cadence.String(expectedPrivatePath), metadataViewNFT.Fields[8])
-		assert.Equal(t, cadence.String(expectedCollectionName), metadataViewNFT.Fields[9])
-		assert.Equal(t, cadence.String(expectedCollectionDescription), metadataViewNFT.Fields[10])
-		assert.Equal(t, cadence.String(expectedCollectionSquareImage), metadataViewNFT.Fields[11])
-		assert.Equal(t, cadence.String(expectedCollectionBannerImage), metadataViewNFT.Fields[12])
-		assert.Equal(t, cadence.UInt32(expectedRoyaltyReceiversCount), metadataViewNFT.Fields[13])
-		assert.Equal(t, cadence.UInt32(expectedTraitsCount), metadataViewNFT.Fields[14])
-		assert.Equal(t, cadence.String(expectedVideoURL), metadataViewNFT.Fields[15])
+		assert.Equal(t, cadence.String(expectedCollectionName), metadataViewNFT.Fields[8])
+		assert.Equal(t, cadence.String(expectedCollectionDescription), metadataViewNFT.Fields[9])
+		assert.Equal(t, cadence.String(expectedCollectionSquareImage), metadataViewNFT.Fields[10])
+		assert.Equal(t, cadence.String(expectedCollectionBannerImage), metadataViewNFT.Fields[11])
+		assert.Equal(t, cadence.UInt32(expectedRoyaltyReceiversCount), metadataViewNFT.Fields[12])
+		assert.Equal(t, cadence.UInt32(expectedTraitsCount), metadataViewNFT.Fields[13])
+		assert.Equal(t, cadence.String(expectedVideoURL), metadataViewNFT.Fields[14])
 
 		// Tests that top-shot specific metadata is discoverable on-chain
 		expectedPlayID := 1

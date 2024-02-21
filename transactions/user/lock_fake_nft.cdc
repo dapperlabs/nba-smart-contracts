@@ -1,5 +1,6 @@
 import TopShot from 0xTOPSHOTADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
+import NonFungibleToken from 0xNFTADDRESS
 
 // This transaction attempts to send an NFT that is impersonating a TopShot NFT
 // to the locking contract, it must fail
@@ -10,8 +11,8 @@ import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 // duration: number of seconds that the moment will be locked for
 
 transaction(id: UInt64, duration: UFix64) {
-    prepare(acct: AuthAccount) {
-        let collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
+    prepare(acct: auth(BorrowValue) &Account) {
+        let collectionRef = acct.storage.borrow<auth(NonFungibleToken.Withdraw) &TopShot.Collection>(from: /storage/MomentCollection)
             ?? panic("Could not borrow from MomentCollection in storage")
 
         let nft <- collectionRef.withdraw(withdrawID: id)

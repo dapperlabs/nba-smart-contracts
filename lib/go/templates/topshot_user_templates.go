@@ -12,6 +12,7 @@ const (
 	transferMomentV3Filename = "user/transfer_moment_v3_sale.cdc"
 	destroyMomentsFilename   = "user/destroy_moments.cdc"
 	destroyMomentsV2Filename = "user/destroy_moments_v2.cdc"
+	setupSwitchboardAccount  = "user/setup_switchboard_account.cdc"
 )
 
 // GenerateSetupAccountScript creates a script that sets up an account to use topshot
@@ -55,6 +56,12 @@ func GenerateDestroyMomentsScript(env Environment) []byte {
 // moments from a user's collection using the Top Shot contract destroyMoments function
 func GenerateDestroyMomentsV2Script(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + destroyMomentsV2Filename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+func GenerateSetupSwitchboardScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + setupSwitchboardAccount)
 
 	return []byte(replaceAddresses(code, env))
 }

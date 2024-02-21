@@ -8,7 +8,7 @@ import TopShot from 0xTOPSHOTADDRESS
 
 // Returns: TopShot.QuerySetData
 
-pub fun main(setID: UInt32): TopShot.QuerySetData {
+access(all) fun main(setID: UInt32): TopShot.QuerySetData {
 
     let data = TopShot.getSetData(setID: setID)
         ?? panic("Could not get data for the specified set ID")

@@ -2,22 +2,23 @@ import FungibleToken from 0xFUNGIBLETOKENADDRESS
 import TopShotMarketV3 from 0xMARKETV3ADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 import Market from 0xMARKETADDRESS
+import NonFungibleToken from 0xNFTADDRESS
 
 transaction(tokenReceiverPath: PublicPath, beneficiaryAccount: Address, cutPercentage: UFix64, momentID: UInt64, price: UFix64) {
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(Storage, Capabilities) &Account) {
         // check to see if a v3 sale collection already exists
-        if acct.borrow<&TopShotMarketV3.SaleCollection>(from: TopShotMarketV3.marketStoragePath) == nil {
+        if acct.storage.borrow<&TopShotMarketV3.SaleCollection>(from: TopShotMarketV3.marketStoragePath) == nil {
             // get the fungible token capabilities for the owner and beneficiary
-            let ownerCapability = acct.getCapability<&{FungibleToken.Receiver}>(tokenReceiverPath)
-            let beneficiaryCapability = getAccount(beneficiaryAccount).getCapability<&{FungibleToken.Receiver}>(tokenReceiverPath)
+            let ownerCapability = acct.capabilities.get<&{FungibleToken.Receiver}>(tokenReceiverPath)!
+            let beneficiaryCapability = getAccount(beneficiaryAccount).capabilities.get<&{FungibleToken.Receiver}>(tokenReceiverPath)!
 
-            let ownerCollection = acct.link<&TopShot.Collection>(/private/MomentCollection, target: /storage/MomentCollection)!
+            let ownerCollection = acct.capabilities.storage.issue<auth(NonFungibleToken.Withdraw) &TopShot.Collection>(/storage/MomentCollection)
 
             // get a capability for the v1 collection
-            var v1SaleCollection: Capability<&Market.SaleCollection>? = nil
-            if acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection) != nil {
-                v1SaleCollection = acct.link<&Market.SaleCollection>(/private/topshotSaleCollection, target: /storage/topshotSaleCollection)!
+            var v1SaleCollection: Capability<auth(Market.Withdraw) &Market.SaleCollection>? = nil
+            if acct.storage.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection) != nil {
+                v1SaleCollection = acct.capabilities.storage.issue<auth(Market.Withdraw) &Market.SaleCollection>(/storage/topshotSaleCollection)
             }
 
             // create a new sale collection
@@ -28,14 +29,17 @@ transaction(tokenReceiverPath: PublicPath, beneficiaryAccount: Address, cutPerce
                                                                              marketV1Capability: v1SaleCollection)
             
             // save it to storage
-            acct.save(<-topshotSaleCollection, to: TopShotMarketV3.marketStoragePath)
+            acct.storage.save(<-topshotSaleCollection, to: TopShotMarketV3.marketStoragePath)
         
             // create a public link to the sale collection
-            acct.link<&TopShotMarketV3.SaleCollection{Market.SalePublic}>(TopShotMarketV3.marketPublicPath, target: TopShotMarketV3.marketStoragePath)
+           acct.capabilities.publish(
+                acct.capabilities.storage.issue<&TopShotMarketV3.SaleCollection>(TopShotMarketV3.marketStoragePath),
+                at: TopShotMarketV3.marketPublicPath
+            )
         }
 
         // borrow a reference to the sale
-        let topshotSaleCollection = acct.borrow<&TopShotMarketV3.SaleCollection>(from: TopShotMarketV3.marketStoragePath)
+        let topshotSaleCollection = acct.storage.borrow<auth(TopShotMarketV3.Create) &TopShotMarketV3.SaleCollection>(from: TopShotMarketV3.marketStoragePath)
             ?? panic("Could not borrow from sale in storage")
         
         // put the moment up for sale

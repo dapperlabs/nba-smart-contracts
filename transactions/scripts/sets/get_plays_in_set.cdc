@@ -10,7 +10,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // Returns: [UInt32]
 // Array of play IDs in specified set
 
-pub fun main(setID: UInt32): [UInt32] {
+access(all) fun main(setID: UInt32): [UInt32] {
 
     let plays = TopShot.getPlaysInSet(setID: setID)!
 

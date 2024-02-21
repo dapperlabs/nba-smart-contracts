@@ -1,6 +1,8 @@
 package templates
 
-import "github.com/dapperlabs/nba-smart-contracts/lib/go/templates/internal/assets"
+import (
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates/internal/assets"
+)
 
 const (
 	lockMomentFilename          = "user/lock_moment.cdc"

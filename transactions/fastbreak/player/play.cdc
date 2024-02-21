@@ -6,16 +6,15 @@ transaction(
     topShots: [UInt64]
 ) {
 
-    let gameRef: &FastBreakV1.Player
+    let gameRef: auth(FastBreakV1.Play) &FastBreakV1.Player
     let recipient: &{FastBreakV1.FastBreakNFTCollectionPublic}
 
-    prepare(acct: AuthAccount) {
-        self.gameRef = acct
-            .borrow<&FastBreakV1.Player>(from: FastBreakV1.PlayerStoragePath)
+    prepare(acct: auth(Storage, Capabilities) &Account) {
+        self.gameRef = acct.storage
+            .borrow<auth(FastBreakV1.Play) &FastBreakV1.Player>(from: FastBreakV1.PlayerStoragePath)
             ?? panic("could not borrow a reference to the accounts player")
 
-        self.recipient = acct.getCapability(FastBreakV1.CollectionPublicPath)
-            .borrow<&{FastBreakV1.FastBreakNFTCollectionPublic}>()
+        self.recipient = acct.capabilities.borrow<&FastBreakV1.Collection>(FastBreakV1.CollectionPublicPath)
             ?? panic("could not borrow a reference to the collection receiver")
 
     }
@@ -26,6 +25,6 @@ transaction(
             fastBreakGameID: fastBreakGameID,
             topShots: topShots
         )
-        self.recipient.deposit(token: <- (nft as @NonFungibleToken.NFT))
+        self.recipient.deposit(token: <- (nft as @{NonFungibleToken.NFT}))
     }
 }

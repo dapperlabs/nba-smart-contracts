@@ -14,11 +14,10 @@ import TopShot from 0xTOPSHOTADDRESS
 // Returns: String
 // Value of specified metadata field
 
-pub fun main(account: Address, momentID: UInt64, fieldToSearch: String): String {
+access(all) fun main(account: Address, momentID: UInt64, fieldToSearch: String): String {
 
     // borrow a public reference to the owner's moment collection 
-    let collectionRef = getAccount(account).getCapability(/public/MomentCollection)
-        .borrow<&{TopShot.MomentCollectionPublic}>()
+    let collectionRef = getAccount(account).capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
         ?? panic("Could not get public moment collection reference")
 
     // borrow a reference to the specified moment in the collection

@@ -6,7 +6,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // Returns: UInt32
 // currentSeries field in TopShot contract
 
-pub fun main(): UInt32 {
+access(all) fun main(): UInt32 {
 
     return TopShot.currentSeries
 }

@@ -13,18 +13,18 @@ import TopShotMarketV3 from 0xMARKETV3ADDRESS
 transaction(recipient: Address, withdrawID: UInt64) {
 
     // local variable for storing the transferred token
-    let transferToken: @NonFungibleToken.NFT
+    let transferToken: @{NonFungibleToken.NFT}
     
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(Storage, Capabilities) &Account) {
 
         // borrow a reference to the owner's collection
-        let collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
+        let collectionRef = acct.storage.borrow<auth(NonFungibleToken.Withdraw) &TopShot.Collection>(from: /storage/MomentCollection)
             ?? panic("Could not borrow a reference to the stored Moment collection")
         
         // withdraw the NFT
         self.transferToken <- collectionRef.withdraw(withdrawID: withdrawID)
 
-        if let saleRef = acct.borrow<&TopShotMarketV3.SaleCollection>(from: TopShotMarketV3.marketStoragePath) {
+        if let saleRef = acct.storage.borrow<auth(TopShotMarketV3.Cancel) &TopShotMarketV3.SaleCollection>(from: TopShotMarketV3.marketStoragePath) {
             saleRef.cancelSale(tokenID: withdrawID)
         }
     }
@@ -35,7 +35,7 @@ transaction(recipient: Address, withdrawID: UInt64) {
         let recipient = getAccount(recipient)
 
         // get the Collection reference for the receiver
-        let receiverRef = recipient.getCapability(/public/MomentCollection).borrow<&{TopShot.MomentCollectionPublic}>()!
+        let receiverRef = recipient.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)!
 
         // deposit the NFT in the receivers collection
         receiverRef.deposit(token: <-self.transferToken)

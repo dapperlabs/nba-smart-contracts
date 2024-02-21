@@ -11,11 +11,11 @@ import TopShotShardedCollection from 0xSHARDEDADDRESS
 
 transaction(recipient: Address, momentIDs: [UInt64]) {
 
-    let transferTokens: @NonFungibleToken.Collection
+    let transferTokens: @{NonFungibleToken.Collection}
     
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
         
-        self.transferTokens <- acct.borrow<&TopShotShardedCollection.ShardedCollection>(from: /storage/ShardedMomentCollection)!.batchWithdraw(ids: momentIDs)
+        self.transferTokens <- acct.storage.borrow<auth(NonFungibleToken.Withdraw) &TopShotShardedCollection.ShardedCollection>(from: /storage/ShardedMomentCollection)!.batchWithdraw(ids: momentIDs)
     }
 
     execute {
@@ -24,7 +24,7 @@ transaction(recipient: Address, momentIDs: [UInt64]) {
         let recipient = getAccount(recipient)
 
         // get the Collection reference for the receiver
-        let receiverRef = recipient.getCapability(/public/MomentCollection).borrow<&{TopShot.MomentCollectionPublic}>()!
+        let receiverRef = recipient.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)!
 
         // deposit the NFT in the receivers collection
         receiverRef.batchDeposit(tokens: <-self.transferTokens)

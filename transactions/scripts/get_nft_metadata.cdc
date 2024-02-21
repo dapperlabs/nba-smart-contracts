@@ -1,23 +1,22 @@
 import TopShot from 0xTOPSHOTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 
-pub struct NFT {
-    pub let name: String
-    pub let description: String
-    pub let thumbnail: String
-    pub let owner: Address
-    pub let type: String
-    pub let externalURL: String
-    pub let storagePath: String
-    pub let publicPath: String
-    pub let privatePath: String
-    pub let collectionName: String
-    pub let collectionDescription: String
-    pub let collectionSquareImage: String
-    pub let collectionBannerImage: String
-    pub let royaltyReceiversCount: UInt32
-    pub let traitsCount: UInt32
-    pub let videoURL: String
+access(all) struct NFT {
+    access(all) let name: String
+    access(all) let description: String
+    access(all) let thumbnail: String
+    access(all) let owner: Address
+    access(all) let type: String
+    access(all) let externalURL: String
+    access(all) let storagePath: String
+    access(all) let publicPath: String
+    access(all) let collectionName: String
+    access(all) let collectionDescription: String
+    access(all) let collectionSquareImage: String
+    access(all) let collectionBannerImage: String
+    access(all) let royaltyReceiversCount: UInt32
+    access(all) let traitsCount: UInt32
+    access(all) let videoURL: String
 
     init(
             name: String,
@@ -28,7 +27,6 @@ pub struct NFT {
             externalURL: String,
             storagePath: String,
             publicPath: String,
-            privatePath: String,
             collectionName: String,
             collectionDescription: String,
             collectionSquareImage: String,
@@ -45,7 +43,6 @@ pub struct NFT {
         self.externalURL = externalURL
         self.storagePath = storagePath
         self.publicPath = publicPath
-        self.privatePath = privatePath
         self.collectionName = collectionName
         self.collectionDescription = collectionDescription
         self.collectionSquareImage = collectionSquareImage
@@ -56,11 +53,10 @@ pub struct NFT {
     }
 }
 
-pub fun main(address: Address, id: UInt64): NFT {
+access(all) fun main(address: Address, id: UInt64): NFT {
     let account = getAccount(address)
 
-    let collectionRef = account.getCapability(/public/MomentCollection)
-                            .borrow<&{TopShot.MomentCollectionPublic}>()!
+    let collectionRef = account.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)!
 
     let nft = collectionRef.borrowMoment(id: id)!
     
@@ -85,7 +81,6 @@ pub fun main(address: Address, id: UInt64): NFT {
         externalURL: externalURLView.url,
         storagePath: collectionDataView.storagePath.toString(),
         publicPath: collectionDataView.publicPath.toString(),
-        privatePath: collectionDataView.providerPath.toString(),
         collectionName: collectionDisplayView.name,
         collectionDescription: collectionDisplayView.description,
         collectionSquareImage: collectionDisplayView.squareImage.file.uri(),

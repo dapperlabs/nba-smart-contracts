@@ -1,16 +1,16 @@
 import NonFungibleToken from 0xNFTADDRESS
 
-pub contract TopShotLocking {
+access(all) contract TopShotLocking {
 
     // -----------------------------------------------------------------------
     // TopShotLocking contract Events
     // -----------------------------------------------------------------------
 
     // Emitted when a Moment is locked
-    pub event MomentLocked(id: UInt64, duration: UFix64, expiryTimestamp: UFix64)
+    access(all) event MomentLocked(id: UInt64, duration: UFix64, expiryTimestamp: UFix64)
 
     // Emitted when a Moment is unlocked
-    pub event MomentUnlocked(id: UInt64)
+    access(all) event MomentUnlocked(id: UInt64)
 
     // Dictionary of locked NFTs
     // TopShot nft resource id is the key
@@ -25,7 +25,7 @@ pub contract TopShotLocking {
     // Parameters: nftRef: A reference to the NFT resource
     //
     // Returns: true if NFT is locked
-    pub fun isLocked(nftRef: &NonFungibleToken.NFT): Bool {
+    view access(all) fun isLocked(nftRef: &{NonFungibleToken.NFT}): Bool {
         return self.lockedNFTs.containsKey(nftRef.id)
     }
 
@@ -34,7 +34,7 @@ pub contract TopShotLocking {
     // Parameters: nftRef: A reference to the NFT resource
     //
     // Returns: unix timestamp
-    pub fun getLockExpiry(nftRef: &NonFungibleToken.NFT): UFix64 {
+    view access(all) fun getLockExpiry(nftRef: &{NonFungibleToken.NFT}): UFix64 {
         if !self.lockedNFTs.containsKey(nftRef.id) {
             panic("NFT is not locked")
         }
@@ -47,7 +47,7 @@ pub contract TopShotLocking {
     //             duration: number of seconds the NFT will be locked for
     //
     // Returns: the NFT resource
-    pub fun lockNFT(nft: @NonFungibleToken.NFT, duration: UFix64): @NonFungibleToken.NFT {
+    access(all) fun lockNFT(nft: @{NonFungibleToken.NFT}, duration: UFix64): @{NonFungibleToken.NFT} {
         let TopShotNFTType: Type = CompositeType("A.TOPSHOTADDRESS.TopShot.NFT")!
         if !nft.isInstance(TopShotNFTType) {
             panic("NFT is not a TopShot NFT")
@@ -74,7 +74,7 @@ pub contract TopShotLocking {
     // Returns: the NFT resource
     //
     // NFT must be eligible for unlocking by an admin
-    pub fun unlockNFT(nft: @NonFungibleToken.NFT): @NonFungibleToken.NFT {
+    access(all) fun unlockNFT(nft: @{NonFungibleToken.NFT}): @{NonFungibleToken.NFT} {
         if !self.lockedNFTs.containsKey(nft.id) {
             // nft is not locked, short circuit and return the nft
             return <- nft
@@ -101,7 +101,7 @@ pub contract TopShotLocking {
     //
     // Returns: array of ids
     //
-    pub fun getIDs(): [UInt64] {
+    view access(all) fun getIDs(): [UInt64] {
         return self.lockedNFTs.keys
     }
 
@@ -111,7 +111,7 @@ pub contract TopShotLocking {
     //
     // Returns: a unix timestamp in seconds
     //
-    pub fun getExpiry(tokenID: UInt64): UFix64? {
+    view access(all) fun getExpiry(tokenID: UInt64): UFix64? {
         return self.lockedNFTs[tokenID]
     }
 
@@ -119,21 +119,21 @@ pub contract TopShotLocking {
     //
     // Returns: an integer containing the number of locked tokens
     //
-    pub fun getLockedNFTsLength(): Int {
+    view access(all) fun getLockedNFTsLength(): Int {
         return self.lockedNFTs.length
     }
 
     // The path to the TopShotLocking Admin resource belonging to the Account
     // which the contract is deployed on
-    pub fun AdminStoragePath() : StoragePath { return /storage/TopShotLockingAdmin}
+    view access(all) fun AdminStoragePath() : StoragePath { return /storage/TopShotLockingAdmin}
 
     // Admin is a special authorization resource that 
     // allows the owner to override the lock on a moment
     //
-    pub resource Admin {
+    access(all) resource Admin {
         // createNewAdmin creates a new Admin resource
         //
-        pub fun createNewAdmin(): @Admin {
+        access(all) fun createNewAdmin(): @Admin {
             return <-create Admin()
         }
 
@@ -141,11 +141,11 @@ pub contract TopShotLocking {
         // unlockable, overridding the expiry timestamp
         // the nft owner will still need to send an unlock transaction to unlock
         //
-        pub fun markNFTUnlockable(nftRef: &NonFungibleToken.NFT) {
+        access(all) fun markNFTUnlockable(nftRef: &{NonFungibleToken.NFT}) {
             TopShotLocking.unlockableNFTs[nftRef.id] = true
         }
 
-        pub fun unlockByID(id: UInt64) {
+        access(all) fun unlockByID(id: UInt64) {
             if !TopShotLocking.lockedNFTs.containsKey(id) {
                 // nft is not locked, do nothing
                 return
@@ -155,7 +155,7 @@ pub contract TopShotLocking {
         }
 
         // admin may alter the expiry of a lock on an NFT
-        pub fun setLockExpiryByID(id: UInt64, expiryTimestamp: UFix64) {
+        access(all) fun setLockExpiryByID(id: UInt64, expiryTimestamp: UFix64) {
             if expiryTimestamp < getCurrentBlock().timestamp {
                 panic("cannot set expiry in the past")
             }
@@ -168,7 +168,7 @@ pub contract TopShotLocking {
         }
 
         // unlocks all NFTs
-        pub fun unlockAll() {
+        access(all) fun unlockAll() {
             TopShotLocking.lockedNFTs = {}
             TopShotLocking.unlockableNFTs = {}
         }
@@ -186,6 +186,6 @@ pub contract TopShotLocking {
         let admin <- create Admin()
 
         // Store it in private account storage in `init` so only the admin can use it
-        self.account.save(<-admin, to: TopShotLocking.AdminStoragePath())
+        self.account.storage.save(<-admin, to: TopShotLocking.AdminStoragePath())
     }
 }

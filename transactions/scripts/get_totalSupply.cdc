@@ -6,7 +6,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // Returns: UInt64
 // Number of moments minted from TopShot contract
 
-pub fun main(): UInt64 {
+access(all) fun main(): UInt64 {
 
     return TopShot.totalSupply
 }
