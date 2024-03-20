@@ -625,11 +625,8 @@ access(all) contract FastBreakV1: NonFungibleToken {
 
     /// The Fast Break game token collection
     ///
-    access(all) resource interface FastBreakNFTCollectionPublic {
-        access(all) fun deposit(token: @{NonFungibleToken.NFT})
+    access(all) resource interface FastBreakNFTCollectionPublic : NonFungibleToken.CollectionPublic  {
         access(all) fun batchDeposit(tokens: @{NonFungibleToken.Collection})
-        access(all) fun getIDs(): [UInt64]
-        access(all) fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT}?
         access(all) fun borrowNFTSafe(id: UInt64): &{NonFungibleToken.NFT}?
         access(all) fun borrowFastBreakNFT(id: UInt64): &FastBreakV1.NFT? {
             post {

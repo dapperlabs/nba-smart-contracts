@@ -10,12 +10,12 @@ import TopShot from 0xTOPSHOTADDRESS
 transaction(setID: UInt32) {
 
     // local variable for the admin reference
-    let adminRef: &TopShot.Admin
+    let adminRef: auth(TopShot.NFTMinter) &TopShot.Admin
 
     prepare(acct: auth(BorrowValue) &Account) {
 
         // borrow a reference to the admin resource
-        self.adminRef = acct.storage.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+        self.adminRef = acct.storage.borrow<auth(TopShot.NFTMinter) &TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("No admin resource in storage")
     }
 

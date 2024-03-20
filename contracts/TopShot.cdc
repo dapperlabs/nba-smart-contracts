@@ -54,6 +54,8 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
     // TopShot deployment variables
     // -----------------------------------------------------------------------
 
+    access(all) entitlement NFTMinter
+
     // The network the contract is deployed on
     view access(all) fun Network() : String { return ${NETWORK} }
 
@@ -370,7 +372,7 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
         //
         // Returns: The NFT that was minted
         // 
-        access(all) fun mintMoment(playID: UInt32): @NFT {
+        access(NFTMinter) fun mintMoment(playID: UInt32): @NFT {
             pre {
                 self.retired[playID] != nil: "Cannot mint the moment: This play doesn't exist."
                 !self.retired[playID]!: "Cannot mint the moment from this play: This play has been retired."
@@ -422,7 +424,7 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
         //
         // Returns: The NFT that was minted
         //
-        access(all) fun mintMomentWithSubedition(playID: UInt32, subeditionID: UInt32): @NFT {
+        access(NFTMinter) fun mintMomentWithSubedition(playID: UInt32, subeditionID: UInt32): @NFT {
             pre {
                 self.retired[playID] != nil: "Cannot mint the moment: This play doesn't exist."
                 !self.retired[playID]!: "Cannot mint the moment from this play: This play has been retired."
@@ -464,7 +466,7 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
         //
         // Returns: Collection object that contains all the Moments that were minted
         //
-         access(all) fun batchMintMomentWithSubedition(playID: UInt32, quantity: UInt64, subeditionID: UInt32): @Collection {
+         access(NFTMinter) fun batchMintMomentWithSubedition(playID: UInt32, quantity: UInt64, subeditionID: UInt32): @Collection {
             let newCollection <- create Collection()
 
             var i: UInt64 = 0
@@ -1012,14 +1014,14 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
         // Returns: A reference to the Set with all of the fields
         // and methods exposed
         //
-        view access(all) fun borrowSet(setID: UInt32): &Set {
+         view access(NFTMinter) fun borrowSet(setID: UInt32): auth(NFTMinter) &Set {
             pre {
                 TopShot.sets[setID] != nil: "Cannot borrow Set: The Set doesn't exist"
             }
             
             // Get a reference to the Set and return it
             // use `&` to indicate the reference to the object and type
-            return (&TopShot.sets[setID] as &Set?)!
+            return (&TopShot.sets[setID] as auth(NFTMinter) &Set?)!
         }
 
         // startNewSeries ends the current series by incrementing
@@ -1083,11 +1085,8 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
     // This is the interface that users can cast their Moment Collection as
     // to allow others to deposit Moments into their Collection. It also allows for reading
     // the IDs of Moments in the Collection.
-    access(all) resource interface MomentCollectionPublic {
-        access(all) fun deposit(token: @{NonFungibleToken.NFT})
+    access(all) resource interface MomentCollectionPublic : NonFungibleToken.CollectionPublic {
         access(all) fun batchDeposit(tokens: @{NonFungibleToken.Collection})
-        access(all) fun getIDs(): [UInt64]
-        access(all) fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT}?
         access(all) fun borrowMoment(id: UInt64): &TopShot.NFT? {
             // If the result isn't nil, the id of the returned reference
             // should be the same as the argument to the function

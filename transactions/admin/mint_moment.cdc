@@ -11,11 +11,11 @@ import TopShot from 0xTOPSHOTADDRESS
 
 transaction(setID: UInt32, playID: UInt32, recipientAddr: Address) {
     // local variable for the admin reference
-    let adminRef: &TopShot.Admin
+    let adminRef: auth(TopShot.NFTMinter) &TopShot.Admin
 
     prepare(acct: auth(BorrowValue) &Account) {
         // borrow a reference to the Admin resource in storage
-        self.adminRef = acct.storage.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
+        self.adminRef = acct.storage.borrow<auth(TopShot.NFTMinter) &TopShot.Admin>(from: /storage/TopShotAdmin)!
     }
 
     execute {
