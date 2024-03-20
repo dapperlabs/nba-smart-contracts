@@ -11,13 +11,12 @@ import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 // Returns: Bool
 // Whether the moment is locked
 
-pub fun main(account: Address, id: UInt64): Bool {
+access(all) fun main(account: Address, id: UInt64): Bool {
 
-    let collectionRef = getAccount(account).getCapability(/public/MomentCollection)
-        .borrow<&{TopShot.MomentCollectionPublic}>()
+    let collectionRef = getAccount(account).capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
         ?? panic("Could not get public moment collection reference")
 
-    let nftRef = collectionRef.borrowNFT(id: id)
+    let nftRef = collectionRef.borrowNFT(id)!
 
     return TopShotLocking.isLocked(nftRef: nftRef)
 }

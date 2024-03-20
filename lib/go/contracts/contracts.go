@@ -26,13 +26,14 @@ const (
 	defaultMetadataviewsAddress    = "METADATAVIEWSADDRESS"
 	defaultTopShotLockingAddress   = "TOPSHOTLOCKINGADDRESS"
 	defaultTopShotRoyaltyAddress   = "TOPSHOTROYALTYADDRESS"
+	defaultViewResolverAddress     = "VIEWRESOLVERADDRESS"
 	defaultNetwork                 = "${NETWORK}"
 	fastBreakFile                  = "FastBreakV1.cdc"
 )
 
 // GenerateTopShotContract returns a copy
 // of the topshot contract with the import addresses updated
-func GenerateTopShotContract(ftAddr string, nftAddr string, metadataViewsAddr string, topShotLockingAddr string, royaltyAddr string, network string) []byte {
+func GenerateTopShotContract(ftAddr string, nftAddr string, metadataViewsAddr string, viewResolverAddr string, topShotLockingAddr string, royaltyAddr string, network string) []byte {
 
 	topShotCode := assets.MustAssetString(topshotFile)
 
@@ -40,9 +41,11 @@ func GenerateTopShotContract(ftAddr string, nftAddr string, metadataViewsAddr st
 
 	codeWithNFTAddr := strings.ReplaceAll(codeWithFTAddr, defaultNonFungibleTokenAddress, nftAddr)
 
-	codeWithMetadataViewsAddr := strings.ReplaceAll(codeWithNFTAddr, defaultMetadataviewsAddress, metadataViewsAddr)
+	codeWithMetadataViewsAddr := strings.ReplaceAll(codeWithNFTAddr, defaultViewResolverAddress, viewResolverAddr)
 
-	codeWithTopShotLockingAddr := strings.ReplaceAll(codeWithMetadataViewsAddr, defaultTopShotLockingAddress, topShotLockingAddr)
+	codeWithViewResolverAddr := strings.ReplaceAll(codeWithMetadataViewsAddr, defaultMetadataviewsAddress, metadataViewsAddr)
+
+	codeWithTopShotLockingAddr := strings.ReplaceAll(codeWithViewResolverAddr, defaultTopShotLockingAddress, topShotLockingAddr)
 
 	codeWithTopShotRoyaltyAddr := strings.ReplaceAll(codeWithTopShotLockingAddr, defaultTopShotRoyaltyAddress, royaltyAddr)
 
@@ -53,13 +56,14 @@ func GenerateTopShotContract(ftAddr string, nftAddr string, metadataViewsAddr st
 
 // GenerateTopShotShardedCollectionContract returns a copy
 // of the TopShotShardedCollectionContract with the import addresses updated
-func GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr string) []byte {
+func GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr string, viewResolverAddr string) []byte {
 
 	shardedCode := assets.MustAssetString(shardedCollectionFile)
 	codeWithNFTAddr := strings.ReplaceAll(shardedCode, defaultNonFungibleTokenAddress, nftAddr)
 	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
+	codeWithViewResolverAddr := strings.ReplaceAll(codeWithTopshotAddr, defaultViewResolverAddress, viewResolverAddr)
 
-	return []byte(codeWithTopshotAddr)
+	return []byte(codeWithViewResolverAddr)
 }
 
 // GenerateTopshotAdminReceiverContract returns a copy

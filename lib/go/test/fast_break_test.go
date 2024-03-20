@@ -1,15 +1,17 @@
 package test
 
 import (
-	"fmt"
+	"context"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
+	"github.com/onflow/flow-emulator/adapters"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 	sdktemplates "github.com/onflow/flow-go-sdk/templates"
 	"github.com/onflow/flow-go-sdk/test"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
@@ -30,14 +32,28 @@ func TestFastBreak(t *testing.T) {
 		FlowTokenAddress:     emulatorFlowTokenAddress,
 	}
 
+	logger := zerolog.Nop()
+	adapter := adapters.NewSDKAdapter(&logger, b)
+
+	viewResolverCode, _ := DownloadFile(ViewResolverContractsBaseURL + ViewResolverInterfaceFile)
+	viewResolverAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
+		{
+			Name:   "ViewResolver",
+			Source: string(viewResolverCode),
+		},
+	})
+
+	assert.Nil(t, err)
+	env.ViewResolverAddress = viewResolverAddr.String()
+
 	// Should be able to deploy a contract as a new account with no keys.
 	nftCode, nftCodeErr := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
+	parsedNFTContract := strings.Replace(string(nftCode), ViewResolverReplaceAddress, "0x"+viewResolverAddr.String(), 1)
 	assert.Nil(t, nftCodeErr)
-
-	nftAddr, nftAddrErr := b.CreateAccount(nil, []sdktemplates.Contract{
+	nftAddr, nftAddrErr := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
 		{
 			Name:   "NonFungibleToken",
-			Source: string(nftCode),
+			Source: parsedNFTContract,
 		},
 	})
 	assert.Nil(t, nftAddrErr)
@@ -48,7 +64,8 @@ func TestFastBreak(t *testing.T) {
 	assert.Nil(t, metadataViewsCodeErr)
 	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
 	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
-	metadataViewsAddr, metadataViewsAddrErr := b.CreateAccount(nil, []sdktemplates.Contract{
+	parsedMetadataContract = strings.Replace(parsedMetadataContract, ViewResolverReplaceAddress, "0x"+viewResolverAddr.String(), 1)
+	metadataViewsAddr, metadataViewsAddrErr := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
 		{
 			Name:   "MetadataViews",
 			Source: parsedMetadataContract,
@@ -60,7 +77,7 @@ func TestFastBreak(t *testing.T) {
 	// Deploy TopShot Locking contract
 	lockingKey, lockingSigner := test.AccountKeyGenerator().NewWithSigner()
 	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
-	topShotLockingAddr, topShotLockingAddrErr := b.CreateAccount([]*flow.AccountKey{lockingKey}, []sdktemplates.Contract{
+	topShotLockingAddr, topShotLockingAddrErr := adapter.CreateAccount(context.Background(), []*flow.AccountKey{lockingKey}, []sdktemplates.Contract{
 		{
 			Name:   "TopShotLocking",
 			Source: string(topshotLockingCode),
@@ -69,13 +86,23 @@ func TestFastBreak(t *testing.T) {
 	assert.Nil(t, topShotLockingAddrErr)
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
-	topShotRoyaltyAddr, topShotRoyaltyAddrErr := b.CreateAccount([]*flow.AccountKey{lockingKey}, []sdktemplates.Contract{})
+	fungibleTokenSwitchboardCode, _ := DownloadFile(FungibleTokenSwitchboardContractsBaseURL + FungibleTokenSwitchboardInterfaceFile)
+	parsedFungibleSwitchboardContract := strings.Replace(string(fungibleTokenSwitchboardCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
+	topShotRoyaltyAccountKey, _ := accountKeys.NewWithSigner()
+	topShotRoyaltyAddr, topShotRoyaltyAddrErr := adapter.CreateAccount(context.Background(), []*flow.AccountKey{topShotRoyaltyAccountKey}, []sdktemplates.Contract{
+		{
+			Name:   "FungibleTokenSwitchboard",
+			Source: parsedFungibleSwitchboardContract,
+		},
+	})
+	assert.Nil(t, err)
+	env.FTSwitchboardAddress = topShotRoyaltyAddr.String()
 	assert.Nil(t, topShotRoyaltyAddrErr)
 
 	// Deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(defaultfungibleTokenAddr, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), topShotRoyaltyAddr.String(), Network)
+	topshotCode := contracts.GenerateTopShotContract(defaultfungibleTokenAddr, nftAddr.String(), metadataViewsAddr.String(), viewResolverAddr.String(), topShotLockingAddr.String(), topShotRoyaltyAddr.String(), Network)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
-	topshotAddr, topshotAddrErr := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
+	topshotAddr, topshotAddrErr := adapter.CreateAccount(context.Background(), []*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
 			Name:   "TopShot",
 			Source: string(topshotCode),
@@ -90,22 +117,21 @@ func TestFastBreak(t *testing.T) {
 	assert.Nil(t, updateErr)
 
 	// Deploy Fast Break
-	fastBreakKey, _ := test.AccountKeyGenerator().NewWithSigner()
+	fastBreakKey, fastBreakSigner := test.AccountKeyGenerator().NewWithSigner()
 	fastBreakCode := contracts.GenerateFastBreakContract(nftAddr.String(), topshotAddr.String())
-	fastBreakAddr, fastBreakAddrErr := b.CreateAccount([]*flow.AccountKey{fastBreakKey}, []sdktemplates.Contract{
+	fastBreakAddr, fastBreakAddrErr := adapter.CreateAccount(context.Background(), []*flow.AccountKey{fastBreakKey}, []sdktemplates.Contract{
 		{
 			Name:   "FastBreakV1",
 			Source: string(fastBreakCode),
 		},
 	})
-	fmt.Println(fastBreakAddrErr)
 	assert.Nil(t, fastBreakAddrErr)
 	env.FastBreakAddress = fastBreakAddr.String()
 	assert.Nil(t, err)
 
 	// create a new user account
 	jerAccountKey, jerSigner := accountKeys.NewWithSigner()
-	jerAddress, jerAddressErr := b.CreateAccount([]*flow.AccountKey{jerAccountKey}, nil)
+	jerAddress, jerAddressErr := adapter.CreateAccount(context.Background(), []*flow.AccountKey{jerAccountKey}, nil)
 	assert.Nil(t, jerAddressErr)
 
 	firstName := CadenceString("FullName")
@@ -212,7 +238,7 @@ func TestFastBreak(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, fastBreakSigner},
 			false,
 		)
 
@@ -247,7 +273,7 @@ func TestFastBreak(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, fastBreakSigner},
 			false,
 		)
 
@@ -284,7 +310,7 @@ func TestFastBreak(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, fastBreakSigner},
 			false,
 		)
 
@@ -423,7 +449,7 @@ func TestFastBreak(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, fastBreakSigner},
 			false,
 		)
 	})
@@ -447,7 +473,7 @@ func TestFastBreak(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, topshotSigner},
+			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, fastBreakSigner},
 			false,
 		)
 

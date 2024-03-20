@@ -11,23 +11,23 @@
 import TopShot from 0xTOPSHOTADDRESS
 import TopShotShardedCollection from 0xSHARDEDADDRESS
 
-pub contract TopshotAdminReceiver {
+access(all) contract TopshotAdminReceiver {
 
     // storeAdmin takes a TopShot Admin resource and 
     // saves it to the account storage of the account
     // where the contract is deployed
-    pub fun storeAdmin(newAdmin: @TopShot.Admin) {
-        self.account.save(<-newAdmin, to: /storage/TopShotAdmin)
+    access(all) fun storeAdmin(newAdmin: @TopShot.Admin) {
+        self.account.storage.save(<-newAdmin, to: /storage/TopShotAdmin)
     }
     
     init() {
         // Save a copy of the sharded Moment Collection to the account storage
-        if self.account.borrow<&TopShotShardedCollection.ShardedCollection>(from: /storage/ShardedMomentCollection) == nil {
+        if self.account.storage.borrow<&TopShotShardedCollection.ShardedCollection>(from: /storage/ShardedMomentCollection) == nil {
             let collection <- TopShotShardedCollection.createEmptyCollection(numBuckets: 32)
             // Put a new Collection in storage
-            self.account.save(<-collection, to: /storage/ShardedMomentCollection)
-
-            self.account.link<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection, target: /storage/ShardedMomentCollection)
+            self.account.storage.save(<-collection, to: /storage/ShardedMomentCollection)
+            let cap = self.account.capabilities.storage.issue<&TopShotShardedCollection.ShardedCollection>(/storage/ShardedMomentCollection)
+            self.account.capabilities.publish(cap, at: /public/MomentCollection)
         }
     }
 }

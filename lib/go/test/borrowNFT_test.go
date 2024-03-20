@@ -1,6 +1,9 @@
 package test
 
 import (
+	"context"
+	"github.com/onflow/flow-emulator/adapters"
+	"github.com/rs/zerolog"
 	"testing"
 
 	"github.com/onflow/cadence"
@@ -51,7 +54,9 @@ func (tb *topshotTestBlockchain) genericBootstrapping(t *testing.T) {
 
 	// Create a new user account
 	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
-	joshAddress, _ := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
+	logger := zerolog.Nop()
+	adapter := adapters.NewSDKAdapter(&logger, b)
+	joshAddress, _ := adapter.CreateAccount(context.Background(), []*flow.AccountKey{joshAccountKey}, nil)
 	tb.userAddress = joshAddress
 	// Create moment collection
 	tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(env), joshAddress)

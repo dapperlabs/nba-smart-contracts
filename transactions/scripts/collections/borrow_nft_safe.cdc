@@ -14,12 +14,11 @@ import NonFungibleToken from 0xNFTADDRESS
 
 // Returns: Boolean value indicating if the NFT is in the collection
 
-pub fun main(account: Address, nftID: UInt64 ): Bool {
+access(all) fun main(account: Address, nftID: UInt64 ): Bool {
 
     let acct = getAccount(account)
 
-    let collectionRef = acct.getCapability(/public/MomentCollection)
-                            .borrow<&{NonFungibleToken.CollectionPublic}>()!
+    let collectionRef = acct.capabilities.borrow<&TopShot.Collection>(/public/MomentCollection)!
 
     let optionalNFT = collectionRef.borrowNFTSafe(id: nftID)
 

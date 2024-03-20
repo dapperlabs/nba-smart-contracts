@@ -5,6 +5,6 @@ import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 // Returns: Int
 // The number of locked NFTs
 
-pub fun main(): Int {
+access(all) fun main(): Int {
     return TopShotLocking.getLockedNFTsLength()
 }

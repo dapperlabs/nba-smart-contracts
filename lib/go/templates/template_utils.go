@@ -23,23 +23,27 @@ const (
 	placeholderMetadataViewsAddress   = "0xMETADATAVIEWSADDRESS"
 	placeholderTopShotLockingAddress  = "0xTOPSHOTLOCKINGADDRESS"
 	placeholderFastBreakAddress       = "0xFASTBREAKADDRESS"
+	placeholderFTSwitchboardAddress   = "0xFUNGIBLETOKENSWITCHBOARDADDRESS"
 )
 
 type Environment struct {
-	Network                string
-	FungibleTokenAddress   string
-	FlowTokenAddress       string
-	NFTAddress             string
-	TopShotAddress         string
-	TopShotMarketAddress   string
-	TopShotMarketV3Address string
-	ShardedAddress         string
-	FastBreakAddress       string
-	AdminReceiverAddress   string
-	DUCAddress             string
-	ForwardingAddress      string
-	MetadataViewsAddress   string
-	TopShotLockingAddress  string
+	Network                           string
+	FungibleTokenAddress              string
+	FlowTokenAddress                  string
+	NFTAddress                        string
+	TopShotAddress                    string
+	TopShotMarketAddress              string
+	TopShotMarketV3Address            string
+	ShardedAddress                    string
+	FastBreakAddress                  string
+	AdminReceiverAddress              string
+	DUCAddress                        string
+	ForwardingAddress                 string
+	MetadataViewsAddress              string
+	TopShotLockingAddress             string
+	FungibleTokenMetadataViewsAddress string
+	FTSwitchboardAddress              string
+	ViewResolverAddress               string
 }
 
 func uint32ToCadenceArr(nums []uint32) []byte {
@@ -141,6 +145,12 @@ func replaceAddresses(code string, env Environment) string {
 		code,
 		placeholderFastBreakAddress,
 		withHexPrefix(env.FastBreakAddress),
+	)
+
+	code = strings.ReplaceAll(
+		code,
+		placeholderFTSwitchboardAddress,
+		withHexPrefix(env.FTSwitchboardAddress),
 	)
 
 	return code

@@ -11,11 +11,11 @@ import TopShot from 0xTOPSHOTADDRESS
 
 transaction(setID: UInt32, playID: UInt32, recipientAddr: Address) {
     // local variable for the admin reference
-    let adminRef: &TopShot.Admin
+    let adminRef: auth(TopShot.NFTMinter) &TopShot.Admin
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
         // borrow a reference to the Admin resource in storage
-        self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)!
+        self.adminRef = acct.storage.borrow<auth(TopShot.NFTMinter) &TopShot.Admin>(from: /storage/TopShotAdmin)!
     }
 
     execute {
@@ -29,7 +29,8 @@ transaction(setID: UInt32, playID: UInt32, recipientAddr: Address) {
         let recipient = getAccount(recipientAddr)
 
         // get the Collection reference for the receiver
-        let receiverRef = recipient.getCapability(/public/MomentCollection).borrow<&{TopShot.MomentCollectionPublic}>()
+
+        let receiverRef = recipient.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
             ?? panic("Cannot borrow a reference to the recipient's moment collection")
 
         // deposit the NFT in the receivers collection

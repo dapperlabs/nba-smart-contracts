@@ -10,11 +10,11 @@ import TopShotMarketV3 from 0xMARKETV3ADDRESS
 
 transaction(momentIDs: [UInt64]) {
 
-    let collectionRef: &TopShot.Collection
+    let collectionRef: auth(NonFungibleToken.Withdraw) &TopShot.Collection
     
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
         // delist any of the moments that are listed (this delists for both MarketV1 and Marketv3)
-        if let topshotSaleV3Collection = acct.borrow<&TopShotMarketV3.SaleCollection>(from: TopShotMarketV3.marketStoragePath) {
+        if let topshotSaleV3Collection = acct.storage.borrow<auth(TopShotMarketV3.Cancel) &TopShotMarketV3.SaleCollection>(from: TopShotMarketV3.marketStoragePath) {
             for id in momentIDs {
                 if topshotSaleV3Collection.borrowMoment(id: id) != nil{
                     // cancel the moment from the sale, thereby de-listing it
@@ -23,7 +23,7 @@ transaction(momentIDs: [UInt64]) {
             }
         }
 
-        self.collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
+        self.collectionRef = acct.storage.borrow<auth(NonFungibleToken.Withdraw) &TopShot.Collection>(from: /storage/MomentCollection)
             ?? panic("Could not borrow from MomentCollection in storage")
     }
 
