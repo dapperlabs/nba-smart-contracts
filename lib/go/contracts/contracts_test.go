@@ -47,7 +47,7 @@ func TestTopShotMarketV3Contract(t *testing.T) {
 }
 
 func TestFastBreakContract(t *testing.T) {
-	contract := contracts.GenerateFastBreakContract(addrA, addrB)
+	contract := contracts.GenerateFastBreakContract(addrA, addrB, addrC)
 	assert.NotNil(t, contract)
 	assert.Contains(t, string(contract), addrA)
 	assert.Contains(t, string(contract), addrB)
