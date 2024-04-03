@@ -25,7 +25,7 @@ access(all) contract TopShotLocking {
     // Parameters: nftRef: A reference to the NFT resource
     //
     // Returns: true if NFT is locked
-    view access(all) fun isLocked(nftRef: &{NonFungibleToken.NFT}): Bool {
+    access(all) view fun isLocked(nftRef: &{NonFungibleToken.NFT}): Bool {
         return self.lockedNFTs.containsKey(nftRef.id)
     }
 
@@ -34,7 +34,7 @@ access(all) contract TopShotLocking {
     // Parameters: nftRef: A reference to the NFT resource
     //
     // Returns: unix timestamp
-    view access(all) fun getLockExpiry(nftRef: &{NonFungibleToken.NFT}): UFix64 {
+    access(all) view fun getLockExpiry(nftRef: &{NonFungibleToken.NFT}): UFix64 {
         if !self.lockedNFTs.containsKey(nftRef.id) {
             panic("NFT is not locked")
         }
@@ -101,7 +101,7 @@ access(all) contract TopShotLocking {
     //
     // Returns: array of ids
     //
-    view access(all) fun getIDs(): [UInt64] {
+    access(all) view fun getIDs(): [UInt64] {
         return self.lockedNFTs.keys
     }
 
@@ -111,7 +111,7 @@ access(all) contract TopShotLocking {
     //
     // Returns: a unix timestamp in seconds
     //
-    view access(all) fun getExpiry(tokenID: UInt64): UFix64? {
+    access(all) view fun getExpiry(tokenID: UInt64): UFix64? {
         return self.lockedNFTs[tokenID]
     }
 
@@ -119,13 +119,13 @@ access(all) contract TopShotLocking {
     //
     // Returns: an integer containing the number of locked tokens
     //
-    view access(all) fun getLockedNFTsLength(): Int {
+    access(all) view fun getLockedNFTsLength(): Int {
         return self.lockedNFTs.length
     }
 
     // The path to the TopShotLocking Admin resource belonging to the Account
     // which the contract is deployed on
-    view access(all) fun AdminStoragePath() : StoragePath { return /storage/TopShotLockingAdmin}
+    access(all) view fun AdminStoragePath() : StoragePath { return /storage/TopShotLockingAdmin}
 
     // Admin is a special authorization resource that 
     // allows the owner to override the lock on a moment

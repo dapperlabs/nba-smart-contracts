@@ -122,7 +122,7 @@ access(all) contract TopShotShardedCollection {
         }
 
         // getIDs returns an array of the IDs that are in the Collection
-        view access(all) fun getIDs(): [UInt64] {
+        access(all) view fun getIDs(): [UInt64] {
             var ids: [UInt64] = []
             // Concatenate IDs in all the Collections
             for key in self.collections.keys {
@@ -134,7 +134,7 @@ access(all) contract TopShotShardedCollection {
 
         // borrowNFT Returns a borrowed reference to a Moment in the Collection
         // so that the caller can read data and call methods from it
-        view access(all) fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT}? {
+        access(all) view fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT}? {
 
             // Get the bucket of the nft to be borrowed
             let bucket = id % self.numBuckets
@@ -153,7 +153,7 @@ access(all) contract TopShotShardedCollection {
         // Parameters: id: The ID of the NFT to get the reference for
         //
         // Returns: A reference to the NFT
-        view access(all) fun borrowMoment(id: UInt64): &TopShot.NFT? {
+        access(all) view fun borrowMoment(id: UInt64): &TopShot.NFT? {
 
             // Get the bucket of the nft to be borrowed
             let bucket = id % self.numBuckets
@@ -162,7 +162,7 @@ access(all) contract TopShotShardedCollection {
         }
 
         // Return a list of NFT types that this receiver accepts
-        view access(all) fun getSupportedNFTTypes(): {Type: Bool} {
+        access(all) view fun getSupportedNFTTypes(): {Type: Bool} {
             let supportedTypes: {Type: Bool} = {}
             supportedTypes[Type<@TopShot.NFT>()] = true
             return supportedTypes
@@ -170,7 +170,7 @@ access(all) contract TopShotShardedCollection {
 
         // Return whether or not the given type is accepted by the collection
         // A collection that can accept any type should just return true by default
-        view access(all) fun isSupportedNFTType(type: Type): Bool {
+        access(all) view fun isSupportedNFTType(type: Type): Bool {
             if type == Type<@TopShot.NFT>() {
                 return true
             }
@@ -178,7 +178,7 @@ access(all) contract TopShotShardedCollection {
         }
 
         // Return the amount of NFTs stored in the collection
-        view access(all) fun getLength(): Int {
+        access(all) view fun getLength(): Int {
             return self.getIDs().length
         }
 

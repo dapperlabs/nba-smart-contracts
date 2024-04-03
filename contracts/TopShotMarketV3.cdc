@@ -273,7 +273,7 @@ access(all) contract TopShotMarketV3 {
         /// Parameters: tokenID: The ID of the NFT whose price to get
         ///
         /// Returns: UFix64: The price of the token
-        view access(all) fun getPrice(tokenID: UInt64): UFix64? {
+        access(all) view fun getPrice(tokenID: UInt64): UFix64? {
             if let price = self.prices[tokenID] {
                 return price
             } else if let marketV1 = self.marketV1Capability {
@@ -283,7 +283,7 @@ access(all) contract TopShotMarketV3 {
         }
 
         /// getIDs returns an array of token IDs that are for sale
-        view access(all) fun getIDs(): [UInt64] {
+        access(all) view fun getIDs(): [UInt64] {
             let v3Keys = self.prices.keys
 
             // Add any V1 SaleCollection IDs if they exist
@@ -303,7 +303,7 @@ access(all) contract TopShotMarketV3 {
         /// Returns: &TopShot.NFT? Optional reference to a moment for sale 
         ///                        so that the caller can read its data
         ///
-        view access(all) fun borrowMoment(id: UInt64): &TopShot.NFT? {
+        access(all) view fun borrowMoment(id: UInt64): &TopShot.NFT? {
             // first check this collection
             if self.prices[id] != nil {
                 let ref = self.ownerCollection.borrow()!.borrowMoment(id: id)

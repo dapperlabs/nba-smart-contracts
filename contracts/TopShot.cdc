@@ -55,14 +55,14 @@ access(all) contract TopShot: NonFungibleToken {
     // -----------------------------------------------------------------------
 
     // The network the contract is deployed on
-    view access(all) fun Network() : String { return ${NETWORK} }
+    access(all) view fun Network() : String { return ${NETWORK} }
 
     // The address to which royalties should be deposited
-    view access(all) fun RoyaltyAddress() : Address { return 0xTOPSHOTROYALTYADDRESS }
+    access(all) view fun RoyaltyAddress() : Address { return 0xTOPSHOTROYALTYADDRESS }
 
     // The path to the Subedition Admin resource belonging to the Account
     // which the contract is deployed on
-    view access(all) fun SubeditionAdminStoragePath() : StoragePath { return /storage/TopShotSubeditionAdmin}
+    access(all) view fun SubeditionAdminStoragePath() : StoragePath { return /storage/TopShotSubeditionAdmin}
 
     // -----------------------------------------------------------------------
     // TopShot contract Events
@@ -477,15 +477,15 @@ access(all) contract TopShot: NonFungibleToken {
             return <-newCollection
         }
 
-        view access(all) fun getPlays(): [UInt32] {
+        access(all) view fun getPlays(): [UInt32] {
             return self.plays
         }
 
-        view access(all) fun getRetired(): {UInt32: Bool} {
+        access(all) view fun getRetired(): {UInt32: Bool} {
             return self.retired
         }
 
-        view access(all) fun getNumMintedPerPlay(): {UInt32: UInt32} {
+        access(all) view fun getNumMintedPerPlay(): {UInt32: UInt32} {
             return self.numberMintedPerPlay
         }
     }
@@ -521,15 +521,15 @@ access(all) contract TopShot: NonFungibleToken {
             self.numberMintedPerPlay = set.getNumMintedPerPlay()
         }
 
-        view access(all) fun getPlays(): [UInt32] {
+        access(all) view fun getPlays(): [UInt32] {
             return self.plays
         }
 
-        view access(all) fun getRetired(): {UInt32: Bool} {
+        access(all) view fun getRetired(): {UInt32: Bool} {
             return self.retired
         }
 
-        view access(all) fun getNumberMintedPerPlay(): {UInt32: UInt32} {
+        access(all) view fun getNumberMintedPerPlay(): {UInt32: UInt32} {
             return self.numberMintedPerPlay
         }
     }
@@ -690,7 +690,7 @@ access(all) contract TopShot: NonFungibleToken {
             setID: UInt32 = self.data.setID
         )
 
-        view access(all) fun name(): String {
+        access(all) view fun name(): String {
             let fullName: String = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "FullName") ?? ""
             let playType: String = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "PlayType") ?? ""
             return fullName
@@ -719,7 +719,7 @@ access(all) contract TopShot: NonFungibleToken {
         }
 
         // All supported metadata views for the Moment including the Core NFT Views
-        view access(all) fun getViews(): [Type] {
+        access(all) view fun getViews(): [Type] {
             return [
                 Type<MetadataViews.Display>(),
                 Type<TopShotMomentMetadataView>(),
@@ -850,18 +850,18 @@ access(all) contract TopShot: NonFungibleToken {
 
         // getMomentURL 
         // Returns: The computed external url of the moment
-        view access(all) fun getMomentURL(): String {
+        access(all) view fun getMomentURL(): String {
             return "https://nbatopshot.com/moment/".concat(self.id.toString())
         }
         // getEditionName Moment's edition name is a combination of the Moment's setName and playID
         // `setName: #playID`
-        view access(all) fun getEditionName() : String {
+        access(all) view fun getEditionName() : String {
             let setName: String = TopShot.getSetName(setID: self.data.setID) ?? ""
             let editionName = setName.concat(": #").concat(self.data.playID.toString())
             return editionName
         }
 
-        view access(all) fun assetPath(): String {
+        access(all) view fun assetPath(): String {
             return "https://assets.nbatopshot.com/media/".concat(self.id.toString())
         }
 
@@ -971,7 +971,7 @@ access(all) contract TopShot: NonFungibleToken {
         // Returns: A reference to the Set with all of the fields
         // and methods exposed
         //
-         view access(all) fun borrowSet(setID: UInt32): &Set {
+         access(all) view fun borrowSet(setID: UInt32): &Set {
             pre {
                 TopShot.sets[setID] != nil: "Cannot borrow Set: The Set doesn't exist"
             }
@@ -1067,7 +1067,7 @@ access(all) contract TopShot: NonFungibleToken {
         }
 
         // Return a list of NFT types that this receiver accepts
-        view access(all) fun getSupportedNFTTypes(): {Type: Bool} {
+        access(all) view fun getSupportedNFTTypes(): {Type: Bool} {
             let supportedTypes: {Type: Bool} = {}
             supportedTypes[Type<@TopShot.NFT>()] = true
             return supportedTypes
@@ -1075,7 +1075,7 @@ access(all) contract TopShot: NonFungibleToken {
 
         // Return whether or not the given type is accepted by the collection
         // A collection that can accept any type should just return true by default
-        view access(all) fun isSupportedNFTType(type: Type): Bool {
+        access(all) view fun isSupportedNFTType(type: Type): Bool {
             if type == Type<@TopShot.NFT>() {
                 return true
             }
@@ -1083,7 +1083,7 @@ access(all) contract TopShot: NonFungibleToken {
         }
 
         // Return the amount of NFTs stored in the collection
-        view access(all) fun getLength(): Int {
+        access(all) view fun getLength(): Int {
             return self.ownedNFTs.keys.length
         }
 
@@ -1251,7 +1251,7 @@ access(all) contract TopShot: NonFungibleToken {
         }
 
         // getIDs returns an array of the IDs that are in the Collection
-        view access(all) fun getIDs(): [UInt64] {
+        access(all) view fun getIDs(): [UInt64] {
             return self.ownedNFTs.keys
         }
 
@@ -1266,7 +1266,7 @@ access(all) contract TopShot: NonFungibleToken {
         // not any topshot specific data. Please use borrowMoment to 
         // read Moment data.
         //
-        view access(all) fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT}? {
+        access(all) view fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT}? {
             return &self.ownedNFTs[id]
         }
 
@@ -1280,11 +1280,11 @@ access(all) contract TopShot: NonFungibleToken {
         // Parameters: id: The ID of the NFT to get the reference for
         //
         // Returns: A reference to the NFT
-        view access(all) fun borrowMoment(id: UInt64): &TopShot.NFT? {
+        access(all) view fun borrowMoment(id: UInt64): &TopShot.NFT? {
             return self.borrowNFT(id) as! &TopShot.NFT?
         }
 
-        view access(all) fun borrowViewResolver(id: UInt64): &{ViewResolver.Resolver}? {
+        access(all) view fun borrowViewResolver(id: UInt64): &{ViewResolver.Resolver}? {
             if let nft = &self.ownedNFTs[id] as &{NonFungibleToken.NFT}? {
                 return nft as &{ViewResolver.Resolver}
             }
@@ -1312,7 +1312,7 @@ access(all) contract TopShot: NonFungibleToken {
     // getAllPlays returns all the plays in topshot
     //
     // Returns: An array of all the plays that have been created
-    view access(all) fun getAllPlays(): [TopShot.Play] {
+    access(all) view fun getAllPlays(): [TopShot.Play] {
         return TopShot.playDatas.values
     }
 
@@ -1321,7 +1321,7 @@ access(all) contract TopShot: NonFungibleToken {
     // Parameters: playID: The id of the Play that is being searched
     //
     // Returns: The metadata as a String to String mapping optional
-    view access(all) fun getPlayMetaData(playID: UInt32): {String: String}? {
+    access(all) view fun getPlayMetaData(playID: UInt32): {String: String}? {
         return self.playDatas[playID]?.metadata
     }
 
@@ -1334,7 +1334,7 @@ access(all) contract TopShot: NonFungibleToken {
     //             field: The field to search for
     //
     // Returns: The metadata field as a String Optional
-    view access(all) fun getPlayMetaDataByField(playID: UInt32, field: String): String? {
+    access(all) view fun getPlayMetaDataByField(playID: UInt32, field: String): String? {
         // Don't force a revert if the playID or field is invalid
         if let play = TopShot.playDatas[playID] {
             return play.metadata[field]
@@ -1363,7 +1363,7 @@ access(all) contract TopShot: NonFungibleToken {
     // Parameters: setID: The id of the Set that is being searched
     //
     // Returns: The name of the Set
-    view access(all) fun getSetName(setID: UInt32): String? {
+    access(all) view fun getSetName(setID: UInt32): String? {
         // Don't force a revert if the setID is invalid
         return TopShot.setDatas[setID]?.name
     }
@@ -1374,7 +1374,7 @@ access(all) contract TopShot: NonFungibleToken {
     // Parameters: setID: The id of the Set that is being searched
     //
     // Returns: The series that the Set belongs to
-    view access(all) fun getSetSeries(setID: UInt32): UInt32? {
+    access(all) view fun getSetSeries(setID: UInt32): UInt32? {
         // Don't force a revert if the setID is invalid
         return TopShot.setDatas[setID]?.series
     }
@@ -1410,7 +1410,7 @@ access(all) contract TopShot: NonFungibleToken {
     // Parameters: setID: The id of the Set that is being searched
     //
     // Returns: An array of Play IDs
-    view access(all) fun getPlaysInSet(setID: UInt32): [UInt32]? {
+    access(all) view fun getPlaysInSet(setID: UInt32): [UInt32]? {
         // Don't force a revert if the setID is invalid
         return TopShot.sets[setID]?.plays
     }
@@ -1448,7 +1448,7 @@ access(all) contract TopShot: NonFungibleToken {
     // Parameters: setID: The id of the Set that is being searched
     //
     // Returns: Boolean indicating if the Set is locked or not
-    view access(all) fun isSetLocked(setID: UInt32): Bool? {
+    access(all) view fun isSetLocked(setID: UInt32): Bool? {
         // Don't force a revert if the setID is invalid
         return TopShot.sets[setID]?.locked
     }
@@ -1480,7 +1480,7 @@ access(all) contract TopShot: NonFungibleToken {
     //
     // returns: UInt32? Subedition's ID if exists
     //
-    view access(all) fun getMomentsSubedition(nftID: UInt64):UInt32? {
+    access(all) view fun getMomentsSubedition(nftID: UInt64):UInt32? {
         let subeditionAdmin = self.account.storage.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
             ?? panic("No subedition admin resource in storage")
 
@@ -1490,7 +1490,7 @@ access(all) contract TopShot: NonFungibleToken {
     // getAllSubeditions returns all the subeditions in topshot subeditionAdmin resource
     //
     // Returns: An array of all the subeditions that have been created
-    view access(all) fun getAllSubeditions(): &[TopShot.Subedition] {
+    access(all) view fun getAllSubeditions(): &[TopShot.Subedition] {
         let subeditionAdmin = self.account.storage.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
             ?? panic("No subedition admin resource in storage")
         return subeditionAdmin.subeditionDatas.values
@@ -1501,7 +1501,7 @@ access(all) contract TopShot: NonFungibleToken {
     // Parameters: subeditionID: The id of the Subedition that is being searched
     //
     // Returns: The Subedition struct
-    view access(all) fun getSubeditionByID(subeditionID: UInt32): &TopShot.Subedition {
+    access(all) view fun getSubeditionByID(subeditionID: UInt32): &TopShot.Subedition {
         let subeditionAdmin = self.account.storage.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
             ?? panic("No subedition admin resource in storage")
         return subeditionAdmin.subeditionDatas[subeditionID]!
@@ -1512,7 +1512,7 @@ access(all) contract TopShot: NonFungibleToken {
     //
     // Returns: UInt32
     // the next number in nextSubeditionID from the SubeditionAdmin resource
-    view access(all) fun getNextSubeditionID():UInt32 {
+    access(all) view fun getNextSubeditionID():UInt32 {
         let subeditionAdmin = self.account.storage.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
             ?? panic("No subedition admin resource in storage")
         return subeditionAdmin.nextSubeditionID
@@ -1585,7 +1585,7 @@ access(all) contract TopShot: NonFungibleToken {
         //
         // returns: UInt32? Subedition's ID if exists
         //
-        view access(all) fun getMomentsSubedition(nftID: UInt64):UInt32? {
+        access(all) view fun getMomentsSubedition(nftID: UInt64):UInt32? {
            return self.momentsSubedition[nftID]
         }
 
@@ -1657,13 +1657,13 @@ access(all) contract TopShot: NonFungibleToken {
 
     /// Return the metadata view types available for this contract
     ///
-    view access(all) fun getContractViews(resourceType: Type?): [Type] {
+    access(all) view fun getContractViews(resourceType: Type?): [Type] {
         return [Type<MetadataViews.NFTCollectionData>(), Type<MetadataViews.NFTCollectionDisplay>(), Type<MetadataViews.Royalties>()]
     }
 
     /// Resolve this contract's metadata views
     ///
-    view access(all) fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
+    access(all) view fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
         post {
             result == nil || result!.getType() == viewType: "The returned view must be of the given type or nil"
         }

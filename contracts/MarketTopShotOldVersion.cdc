@@ -234,18 +234,18 @@ access(all) contract Market {
         }
 
         // getPrice returns the price of a specific token in the sale
-        view access(all) fun getPrice(tokenID: UInt64): UFix64? {
+        access(all) view fun getPrice(tokenID: UInt64): UFix64? {
             return self.prices[tokenID]
         }
 
         // getIDs returns an array of token IDs that are for sale
-        view access(all) fun getIDs(): [UInt64] {
+        access(all) view fun getIDs(): [UInt64] {
             return self.forSale.getIDs()
         }
 
         // borrowMoment Returns a borrowed reference to a Moment in the collection
         // so that the caller can read data from it
-        view access(all) fun borrowMoment(id: UInt64): &TopShot.NFT? {
+        access(all) view fun borrowMoment(id: UInt64): &TopShot.NFT? {
             let ref = self.forSale.borrowMoment(id: id)
             return ref
         }

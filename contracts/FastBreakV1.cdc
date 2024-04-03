@@ -182,7 +182,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
 
     /// Get a Fast Break Run by Id
     ///
-    view access(all) fun getFastBreakRun(id: String): FastBreakV1.FastBreakRun? {
+    access(all) view fun getFastBreakRun(id: String): FastBreakV1.FastBreakRun? {
         return FastBreakV1.fastBreakRunByID[id]
     }
 
@@ -235,7 +235,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
 
         /// Get a account's active Fast Break Submission
         ///
-        view access(all) fun getFastBreakSubmissionByPlayerId(playerId: UInt64): FastBreakV1.FastBreakSubmission? {
+        access(all) view fun getFastBreakSubmissionByPlayerId(playerId: UInt64): FastBreakV1.FastBreakSubmission? {
             let fastBreakSubmissions = self.submissions
 
             return fastBreakSubmissions[playerId]
@@ -301,19 +301,19 @@ access(all) contract FastBreakV1: NonFungibleToken {
 
     /// Validate Fast Break Submission
     ///
-    view access(all) fun isValidSubmission(submissionDeadline: UInt64): Bool {
+    access(all) view fun isValidSubmission(submissionDeadline: UInt64): Bool {
         return submissionDeadline > UInt64(getCurrentBlock().timestamp) 
     }
 
     /// Get a Fast Break Game by Id
     ///
-    view access(all) fun getFastBreakGame(id: String): FastBreakV1.FastBreakGame? {
+    access(all) view fun getFastBreakGame(id: String): FastBreakV1.FastBreakGame? {
         return FastBreakV1.fastBreakGameByID[id]
     }
 
     /// Get the game stats of a Fast Break
     ///
-    view access(all) fun getFastBreakGameStats(id: String): [FastBreakV1.FastBreakStat] {
+    access(all) view fun getFastBreakGameStats(id: String): [FastBreakV1.FastBreakStat] {
         if let fastBreak = FastBreakV1.getFastBreakGame(id: id) {
             return fastBreak.stats
         }
@@ -322,7 +322,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
 
     /// Get a Fast Break account by playerId
     ///
-    view access(all) fun getFastBreakPlayer(id: UInt64): Address? {
+    access(all) view fun getFastBreakPlayer(id: UInt64): Address? {
         return FastBreakV1.playerAccountMapping[id]
     }
 
@@ -538,13 +538,13 @@ access(all) contract FastBreakV1: NonFungibleToken {
 
     /// Get a player id by account address
     ///
-    view access(all) fun getPlayerIdByAccount(accountAddress: Address): UInt64 {
+    access(all) view fun getPlayerIdByAccount(accountAddress: Address): UInt64 {
         return FastBreakV1.accountPlayerMapping[accountAddress]!
     }
 
     /// Validate Fast Break Submission topShots
     ///
-    view access(all) fun validatePlaySubmission(fastBreakGame: FastBreakGame, topShots: [UInt64]): Bool {
+    access(all) view fun validatePlaySubmission(fastBreakGame: FastBreakGame, topShots: [UInt64]): Bool {
 
         if (topShots.length < 1) {
             return false
@@ -591,7 +591,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
             self.mintedTo = mintedTo
         }
 
-        view access(all) fun isWinner(): Bool {
+        access(all) view fun isWinner(): Bool {
             if let fastBreak = FastBreakV1.fastBreakGameByID[self.fastBreakGameID] {
                 if let submission = fastBreak.submissions[self.mintedTo] {
                     return submission.win
@@ -600,7 +600,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
             return false
         }
 
-        view access(all) fun points(): UInt64 {
+        access(all) view fun points(): UInt64 {
             if let fastBreak = FastBreakV1.fastBreakGameByID[self.fastBreakGameID] {
                 if let submission = fastBreak.submissions[self.mintedTo] {
                     return submission.points
@@ -613,7 +613,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
             return <- FastBreakV1.createEmptyCollection(nftType: Type<@FastBreakV1.NFT>())
         }
 
-        view access(all) fun getViews(): [Type] {
+        access(all) view fun getViews(): [Type] {
             return [
                 Type<MetadataViews.NFTCollectionData>(),
                 Type<MetadataViews.NFTCollectionDisplay>()
@@ -691,19 +691,19 @@ access(all) contract FastBreakV1: NonFungibleToken {
             destroy tokens
         }
 
-        view access(all) fun getIDs(): [UInt64] {
+        access(all) view fun getIDs(): [UInt64] {
             return self.ownedNFTs.keys
         }
 
-        view access(all) fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT}? {
+        access(all) view fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT}? {
             return &self.ownedNFTs[id]
         }
 
-        view access(all) fun borrowFastBreakNFT(id: UInt64): &FastBreakV1.NFT? {
+        access(all) view fun borrowFastBreakNFT(id: UInt64): &FastBreakV1.NFT? {
             return self.borrowNFT(id) as! &FastBreakV1.NFT?
         }
 
-        view access(all) fun getSupportedNFTTypes(): {Type: Bool} {
+        access(all) view fun getSupportedNFTTypes(): {Type: Bool} {
             let supportedTypes: {Type: Bool} = {}
             supportedTypes[Type<@FastBreakV1.NFT>()] = true
             return supportedTypes
@@ -711,7 +711,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
 
         // Return whether or not the given type is accepted by the collection
         // A collection that can accept any type should just return true by default
-        view access(all) fun isSupportedNFTType(type: Type): Bool {
+        access(all) view fun isSupportedNFTType(type: Type): Bool {
             if type == Type<@FastBreakV1.NFT>() {
                 return true
             }
@@ -722,7 +722,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
             return <- FastBreakV1.createEmptyCollection(nftType: Type<@FastBreakV1.NFT>())
         }
 
-        view access(all) fun getLength(): Int {
+        access(all) view fun getLength(): Int {
             return self.ownedNFTs.keys.length
         }
 
@@ -738,11 +738,11 @@ access(all) contract FastBreakV1: NonFungibleToken {
         return <- create Collection()
     }
 
-    view access(all) fun getContractViews(resourceType: Type?): [Type] {
+    access(all) view fun getContractViews(resourceType: Type?): [Type] {
         return [Type<MetadataViews.NFTCollectionData>(), Type<MetadataViews.NFTCollectionDisplay>()]
     }
 
-    view access(all) fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
+    access(all) view fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
         post {
             result == nil || result!.getType() == viewType: "The returned view must be of the given type or nil"
         }
