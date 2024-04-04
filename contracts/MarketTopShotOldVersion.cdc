@@ -40,7 +40,6 @@ import TopShot from 0xTOPSHOTADDRESS
 access(all) contract Market {
 
     access(all) entitlement Create
-    access(all) entitlement Withdraw
     access(all) entitlement Update
 
     // -----------------------------------------------------------------------
@@ -146,7 +145,7 @@ access(all) contract Market {
         }
 
         // Withdraw removes a moment that was listed for sale
-        access(Withdraw) fun withdraw(tokenID: UInt64): @TopShot.NFT {
+        access(NonFungibleToken.Withdraw) fun withdraw(tokenID: UInt64): @TopShot.NFT {
 
             // remove and return the token
             // will revert if the token doesn't exist
@@ -169,7 +168,7 @@ access(all) contract Market {
         // the purchased NFT is returned to the transaction context that called it
         access(all) fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
             pre {
-                self.forSale.ownedNFTs[tokenID] != nil && self.prices[tokenID] != nil:
+                self.forSale.borrowNFT(tokenID) != nil && self.prices[tokenID] != nil:
                     "No token matching this ID for sale!"
                 buyTokens.balance == (self.prices[tokenID] ?? UFix64(0)):
                     "Not enough tokens to buy the NFT!"

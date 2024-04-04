@@ -1,5 +1,4 @@
 import TopShot from 0xTOPSHOTADDRESS
-import NonFungibleToken from 0xNFTADDRESS
 
 // This is a script to get a boolean value safely to see if a moment exists in a collection
 // We expect this will not panic if the NFT is not in the collection
@@ -20,7 +19,7 @@ access(all) fun main(account: Address, nftID: UInt64 ): Bool {
 
     let collectionRef = acct.capabilities.borrow<&TopShot.Collection>(/public/MomentCollection)!
 
-    let optionalNFT = collectionRef.borrowNFTSafe(id: nftID)
+    let optionalNFT = collectionRef.borrowNFT(nftID)
 
     // optional binding
     if let nft = optionalNFT {

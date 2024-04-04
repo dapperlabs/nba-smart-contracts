@@ -16,9 +16,9 @@ transaction(tokenReceiverPath: PublicPath, beneficiaryAccount: Address, cutPerce
             let ownerCollection = acct.capabilities.storage.issue<auth(NonFungibleToken.Withdraw) &TopShot.Collection>(/storage/MomentCollection)
 
             // get a capability for the v1 collection
-            var v1SaleCollection: Capability<auth(Market.Withdraw) &Market.SaleCollection>? = nil
+            var v1SaleCollection: Capability<auth(NonFungibleToken.Withdraw) &Market.SaleCollection>? = nil
             if acct.storage.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection) != nil {
-                v1SaleCollection = acct.capabilities.storage.issue<auth(Market.Withdraw) &Market.SaleCollection>(/storage/topshotSaleCollection)
+                v1SaleCollection = acct.capabilities.storage.issue<auth(NonFungibleToken.Withdraw) &Market.SaleCollection>(/storage/topshotSaleCollection)
             }
 
             // create a new sale collection

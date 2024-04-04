@@ -128,10 +128,11 @@ func GenerateTopShotLockingContractWithTopShotRuntimeAddr(nftAddr string, topsho
 
 // GenerateFastBreakContract returns a copy
 // of the FastBreakContract with the import addresses updated
-func GenerateFastBreakContract(nftAddr string, topshotAddr string) []byte {
+func GenerateFastBreakContract(nftAddr string, topshotAddr string, metadataViewsAddr string) []byte {
 	fastBreakCode := assets.MustAssetString(fastBreakFile)
 	codeWithNFTAddr := strings.ReplaceAll(fastBreakCode, defaultNonFungibleTokenAddress, nftAddr)
 	codeWithTopShotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
+	codeWithMetadataViewsAddr := strings.ReplaceAll(codeWithTopShotAddr, defaultMetadataviewsAddress, metadataViewsAddr)
 
-	return []byte(codeWithTopShotAddr)
+	return []byte(codeWithMetadataViewsAddr)
 }

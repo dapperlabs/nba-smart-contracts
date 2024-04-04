@@ -13,6 +13,7 @@
 
 import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
+import MetadataViews from 0xMETADATAVIEWSADDRESS
 
 /// Game & Oracle Contract for Fast Break V1
 ///
@@ -91,9 +92,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
     access(all) let CollectionStoragePath:      StoragePath
     access(all) let CollectionPublicPath:       PublicPath
     access(all) let OracleStoragePath:          StoragePath
-    access(all) let OraclePrivatePath:          PrivatePath
     access(all) let PlayerStoragePath:          StoragePath
-    access(all) let PlayerPrivatePath:          PrivatePath
 
     /// Contract variables
     ///
@@ -615,10 +614,19 @@ access(all) contract FastBreakV1: NonFungibleToken {
         }
 
         view access(all) fun getViews(): [Type] {
-            return []
+            return [
+                Type<MetadataViews.NFTCollectionData>(),
+                Type<MetadataViews.NFTCollectionDisplay>()
+            ]
         }
 
         access(all) fun resolveView(_ view: Type): AnyStruct? {
+            switch view {
+                case Type<MetadataViews.NFTCollectionData>():
+                    return FastBreakV1.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionData>())
+                case Type<MetadataViews.NFTCollectionDisplay>():
+                    return FastBreakV1.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionDisplay>())
+            }
             return nil
         }
     }
@@ -627,7 +635,6 @@ access(all) contract FastBreakV1: NonFungibleToken {
     ///
     access(all) resource interface FastBreakNFTCollectionPublic : NonFungibleToken.CollectionPublic  {
         access(all) fun batchDeposit(tokens: @{NonFungibleToken.Collection})
-        access(all) fun borrowNFTSafe(id: UInt64): &{NonFungibleToken.NFT}?
         access(all) fun borrowFastBreakNFT(id: UInt64): &FastBreakV1.NFT? {
             post {
                 (result == nil) || (result?.id == id):
@@ -648,13 +655,11 @@ access(all) contract FastBreakV1: NonFungibleToken {
     /// Fast Break game collection
     ///
     access(all) resource Collection:
-        NonFungibleToken.Provider,
-        NonFungibleToken.Receiver,
         NonFungibleToken.Collection,
         FastBreakNFTCollectionPublic
     {
 
-        access(all) var ownedNFTs: @{UInt64: {NonFungibleToken.NFT}}
+        access(contract) var ownedNFTs: @{UInt64: {NonFungibleToken.NFT}}
 
         access(NonFungibleToken.Withdraw | NonFungibleToken.Owner) fun withdraw(withdrawID: UInt64): @{NonFungibleToken.NFT} {
             let token <- self.ownedNFTs.remove(key: withdrawID) 
@@ -691,10 +696,6 @@ access(all) contract FastBreakV1: NonFungibleToken {
         }
 
         view access(all) fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT}? {
-            return &self.ownedNFTs[id]
-        }
-
-        view access(all) fun borrowNFTSafe(id: UInt64): &{NonFungibleToken.NFT}? {
             return &self.ownedNFTs[id]
         }
 
@@ -738,10 +739,50 @@ access(all) contract FastBreakV1: NonFungibleToken {
     }
 
     view access(all) fun getContractViews(resourceType: Type?): [Type] {
-        return []
+        return [Type<MetadataViews.NFTCollectionData>(), Type<MetadataViews.NFTCollectionDisplay>()]
     }
 
     view access(all) fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
+        post {
+            result == nil || result!.getType() == viewType: "The returned view must be of the given type or nil"
+        }
+        switch viewType {
+            case Type<MetadataViews.NFTCollectionData>():
+                return MetadataViews.NFTCollectionData(
+                    storagePath: /storage/FastBreakGameV1,
+                    publicPath: /public/FastBreakGameV1,
+                    publicCollection: Type<&FastBreakV1.Collection>(),
+                    publicLinkedType: Type<&FastBreakV1.Collection>(),
+                    createEmptyCollectionFunction: (fun (): @{NonFungibleToken.Collection} {
+                        return <-FastBreakV1.createEmptyCollection(nftType: Type<@FastBreakV1.NFT>())
+                    })
+                )
+            case Type<MetadataViews.NFTCollectionDisplay>():
+                let bannerImage = MetadataViews.Media(
+                    file: MetadataViews.HTTPFile(
+                        url: "https://nbatopshot.com/static/fastbreak/fast-break-logo.svg"
+                    ),
+                    mediaType: "image/svg+xml"
+                )
+                let squareImage = MetadataViews.Media(
+                    file: MetadataViews.HTTPFile(
+                        url: "https://nbatopshot.com/static/fastbreak/fast-break-logo.svg"
+                    ),
+                    mediaType: "image/png"
+                )
+                return MetadataViews.NFTCollectionDisplay(
+                    name: "NBA-Top-Shot Fast Break",
+                    description: "The game of Fast Break is very simple. Collectors will select five players every night for fifteen nights. Each night has different stats and different scores that your team must beat in order to get awarded a win.",
+                    externalURL: MetadataViews.ExternalURL("https://nbatopshot.com/fastbreak"),
+                    squareImage: squareImage,
+                    bannerImage: bannerImage,
+                    socials: {
+                        "twitter": MetadataViews.ExternalURL("https://twitter.com/nbatopshot"),
+                        "discord": MetadataViews.ExternalURL("https://discord.com/invite/nbatopshot"),
+                        "instagram": MetadataViews.ExternalURL("https://www.instagram.com/nbatopshot")
+                    }
+                )
+        }
         return nil
     }
 
@@ -910,9 +951,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
         self.CollectionStoragePath = /storage/FastBreakGameV1
         self.CollectionPublicPath = /public/FastBreakGameV1
         self.OracleStoragePath = /storage/FastBreakOracleV1
-        self.OraclePrivatePath = /private/FastBreakOracleV1
         self.PlayerStoragePath = /storage/FastBreakPlayerV1
-        self.PlayerPrivatePath = /private/FastBreakPlayerV1
 
         self.totalSupply = 0
         self.nextPlayerId = 0

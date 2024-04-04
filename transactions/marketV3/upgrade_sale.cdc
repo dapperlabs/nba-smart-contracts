@@ -1,6 +1,7 @@
 import TopShot from 0xTOPSHOTADDRESS
 import Market from 0xMARKETADDRESS
 import TopShotMarketV3 from 0xMARKETV3ADDRESS
+import NonFungibleToken from 0xNFTADDRESS
 
 // This transaction is for a user to change a moment sale from
 // the first version of the market contract to the third version
@@ -18,7 +19,7 @@ transaction(tokenID: UInt64, price: UFix64) {
             ?? panic("Could not borrow from MomentCollection in storage")	
 
         // borrow a reference to the owner's sale collection
-        let topshotSaleCollection = acct.storage.borrow<auth(Market.Withdraw) &Market.SaleCollection>(from: /storage/topshotSaleCollection)
+        let topshotSaleCollection = acct.storage.borrow<auth(NonFungibleToken.Withdraw) &Market.SaleCollection>(from: /storage/topshotSaleCollection)
             ?? panic("Could not borrow from sale in storage")
 
         let topshotSaleV3Collection = acct.storage.borrow<auth(TopShotMarketV3.Create) &TopShotMarketV3.SaleCollection>(from: TopShotMarketV3.marketStoragePath)

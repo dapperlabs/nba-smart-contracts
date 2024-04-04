@@ -43,10 +43,10 @@ access(all) contract TopShotShardedCollection {
 
     // ShardedCollection stores a dictionary of TopShot Collections
     // A Moment is stored in the field that corresponds to its id % numBuckets
-    access(all) resource ShardedCollection: TopShot.MomentCollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic, ViewResolver.ResolverCollection {
+    access(all) resource ShardedCollection: TopShot.MomentCollectionPublic, NonFungibleToken.CollectionPublic {
         
         // Dictionary of topshot collections
-        access(all) var collections: @{UInt64: TopShot.Collection}
+        access(contract) var collections: @{UInt64: TopShot.Collection}
 
         // The number of buckets to split Moments into
         // This makes storage more efficient and performant
@@ -130,21 +130,6 @@ access(all) contract TopShotShardedCollection {
                 ids = ids.concat(collectionIDs)
             }
             return ids
-        }
-
-        // Safe way to borrow a reference to an NFT that does not panic
-        // Also now part of the NonFungibleToken.CollectionPublic interface
-        //
-        // Parameters: id: The ID of the NFT to get the reference for
-        //
-        // Returns: An optional reference to the desired NFT, will be nil if the passed ID does not exist
-        view access(all) fun borrowNFTSafe(id: UInt64): &{NonFungibleToken.NFT}? {
-
-            // Get the bucket of the nft to be borrowed
-            let bucket = id % self.numBuckets
-
-            // Find NFT in the collections and borrow a reference
-            return self.collections[bucket]?.borrowNFTSafe(id: id) ?? nil
         }
 
         // borrowNFT Returns a borrowed reference to a Moment in the Collection

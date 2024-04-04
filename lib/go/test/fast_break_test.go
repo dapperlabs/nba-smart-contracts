@@ -118,7 +118,7 @@ func TestFastBreak(t *testing.T) {
 
 	// Deploy Fast Break
 	fastBreakKey, fastBreakSigner := test.AccountKeyGenerator().NewWithSigner()
-	fastBreakCode := contracts.GenerateFastBreakContract(nftAddr.String(), topshotAddr.String())
+	fastBreakCode := contracts.GenerateFastBreakContract(nftAddr.String(), topshotAddr.String(), metadataViewsAddr.String())
 	fastBreakAddr, fastBreakAddrErr := adapter.CreateAccount(context.Background(), []*flow.AccountKey{fastBreakKey}, []sdktemplates.Contract{
 		{
 			Name:   "FastBreakV1",

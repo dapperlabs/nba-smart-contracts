@@ -49,12 +49,10 @@ import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 import ViewResolver   from 0xVIEWRESOLVERADDRESS
 
-access(all) contract TopShot: NonFungibleToken, ViewResolver {
+access(all) contract TopShot: NonFungibleToken {
     // -----------------------------------------------------------------------
     // TopShot deployment variables
     // -----------------------------------------------------------------------
-
-    access(all) entitlement NFTMinter
 
     // The network the contract is deployed on
     view access(all) fun Network() : String { return ${NETWORK} }
@@ -372,7 +370,7 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
         //
         // Returns: The NFT that was minted
         // 
-        access(NFTMinter) fun mintMoment(playID: UInt32): @NFT {
+        access(all) fun mintMoment(playID: UInt32): @NFT {
             pre {
                 self.retired[playID] != nil: "Cannot mint the moment: This play doesn't exist."
                 !self.retired[playID]!: "Cannot mint the moment from this play: This play has been retired."
@@ -424,7 +422,7 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
         //
         // Returns: The NFT that was minted
         //
-        access(NFTMinter) fun mintMomentWithSubedition(playID: UInt32, subeditionID: UInt32): @NFT {
+        access(all) fun mintMomentWithSubedition(playID: UInt32, subeditionID: UInt32): @NFT {
             pre {
                 self.retired[playID] != nil: "Cannot mint the moment: This play doesn't exist."
                 !self.retired[playID]!: "Cannot mint the moment from this play: This play has been retired."
@@ -466,7 +464,7 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
         //
         // Returns: Collection object that contains all the Moments that were minted
         //
-         access(NFTMinter) fun batchMintMomentWithSubedition(playID: UInt32, quantity: UInt64, subeditionID: UInt32): @Collection {
+         access(all) fun batchMintMomentWithSubedition(playID: UInt32, quantity: UInt64, subeditionID: UInt32): @Collection {
             let newCollection <- create Collection()
 
             var i: UInt64 = 0
@@ -659,7 +657,7 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
 
     // The resource that represents the Moment NFTs
     //
-    access(all) resource NFT: NonFungibleToken.NFT, ViewResolver.Resolver {
+    access(all) resource NFT: NonFungibleToken.NFT {
 
         // Global unique moment ID
         access(all) let id: UInt64
@@ -793,54 +791,13 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
                         UInt64(self.data.serialNumber)
                     )
                 case Type<MetadataViews.Royalties>():
-                    let royaltyReceiver: Capability<&{FungibleToken.Receiver}> =
-                        getAccount(TopShot.RoyaltyAddress()).capabilities.get<&{FungibleToken.Receiver}>(MetadataViews.getRoyaltyReceiverPublicPath())!
-                    return MetadataViews.Royalties(
-                        [
-                            MetadataViews.Royalty(
-                                receiver: royaltyReceiver,
-                                cut: 0.05,
-                                description: "NBATopShot marketplace royalty"
-                            )
-                        ]
-                    )
+                    return TopShot.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.Royalties>())
                 case Type<MetadataViews.ExternalURL>():
                     return MetadataViews.ExternalURL(self.getMomentURL())
                 case Type<MetadataViews.NFTCollectionData>():
-                    return MetadataViews.NFTCollectionData(
-                        storagePath: /storage/MomentCollection,
-                        publicPath: /public/MomentCollection,
-                        publicCollection: Type<&TopShot.Collection>(),
-                        publicLinkedType: Type<&TopShot.Collection>(),
-                        createEmptyCollectionFunction: (fun (): @{NonFungibleToken.Collection} {
-                            return <-TopShot.createEmptyCollection(nftType: Type<@TopShot.NFT>())
-                        })
-                    )
+                    return TopShot.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionData>())
                 case Type<MetadataViews.NFTCollectionDisplay>():
-                    let bannerImage = MetadataViews.Media(
-                        file: MetadataViews.HTTPFile(
-                            url: "https://nbatopshot.com/static/img/top-shot-logo-horizontal-white.svg"
-                        ),
-                        mediaType: "image/svg+xml"
-                    )
-                    let squareImage = MetadataViews.Media(
-                        file: MetadataViews.HTTPFile(
-                            url: "https://nbatopshot.com/static/img/og/og.png"
-                        ),
-                        mediaType: "image/png"
-                    )
-                    return MetadataViews.NFTCollectionDisplay(
-                        name: "NBA-Top-Shot",
-                        description: "NBA Top Shot is your chance to own, sell, and trade official digital collectibles of the NBA and WNBA's greatest plays and players",
-                        externalURL: MetadataViews.ExternalURL("https://nbatopshot.com"),
-                        squareImage: squareImage,
-                        bannerImage: bannerImage,
-                        socials: {
-                            "twitter": MetadataViews.ExternalURL("https://twitter.com/nbatopshot"),
-                            "discord": MetadataViews.ExternalURL("https://discord.com/invite/nbatopshot"),
-                            "instagram": MetadataViews.ExternalURL("https://www.instagram.com/nbatopshot")
-                        }
-                    )
+                     return TopShot.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionDisplay>())
                 case Type<MetadataViews.Traits>():
                     // sports radar team id
                     let excludedNames: [String] = ["TeamAtMomentNBAID"]
@@ -1014,14 +971,14 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
         // Returns: A reference to the Set with all of the fields
         // and methods exposed
         //
-         view access(NFTMinter) fun borrowSet(setID: UInt32): auth(NFTMinter) &Set {
+         view access(all) fun borrowSet(setID: UInt32): &Set {
             pre {
                 TopShot.sets[setID] != nil: "Cannot borrow Set: The Set doesn't exist"
             }
             
             // Get a reference to the Set and return it
             // use `&` to indicate the reference to the object and type
-            return (&TopShot.sets[setID] as auth(NFTMinter) &Set?)!
+            return (&TopShot.sets[setID] as &Set?)!
         }
 
         // startNewSeries ends the current series by incrementing
@@ -1100,10 +1057,10 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
     // Collection is a resource that every user who owns NFTs 
     // will store in their account to manage their NFTS
     //
-    access(all) resource Collection: MomentCollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.Collection, ViewResolver.ResolverCollection {
+    access(all) resource Collection: MomentCollectionPublic, NonFungibleToken.Collection {
         // Dictionary of Moment conforming tokens
         // NFT is a resource type with a UInt64 ID field
-        access(all) var ownedNFTs: @{UInt64: {NonFungibleToken.NFT}}
+        access(contract) var ownedNFTs: @{UInt64: {NonFungibleToken.NFT}}
 
         init() {
             self.ownedNFTs <- {}
@@ -1311,19 +1268,6 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
         //
         view access(all) fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT}? {
             return &self.ownedNFTs[id]
-        }
-
-        // Safe way to borrow a reference to an NFT that does not panic
-        // Also now part of the NonFungibleToken.PublicCollection interface
-        //
-        // Parameters: id: The ID of the NFT to get the reference for
-        //
-        // Returns: An optional reference to the desired NFT, will be nil if the passed ID does not exist
-        view access(all) fun borrowNFTSafe(id: UInt64): &{NonFungibleToken.NFT}? {
-            if let nftRef = &self.ownedNFTs[id] as &{NonFungibleToken.NFT}? {
-                return nftRef
-            }
-            return nil
         }
 
         // borrowMoment returns a borrowed reference to a Moment
@@ -1714,7 +1658,7 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
     /// Return the metadata view types available for this contract
     ///
     view access(all) fun getContractViews(resourceType: Type?): [Type] {
-        return [Type<MetadataViews.NFTCollectionData>(), Type<MetadataViews.NFTCollectionDisplay>()]
+        return [Type<MetadataViews.NFTCollectionData>(), Type<MetadataViews.NFTCollectionDisplay>(), Type<MetadataViews.Royalties>()]
     }
 
     /// Resolve this contract's metadata views
@@ -1759,6 +1703,18 @@ access(all) contract TopShot: NonFungibleToken, ViewResolver {
                         "instagram": MetadataViews.ExternalURL("https://www.instagram.com/nbatopshot")
                     }
                 )
+                case Type<MetadataViews.Royalties>():
+                    let royaltyReceiver: Capability<&{FungibleToken.Receiver}> =
+                        getAccount(TopShot.RoyaltyAddress()).capabilities.get<&{FungibleToken.Receiver}>(MetadataViews.getRoyaltyReceiverPublicPath())!
+                    return MetadataViews.Royalties(
+                        [
+                            MetadataViews.Royalty(
+                                receiver: royaltyReceiver,
+                                cut: 0.05,
+                                description: "NBATopShot marketplace royalty"
+                            )
+                        ]
+                    )
         }
         return nil
     }

@@ -9,12 +9,12 @@ import TopShot from 0xTOPSHOTADDRESS
 // setID: the ID of the set to be retired entirely
 
 transaction(setID: UInt32) {
-    let adminRef: auth(TopShot.NFTMinter) &TopShot.Admin
+    let adminRef: &TopShot.Admin
 
     prepare(acct: auth(BorrowValue) &Account) {
 
         // borrow a reference to the Admin resource in storage
-        self.adminRef = acct.storage.borrow<auth(TopShot.NFTMinter) &TopShot.Admin>(from: /storage/TopShotAdmin)
+        self.adminRef = acct.storage.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("No admin resource in storage")
     }
 
