@@ -6,7 +6,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // Returns: UInt32
 // the next number in nextSubeditionID from the SubeditionAdmin resource
 
-pub fun main(): UInt32 {
+access(all) fun main(): UInt32 {
 
     return TopShot.getNextSubeditionID()
 }

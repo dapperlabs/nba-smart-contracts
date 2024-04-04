@@ -14,11 +14,11 @@ transaction(name:String, metadata:{String:String}) {
     let adminRef: &TopShot.Admin
     let currSubeditionID: UInt32
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
 
         // borrow a reference to the admin resource
         self.currSubeditionID = TopShot.getNextSubeditionID();
-        self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+        self.adminRef = acct.storage.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("No admin resource in storage")
     }
 

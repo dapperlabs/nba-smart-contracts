@@ -10,9 +10,9 @@ transaction {
     // Local variable for the topshot Admin object
     let adminRef: @TopShot.Admin
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(LoadValue) &Account) {
 
-        self.adminRef <- acct.load<@TopShot.Admin>(from: /storage/TopShotAdmin)
+        self.adminRef <- acct.storage.load<@TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("No topshot admin in storage")
     }
 

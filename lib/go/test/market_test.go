@@ -1,20 +1,21 @@
 package test
 
 import (
-	"testing"
-
+	"context"
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
+	"github.com/onflow/cadence/runtime/common"
+	"github.com/onflow/flow-emulator/adapters"
 	fungibleToken "github.com/onflow/flow-ft/lib/go/contracts"
 	fungibleTokenTemplates "github.com/onflow/flow-ft/lib/go/templates"
+	"github.com/rs/zerolog"
+	"testing"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 	sdktemplates "github.com/onflow/flow-go-sdk/templates"
-	"github.com/onflow/flow-go-sdk/test"
-
 	"strings"
 
 	"github.com/stretchr/testify/assert"
@@ -23,80 +24,24 @@ import (
 
 const (
 	defaultfungibleTokenAddr = "ee82856bf20e2aa6"
-	defaultTokenName         = "DapperUtilityCoin"
-	defaultTokenStorage      = "dapperUtilityCoin"
+	defaultTokenName         = "ExampleToken"
+	defaultTokenStorage      = "exampleToken"
 )
 
 func TestMarketDeployment(t *testing.T) {
-	b := newBlockchain()
+	tb := NewTopShotTestBlockchain(t)
+	b := tb.Blockchain
+	topshotAddr := tb.topshotAdminAddr
+	accountKeys := tb.accountKeys
+	env := tb.env
 
-	// Should be able to deploy the NFT contract
-	// as a new account with no keys.
-	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "NonFungibleToken",
-			Source: string(nftCode),
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	// Should be able to deploy the MetadataViews contract
-	// as a new account with no keys.
-	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
-	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "MetadataViews",
-			Source: parsedMetadataContract,
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	// Should be able to deploy the TopShot Locking contract
-	// as a new account with no keys.
-	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
-	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopShotLocking",
-			Source: string(topshotLockingCode),
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	royaltyAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{})
-
-	// Should be able to deploy the topshot contract
-	// as a new account with no keys.
-	topshotCode := contracts.GenerateTopShotContract(defaultfungibleTokenAddr, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
-	topshotAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopShot",
-			Source: string(topshotCode),
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
+	logger := zerolog.Nop()
+	adapter := adapters.NewSDKAdapter(&logger, b)
 
 	// Should be able to deploy a token contract
-	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage, "1000.0")
-	tokenAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, env.MetadataViewsAddress, env.FungibleTokenMetadataViewsAddress, "DapperUtilityCoin", "dapperUtilityCoin", "1000.0")
+	tokenAccountKey, _ := accountKeys.NewWithSigner()
+	tokenAddr, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{tokenAccountKey}, []sdktemplates.Contract{
 		{
 			Name:   "DapperUtilityCoin",
 			Source: string(tokenCode),
@@ -109,8 +54,8 @@ func TestMarketDeployment(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Should be able to deploy the market contract
-	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), tokenAddr.String())
-	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, env.NFTAddress, topshotAddr.String(), tokenAddr.String())
+	marketAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
 		{
 			Name:   "Market",
 			Source: string(marketCode),
@@ -122,8 +67,8 @@ func TestMarketDeployment(t *testing.T) {
 	_, err = b.CommitBlock()
 	require.NoError(t, err)
 
-	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), tokenAddr.String(), topShotLockingAddr.String(), metadataViewsAddr.String())
-	_, err = b.CreateAccount(nil, []sdktemplates.Contract{
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, env.NFTAddress, topshotAddr.String(), marketAddr.String(), tokenAddr.String(), env.TopShotLockingAddress, env.MetadataViewsAddress)
+	_, err = adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotMarketV3",
 			Source: string(marketV3Code),
@@ -138,88 +83,21 @@ func TestMarketDeployment(t *testing.T) {
 
 // Tests all the main functionality of the V1 Market
 func TestMarketV1(t *testing.T) {
-	b := newBlockchain()
+	tb := NewTopShotTestBlockchain(t)
+	b := tb.Blockchain
+	topshotAddr := tb.topshotAdminAddr
+	topshotSigner := tb.topshotAdminSigner
+	serviceKeySigner := tb.serviceKeySigner
+	accountKeys := tb.accountKeys
+	env := tb.env
 
-	serviceKeySigner, err := b.ServiceKey().Signer()
-	assert.NoError(t, err)
-
-	accountKeys := test.AccountKeyGenerator()
-
-	env := templates.Environment{
-		FungibleTokenAddress: emulatorFTAddress,
-		FlowTokenAddress:     emulatorFlowTokenAddress,
-	}
-
-	// Should be able to deploy the NFT contract
-	// as a new account with no keys.
-	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "NonFungibleToken",
-			Source: string(nftCode),
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	env.NFTAddress = nftAddr.String()
-
-	// Should be able to deploy the MetadataViews contract
-	// as a new account with no keys.
-	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
-	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "MetadataViews",
-			Source: parsedMetadataContract,
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	env.MetadataViewsAddress = metadataViewsAddr.String()
-
-	// Deploy TopShot Locking contract
-	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
-	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopShotLocking",
-			Source: string(topshotLockingCode),
-		},
-	})
-
-	env.TopShotLockingAddress = topShotLockingAddr.String()
-
-	royaltyAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{})
-
-	// Should be able to deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(defaultfungibleTokenAddr, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
-	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
-	topshotAddr, err := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
-		{
-			Name:   "TopShot",
-			Source: string(topshotCode),
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	env.TopShotAddress = topshotAddr.String()
+	logger := zerolog.Nop()
+	adapter := adapters.NewSDKAdapter(&logger, b)
 
 	// Should be able to deploy the token contract
-	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage, "1000.0")
+	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, env.MetadataViewsAddress, env.FungibleTokenMetadataViewsAddress, "DapperUtilityCoin", "dapperUtilityCoin", "1000.0")
 	tokenAccountKey, tokenSigner := accountKeys.NewWithSigner()
-	tokenAddr, err := b.CreateAccount([]*flow.AccountKey{tokenAccountKey}, []sdktemplates.Contract{
+	tokenAddr, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{tokenAccountKey}, []sdktemplates.Contract{
 		{
 			Name:   "DapperUtilityCoin",
 			Source: string(tokenCode),
@@ -234,8 +112,8 @@ func TestMarketV1(t *testing.T) {
 	env.DUCAddress = tokenAddr.String()
 
 	// Should be able to deploy the market contract
-	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), env.DUCAddress)
-	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, env.NFTAddress, topshotAddr.String(), tokenAddr.String())
+	marketAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
 		{
 			Name:   "Market",
 			Source: string(marketCode),
@@ -251,7 +129,7 @@ func TestMarketV1(t *testing.T) {
 
 	// Should be able to deploy the token forwarding contract
 	forwardingCode := fungibleToken.CustomTokenForwarding(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
-	forwardingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+	forwardingAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
 		{
 			Name:   "TokenForwarding",
 			Source: string(forwardingCode),
@@ -267,19 +145,29 @@ func TestMarketV1(t *testing.T) {
 
 	// create two new accounts
 	bastianAccountKey, bastianSigner := accountKeys.NewWithSigner()
-	bastianAddress, err := b.CreateAccount([]*flow.AccountKey{bastianAccountKey}, nil)
+	bastianAddress, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{bastianAccountKey}, nil)
 
 	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
-	joshAddress, err := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
+	joshAddress, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{joshAccountKey}, nil)
 
 	//ducStoragePath := cadence.Path{Domain: "storage", Identifier: "dapperUtilityCoinVault"}
-	ducPublicPath := cadence.Path{Domain: "public", Identifier: "dapperUtilityCoinReceiver"}
+	ducPublicPath := cadence.Path{Domain: common.PathDomainPublic, Identifier: "dapperUtilityCoinReceiver"}
+
+	tokenEnv := fungibleTokenTemplates.Environment{
+		FungibleTokenAddress:              defaultfungibleTokenAddr,
+		MetadataViewsAddress:              tb.metadataViewsAddr.Hex(),
+		ExampleTokenAddress:               tokenAddr.Hex(),
+		FungibleTokenMetadataViewsAddress: tb.fungibleTokenMetadataViewsAddr.Hex(),
+		ViewResolverAddress:               tb.viewResolverAddr.Hex(),
+		TokenForwardingAddress:            forwardingAddr.Hex(),
+	}
 
 	// Setup both accounts to have DUC and a sale collection
 	t.Run("Should be able to setup both users' accounts to use the market", func(t *testing.T) {
-
 		// create a Vault for bastian
-		tx := createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName), bastianAddress)
+		createTokenScript := fungibleTokenTemplates.GenerateCreateTokenScript(tokenEnv)
+		modifiedCreateTokenScript := strings.Replace(string(createTokenScript), "ExampleToken", "DapperUtilityCoin", -1)
+		tx := createTxWithTemplateAndAuthorizer(b, []byte(modifiedCreateTokenScript), bastianAddress)
 
 		signAndSubmit(
 			t, b, tx,
@@ -288,7 +176,7 @@ func TestMarketV1(t *testing.T) {
 		)
 
 		// create a Vault for Josh
-		tx = createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName), joshAddress)
+		tx = createTxWithTemplateAndAuthorizer(b, []byte(modifiedCreateTokenScript), joshAddress)
 
 		signAndSubmit(
 			t, b, tx,
@@ -297,7 +185,11 @@ func TestMarketV1(t *testing.T) {
 		)
 
 		// Mint tokens to bastian's vault
-		tx = createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateMintTokensScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, bastianAddress, defaultTokenName, 80), tokenAddr)
+		mintTokenScript := fungibleTokenTemplates.GenerateMintTokensScript(tokenEnv)
+		modifiedMintTokenScript := strings.Replace(string(mintTokenScript), "ExampleToken", "DapperUtilityCoin", -1)
+		tx = createTxWithTemplateAndAuthorizer(b, []byte(modifiedMintTokenScript), tokenAddr)
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(CadenceUFix64("80.0"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -499,13 +391,16 @@ func TestMarketV1(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
-
+		inspectVaultScript := fungibleTokenTemplates.GenerateInspectVaultScript(tokenEnv)
+		modifiedInspectVaultScript := strings.Replace(string(inspectVaultScript), "ExampleToken", "DapperUtilityCoin", -1)
 		// make sure that the cut was taken correctly and that josh receied the purchasing tokens
-		executeScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, bastianAddress, defaultTokenName, 12), nil)
-		executeScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, joshAddress, defaultTokenName, 68), nil)
+		result := executeScriptAndCheck(t, b, []byte(modifiedInspectVaultScript), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress))})
+		assert.Equal(t, CadenceUFix64("12.0"), result)
+		result = executeScriptAndCheck(t, b, []byte(modifiedInspectVaultScript), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress))})
+		assert.Equal(t, CadenceUFix64("68.0"), result)
 
 		// make sure bastian received the purchase's moment
-		result := executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
+		result = executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		assert.Equal(t, cadence.NewBool(true), result)
 	})
 
@@ -642,7 +537,10 @@ func TestMarketV1(t *testing.T) {
 	})
 
 	t.Run("Can create a forwarder resource to forward tokens to a different account", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateCreateForwarderScript(flow.HexToAddress(defaultfungibleTokenAddr), forwardingAddr, tokenAddr, "DapperUtilityCoin"), bastianAddress)
+		createForwarderScript := fungibleTokenTemplates.GenerateCreateForwarderScript(tokenEnv)
+		modifiedCreateForwarderScript := strings.Replace(string(createForwarderScript), "ExampleToken", "DapperUtilityCoin", -1)
+		tx := createTxWithTemplateAndAuthorizer(b, []byte(modifiedCreateForwarderScript), bastianAddress)
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
 		signAndSubmit(
 			t, b, tx,
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
@@ -659,8 +557,9 @@ func TestMarketV1(t *testing.T) {
 			[]flow.Address{b.ServiceKey().Address, bastianAddress}, []crypto.Signer{serviceKeySigner, bastianSigner},
 			false,
 		)
-
-		executeScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, tokenAddr, defaultTokenName, 1000.0), nil)
+		inspectVaultScript := fungibleTokenTemplates.GenerateInspectVaultScript(tokenEnv)
+		modifiedInspectVaultScript := strings.Replace(string(inspectVaultScript), "ExampleToken", "DapperUtilityCoin", -1)
+		executeScriptAndCheck(t, b, []byte(modifiedInspectVaultScript), [][]byte{jsoncdc.MustEncode(cadence.Address(bastianAddress))})
 	})
 
 	t.Run("Can mint tokens and buy a moment with them so the tokens are forwarded", func(t *testing.T) {
@@ -686,93 +585,28 @@ func TestMarketV1(t *testing.T) {
 		result := executeScriptAndCheck(t, b, templates.GenerateIsIDInCollectionScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress)), jsoncdc.MustEncode(cadence.UInt64(2))})
 		assert.Equal(t, cadence.NewBool(true), result)
 
-		executeScriptAndCheck(t, b, fungibleTokenTemplates.GenerateInspectVaultScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, tokenAddr, defaultTokenName, 1100.0), nil)
+		inspectVaultScript := fungibleTokenTemplates.GenerateInspectVaultScript(tokenEnv)
+		modifiedInspectVaultScript := strings.Replace(string(inspectVaultScript), "ExampleToken", "DapperUtilityCoin", -1)
+		executeScriptAndCheck(t, b, []byte(modifiedInspectVaultScript), [][]byte{jsoncdc.MustEncode(cadence.Address(joshAddress))})
 	})
 }
 
 func TestMarketV3(t *testing.T) {
-	b := newBlockchain()
+	tb := NewTopShotTestBlockchain(t)
+	b := tb.Blockchain
+	topshotAddr := tb.topshotAdminAddr
+	topshotSigner := tb.topshotAdminSigner
+	serviceKeySigner := tb.serviceKeySigner
+	accountKeys := tb.accountKeys
+	env := tb.env
 
-	serviceKeySigner, err := b.ServiceKey().Signer()
-	assert.NoError(t, err)
-
-	accountKeys := test.AccountKeyGenerator()
-
-	env := templates.Environment{
-		FungibleTokenAddress: emulatorFTAddress,
-		FlowTokenAddress:     emulatorFlowTokenAddress,
-	}
-
-	// Should be able to deploy the NFT contract
-	// as a new account with no keys.
-	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	nftAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "NonFungibleToken",
-			Source: string(nftCode),
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	env.NFTAddress = "0x" + nftAddr.String()
-
-	// Should be able to deploy the MetadataViews contract
-	// as a new account with no keys.
-	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
-	metadataViewsAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "MetadataViews",
-			Source: parsedMetadataContract,
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	env.MetadataViewsAddress = metadataViewsAddr.String()
-
-	// Deploy TopShot Locking contract
-	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
-	topShotLockingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
-		{
-			Name:   "TopShotLocking",
-			Source: string(topshotLockingCode),
-		},
-	})
-
-	env.TopShotLockingAddress = topShotLockingAddr.String()
-
-	royaltyAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{})
-
-	// Should be able to deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(defaultfungibleTokenAddr, nftAddr.String(), metadataViewsAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
-	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
-	topshotAddr, err := b.CreateAccount([]*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
-		{
-			Name:   "TopShot",
-			Source: string(topshotCode),
-		},
-	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
-	_, err = b.CommitBlock()
-	assert.NoError(t, err)
-
-	env.TopShotAddress = topshotAddr.String()
+	logger := zerolog.Nop()
+	adapter := adapters.NewSDKAdapter(&logger, b)
 
 	// Should be able to deploy the token contract
-	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage, "1000.0")
+	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, env.MetadataViewsAddress, env.FungibleTokenMetadataViewsAddress, "DapperUtilityCoin", "dapperUtilityCoin", "1000.0")
 	tokenAccountKey, tokenSigner := accountKeys.NewWithSigner()
-	tokenAddr, err := b.CreateAccount([]*flow.AccountKey{tokenAccountKey}, []sdktemplates.Contract{
+	tokenAddr, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{tokenAccountKey}, []sdktemplates.Contract{
 		{
 			Name:   "DapperUtilityCoin",
 			Source: string(tokenCode),
@@ -787,8 +621,8 @@ func TestMarketV3(t *testing.T) {
 	env.DUCAddress = tokenAddr.String()
 
 	// Setup with the first market contract
-	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), env.DUCAddress)
-	marketAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, env.NFTAddress, topshotAddr.String(), env.DUCAddress)
+	marketAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
 		{
 			Name:   "Market",
 			Source: string(marketCode),
@@ -803,8 +637,8 @@ func TestMarketV3(t *testing.T) {
 	env.TopShotMarketAddress = marketAddr.String()
 
 	// Should be able to deploy the third market contract
-	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, nftAddr.String(), topshotAddr.String(), marketAddr.String(), env.DUCAddress, topShotLockingAddr.String(), metadataViewsAddr.String())
-	marketV3Addr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, env.NFTAddress, topshotAddr.String(), marketAddr.String(), env.DUCAddress, env.TopShotLockingAddress, env.MetadataViewsAddress)
+	marketV3Addr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
 		{
 			Name:   "TopShotMarketV3",
 			Source: string(marketV3Code),
@@ -819,8 +653,8 @@ func TestMarketV3(t *testing.T) {
 	env.TopShotMarketV3Address = marketV3Addr.String()
 
 	// Should be able to deploy the token forwarding contract
-	forwardingCode := fungibleToken.CustomTokenForwarding(defaultfungibleTokenAddr, defaultTokenName, defaultTokenStorage)
-	forwardingAddr, err := b.CreateAccount(nil, []sdktemplates.Contract{
+	forwardingCode := fungibleToken.CustomTokenForwarding(defaultfungibleTokenAddr, "DapperUtilityCoin", "dapperUtilityCoin")
+	forwardingAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
 		{
 			Name:   "TokenForwarding",
 			Source: string(forwardingCode),
@@ -836,15 +670,26 @@ func TestMarketV3(t *testing.T) {
 
 	// create two new accounts
 	bastianAccountKey, bastianSigner := accountKeys.NewWithSigner()
-	bastianAddress, err := b.CreateAccount([]*flow.AccountKey{bastianAccountKey}, nil)
+	bastianAddress, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{bastianAccountKey}, nil)
 
 	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
-	joshAddress, err := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
+	joshAddress, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{joshAccountKey}, nil)
+
+	tokenEnv := fungibleTokenTemplates.Environment{
+		FungibleTokenAddress:              defaultfungibleTokenAddr,
+		MetadataViewsAddress:              tb.metadataViewsAddr.Hex(),
+		ExampleTokenAddress:               tokenAddr.Hex(),
+		FungibleTokenMetadataViewsAddress: tb.fungibleTokenMetadataViewsAddr.Hex(),
+		ViewResolverAddress:               tb.viewResolverAddr.Hex(),
+		TokenForwardingAddress:            forwardingAddr.Hex(),
+	}
 
 	// Setup both accounts to have DUC and a sale collection
 	t.Run("Should be able to setup both users' accounts to use DUC", func(t *testing.T) {
 
-		tx := createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName), bastianAddress)
+		createTokenScript := fungibleTokenTemplates.GenerateCreateTokenScript(tokenEnv)
+		modifiedCreateTokenScript := strings.Replace(string(createTokenScript), "ExampleToken", "DapperUtilityCoin", -1)
+		tx := createTxWithTemplateAndAuthorizer(b, []byte(modifiedCreateTokenScript), bastianAddress)
 
 		signAndSubmit(
 			t, b, tx,
@@ -853,7 +698,7 @@ func TestMarketV3(t *testing.T) {
 		)
 
 		// create a Vault for Josh
-		tx = createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateCreateTokenScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, defaultTokenName), joshAddress)
+		tx = createTxWithTemplateAndAuthorizer(b, []byte(modifiedCreateTokenScript), joshAddress)
 
 		signAndSubmit(
 			t, b, tx,
@@ -861,7 +706,11 @@ func TestMarketV3(t *testing.T) {
 			false,
 		)
 
-		tx = createTxWithTemplateAndAuthorizer(b, fungibleTokenTemplates.GenerateMintTokensScript(flow.HexToAddress(defaultfungibleTokenAddr), tokenAddr, bastianAddress, defaultTokenName, 80), tokenAddr)
+		mintTokenScript := fungibleTokenTemplates.GenerateMintTokensScript(tokenEnv)
+		modifiedMintTokenScript := strings.Replace(string(mintTokenScript), "ExampleToken", "DapperUtilityCoin", -1)
+		tx = createTxWithTemplateAndAuthorizer(b, []byte(modifiedMintTokenScript), tokenAddr)
+		_ = tx.AddArgument(cadence.NewAddress(bastianAddress))
+		_ = tx.AddArgument(CadenceUFix64("80.0"))
 
 		signAndSubmit(
 			t, b, tx,
@@ -988,7 +837,7 @@ func TestMarketV3(t *testing.T) {
 		)
 	})
 
-	ducPublicPath := cadence.Path{Domain: "public", Identifier: "dapperUtilityCoinReceiver"}
+	ducPublicPath := cadence.Path{Domain: common.PathDomainPublic, Identifier: "dapperUtilityCoinReceiver"}
 
 	t.Run("Should be able to create a V1 sale collection and V3 sale collection in the same account", func(t *testing.T) {
 
@@ -1411,15 +1260,14 @@ func TestMarketV3(t *testing.T) {
 
 		// make sure non-fungible receiver did not receive the purchased moments from the failed TX
 		for i := 14; i < 18; i++ {
-			result := executeScriptAndCheckShouldFail(
+			result := executeScriptAndCheck(
 				t,
 				b,
 				templates.GenerateIsIDInCollectionScript(env),
 				[][]byte{jsoncdc.MustEncode(cadence.Address(tokenAddr)),
 					jsoncdc.MustEncode(cadence.UInt64(i))},
-				true,
 			)
-			assert.Equal(t, true, result)
+			assert.Equal(t, cadence.NewBool(false), result)
 		}
 	})
 }

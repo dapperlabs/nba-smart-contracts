@@ -12,10 +12,10 @@ transaction(seller: Address, recipient: Address, momentID: UInt64, purchaseAmoun
 
     let purchaseTokens: @DapperUtilityCoin.Vault
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
 
         // Borrow a provider reference to the buyers vault
-        let provider = acct.borrow<&DapperUtilityCoin.Vault{FungibleToken.Provider}>(from: /storage/dapperUtilityCoinVault)
+        let provider = acct.storage.borrow<auth(FungibleToken.Withdraw) &DapperUtilityCoin.Vault>(from: /storage/dapperUtilityCoinVault)
             ?? panic("Could not borrow a reference to the buyers FlowToken Vault")
         
         // withdraw the purchase tokens from the vault
@@ -30,17 +30,15 @@ transaction(seller: Address, recipient: Address, momentID: UInt64, purchaseAmoun
         let recipient = getAccount(recipient)
 
         // Get the reference for the recipient's nft receiver
-        let receiverRef = recipient.getCapability(/public/MomentCollection)!.borrow<&{TopShot.MomentCollectionPublic}>()
-            ?? panic("Could not borrow a reference to the recipients moment collection")
+        let receiverRef = recipient.capabilities.borrow<&TopShot.Collection>(/public/MomentCollection)
+            ?? panic("Could not borrow a reference to the moment collection")
 
-        if let marketV3CollectionRef = seller.getCapability(/public/topshotSalev3Collection)
-                .borrow<&{Market.SalePublic}>() {
+        if let marketV3CollectionRef = seller.capabilities.borrow<&TopShotMarketV3.SaleCollection>(/public/topshotSalev3Collection) {
 
             let purchasedToken <- marketV3CollectionRef.purchase(tokenID: momentID, buyTokens: <-self.purchaseTokens)
             receiverRef.deposit(token: <-purchasedToken)
 
-        } else if let marketV1CollectionRef = seller.getCapability(/public/topshotSaleCollection)
-            .borrow<&{Market.SalePublic}>() {
+        } else if let marketV1CollectionRef = seller.capabilities.borrow<&Market.SaleCollection>(/public/topshotSaleCollection) {
             // purchase the moment
             let purchasedToken <- marketV1CollectionRef.purchase(tokenID: momentID, buyTokens: <-self.purchaseTokens)
 

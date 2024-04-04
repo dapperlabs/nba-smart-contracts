@@ -10,7 +10,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // Returns: Subedition
 // struct from TopShot contract
 
-pub fun main(subeditionID: UInt32): TopShot.Subedition {
+access(all) fun main(subeditionID: UInt32): &TopShot.Subedition {
 
     let subedititon = TopShot.getSubeditionByID(subeditionID: subeditionID)
 

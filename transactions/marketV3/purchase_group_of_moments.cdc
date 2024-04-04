@@ -19,16 +19,16 @@ transaction(momentsBySeller: {Address: [UInt64]}, purchaseAmount: UFix64) {
 
     // Local variables for the topshot collection object and token provider
     let collectionRef: &TopShot.Collection
-    let providerRef: &DapperUtilityCoin.Vault{FungibleToken.Provider}
+    let providerRef: auth(FungibleToken.Withdraw) &DapperUtilityCoin.Vault
     
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
 
         // borrow a reference to the signer's collection
-        self.collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
+        self.collectionRef = acct.storage.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
             ?? panic("Could not borrow reference to the Moment Collection")
 
         // borrow a reference to the signer's fungible token Vault
-        self.providerRef = acct.borrow<&DapperUtilityCoin.Vault{FungibleToken.Provider}>(from: /storage/dapperUtilityCoinVault)!   
+        self.providerRef = acct.storage.borrow<auth(FungibleToken.Withdraw) &DapperUtilityCoin.Vault>(from: /storage/dapperUtilityCoinVault)!
     }
 
     execute {
@@ -46,8 +46,7 @@ transaction(momentsBySeller: {Address: [UInt64]}, purchaseAmount: UFix64) {
                 // Get the seller account
                 let seller = getAccount(sellerAddress)
                 // Check if we can obtain a reference to the sellers marketV3 collection
-                if let marketV3CollectionRef = seller.getCapability(TopShotMarketV3.marketPublicPath)
-                        .borrow<&{Market.SalePublic}>() {
+                if let marketV3CollectionRef = seller.capabilities.borrow<&TopShotMarketV3.SaleCollection>(TopShotMarketV3.marketPublicPath) {
 
                     // Check the moments sale price
                     var momentPrice = marketV3CollectionRef.getPrice(tokenID: sellerMoment) ?? panic("Moment not for sale")
@@ -62,8 +61,7 @@ transaction(momentsBySeller: {Address: [UInt64]}, purchaseAmount: UFix64) {
 
 
                 // If we could not obtain reference to sellers marketV3 collection, try V1
-                } else if let topshotSaleCollection = seller.getCapability(/public/topshotSaleCollection)
-                .borrow<&{Market.SalePublic}>() {
+                } else if let topshotSaleCollection = seller.capabilities.borrow<&Market.SaleCollection>(/public/topshotSaleCollection) {
 
                 // Check the moments sale price
                 var momentPrice = topshotSaleCollection.getPrice(tokenID: sellerMoment) ?? panic("Moment not for sale")

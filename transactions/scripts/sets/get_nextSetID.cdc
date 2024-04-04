@@ -6,7 +6,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // Returns: UInt32
 // Value of nextSetID field in TopShot contract
 
-pub fun main(): UInt32 {
+access(all) fun main(): UInt32 {
 
     log(TopShot.nextSetID)
 

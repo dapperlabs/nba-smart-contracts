@@ -11,10 +11,10 @@ import TopShotMarketV3 from 0xMARKETV3ADDRESS
 // price: the sell price of the moment
 
 transaction(momentID: UInt64, price: UFix64) {
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
 
         // borrow a reference to the topshot Sale Collection
-        let topshotSaleCollection = acct.borrow<&TopShotMarketV3.SaleCollection>(from: TopShotMarketV3.marketStoragePath)
+        let topshotSaleCollection = acct.storage.borrow<auth(TopShotMarketV3.Create) &TopShotMarketV3.SaleCollection>(from: TopShotMarketV3.marketStoragePath)
             ?? panic("Could not borrow from sale in storage")
 
         // List the specified moment for sale

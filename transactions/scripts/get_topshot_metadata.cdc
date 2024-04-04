@@ -2,11 +2,10 @@ import TopShot from 0xTOPSHOTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 
 
-pub fun main(address: Address, id: UInt64): TopShot.TopShotMomentMetadataView {
+access(all) fun main(address: Address, id: UInt64): TopShot.TopShotMomentMetadataView {
     let account = getAccount(address)
 
-    let collectionRef = account.getCapability(/public/MomentCollection)
-                            .borrow<&{TopShot.MomentCollectionPublic}>()!
+    let collectionRef = account.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)!
 
     let nft = collectionRef.borrowMoment(id: id)!
     

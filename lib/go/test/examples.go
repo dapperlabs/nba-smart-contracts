@@ -13,7 +13,8 @@ import (
 
 	"github.com/onflow/cadence"
 
-	emulator "github.com/onflow/flow-emulator"
+	"github.com/onflow/flow-emulator/convert"
+	"github.com/onflow/flow-emulator/emulator"
 )
 
 // ReadFile reads a file from the file system
@@ -40,7 +41,7 @@ func DownloadFile(url string) ([]byte, error) {
 
 // newBlockchain returns an emulator blockchain for testing.
 func newBlockchain(opts ...emulator.Option) *emulator.Blockchain {
-	b, err := emulator.NewBlockchain(
+	b, err := emulator.New(
 		append(
 			[]emulator.Option{
 				emulator.WithStorageLimitEnabled(false),
@@ -111,7 +112,8 @@ func Submit(
 	shouldRevert bool,
 ) {
 	// submit the signed transaction
-	err := b.AddTransaction(*tx)
+	flowTx := convert.SDKTransactionToFlow(*tx)
+	err := b.AddTransaction(*flowTx)
 	require.NoError(t, err)
 
 	result, err := b.ExecuteNextTransaction()
@@ -195,12 +197,11 @@ func bytesToCadenceArray(b []byte) cadence.Array {
 
 // assertEqual asserts that two objects are equal.
 //
-//    assertEqual(t, 123, 123)
+//	assertEqual(t, 123, 123)
 //
 // Pointer variable equality is determined based on the equality of the
 // referenced values (as opposed to the memory addresses). Function equality
 // cannot be determined and will always fail.
-//
 func assertEqual(t *testing.T, expected, actual interface{}) bool {
 
 	if assert.ObjectsAreEqual(expected, actual) {

@@ -13,10 +13,10 @@ transaction(setID: UInt32, playID: UInt32) {
     // local variable for storing the reference to the admin resource
     let adminRef: &TopShot.Admin
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
 
         // borrow a reference to the Admin resource in storage
-        self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+        self.adminRef = acct.storage.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("No admin resource in storage")
     }
 

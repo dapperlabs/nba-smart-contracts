@@ -13,15 +13,14 @@ import TopShot from 0xTOPSHOTADDRESS
 // Whether for each SetID/PlayID combo, 
 // account owns a moment matching that SetPlay.
 
-pub fun main(account: Address, setIDs: [UInt32], playIDs: [UInt32]): Bool {
+access(all) fun main(account: Address, setIDs: [UInt32], playIDs: [UInt32]): Bool {
 
     assert(
         setIDs.length == playIDs.length,
         message: "set and play ID arrays have mismatched lengths"
     )
 
-    let collectionRef = getAccount(account).getCapability(/public/MomentCollection)
-                .borrow<&{TopShot.MomentCollectionPublic}>()
+    let collectionRef = getAccount(account).capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
                 ?? panic("Could not get public moment collection reference")
 
     let momentIDs = collectionRef.getIDs()

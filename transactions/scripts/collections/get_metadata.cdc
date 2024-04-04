@@ -13,12 +13,11 @@ import TopShot from 0xTOPSHOTADDRESS
 // A dictionary of all the play metadata associated
 // with the specified moment
 
-pub fun main(account: Address, id: UInt64): {String: String} {
+access(all) fun main(account: Address, id: UInt64): {String: String} {
 
     // get the public capability for the owner's moment collection
     // and borrow a reference to it
-    let collectionRef = getAccount(account).getCapability(/public/MomentCollection)
-        .borrow<&{TopShot.MomentCollectionPublic}>()
+    let collectionRef = getAccount(account).capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
         ?? panic("Could not get public moment collection reference")
 
     // Borrow a reference to the specified moment

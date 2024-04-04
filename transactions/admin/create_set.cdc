@@ -13,10 +13,10 @@ transaction(setName: String) {
     let adminRef: &TopShot.Admin
     let currSetID: UInt32
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
 
         // borrow a reference to the Admin resource in storage
-        self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+        self.adminRef = acct.storage.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("Could not borrow a reference to the Admin resource")
         self.currSetID = TopShot.nextSetID;
     }
