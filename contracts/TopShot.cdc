@@ -1188,6 +1188,8 @@ access(all) contract TopShot: NonFungibleToken {
             let token <- self.ownedNFTs.remove(key: id) 
                 ?? panic("Cannot lock: Moment does not exist in the collection")
 
+            TopShot.emitNFTUpdated(&token as auth(NonFungibleToken.Update) &{NonFungibleToken.NFT})
+
             // pass the token to the locking contract
             // store it again after it comes back
             let oldToken <- self.ownedNFTs[id] <- TopShotLocking.lockNFT(nft: <- token, duration: duration)
@@ -1210,6 +1212,8 @@ access(all) contract TopShot: NonFungibleToken {
             // Remove the nft from the Collection
             let token <- self.ownedNFTs.remove(key: id) 
                 ?? panic("Cannot lock: Moment does not exist in the collection")
+
+            TopShot.emitNFTUpdated(&token as auth(NonFungibleToken.Update) &{NonFungibleToken.NFT})
 
             // Pass the token to the TopShotLocking contract then get it back
             // Store it back to the ownedNFTs dictionary
