@@ -52,6 +52,14 @@ access(all) contract TopShotShardedCollection {
         // This makes storage more efficient and performant
         access(all) let numBuckets: UInt64
 
+        access(all) fun forEachID(_ f: fun (UInt64): Bool): Void {
+            for key in self.collections.keys {
+                 let col = &self.collections[key] as &TopShot.Collection?
+                 col?.forEachID(f)
+            }
+        }
+
+
         init(numBuckets: UInt64) {
             self.collections <- {}
             self.numBuckets = numBuckets
@@ -68,7 +76,7 @@ access(all) contract TopShotShardedCollection {
 
         // withdraw removes a Moment from one of the Collections 
         // and moves it to the caller
-        access(NonFungibleToken.Withdraw | NonFungibleToken.Owner) fun withdraw(withdrawID: UInt64): @{NonFungibleToken.NFT} {
+        access(NonFungibleToken.Withdraw) fun withdraw(withdrawID: UInt64): @{NonFungibleToken.NFT} {
             post {
                 result.id == withdrawID: "The ID of the withdrawn NFT is incorrect"
             }
@@ -87,7 +95,7 @@ access(all) contract TopShotShardedCollection {
         //
         // Returns: @NonFungibleToken.Collection a Collection containing the moments
         //          that were withdrawn
-        access(NonFungibleToken.Withdraw | NonFungibleToken.Owner) fun batchWithdraw(ids: [UInt64]): @{NonFungibleToken.Collection} {
+        access(NonFungibleToken.Withdraw) fun batchWithdraw(ids: [UInt64]): @{NonFungibleToken.Collection} {
             var batchCollection <- TopShot.createEmptyCollection(nftType: Type<@TopShot.NFT>())
             
             // Iterate through the ids and withdraw them from the Collection

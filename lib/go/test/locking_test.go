@@ -3,12 +3,13 @@ package test
 import (
 	"context"
 	"fmt"
-	"github.com/onflow/cadence/runtime/common"
-	"github.com/onflow/flow-emulator/adapters"
-	"github.com/rs/zerolog"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/onflow/cadence/runtime/common"
+	"github.com/onflow/flow-emulator/adapters"
+	"github.com/rs/zerolog"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
@@ -40,7 +41,14 @@ func TestTopShotLocking(t *testing.T) {
 	adapter := adapters.NewSDKAdapter(&logger, b)
 
 	// Should be able to deploy the token contract
-	tokenCode := fungibleToken.CustomToken(defaultfungibleTokenAddr, env.MetadataViewsAddress, env.FungibleTokenMetadataViewsAddress, "DapperUtilityCoin", "dapperUtilityCoin", "1000.0")
+	tokenCode := fungibleToken.CustomToken(
+		defaultfungibleTokenAddr,
+		env.MetadataViewsAddress,
+		env.FungibleTokenMetadataViewsAddress,
+		"DapperUtilityCoin",
+		"dapperUtilityCoin",
+		"1000.0",
+	)
 	tokenAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
 		{
 			Name:   "DapperUtilityCoin",
@@ -175,7 +183,7 @@ func TestTopShotLocking(t *testing.T) {
 			jsoncdc.MustEncode(cadence.Address(topshotAddr)),
 			jsoncdc.MustEncode(cadence.UInt64(momentId)),
 		})
-		resultTime := time.Unix(int64(result.ToGoValue().(uint64)/CadenceUFix64Factor), 0)
+		resultTime := time.Unix(int64(result.(cadence.UFix64)/CadenceUFix64Factor), 0)
 		// Flow block time has a 10-second time accuracy, not relevant since locking is in month timescale
 		assert.WithinDuration(t, expectedExpiryTime, resultTime, 10*time.Second)
 	})
@@ -541,7 +549,7 @@ func TestTopShotLocking(t *testing.T) {
 			jsoncdc.MustEncode(cadence.Address(topshotAddr)),
 			jsoncdc.MustEncode(cadence.UInt64(momentId)),
 		})
-		resultTime := time.Unix(int64(result.ToGoValue().(uint64)/CadenceUFix64Factor), 0)
+		resultTime := time.Unix(int64(result.(cadence.UFix64)/CadenceUFix64Factor), 0)
 		assert.WithinDuration(t, expectedExpiryTime, resultTime, 10*time.Second)
 	})
 }
