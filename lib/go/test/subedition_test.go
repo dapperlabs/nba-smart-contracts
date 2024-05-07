@@ -284,13 +284,14 @@ func TestSubeditions(t *testing.T) {
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetSubeditionByIDScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1))})
 
-		//metadataFields := result.(cadence.Struct).Fields
-		//
-		//metadata = []cadence.KeyValuePair{{Key: playIDString, Value: value1}, {Key: setIDString, Value: value1}}
-		//subeditionMetadata = CadenceStringDictionary(metadata)
-		//assert.Equal(t, cadence.NewUInt32(1), metadataFields[0])
-		//assert.Equal(t, subedition111Name, metadataFields[1])
-		//assert.Equal(t, subeditionMetadata, metadataFields[2])
+		subEditionMetadata := result.(cadence.Struct)
+
+		metadata = []cadence.KeyValuePair{{Key: playIDString, Value: value1}, {Key: setIDString, Value: value1}}
+		subeditionMetadata = CadenceStringDictionary(metadata)
+
+		assert.Equal(t, cadence.NewUInt32(1), cadence.SearchFieldByName(subEditionMetadata, "subeditionID"))
+		assert.Equal(t, subedition111Name, cadence.SearchFieldByName(subEditionMetadata, "name"))
+		assert.Equal(t, subeditionMetadata, cadence.SearchFieldByName(subEditionMetadata, "metadata"))
 	})
 
 	t.Run("Should be able to link nft to subedition", func(t *testing.T) {

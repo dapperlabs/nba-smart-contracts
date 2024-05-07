@@ -51,14 +51,14 @@ func verifyQuerySetMetadata(
 	series := cadence.SearchFieldByName(metadataStruct, "series")
 	assertEqual(t, cadence.NewUInt32(expectedMetadata.series), series)
 
-	//if len(expectedMetadata.plays) != 0 {
-	//	plays := metadataFields[3].(cadence.Array).Values
-	//
-	//	for i, play := range plays {
-	//		expectedPlayID := cadence.NewUInt32(expectedMetadata.plays[i])
-	//		assertEqual(t, expectedPlayID, play)
-	//	}
-	//}
+	if len(expectedMetadata.plays) != 0 {
+		plays := cadence.SearchFieldByName(metadataStruct, "plays").(cadence.Array).Values
+
+		for i, play := range plays {
+			expectedPlayID := cadence.NewUInt32(expectedMetadata.plays[i])
+			assertEqual(t, expectedPlayID, play)
+		}
+	}
 
 	//locked := metadataFields[5]
 	locked := cadence.SearchFieldByName(metadataStruct, "locked")
