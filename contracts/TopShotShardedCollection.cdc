@@ -43,7 +43,7 @@ access(all) contract TopShotShardedCollection {
 
     // ShardedCollection stores a dictionary of TopShot Collections
     // A Moment is stored in the field that corresponds to its id % numBuckets
-    access(all) resource ShardedCollection: TopShot.MomentCollectionPublic, NonFungibleToken.CollectionPublic {
+    access(all) resource ShardedCollection: TopShot.MomentCollectionPublic, NonFungibleToken.CollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver {
         
         // Dictionary of topshot collections
         access(contract) var collections: @{UInt64: TopShot.Collection}
