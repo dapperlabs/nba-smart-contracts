@@ -7,7 +7,6 @@
                 \/     \/              \/            \/     \/     \/
 
     fast break game contract & oracle
-    micro coder: jer ahrens <jer.ahrens@dapperlabs.com>
 
 */
 
@@ -659,9 +658,9 @@ access(all) contract FastBreakV1: NonFungibleToken {
         FastBreakNFTCollectionPublic
     {
 
-        access(contract) var ownedNFTs: @{UInt64: {NonFungibleToken.NFT}}
+        access(all) var ownedNFTs: @{UInt64: {NonFungibleToken.NFT}}
 
-        access(NonFungibleToken.Withdraw | NonFungibleToken.Owner) fun withdraw(withdrawID: UInt64): @{NonFungibleToken.NFT} {
+        access(NonFungibleToken.Withdraw) fun withdraw(withdrawID: UInt64): @{NonFungibleToken.NFT} {
             let token <- self.ownedNFTs.remove(key: withdrawID) 
                 ?? panic("Could not find a fast break with the given ID in the Fast Break collection. Fast break Id: ".concat(withdrawID.toString()))
 

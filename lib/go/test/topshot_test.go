@@ -2,6 +2,9 @@ package test
 
 import (
 	"context"
+	"strings"
+	"testing"
+
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
 	"github.com/onflow/cadence/runtime/common"
@@ -10,8 +13,6 @@ import (
 	fungibleToken "github.com/onflow/flow-ft/lib/go/contracts"
 	fungibleTokenTemplates "github.com/onflow/flow-ft/lib/go/templates"
 	"github.com/rs/zerolog"
-	"strings"
-	"testing"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
@@ -26,19 +27,19 @@ import (
 )
 
 const (
-	NonFungibleTokenContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/cd2c42e54b4a370fa143085afbb3276165183ab8/contracts/"
+	NonFungibleTokenContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/0ceed9bbdaba549328a73c4fca9f30a9e56c49bc/contracts/"
 	NonFungibleTokenInterfaceFile    = "NonFungibleToken.cdc"
 
-	MetadataViewsContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/cd2c42e54b4a370fa143085afbb3276165183ab8/contracts/"
+	MetadataViewsContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/0ceed9bbdaba549328a73c4fca9f30a9e56c49bc/contracts/"
 	MetadataViewsInterfaceFile    = "MetadataViews.cdc"
 
-	FungibleTokenMetadataViewsContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-ft/29d91e18f0c100c6eb09578bc153920a0c148bd7/contracts/"
+	FungibleTokenMetadataViewsContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-ft/9a9073c713583061cf614efc4aed0a1572ca0f09/contracts/"
 	FungibleTokenMetadataViewsInterfaceFile    = "FungibleTokenMetadataViews.cdc"
 
-	FungibleTokenSwitchboardContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-ft/29d91e18f0c100c6eb09578bc153920a0c148bd7/contracts/"
+	FungibleTokenSwitchboardContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-ft/9a9073c713583061cf614efc4aed0a1572ca0f09/contracts/"
 	FungibleTokenSwitchboardInterfaceFile    = "FungibleTokenSwitchboard.cdc"
 
-	ViewResolverContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/cd2c42e54b4a370fa143085afbb3276165183ab8/contracts/"
+	ViewResolverContractsBaseURL = "https://raw.githubusercontent.com/onflow/flow-nft/0ceed9bbdaba549328a73c4fca9f30a9e56c49bc/contracts/"
 	ViewResolverInterfaceFile    = "ViewResolver.cdc"
 
 	emulatorFTAddress           = "ee82856bf20e2aa6"
@@ -71,7 +72,7 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 	b := newBlockchain()
 
 	serviceKeySigner, err := b.ServiceKey().Signer()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	accountKeys := test.AccountKeyGenerator()
 
@@ -83,57 +84,16 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 	logger := zerolog.Nop()
 	adapter := adapters.NewSDKAdapter(&logger, b)
 
-	viewResolverCode, _ := DownloadFile(ViewResolverContractsBaseURL + ViewResolverInterfaceFile)
-	viewResolverAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
-		{
-			Name:   "ViewResolver",
-			Source: string(viewResolverCode),
-		},
-	})
-
-	assert.Nil(t, err)
+	viewResolverAddr := flow.HexToAddress("f8d6e0586b0a20c7")
 	env.ViewResolverAddress = viewResolverAddr.String()
 
-	// Should be able to deploy a contract as a new account with no keys.
-	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	parsedNFTContract := strings.Replace(string(nftCode), ViewResolverReplaceAddress, "0x"+viewResolverAddr.String(), 1)
-	nftAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
-		{
-			Name:   "NonFungibleToken",
-			Source: parsedNFTContract,
-		},
-	})
-	assert.Nil(t, err)
+	nftAddr := flow.HexToAddress("f8d6e0586b0a20c7")
 	env.NFTAddress = nftAddr.String()
 
-	// Should be able to deploy a contract as a new account with no keys.
-	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
-	parsedMetadataContract = strings.Replace(parsedMetadataContract, ViewResolverReplaceAddress, "0x"+viewResolverAddr.String(), 1)
-	metadataViewsAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
-		{
-			Name:   "MetadataViews",
-			Source: parsedMetadataContract,
-		},
-	})
-	assert.Nil(t, err)
-
+	metadataViewsAddr := flow.HexToAddress("f8d6e0586b0a20c7")
 	env.MetadataViewsAddress = metadataViewsAddr.String()
 
-	fungibleTokenMetadataViewsCode, _ := DownloadFile(FungibleTokenMetadataViewsContractsBaseURL + FungibleTokenMetadataViewsInterfaceFile)
-	parsedFungibleTokenMetadataContract := strings.Replace(string(fungibleTokenMetadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	parsedFungibleTokenMetadataContract = strings.Replace(parsedFungibleTokenMetadataContract, MetadataViewsReplaceAddress, "0x"+metadataViewsAddr.String(), 1)
-	parsedFungibleTokenMetadataContract = strings.Replace(parsedFungibleTokenMetadataContract, ViewResolverReplaceAddress, "0x"+viewResolverAddr.String(), 1)
-	fungibleTokenMetadataViewsAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
-		{
-			Name:   "FungibleTokenMetadataViews",
-			Source: parsedFungibleTokenMetadataContract,
-		},
-	})
-
-	assert.Nil(t, err)
-
+	fungibleTokenMetadataViewsAddr := flow.HexToAddress("ee82856bf20e2aa6")
 	env.FungibleTokenMetadataViewsAddress = fungibleTokenMetadataViewsAddr.String()
 
 	// Deploy TopShot Locking contract
@@ -149,22 +109,10 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
-	fungibleTokenSwitchboardCode, _ := DownloadFile(FungibleTokenSwitchboardContractsBaseURL + FungibleTokenSwitchboardInterfaceFile)
-	parsedFungibleSwitchboardContract := strings.Replace(string(fungibleTokenSwitchboardCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	royaltyAccountKey, royaltySigner := accountKeys.NewWithSigner()
-	royaltyAddr, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{royaltyAccountKey}, []sdktemplates.Contract{
-		{
-			Name:   "FungibleTokenSwitchboard",
-			Source: parsedFungibleSwitchboardContract,
-		},
-	})
-	assert.Nil(t, err)
+	royaltyAddr := flow.HexToAddress("ee82856bf20e2aa6")
 	env.FTSwitchboardAddress = royaltyAddr.String()
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
 	_, err = b.CommitBlock()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	// Deploy the topshot contract
 	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), viewResolverAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
@@ -175,14 +123,14 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 			Source: string(topshotCode),
 		},
 	})
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	env.TopShotAddress = topshotAddr.String()
 
 	// Update the locking contract with topshot address
 	topShotLockingCodeWithRuntimeAddr := contracts.GenerateTopShotLockingContractWithTopShotRuntimeAddr(nftAddr.String(), topshotAddr.String())
 	err = updateContract(b, topShotLockingAddr, lockingSigner, "TopShotLocking", topShotLockingCodeWithRuntimeAddr)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	// Grant the TopShot account a TopShotLocking admin
 	// In testnet/mainnet the TopShotLocking contract is in the same account as TopShot contract
@@ -201,7 +149,7 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 	signAndSubmit(
 		t, b, tx,
 		[]flow.Address{b.ServiceKey().Address, royaltyAddr},
-		[]crypto.Signer{serviceKeySigner, royaltySigner},
+		[]crypto.Signer{serviceKeySigner, serviceKeySigner},
 		false,
 	)
 
@@ -226,10 +174,11 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 			Source: string(shardedCollectionCode),
 		},
 	})
+	require.NoError(t, err)
 
-	_, _ = b.CommitBlock()
+	_, err = b.CommitBlock()
 
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	env.ShardedAddress = shardedAddr.String()
 
@@ -263,11 +212,10 @@ func TestNFTDeployment(t *testing.T) {
 			Source: string(adminReceiverCode),
 		},
 	})
-	if !assert.NoError(t, err) {
-		t.Log(err.Error())
-	}
+	require.NoError(t, err)
+
 	_, err = b.CommitBlock()
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 // This test tests the pure functionality of the smart contract
@@ -450,21 +398,21 @@ func TestMintNFTs(t *testing.T) {
 		expectedTraitsCount := 7
 		expectedVideoURL := "https://assets.nbatopshot.com/media/1/video"
 
-		resultNFT := executeScriptAndCheck(t, b, templates.GenerateGetNFTMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
-		metadataViewNFT := resultNFT.(cadence.Struct)
-		assert.Equal(t, cadence.String(expectedMetadataName), metadataViewNFT.Fields[0])
-		assert.Equal(t, cadence.String(expectedMetadataDescription), metadataViewNFT.Fields[1])
-		assert.Equal(t, cadence.String(expectedMetadataThumbnail), metadataViewNFT.Fields[2])
-		assert.Equal(t, cadence.String(expectedMetadataExternalURL), metadataViewNFT.Fields[5])
-		assert.Equal(t, cadence.String(expectedStoragePath), metadataViewNFT.Fields[6])
-		assert.Equal(t, cadence.String(expectedPublicPath), metadataViewNFT.Fields[7])
-		assert.Equal(t, cadence.String(expectedCollectionName), metadataViewNFT.Fields[8])
-		assert.Equal(t, cadence.String(expectedCollectionDescription), metadataViewNFT.Fields[9])
-		assert.Equal(t, cadence.String(expectedCollectionSquareImage), metadataViewNFT.Fields[10])
-		assert.Equal(t, cadence.String(expectedCollectionBannerImage), metadataViewNFT.Fields[11])
-		assert.Equal(t, cadence.UInt32(expectedRoyaltyReceiversCount), metadataViewNFT.Fields[12])
-		assert.Equal(t, cadence.UInt32(expectedTraitsCount), metadataViewNFT.Fields[13])
-		assert.Equal(t, cadence.String(expectedVideoURL), metadataViewNFT.Fields[14])
+		mvs := getTopShotMetadata(t, b, env, topshotAddr, 1)
+
+		assert.Equal(t, expectedMetadataName, mvs.Name)
+		assert.Equal(t, expectedMetadataDescription, mvs.Description)
+		assert.Equal(t, expectedMetadataThumbnail, mvs.Thumbnail)
+		assert.Equal(t, expectedMetadataExternalURL, mvs.ExternalURL)
+		assert.Equal(t, expectedStoragePath, mvs.StoragePath)
+		assert.Equal(t, expectedPublicPath, mvs.PublicPath)
+		assert.Equal(t, expectedCollectionName, mvs.CollectionName)
+		assert.Equal(t, expectedCollectionDescription, mvs.CollectionDescription)
+		assert.Equal(t, expectedCollectionSquareImage, mvs.CollectionSquareImage)
+		assert.Equal(t, expectedCollectionBannerImage, mvs.CollectionBannerImage)
+		assert.Equal(t, uint32(expectedRoyaltyReceiversCount), mvs.RoyaltyReceiversCount)
+		assert.Equal(t, uint32(expectedTraitsCount), mvs.TraitsCount)
+		assert.Equal(t, expectedVideoURL, mvs.VideoURL)
 
 		// Tests that top-shot specific metadata is discoverable on-chain
 		expectedPlayID := 1
@@ -473,9 +421,9 @@ func TestMintNFTs(t *testing.T) {
 
 		resultTopShot := executeScriptAndCheck(t, b, templates.GenerateGetTopShotMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		metadataViewTopShot := resultTopShot.(cadence.Struct)
-		assert.Equal(t, cadence.UInt32(expectedSerialNumber), metadataViewTopShot.Fields[26])
-		assert.Equal(t, cadence.UInt32(expectedPlayID), metadataViewTopShot.Fields[27])
-		assert.Equal(t, cadence.UInt32(expectedSetID), metadataViewTopShot.Fields[28])
+		assert.Equal(t, cadence.UInt32(expectedSerialNumber), cadence.SearchFieldByName(metadataViewTopShot, "serialNumber").(cadence.UInt32))
+		assert.Equal(t, cadence.UInt32(expectedPlayID), cadence.SearchFieldByName(metadataViewTopShot, "playID").(cadence.UInt32))
+		assert.Equal(t, cadence.UInt32(expectedSetID), cadence.SearchFieldByName(metadataViewTopShot, "setID").(cadence.UInt32))
 	})
 
 	// Admin sends a transaction that locks the set
@@ -778,53 +726,14 @@ func TestTransferAdmin(t *testing.T) {
 	logger := zerolog.Nop()
 	adapter := adapters.NewSDKAdapter(&logger, b)
 
-	viewResolverCode, _ := DownloadFile(ViewResolverContractsBaseURL + ViewResolverInterfaceFile)
-	viewResolverAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
-		{
-			Name:   "ViewResolver",
-			Source: string(viewResolverCode),
-		},
-	})
-
-	nftCode, _ := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	parsedNFTContract := strings.Replace(string(nftCode), ViewResolverReplaceAddress, "0x"+viewResolverAddr.String(), 1)
-	nftAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
-		{
-			Name:   "NonFungibleToken",
-			Source: parsedNFTContract,
-		},
-	})
-	assert.Nil(t, err)
-
+	viewResolverAddr := flow.HexToAddress("f8d6e0586b0a20c7")
+	nftAddr := flow.HexToAddress("f8d6e0586b0a20c7")
 	env.NFTAddress = nftAddr.String()
 
-	// Should be able to deploy a contract as a new account with no keys.
-	metadataViewsCode, _ := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
-	parsedMetadataContract = strings.Replace(parsedMetadataContract, ViewResolverReplaceAddress, "0x"+viewResolverAddr.String(), 1)
-	metadataViewsAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
-		{
-			Name:   "MetadataViews",
-			Source: parsedMetadataContract,
-		},
-	})
-	assert.Nil(t, err)
-
+	metadataViewsAddr := flow.HexToAddress("f8d6e0586b0a20c7")
 	env.MetadataViewsAddress = metadataViewsAddr.String()
 
-	fungibleTokenMetadataViewsCode, _ := DownloadFile(FungibleTokenMetadataViewsContractsBaseURL + FungibleTokenMetadataViewsInterfaceFile)
-	parsedFungibleTokenMetadataContract := strings.Replace(string(fungibleTokenMetadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	parsedFungibleTokenMetadataContract = strings.Replace(parsedFungibleTokenMetadataContract, MetadataViewsReplaceAddress, "0x"+metadataViewsAddr.String(), 1)
-	parsedFungibleTokenMetadataContract = strings.Replace(parsedFungibleTokenMetadataContract, ViewResolverReplaceAddress, "0x"+viewResolverAddr.String(), 1)
-	fungibleTokenMetadataViewsAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
-		{
-			Name:   "FungibleTokenMetadataViews",
-			Source: parsedFungibleTokenMetadataContract,
-		},
-	})
-
-	assert.Nil(t, err)
+	fungibleTokenMetadataViewsAddr := flow.HexToAddress("ee82856bf20e2aa6")
 
 	env.FungibleTokenMetadataViewsAddress = fungibleTokenMetadataViewsAddr.String()
 
@@ -837,15 +746,7 @@ func TestTransferAdmin(t *testing.T) {
 		},
 	})
 
-	fungibleTokenSwitchboardCode, _ := DownloadFile(FungibleTokenSwitchboardContractsBaseURL + FungibleTokenSwitchboardInterfaceFile)
-	parsedFungibleSwitchboardContract := strings.Replace(string(fungibleTokenSwitchboardCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	royaltyAccountKey, royaltySigner := accountKeys.NewWithSigner()
-	royaltyAddr, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{royaltyAccountKey}, []sdktemplates.Contract{
-		{
-			Name:   "FungibleTokenSwitchboard",
-			Source: parsedFungibleSwitchboardContract,
-		},
-	})
+	royaltyAddr := flow.HexToAddress("ee82856bf20e2aa6")
 	assert.Nil(t, err)
 	env.FTSwitchboardAddress = royaltyAddr.String()
 
@@ -854,7 +755,7 @@ func TestTransferAdmin(t *testing.T) {
 	signAndSubmit(
 		t, b, tx,
 		[]flow.Address{b.ServiceKey().Address, royaltyAddr},
-		[]crypto.Signer{serviceKeySigner, royaltySigner},
+		[]crypto.Signer{serviceKeySigner, serviceKeySigner},
 		false,
 	)
 

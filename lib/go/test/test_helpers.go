@@ -1,13 +1,15 @@
 package test
 
 import (
+	"testing"
+
 	"github.com/onflow/flow-emulator/convert"
 	"github.com/onflow/flow-go-sdk"
 	sdk "github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 	sdktemplates "github.com/onflow/flow-go-sdk/templates"
 	"github.com/stretchr/testify/assert"
-	"testing"
+	"github.com/stretchr/testify/require"
 
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
@@ -35,19 +37,22 @@ func verifyQuerySetMetadata(
 	expectedMetadata SetMetadata) {
 
 	result := executeScriptAndCheck(t, b, templates.GenerateGetSetMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(expectedMetadata.setID))})
-	metadataFields := result.(cadence.Struct).Fields
+	metadataStruct := result.(cadence.Struct)
 
-	setID := metadataFields[0]
+	//setID := metadataFields[0]
+	setID := cadence.SearchFieldByName(metadataStruct, "setID")
 	assertEqual(t, cadence.NewUInt32(expectedMetadata.setID), setID)
 
-	name := metadataFields[1]
+	//name := metadataFields[1]
+	name := cadence.SearchFieldByName(metadataStruct, "name")
 	assertEqual(t, CadenceString(expectedMetadata.name), name)
 
-	series := metadataFields[2]
+	//series := metadataFields[2]
+	series := cadence.SearchFieldByName(metadataStruct, "series")
 	assertEqual(t, cadence.NewUInt32(expectedMetadata.series), series)
 
 	if len(expectedMetadata.plays) != 0 {
-		plays := metadataFields[3].(cadence.Array).Values
+		plays := cadence.SearchFieldByName(metadataStruct, "plays").(cadence.Array).Values
 
 		for i, play := range plays {
 			expectedPlayID := cadence.NewUInt32(expectedMetadata.plays[i])
@@ -55,9 +60,45 @@ func verifyQuerySetMetadata(
 		}
 	}
 
-	locked := metadataFields[5]
+	//locked := metadataFields[5]
+	locked := cadence.SearchFieldByName(metadataStruct, "locked")
 	assertEqual(t, cadence.NewBool(expectedMetadata.locked), locked)
 
+}
+
+type MetadataViewStruct struct {
+	CollectionBannerImage string `cadence:"collectionBannerImage"`
+	CollectionDescription string `cadence:"collectionDescription"`
+	CollectionName        string `cadence:"collectionName"`
+	CollectionSquareImage string `cadence:"collectionSquareImage"`
+	Description           string `cadence:"description"`
+	ExternalURL           string `cadence:"externalURL"`
+	Name                  string `cadence:"name"`
+	Owner                 string
+	PublicPath            string `cadence:"publicPath"`
+	RoyaltyReceiversCount uint32 `cadence:"royaltyReceiversCount"`
+	StoragePath           string `cadence:"storagePath"`
+	Thumbnail             string `cadence:"thumbnail"`
+	TraitsCount           uint32 `cadence:"traitsCount"`
+	Type                  string `cadence:"type"`
+	VideoURL              string `cadence:"videoURL"`
+}
+
+func getTopShotMetadata(t *testing.T, b *emulator.Blockchain, env templates.Environment, topshotAddr flow.Address, nftID uint64) MetadataViewStruct {
+	metadataResult := executeScriptAndCheck(
+		t,
+		b,
+		templates.GenerateGetNFTMetadataScript(env),
+		[][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(nftID))},
+	)
+	metadataCDCStruct := metadataResult.(cadence.Struct)
+
+	mvs := &MetadataViewStruct{}
+	mvs.Owner = cadence.SearchFieldByName(metadataCDCStruct, "owner").(cadence.Address).String()
+	err := cadence.DecodeFields(metadataCDCStruct, mvs)
+	require.NoError(t, err)
+
+	return *mvs
 }
 
 func updateContract(b *emulator.Blockchain, address sdk.Address, signer crypto.Signer, name string, contractCode []byte) error {
@@ -187,14 +228,16 @@ func CadenceStringDictionary(pairs []cadence.KeyValuePair) cadence.Dictionary {
 }
 
 func CadenceIntArrayContains(t assert.TestingT, result cadence.Value, vals ...int) {
-	interfaceArray := result.ToGoValue().([]interface{})
+	intArray := result.(cadence.Array).WithType(cadence.NewVariableSizedArrayType(cadence.IntType))
+
+	interfaceArray := intArray.Values
 	assert.Equal(t, len(vals), len(interfaceArray))
 	for _, intValue := range interfaceArray {
-		switch v := intValue.(type) {
-		case uint64:
-			assert.Contains(t, vals, int(v))
-		case int:
-			assert.Contains(t, vals, v)
+		switch intValue.Type() {
+		case cadence.UInt64Type:
+			assert.Contains(t, vals, int(intValue.(cadence.UInt64)))
+		case cadence.IntType:
+			assert.Contains(t, vals, intValue.(cadence.Int).Big().Int64())
 		}
 	}
 }

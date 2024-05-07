@@ -2,6 +2,9 @@ package test
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
 	"github.com/onflow/cadence"
@@ -13,9 +16,7 @@ import (
 	"github.com/onflow/flow-go-sdk/test"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
-	"strings"
-	"testing"
-	"time"
+	"github.com/stretchr/testify/require"
 )
 
 // Tests all the main functionality of the TopShot Locking contract
@@ -35,43 +36,13 @@ func TestFastBreak(t *testing.T) {
 	logger := zerolog.Nop()
 	adapter := adapters.NewSDKAdapter(&logger, b)
 
-	viewResolverCode, _ := DownloadFile(ViewResolverContractsBaseURL + ViewResolverInterfaceFile)
-	viewResolverAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
-		{
-			Name:   "ViewResolver",
-			Source: string(viewResolverCode),
-		},
-	})
-
-	assert.Nil(t, err)
+	viewResolverAddr := flow.HexToAddress("f8d6e0586b0a20c7")
 	env.ViewResolverAddress = viewResolverAddr.String()
 
-	// Should be able to deploy a contract as a new account with no keys.
-	nftCode, nftCodeErr := DownloadFile(NonFungibleTokenContractsBaseURL + NonFungibleTokenInterfaceFile)
-	parsedNFTContract := strings.Replace(string(nftCode), ViewResolverReplaceAddress, "0x"+viewResolverAddr.String(), 1)
-	assert.Nil(t, nftCodeErr)
-	nftAddr, nftAddrErr := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
-		{
-			Name:   "NonFungibleToken",
-			Source: parsedNFTContract,
-		},
-	})
-	assert.Nil(t, nftAddrErr)
+	nftAddr := flow.HexToAddress("f8d6e0586b0a20c7")
 	env.NFTAddress = nftAddr.String()
 
-	// Should be able to deploy a contract as a new account with no keys.
-	metadataViewsCode, metadataViewsCodeErr := DownloadFile(MetadataViewsContractsBaseURL + MetadataViewsInterfaceFile)
-	assert.Nil(t, metadataViewsCodeErr)
-	parsedMetadataContract := strings.Replace(string(metadataViewsCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	parsedMetadataContract = strings.Replace(parsedMetadataContract, MetadataNFTReplaceAddress, "0x"+nftAddr.String(), 1)
-	parsedMetadataContract = strings.Replace(parsedMetadataContract, ViewResolverReplaceAddress, "0x"+viewResolverAddr.String(), 1)
-	metadataViewsAddr, metadataViewsAddrErr := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
-		{
-			Name:   "MetadataViews",
-			Source: parsedMetadataContract,
-		},
-	})
-	assert.Nil(t, metadataViewsAddrErr)
+	metadataViewsAddr := flow.HexToAddress("f8d6e0586b0a20c7")
 	env.MetadataViewsAddress = metadataViewsAddr.String()
 
 	// Deploy TopShot Locking contract
@@ -86,18 +57,8 @@ func TestFastBreak(t *testing.T) {
 	assert.Nil(t, topShotLockingAddrErr)
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
-	fungibleTokenSwitchboardCode, _ := DownloadFile(FungibleTokenSwitchboardContractsBaseURL + FungibleTokenSwitchboardInterfaceFile)
-	parsedFungibleSwitchboardContract := strings.Replace(string(fungibleTokenSwitchboardCode), MetadataFTReplaceAddress, "0x"+emulatorFTAddress, 1)
-	topShotRoyaltyAccountKey, _ := accountKeys.NewWithSigner()
-	topShotRoyaltyAddr, topShotRoyaltyAddrErr := adapter.CreateAccount(context.Background(), []*flow.AccountKey{topShotRoyaltyAccountKey}, []sdktemplates.Contract{
-		{
-			Name:   "FungibleTokenSwitchboard",
-			Source: parsedFungibleSwitchboardContract,
-		},
-	})
-	assert.Nil(t, err)
+	topShotRoyaltyAddr := flow.HexToAddress("ee82856bf20e2aa6")
 	env.FTSwitchboardAddress = topShotRoyaltyAddr.String()
-	assert.Nil(t, topShotRoyaltyAddrErr)
 
 	// Deploy the topshot contract
 	topshotCode := contracts.GenerateTopShotContract(defaultfungibleTokenAddr, nftAddr.String(), metadataViewsAddr.String(), viewResolverAddr.String(), topShotLockingAddr.String(), topShotRoyaltyAddr.String(), Network)
@@ -125,14 +86,13 @@ func TestFastBreak(t *testing.T) {
 			Source: string(fastBreakCode),
 		},
 	})
-	assert.Nil(t, fastBreakAddrErr)
+	require.NoError(t, fastBreakAddrErr)
 	env.FastBreakAddress = fastBreakAddr.String()
-	assert.Nil(t, err)
 
 	// create a new user account
-	jerAccountKey, jerSigner := accountKeys.NewWithSigner()
-	jerAddress, jerAddressErr := adapter.CreateAccount(context.Background(), []*flow.AccountKey{jerAccountKey}, nil)
-	assert.Nil(t, jerAddressErr)
+	aliceAccountKey, aliceSigner := accountKeys.NewWithSigner()
+	aliceAddress, aliceAddressErr := adapter.CreateAccount(context.Background(), []*flow.AccountKey{aliceAccountKey}, nil)
+	require.NoError(t, aliceAddressErr)
 
 	firstName := CadenceString("FullName")
 	lebron := CadenceString("Lebron")
@@ -279,10 +239,10 @@ func TestFastBreak(t *testing.T) {
 
 		// Check that that main contract fields were initialized correctly
 		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakScript(env), [][]byte{jsoncdc.MustEncode(cdcId)})
-		interfaceArray := result.ToGoValue().([]interface{})
-		resultId := interfaceArray[0].(string)
 		assert.NotNil(t, result)
-		assert.Equal(t, fastBreakID, resultId)
+
+		resultId := cadence.SearchFieldByName(result.(cadence.Optional).Value.(cadence.Struct), "id")
+		assert.Equal(t, cadence.String(fastBreakID), resultId)
 	})
 
 	t.Run("oracle should be able to add a stat to a fast break game", func(t *testing.T) {
@@ -316,22 +276,22 @@ func TestFastBreak(t *testing.T) {
 
 		// Check that that main contract fields were initialized correctly
 		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakStatsScript(env), [][]byte{jsoncdc.MustEncode(cdcId)})
-		interfaceArray := result.ToGoValue().([]interface{})
-		assert.Equal(t, 1, len(interfaceArray))
+		interfaceArray := result.(cadence.Array)
+		assert.Len(t, interfaceArray.Values, 1)
 		assert.NotNil(t, result)
 	})
 
 	t.Run("player should be able to create a moment collection", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(env), jerAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateSetupAccountScript(env), aliceAddress)
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
+			[]flow.Address{b.ServiceKey().Address, aliceAddress}, []crypto.Signer{serviceKeySigner, aliceSigner},
 			false,
 		)
 	})
 
 	t.Run("player should be able to setup game wallet", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateFastBreakCreateAccountScript(env), jerAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateFastBreakCreateAccountScript(env), aliceAddress)
 		playerName, playerNameErr := cadence.NewString("houseofhufflepuff")
 		assert.Nil(t, playerNameErr)
 
@@ -340,16 +300,17 @@ func TestFastBreak(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
+			[]flow.Address{b.ServiceKey().Address, aliceAddress}, []crypto.Signer{serviceKeySigner, aliceSigner},
 			false,
 		)
 
 		result := executeScriptAndCheck(t, b, templates.GenerateCurrentPlayerScript(env), nil)
-		playerId = result.ToGoValue().(uint64)
+		require.NotNil(t, result)
+		playerId = uint64(result.(cadence.UInt64))
 		assert.Equal(t, cadence.NewUInt64(1), result)
 	})
 
-	// mint moment 1 to jer
+	// mint moment 1 to alice
 	{
 		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateMintMomentScript(env), topshotAddr)
 
@@ -359,7 +320,7 @@ func TestFastBreak(t *testing.T) {
 		arg1Err := tx.AddArgument(cadence.NewUInt32(1))
 		assert.Nil(t, arg1Err)
 
-		arg2Err := tx.AddArgument(cadence.NewAddress(jerAddress))
+		arg2Err := tx.AddArgument(cadence.NewAddress(aliceAddress))
 		assert.Nil(t, arg2Err)
 
 		signAndSubmit(
@@ -370,7 +331,7 @@ func TestFastBreak(t *testing.T) {
 	}
 
 	t.Run("player should not be able play fast break without top shots", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePlayFastBreakScript(env), jerAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePlayFastBreakScript(env), aliceAddress)
 		cdcId, _ := cadence.NewString(fastBreakID)
 		ids := []cadence.Value{cadence.NewUInt64(2)}
 
@@ -382,7 +343,7 @@ func TestFastBreak(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
+			[]flow.Address{b.ServiceKey().Address, aliceAddress}, []crypto.Signer{serviceKeySigner, aliceSigner},
 			true,
 		)
 
@@ -391,7 +352,7 @@ func TestFastBreak(t *testing.T) {
 	})
 
 	t.Run("player should be able to play fast break", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePlayFastBreakScript(env), jerAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePlayFastBreakScript(env), aliceAddress)
 		cdcId, _ := cadence.NewString(fastBreakID)
 		cdcTopShots := []cadence.Value{cadence.NewUInt64(1)}
 
@@ -403,7 +364,7 @@ func TestFastBreak(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
+			[]flow.Address{b.ServiceKey().Address, aliceAddress}, []crypto.Signer{serviceKeySigner, aliceSigner},
 			false,
 		)
 
@@ -412,7 +373,7 @@ func TestFastBreak(t *testing.T) {
 	})
 
 	t.Run("player should not be able to resubmit fast break", func(t *testing.T) {
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePlayFastBreakScript(env), jerAddress)
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GeneratePlayFastBreakScript(env), aliceAddress)
 		cdcId, _ := cadence.NewString(fastBreakID)
 		ids := []cadence.Value{cadence.NewUInt64(1)}
 
@@ -424,7 +385,7 @@ func TestFastBreak(t *testing.T) {
 
 		signAndSubmit(
 			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, jerAddress}, []crypto.Signer{serviceKeySigner, jerSigner},
+			[]flow.Address{b.ServiceKey().Address, aliceAddress}, []crypto.Signer{serviceKeySigner, aliceSigner},
 			true,
 		)
 
@@ -462,7 +423,7 @@ func TestFastBreak(t *testing.T) {
 		arg0Err := tx.AddArgument(cdcId)
 		assert.Nil(t, arg0Err)
 
-		arg1Err := tx.AddArgument(cadence.NewAddress(jerAddress))
+		arg1Err := tx.AddArgument(cadence.NewAddress(aliceAddress))
 		assert.Nil(t, arg1Err)
 
 		arg2Err := tx.AddArgument(cadence.NewUInt64(100))
@@ -481,7 +442,7 @@ func TestFastBreak(t *testing.T) {
 			t,
 			b,
 			templates.GenerateGetPlayerScoreScript(env),
-			[][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(cadence.NewAddress(jerAddress))},
+			[][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(cadence.NewAddress(aliceAddress))},
 		)
 		assert.Equal(t, cadence.NewUInt64(100), result)
 	})

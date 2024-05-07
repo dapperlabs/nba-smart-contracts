@@ -50,6 +50,8 @@ import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 import ViewResolver   from 0xVIEWRESOLVERADDRESS
 
 access(all) contract TopShot: NonFungibleToken {
+
+    access(all) entitlement NFTMinter
     // -----------------------------------------------------------------------
     // TopShot deployment variables
     // -----------------------------------------------------------------------
@@ -1060,7 +1062,7 @@ access(all) contract TopShot: NonFungibleToken {
     access(all) resource Collection: MomentCollectionPublic, NonFungibleToken.Collection {
         // Dictionary of Moment conforming tokens
         // NFT is a resource type with a UInt64 ID field
-        access(contract) var ownedNFTs: @{UInt64: {NonFungibleToken.NFT}}
+        access(all) var ownedNFTs: @{UInt64: {NonFungibleToken.NFT}}
 
         init() {
             self.ownedNFTs <- {}
@@ -1098,7 +1100,7 @@ access(all) contract TopShot: NonFungibleToken {
         // that is to be removed from the Collection
         //
         // returns: @NonFungibleToken.NFT the token that was withdrawn
-        access(NonFungibleToken.Withdraw | NonFungibleToken.Owner) fun withdraw(withdrawID: UInt64): @{NonFungibleToken.NFT} {
+        access(NonFungibleToken.Withdraw) fun withdraw(withdrawID: UInt64): @{NonFungibleToken.NFT} {
 
             // Borrow nft and check if locked
             let nft = self.borrowNFT(withdrawID)
@@ -1124,7 +1126,7 @@ access(all) contract TopShot: NonFungibleToken {
         // Returns: @NonFungibleToken.Collection: A collection that contains
         //                                        the withdrawn moments
         //
-        access(NonFungibleToken.Withdraw | NonFungibleToken.Owner) fun batchWithdraw(ids: [UInt64]): @{NonFungibleToken.Collection} {
+        access(NonFungibleToken.Withdraw) fun batchWithdraw(ids: [UInt64]): @{NonFungibleToken.Collection} {
             // Create a new empty Collection
             var batchCollection <- create Collection()
             
@@ -1181,10 +1183,12 @@ access(all) contract TopShot: NonFungibleToken {
 
         // lock takes a token id and a duration in seconds and locks
         // the moment for that duration
-        access(NonFungibleToken.Update | NonFungibleToken.Owner) fun lock(id: UInt64, duration: UFix64) {
+        access(NonFungibleToken.Update) fun lock(id: UInt64, duration: UFix64) {
             // Remove the nft from the Collection
             let token <- self.ownedNFTs.remove(key: id) 
                 ?? panic("Cannot lock: Moment does not exist in the collection")
+
+            TopShot.emitNFTUpdated(&token as auth(NonFungibleToken.Update) &{NonFungibleToken.NFT})
 
             // pass the token to the locking contract
             // store it again after it comes back
@@ -1195,7 +1199,7 @@ access(all) contract TopShot: NonFungibleToken {
 
         // batchLock takes an array of token ids and a duration in seconds
         // it iterates through the ids and locks each for the specified duration
-        access(NonFungibleToken.Update | NonFungibleToken.Owner) fun batchLock(ids: [UInt64], duration: UFix64) {
+        access(NonFungibleToken.Update) fun batchLock(ids: [UInt64], duration: UFix64) {
             // Iterate through the ids and lock them
             for id in ids {
                 self.lock(id: id, duration: duration)
@@ -1204,10 +1208,12 @@ access(all) contract TopShot: NonFungibleToken {
 
         // unlock takes a token id and attempts to unlock it
         // TopShotLocking.unlockNFT contains business logic around unlock eligibility
-        access(NonFungibleToken.Update | NonFungibleToken.Owner) fun unlock(id: UInt64) {
+        access(NonFungibleToken.Update) fun unlock(id: UInt64) {
             // Remove the nft from the Collection
             let token <- self.ownedNFTs.remove(key: id) 
                 ?? panic("Cannot lock: Moment does not exist in the collection")
+
+            TopShot.emitNFTUpdated(&token as auth(NonFungibleToken.Update) &{NonFungibleToken.NFT})
 
             // Pass the token to the TopShotLocking contract then get it back
             // Store it back to the ownedNFTs dictionary
@@ -1218,7 +1224,7 @@ access(all) contract TopShot: NonFungibleToken {
 
         // batchUnlock takes an array of token ids
         // it iterates through the ids and unlocks each if they are eligible
-        access(NonFungibleToken.Update | NonFungibleToken.Owner) fun batchUnlock(ids: [UInt64]) {
+        access(NonFungibleToken.Update) fun batchUnlock(ids: [UInt64]) {
             // Iterate through the ids and unlocks them
             for id in ids {
                 self.unlock(id: id)
@@ -1230,7 +1236,7 @@ access(all) contract TopShot: NonFungibleToken {
         //
         // Parameters: ids: An array of NFT IDs
         // to be destroyed from the Collection
-        access(NonFungibleToken.Update | NonFungibleToken.Owner) fun destroyMoments(ids: [UInt64]) {
+        access(NonFungibleToken.Update) fun destroyMoments(ids: [UInt64]) {
             let topShotLockingAdmin = TopShot.account.storage.borrow<&TopShotLocking.Admin>(from: TopShotLocking.AdminStoragePath())
                 ?? panic("No TopShotLocking admin resource in storage")
 
