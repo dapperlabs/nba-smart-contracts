@@ -23,30 +23,31 @@ func TestCadenceEvents_Reveal(t *testing.T) {
 		momentIDs = fmt.Sprintf(`%d,%d,%d`, momentID1, momentID2, momentID3)
 	)
 
-	revealedEventType := cadence.EventType{
-		Location:            utils.TestLocation,
-		QualifiedIdentifier: "PackNFT.Revealed",
-		Fields: []cadence.Field{
+	revealedEventType := cadence.NewEventType(
+		utils.TestLocation,
+		"PackNFT.Revealed",
+		[]cadence.Field{
 			{
 				Identifier: "id",
-				Type:       cadence.UInt32Type{},
+				Type:       cadence.UInt32Type,
 			},
 			{
 				Identifier: "salt",
-				Type:       cadence.StringType{},
+				Type:       cadence.StringType,
 			},
 			{
 				Identifier: "nfts",
-				Type:       cadence.StringType{},
+				Type:       cadence.StringType,
 			},
 		},
-	}
+		nil,
+	)
 
 	revealedEvent := cadence.NewEvent([]cadence.Value{
 		cadence.NewUInt64(packID),
 		NewCadenceString(salt),
 		NewCadenceString(momentIDs),
-	}).WithType(&revealedEventType)
+	}).WithType(revealedEventType)
 
 	revealedPayload, err := jsoncdc.Encode(revealedEvent)
 	require.NoError(t, err, "failed to encode revealed cadence event")

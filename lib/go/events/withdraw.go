@@ -2,37 +2,33 @@ package events
 
 import (
 	"fmt"
-
-	"github.com/onflow/cadence"
-	jsoncdc "github.com/onflow/cadence/encoding/json"
-	"github.com/onflow/flow-go-sdk"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
 var (
-	// This variable specifies that there is a Withdraw Event on a TopShot Contract located at address 0x04
 	EventWithdraw = "TopShot.Withdraw"
 )
 
 type WithdrawEvent interface {
 	Id() uint64
-	Owner() string // deprecated: use From()
 	From() string
+	Owner() string
 }
 
-type withdrawEvent cadence.Event
+type withdrawEvent map[string]any
 
 var _ WithdrawEvent = (*withdrawEvent)(nil)
 
 func (evt withdrawEvent) Id() uint64 {
-	return uint64(evt.Fields[0].(cadence.UInt64))
+	return evt["id"].(uint64)
 }
 
 func (evt withdrawEvent) From() string {
-	optionalAddress := (evt.Fields[1]).(cadence.Optional)
-	if cadenceAddress, ok := optionalAddress.Value.(cadence.Address); ok {
-		return flow.BytesToAddress(cadenceAddress.Bytes()).Hex()
+	optionalAddress := evt["from"]
+	if optionalAddress == nil {
+		return "undefined"
 	}
-	return "undefined"
+	return optionalAddress.(string)
 }
 
 func (evt withdrawEvent) Owner() string {
@@ -40,19 +36,19 @@ func (evt withdrawEvent) Owner() string {
 }
 
 func (evt withdrawEvent) validate() error {
-	if evt.EventType.QualifiedIdentifier != EventWithdraw {
+	if evt["eventType"].(string) != EventWithdraw {
 		return fmt.Errorf("error validating event: event is not a valid withdraw event, expected type %s, got %s",
-			EventWithdraw, evt.EventType.QualifiedIdentifier)
+			EventWithdraw, evt["eventType"].(string))
 	}
 	return nil
 }
 
 func DecodeWithdrawEvent(b []byte) (WithdrawEvent, error) {
-	value, err := jsoncdc.Decode(nil, b)
+	eventMap, err := decoder.DecodeToEventMap(b)
 	if err != nil {
 		return nil, err
 	}
-	event := withdrawEvent(value.(cadence.Event))
+	event := withdrawEvent(eventMap)
 	if err := event.validate(); err != nil {
 		return nil, fmt.Errorf("error decoding event: %w", err)
 	}

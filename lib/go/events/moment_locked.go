@@ -2,8 +2,7 @@ package events
 
 import (
 	"fmt"
-	"github.com/onflow/cadence"
-	jsoncdc "github.com/onflow/cadence/encoding/json"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
 var (
@@ -12,28 +11,28 @@ var (
 
 type MomentLockedEvent interface {
 	FlowID() uint64
-	Duration() cadence.UFix64
-	ExpiryTimestamp() cadence.UFix64
+	Duration() float64
+	ExpiryTimestamp() float64
 }
 
-type momentLockedEvent cadence.Event
+type momentLockedEvent map[string]any
 
 func (evt momentLockedEvent) FlowID() uint64 {
-	return uint64(evt.Fields[0].(cadence.UInt64))
+	return evt["flowID"].(uint64)
 }
 
-func (evt momentLockedEvent) Duration() cadence.UFix64 {
-	return evt.Fields[1].(cadence.UFix64)
+func (evt momentLockedEvent) Duration() float64 {
+	return evt["duration"].(float64)
 }
 
-func (evt momentLockedEvent) ExpiryTimestamp() cadence.UFix64 {
-	return evt.Fields[2].(cadence.UFix64)
+func (evt momentLockedEvent) ExpiryTimestamp() float64 {
+	return evt["expiryTimestamp"].(float64)
 }
 
 func (evt momentLockedEvent) validate() error {
-	if evt.EventType.QualifiedIdentifier != MomentLocked {
+	if evt["eventType"].(string) != MomentLocked {
 		return fmt.Errorf("error validating event: event is not a valid moment locked event, expected type %s, got %s",
-			MomentLocked, evt.EventType.QualifiedIdentifier)
+			MomentLocked, evt["eventType"].(string))
 	}
 	return nil
 }
@@ -41,12 +40,12 @@ func (evt momentLockedEvent) validate() error {
 var _ MomentLockedEvent = (*momentLockedEvent)(nil)
 
 func DecodeMomentLockedEvent(b []byte) (MomentLockedEvent, error) {
-	value, err := jsoncdc.Decode(nil, b)
+	eventMap, err := decoder.DecodeToEventMap(b)
 	if err != nil {
 		return nil, err
 	}
 
-	event := momentLockedEvent(value.(cadence.Event))
+	event := momentLockedEvent(eventMap)
 	if err := event.validate(); err != nil {
 		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
