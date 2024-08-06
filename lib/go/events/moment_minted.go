@@ -2,9 +2,7 @@ package events
 
 import (
 	"fmt"
-
-	"github.com/onflow/cadence"
-	jsoncdc "github.com/onflow/cadence/encoding/json"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
 var (
@@ -20,35 +18,35 @@ type MomentMintedEvent interface {
 	SubeditionId() uint32
 }
 
-type momentMintedEvent cadence.Event
+type momentMintedEvent map[string]any
 
 func (evt momentMintedEvent) MomentId() uint64 {
-	return uint64(evt.Fields[0].(cadence.UInt64))
+	return evt["momentId"].(uint64)
 }
 
 func (evt momentMintedEvent) PlayId() uint32 {
-	return uint32(evt.Fields[1].(cadence.UInt32))
+	return evt["playId"].(uint32)
 }
 
 func (evt momentMintedEvent) SetId() uint32 {
-	return uint32(evt.Fields[2].(cadence.UInt32))
+	return evt["setId"].(uint32)
 }
 
 func (evt momentMintedEvent) SerialNumber() uint32 {
-	return uint32(evt.Fields[3].(cadence.UInt32))
+	return evt["serialNumber"].(uint32)
 }
 
 func (evt momentMintedEvent) SubeditionId() uint32 {
-	if len(evt.Fields) < 5 {
-		return 0
+	if val, ok := evt["subeditionId"]; ok {
+		return val.(uint32)
 	}
-	return uint32(evt.Fields[4].(cadence.UInt32))
+	return 0
 }
 
 func (evt momentMintedEvent) validate() error {
-	if evt.EventType.QualifiedIdentifier != EventMomentMinted {
+	if evt["eventType"].(string) != EventMomentMinted {
 		return fmt.Errorf("error validating event: event is not a valid moment minted event, expected type %s, got %s",
-			EventMomentMinted, evt.EventType.QualifiedIdentifier)
+			EventMomentMinted, evt["eventType"].(string))
 	}
 	return nil
 }
@@ -56,11 +54,11 @@ func (evt momentMintedEvent) validate() error {
 var _ MomentMintedEvent = (*momentMintedEvent)(nil)
 
 func DecodeMomentMintedEvent(b []byte) (MomentMintedEvent, error) {
-	value, err := jsoncdc.Decode(nil, b)
+	eventMap, err := decoder.DecodeToEventMap(b)
 	if err != nil {
 		return nil, err
 	}
-	event := momentMintedEvent(value.(cadence.Event))
+	event := momentMintedEvent(eventMap)
 	if err := event.validate(); err != nil {
 		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
