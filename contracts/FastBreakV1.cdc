@@ -24,7 +24,6 @@ access(all) contract FastBreakV1: NonFungibleToken {
 
     /// Contract events
     ///
-    access(all) event ContractInitialized()
 
     access(all) event Withdraw(id: UInt64, from: Address?)
 
@@ -963,6 +962,5 @@ access(all) contract FastBreakV1: NonFungibleToken {
         let oracle <- create FastBreakDaemon()
         self.account.storage.save(<-oracle, to: self.OracleStoragePath)
 
-        emit ContractInitialized()
     }
 }
