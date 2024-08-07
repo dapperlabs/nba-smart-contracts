@@ -10,9 +10,9 @@
 
 */
 
-import NonFungibleToken from 0xNFTADDRESS
-import TopShot from 0xTOPSHOTADDRESS
-import MetadataViews from 0xMETADATAVIEWSADDRESS
+import NonFungibleToken from "NonFungibleToken"
+import TopShot from "TopShot"
+import MetadataViews from "MetadataViews"
 
 /// Game & Oracle Contract for Fast Break V1
 ///
@@ -383,7 +383,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
     /// Resource for playing Fast Break
     /// The Fast Break Player plays the game & mints game tokens
     ///
-    access(all) resource Player: FastBreakPlayer {
+    access(all) resource Player: FastBreakPlayer, NonFungibleToken.NFT {
 
         access(all) let id: UInt64
         access(all) let playerName: String      /// username
@@ -520,6 +520,27 @@ access(all) contract FastBreakV1: NonFungibleToken {
                 fastBreakGameID: fastBreakGameID,
                 topShots: updatedSubmission.topShots,
             )
+        }
+
+        access(all) fun createEmptyCollection(): @{NonFungibleToken.Collection} {
+            return <- FastBreakV1.createEmptyCollection(nftType: Type<@FastBreakV1.Player>())
+        }
+
+        access(all) view fun getViews(): [Type] {
+            return [
+                Type<MetadataViews.NFTCollectionData>(),
+                Type<MetadataViews.NFTCollectionDisplay>()
+            ]
+        }
+
+        access(all) fun resolveView(_ view: Type): AnyStruct? {
+            switch view {
+                case Type<MetadataViews.NFTCollectionData>():
+                    return FastBreakV1.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionData>())
+                case Type<MetadataViews.NFTCollectionDisplay>():
+                    return FastBreakV1.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionDisplay>())
+            }
+            return nil
         }
     }
 
