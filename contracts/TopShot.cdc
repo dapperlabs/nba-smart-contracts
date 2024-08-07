@@ -70,9 +70,6 @@ access(all) contract TopShot: NonFungibleToken {
     // TopShot contract Events
     // -----------------------------------------------------------------------
 
-    // Emitted when the TopShot contract is created
-    access(all) event ContractInitialized()
-
     // Emitted when a new Play struct is created
     access(all) event PlayCreated(id: UInt32, metadata: {String:String})
     // Emitted when a new series has been triggered by an admin
@@ -1750,7 +1747,5 @@ access(all) contract TopShot: NonFungibleToken {
 
         // Put the Minter in storage
         self.account.storage.save<@Admin>(<- create Admin(), to: /storage/TopShotAdmin)
-
-        emit ContractInitialized()
     }
 }
