@@ -1083,7 +1083,7 @@ access(all) contract TopShot: NonFungibleToken {
 
         // Return the amount of NFTs stored in the collection
         access(all) view fun getLength(): Int {
-            return self.ownedNFTs.keys.length
+            return self.ownedNFTs.length
         }
 
         // Create an empty Collection for TopShot NFTs and return it to the caller

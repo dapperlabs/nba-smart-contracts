@@ -742,7 +742,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
         }
 
         access(all) view fun getLength(): Int {
-            return self.ownedNFTs.keys.length
+            return self.ownedNFTs.length
         }
 
         init() {
