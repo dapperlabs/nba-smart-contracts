@@ -50,8 +50,6 @@ import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 import ViewResolver   from 0xVIEWRESOLVERADDRESS
 
 access(all) contract TopShot: NonFungibleToken {
-
-    access(all) entitlement NFTMinter
     // -----------------------------------------------------------------------
     // TopShot deployment variables
     // -----------------------------------------------------------------------
