@@ -10,9 +10,9 @@
 
 */
 
-import NonFungibleToken from "NonFungibleToken"
-import TopShot from "TopShot"
-import MetadataViews from "MetadataViews"
+import NonFungibleToken from 0xNFTADDRESS
+import TopShot from 0xTOPSHOTADDRESS
+import MetadataViews from 0xMETADATAVIEWSADDRESS
 
 /// Game & Oracle Contract for Fast Break V1
 ///
