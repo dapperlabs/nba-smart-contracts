@@ -20,21 +20,21 @@ func TestCadenceEvents_PlayCreated(t *testing.T) {
 		teamValue   = "current team"
 	)
 
-	playCreatedEventType := cadence.EventType{
-		Location:            utils.TestLocation,
-		QualifiedIdentifier: "TopShot.PlayCreated",
-		Fields: []cadence.Field{
+	playCreatedEventType := cadence.NewEventType(
+		utils.TestLocation,
+		"TopShot.PlayCreated",
+		[]cadence.Field{
 			{
 				Identifier: "id",
-				Type:       cadence.UInt32Type{},
+				Type:       cadence.UInt32Type,
 			},
 			{
 				Identifier: "metadata",
-				Type:       cadence.DictionaryType{},
+				Type:       &cadence.DictionaryType{},
 			},
 		},
-		Initializer: []cadence.Parameter{},
-	}
+		nil,
+	)
 
 	playCreatedEvent := cadence.NewEvent([]cadence.Value{
 		cadence.NewUInt32(id),
@@ -42,7 +42,7 @@ func TestCadenceEvents_PlayCreated(t *testing.T) {
 			{Key: NewCadenceString(playerKey), Value: NewCadenceString(playerValue)},
 			{Key: NewCadenceString(teamKey), Value: NewCadenceString(teamValue)},
 		}),
-	}).WithType(&playCreatedEventType)
+	}).WithType(playCreatedEventType)
 
 	payload, err := jsoncdc.Encode(playCreatedEvent)
 	require.NoError(t, err, "failed to encode play created cadence event")

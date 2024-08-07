@@ -16,26 +16,26 @@ func TestCadenceEvents_Deposit(t *testing.T) {
 	address := flow.HexToAddress("0x12345678")
 	to := [8]byte(address)
 
-	depositEventType := cadence.EventType{
-		Location:            utils.TestLocation,
-		QualifiedIdentifier: "TopShot.Deposit",
-		Fields: []cadence.Field{
+	depositEventType := cadence.NewEventType(
+		utils.TestLocation,
+		"TopShot.Deposit",
+		[]cadence.Field{
 			{
 				Identifier: "id",
-				Type:       cadence.UInt64Type{},
+				Type:       cadence.UInt64Type,
 			},
 			{
 				Identifier: "to",
-				Type:       cadence.OptionalType{},
+				Type:       &cadence.OptionalType{},
 			},
 		},
-		Initializer: []cadence.Parameter{},
-	}
+		nil,
+	)
 
 	depositEvent := cadence.NewEvent([]cadence.Value{
 		cadence.NewUInt64(id),
 		cadence.NewOptional(cadence.NewAddress(to)),
-	}).WithType(&depositEventType)
+	}).WithType(depositEventType)
 
 	payload, err := jsoncdc.Encode(depositEvent)
 	require.NoError(t, err, "failed to encode deposit cadence event")

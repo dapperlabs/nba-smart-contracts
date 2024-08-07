@@ -2,9 +2,7 @@ package events
 
 import (
 	"fmt"
-
-	"github.com/onflow/cadence"
-	jsoncdc "github.com/onflow/cadence/encoding/json"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
 var (
@@ -16,30 +14,30 @@ type SubeditionAddedToMomentEvent interface {
 	SubeditionID() uint32
 }
 
-type subeditionAddedToMomentEvent cadence.Event
+type subeditionAddedToMomentEvent map[string]any
 
 func (evt subeditionAddedToMomentEvent) MomentID() uint64 {
-	return evt.Fields[0].(cadence.UInt64).ToGoValue().(uint64)
+	return evt["momentID"].(uint64)
 }
 
 func (evt subeditionAddedToMomentEvent) SubeditionID() uint32 {
-	return evt.Fields[1].(cadence.UInt32).ToGoValue().(uint32)
+	return evt["subeditionID"].(uint32)
 }
 
 func (evt subeditionAddedToMomentEvent) validate() error {
-	if evt.EventType.QualifiedIdentifier != EventSubeditionAddedToMoment {
+	if evt["eventType"].(string) != EventSubeditionAddedToMoment {
 		return fmt.Errorf("error validating event: event is not a valid subedition added to moment event, expected type %s, got %s",
-			EventSubeditionAddedToMoment, evt.EventType.QualifiedIdentifier)
+			EventSubeditionAddedToMoment, evt["eventType"].(string))
 	}
 	return nil
 }
 
 func DecodeSubeditionAddedToMomentEvent(b []byte) (SubeditionAddedToMomentEvent, error) {
-	value, err := jsoncdc.Decode(nil, b)
+	eventMap, err := decoder.DecodeToEventMap(b)
 	if err != nil {
 		return nil, err
 	}
-	event := subeditionAddedToMomentEvent(value.(cadence.Event))
+	event := subeditionAddedToMomentEvent(eventMap)
 	if err := event.validate(); err != nil {
 		return nil, fmt.Errorf("error decoding event: %w", err)
 	}

@@ -2,10 +2,8 @@ package events
 
 import (
 	"fmt"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 	"strings"
-
-	"github.com/onflow/cadence"
-	jsoncdc "github.com/onflow/cadence/encoding/json"
 )
 
 const (
@@ -19,26 +17,26 @@ type RevealedEvent interface {
 	NFTs() string
 }
 
-type revealedEvent cadence.Event
+type revealedEvent map[string]any
 
 var _ RevealedEvent = (*revealedEvent)(nil)
 
 func (evt revealedEvent) Id() uint64 {
-	return uint64(evt.Fields[0].(cadence.UInt64))
+	return evt["id"].(uint64)
 }
 
 func (evt revealedEvent) Salt() string {
-	return string(evt.Fields[1].(cadence.String))
+	return evt["salt"].(string)
 }
 
 func (evt revealedEvent) NFTs() string {
-	return string(evt.Fields[2].(cadence.String))
+	return evt["nfts"].(string)
 }
 
 func (evt revealedEvent) validate() error {
-	if evt.EventType.QualifiedIdentifier != EventRevealed {
+	if evt["eventType"].(string) != EventRevealed {
 		return fmt.Errorf("error validating event: event is not a valid revealed event, expected type %s, got %s",
-			EventRevealed, evt.EventType.QualifiedIdentifier)
+			EventRevealed, evt["eventType"].(string))
 	}
 	return nil
 }
@@ -48,11 +46,11 @@ func parseNFTs(nft string) []string {
 }
 
 func DecodeRevealedEvent(b []byte) (RevealedEvent, error) {
-	value, err := jsoncdc.Decode(nil, b)
+	eventMap, err := decoder.DecodeToEventMap(b)
 	if err != nil {
 		return nil, err
 	}
-	event := revealedEvent(value.(cadence.Event))
+	event := revealedEvent(eventMap)
 	if err := event.validate(); err != nil {
 		return nil, fmt.Errorf("error decoding event: %w", err)
 	}

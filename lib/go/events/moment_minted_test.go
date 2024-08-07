@@ -17,33 +17,33 @@ func TestCadenceEvents_MomentMinted(t *testing.T) {
 	serialNumber := uint32(1234)
 	subeditionID := uint32(1234)
 
-	momentMintedEventType := cadence.EventType{
-		Location:            utils.TestLocation,
-		QualifiedIdentifier: "TopShot.MomentMinted",
-		Fields: []cadence.Field{
+	momentMintedEventType := cadence.NewEventType(
+		utils.TestLocation,
+		"TopShot.MomentMinted",
+		[]cadence.Field{
 			{
 				Identifier: "momentId",
-				Type:       cadence.UInt64Type{},
+				Type:       cadence.UInt64Type,
 			},
 			{
 				Identifier: "playId",
-				Type:       cadence.UInt32Type{},
+				Type:       cadence.UInt32Type,
 			},
 			{
 				Identifier: "setId",
-				Type:       cadence.UInt32Type{},
+				Type:       cadence.UInt32Type,
 			},
 			{
 				Identifier: "serialNumber",
-				Type:       cadence.UInt32Type{},
+				Type:       cadence.UInt32Type,
 			},
 			{
 				Identifier: "subeditionId",
-				Type:       cadence.UInt32Type{},
+				Type:       cadence.UInt32Type,
 			},
 		},
-		Initializer: []cadence.Parameter{},
-	}
+		nil,
+	)
 
 	momentMintedEvent := cadence.NewEvent([]cadence.Value{
 		cadence.NewUInt64(momentID),
@@ -51,7 +51,7 @@ func TestCadenceEvents_MomentMinted(t *testing.T) {
 		cadence.NewUInt32(setID),
 		cadence.NewUInt32(serialNumber),
 		cadence.NewUInt32(subeditionID),
-	}).WithType(&momentMintedEventType)
+	}).WithType(momentMintedEventType)
 
 	payload, err := jsoncdc.Encode(momentMintedEvent)
 	require.NoError(t, err, "failed to encode moment minted cadence event")

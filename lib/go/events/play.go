@@ -2,9 +2,7 @@ package events
 
 import (
 	"fmt"
-
-	"github.com/onflow/cadence"
-	jsoncdc "github.com/onflow/cadence/encoding/json"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
 var (
@@ -16,29 +14,30 @@ type PlayCreatedEvent interface {
 	MetaData() map[interface{}]interface{}
 }
 
-type playCreatedEvent cadence.Event
+type playCreatedEvent map[string]any
 
 func (evt playCreatedEvent) Id() uint32 {
-	return evt.Fields[0].(cadence.UInt32).ToGoValue().(uint32)
+	return evt["id"].(uint32)
 }
+
 func (evt playCreatedEvent) MetaData() map[interface{}]interface{} {
-	return evt.Fields[1].(cadence.Dictionary).ToGoValue().(map[interface{}]interface{})
+	return evt["metaData"].(map[interface{}]interface{})
 }
 
 func (evt playCreatedEvent) validate() error {
-	if evt.EventType.QualifiedIdentifier != EventPlayCreated {
+	if evt["eventType"].(string) != EventPlayCreated {
 		return fmt.Errorf("error validating event: event is not a valid play created event, expected type %s, got %s",
-			EventPlayCreated, evt.EventType.QualifiedIdentifier)
+			EventPlayCreated, evt["eventType"].(string))
 	}
 	return nil
 }
 
 func DecodePlayCreatedEvent(b []byte) (PlayCreatedEvent, error) {
-	value, err := jsoncdc.Decode(nil, b)
+	eventMap, err := decoder.DecodeToEventMap(b)
 	if err != nil {
 		return nil, err
 	}
-	event := playCreatedEvent(value.(cadence.Event))
+	event := playCreatedEvent(eventMap)
 	if err := event.validate(); err != nil {
 		return nil, fmt.Errorf("error decoding event: %w", err)
 	}
