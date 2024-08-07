@@ -1,15 +1,15 @@
 module github.com/dapperlabs/nba-smart-contracts/lib/go/test
 
-go 1.19
+go 1.22
 
 require (
 	github.com/dapperlabs/nba-smart-contracts/lib/go/contracts v0.0.0-00010101000000-000000000000
 	github.com/dapperlabs/nba-smart-contracts/lib/go/templates v0.0.0-00010101000000-000000000000
-	github.com/onflow/cadence v1.0.0-preview.25
+	github.com/onflow/cadence v1.0.0-preview.42
 	github.com/onflow/flow-emulator v1.0.0-preview.22
 	github.com/onflow/flow-ft/lib/go/contracts v1.0.0
 	github.com/onflow/flow-ft/lib/go/templates v1.0.0
-	github.com/onflow/flow-go-sdk v1.0.0-preview.25
+	github.com/onflow/flow-go-sdk v1.0.0-preview.45
 	github.com/rs/zerolog v1.29.0
 	github.com/stretchr/testify v1.9.0
 )
@@ -111,16 +111,16 @@ require (
 	github.com/multiformats/go-multistream v0.5.0 // indirect
 	github.com/multiformats/go-varint v0.0.7 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/onflow/atree v0.7.0-rc.1 // indirect
+	github.com/onflow/atree v0.8.0-rc.5 // indirect
 	github.com/onflow/crypto v0.25.1 // indirect
 	github.com/onflow/flow-core-contracts/lib/go/contracts v0.15.2-0.20240429192223-e696a8e439b5 // indirect
 	github.com/onflow/flow-core-contracts/lib/go/templates v0.15.2-0.20240429192223-e696a8e439b5 // indirect
 	github.com/onflow/flow-go v0.34.0-crescendo-preview.18 // indirect
 	github.com/onflow/flow-nft/lib/go/contracts v1.1.1-0.20240429184308-40c3de711140 // indirect
 	github.com/onflow/flow-nft/lib/go/templates v0.0.0-20240429184308-40c3de711140 // indirect
-	github.com/onflow/flow/protobuf/go/flow v0.4.1-0.20240412170550-911321113030 // indirect
+	github.com/onflow/flow/protobuf/go/flow v0.4.3 // indirect
 	github.com/onflow/go-ethereum v1.13.4 // indirect
-	github.com/onflow/sdks v0.5.1-0.20230912225508-b35402f12bba // indirect
+	github.com/onflow/sdks v0.6.0-preview.1 // indirect
 	github.com/onsi/gomega v1.27.10 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
@@ -168,12 +168,12 @@ require (
 	go.opentelemetry.io/proto/otlp v1.0.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.24.0 // indirect
+	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/crypto v0.21.0 // indirect
-	golang.org/x/exp v0.0.0-20230321023759-10a507213a29 // indirect
-	golang.org/x/mod v0.12.0 // indirect
+	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a // indirect
+	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.23.0 // indirect
-	golang.org/x/sync v0.3.0 // indirect
+	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
@@ -187,7 +187,7 @@ require (
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	lukechampine.com/blake3 v1.2.1 // indirect
+	lukechampine.com/blake3 v1.3.0 // indirect
 	modernc.org/libc v1.37.6 // indirect
 	modernc.org/mathutil v1.6.0 // indirect
 	modernc.org/memory v1.7.2 // indirect
