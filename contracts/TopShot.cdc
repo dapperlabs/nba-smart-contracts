@@ -1040,7 +1040,17 @@ access(all) contract TopShot: NonFungibleToken {
     // to allow others to deposit Moments into their Collection. It also allows for reading
     // the IDs of Moments in the Collection.
     /// Deprecated: This is no longer used for defining access control anymore.
-    access(all) resource interface MomentCollectionPublic : NonFungibleToken.CollectionPublic {}
+    access(all) resource interface MomentCollectionPublic : NonFungibleToken.CollectionPublic {
+        access(all) fun batchDeposit(tokens: @{NonFungibleToken.Collection})
+        access(all) fun borrowMoment(id: UInt64): &TopShot.NFT? {
+            // If the result isn't nil, the id of the returned reference
+            // should be the same as the argument to the function
+            post {
+                (result == nil) || (result?.id == id): 
+                    "Cannot borrow Moment reference: The ID of the returned reference is incorrect"
+            }
+        }
+    }
 
     // Collection is a resource that every user who owns NFTs 
     // will store in their account to manage their NFTS
@@ -1175,7 +1185,6 @@ access(all) contract TopShot: NonFungibleToken {
                 ?? panic("Cannot lock: Moment does not exist in the collection")
 
             TopShot.emitNFTUpdated(&token as auth(NonFungibleToken.Update) &{NonFungibleToken.NFT})
-            NonFungibleToken.emitNFTUpdated(&token as auth(NonFungibleToken.Update) &{NonFungibleToken.NFT})
 
             // pass the token to the locking contract
             // store it again after it comes back
@@ -1201,7 +1210,6 @@ access(all) contract TopShot: NonFungibleToken {
                 ?? panic("Cannot lock: Moment does not exist in the collection")
 
             TopShot.emitNFTUpdated(&token as auth(NonFungibleToken.Update) &{NonFungibleToken.NFT})
-            NonFungibleToken.emitNFTUpdated(&token as auth(NonFungibleToken.Update) &{NonFungibleToken.NFT})
 
             // Pass the token to the TopShotLocking contract then get it back
             // Store it back to the ownedNFTs dictionary

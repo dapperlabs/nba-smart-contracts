@@ -62,7 +62,24 @@ access(all) contract Market {
     // The interface that a user can publish their sale as
     // to allow others to access their sale
      /// Deprecated: This is no longer used for defining access control anymore.
-    access(all) resource interface SalePublic {}
+    access(all) resource interface SalePublic {
+        access(all) var cutPercentage: UFix64
+        access(all) fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
+            post {
+                result.id == tokenID: "The ID of the withdrawn token must be the same as the requested ID"
+            }
+        }
+        access(all) fun getPrice(tokenID: UInt64): UFix64?
+        access(all) fun getIDs(): [UInt64]
+        access(all) fun borrowMoment(id: UInt64): &TopShot.NFT? {
+            // If the result isn't nil, the id of the returned reference
+            // should be the same as the argument to the function
+            post {
+                (result == nil) || (result?.id == id):
+                    "Cannot borrow Moment reference: The ID of the returned reference is incorrect"
+            }
+        }        
+    }
 
     // SaleCollection
     //
