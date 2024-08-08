@@ -20,7 +20,7 @@ access(all) fun main(account: Address, setIDs: [UInt32], playIDs: [UInt32]): Boo
         message: "set and play ID arrays have mismatched lengths"
     )
 
-    let collectionRef = getAccount(account).capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
+    let collectionRef = getAccount(account).capabilities.borrow<&TopShot.Collection>(/public/MomentCollection)
                 ?? panic("Could not get public moment collection reference")
 
     let momentIDs = collectionRef.getIDs()

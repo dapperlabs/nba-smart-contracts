@@ -18,7 +18,7 @@ transaction(recipientAddr: Address, momentIDs: [UInt64]) {
         let recipient = getAccount(recipientAddr)
 
         // borrow a reference to the recipient's moment collection
-        let receiverRef = recipient.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
+        let receiverRef = recipient.capabilities.borrow<&TopShot.Collection>(/public/MomentCollection)
             ?? panic("Cannot borrow a reference to the recipient's collection")
 
         

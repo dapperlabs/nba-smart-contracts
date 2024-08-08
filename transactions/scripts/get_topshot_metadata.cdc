@@ -5,7 +5,7 @@ import MetadataViews from 0xMETADATAVIEWSADDRESS
 access(all) fun main(address: Address, id: UInt64): TopShot.TopShotMomentMetadataView {
     let account = getAccount(address)
 
-    let collectionRef = account.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)!
+    let collectionRef = account.capabilities.borrow<&TopShot.Collection>(/public/MomentCollection)!
 
     let nft = collectionRef.borrowMoment(id: id)!
     

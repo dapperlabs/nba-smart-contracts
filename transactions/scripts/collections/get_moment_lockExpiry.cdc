@@ -13,7 +13,7 @@ import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 
 access(all) fun main(account: Address, id: UInt64): UFix64 {
 
-    let collectionRef = getAccount(account).capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
+    let collectionRef = getAccount(account).capabilities.borrow<&TopShot.Collection>(/public/MomentCollection)
         ?? panic("Could not get public moment collection reference")
 
     let nftRef = collectionRef.borrowNFT(id)!

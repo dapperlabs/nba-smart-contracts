@@ -16,7 +16,7 @@ access(all) fun main(account: Address): [UInt64] {
 
     let acct = getAccount(account)
 
-    let collectionRef = acct.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)!
+    let collectionRef = acct.capabilities.borrow<&TopShot.Collection>(/public/MomentCollection)!
 
     log(collectionRef.getIDs())
 

@@ -14,7 +14,7 @@ transaction(ownerAddress: Address, id: UInt64) {
         // Set Top Shot NFT Owner collection ref
         let owner = getAccount(ownerAddress)
 
-        let collectionRef = owner.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
+        let collectionRef = owner.capabilities.borrow<&TopShot.Collection>(/public/MomentCollection)
             ?? panic("Could not reference owner's moment collection")
 
         // borrow the nft reference

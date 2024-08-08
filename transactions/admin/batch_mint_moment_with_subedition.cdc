@@ -34,7 +34,7 @@ transaction(setID: UInt32, playID: UInt32, quantity: UInt64, subeditionID: UInt3
         let recipient = getAccount(recipientAddr)
 
         // get the Collection reference for the receiver
-        let receiverRef = recipient.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
+        let receiverRef = recipient.capabilities.borrow<&TopShot.Collection>(/public/MomentCollection)
             ?? panic("Cannot borrow a reference to the recipient's collection")
 
         // deposit the NFT in the receivers collection

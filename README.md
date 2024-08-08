@@ -495,7 +495,7 @@ prepare(acct: AuthAccount) {
 execute {
     // Set Top Shot NFT Owner collection ref
     let owner = getAccount(0x179b6b1cb6755e31)
-    let collectionRef = owner.getCapability(/public/MomentCollection).borrow<&{TopShot.MomentCollectionPublic}>()
+    let collectionRef = owner.getCapability(/public/MomentCollection).borrow<&TopShot.Collection>()
         ?? panic("Could not reference owner's moment collection")
 
     let nftRef = collectionRef.borrowNFT(id: 1)

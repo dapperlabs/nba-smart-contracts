@@ -17,7 +17,7 @@ access(all) fun main(account: Address, id: UInt64): {String: String} {
 
     // get the public capability for the owner's moment collection
     // and borrow a reference to it
-    let collectionRef = getAccount(account).capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
+    let collectionRef = getAccount(account).capabilities.borrow<&TopShot.Collection>(/public/MomentCollection)
         ?? panic("Could not get public moment collection reference")
 
     // Borrow a reference to the specified moment
