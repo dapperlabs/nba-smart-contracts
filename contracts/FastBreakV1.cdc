@@ -25,10 +25,6 @@ access(all) contract FastBreakV1: NonFungibleToken {
     /// Contract events
     ///
 
-    access(all) event Withdraw(id: UInt64, from: Address?)
-
-    access(all) event Deposit(id: UInt64, to: Address?)
-
     access(all) event FastBreakPlayerCreated(
         id: UInt64,
         playerName: String
