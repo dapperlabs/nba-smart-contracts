@@ -1039,17 +1039,8 @@ access(all) contract TopShot: NonFungibleToken {
     // This is the interface that users can cast their Moment Collection as
     // to allow others to deposit Moments into their Collection. It also allows for reading
     // the IDs of Moments in the Collection.
-    access(all) resource interface MomentCollectionPublic : NonFungibleToken.CollectionPublic {
-        access(all) fun batchDeposit(tokens: @{NonFungibleToken.Collection})
-        access(all) fun borrowMoment(id: UInt64): &TopShot.NFT? {
-            // If the result isn't nil, the id of the returned reference
-            // should be the same as the argument to the function
-            post {
-                (result == nil) || (result?.id == id): 
-                    "Cannot borrow Moment reference: The ID of the returned reference is incorrect"
-            }
-        }
-    }
+    /// Deprecated: This is no longer used for defining access control anymore.
+    access(all) resource interface MomentCollectionPublic : NonFungibleToken.CollectionPublic {}
 
     // Collection is a resource that every user who owns NFTs 
     // will store in their account to manage their NFTS
