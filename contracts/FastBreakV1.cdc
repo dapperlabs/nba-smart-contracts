@@ -680,8 +680,6 @@ access(all) contract FastBreakV1: NonFungibleToken {
             let token <- self.ownedNFTs.remove(key: withdrawID) 
                 ?? panic("Could not find a fast break with the given ID in the Fast Break collection. Fast break Id: ".concat(withdrawID.toString()))
 
-            emit Withdraw(id: token.id, from: self.owner?.address)
-
             return <-token
         }
 
@@ -690,8 +688,6 @@ access(all) contract FastBreakV1: NonFungibleToken {
             let id: UInt64 = token.id
 
             let oldToken <- self.ownedNFTs[id] <- token
-
-            emit Deposit(id: id, to: self.owner?.address)
 
             destroy oldToken
         }
