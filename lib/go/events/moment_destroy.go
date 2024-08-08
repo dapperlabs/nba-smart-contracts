@@ -33,8 +33,5 @@ func DecodeMomentDestroyedEvent(b []byte) (MomentDestroyedEvent, error) {
 		return nil, err
 	}
 	event := momentDestroyedEvent(eventMap)
-	if err := event.validate(); err != nil {
-		return nil, fmt.Errorf("error decoding event: %w", err)
-	}
 	return event, nil
 }

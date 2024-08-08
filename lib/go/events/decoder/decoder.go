@@ -24,6 +24,7 @@ func DecodeCadenceValue(payload []byte) (cadence.Value, error) {
 	)
 	if err != nil {
 		// json decode failed, try ccf decode
+		fmt.Printf("json decode failed, try ccf decode, reason: %s\n", err.Error())
 		ccfValue, ccfErr := ccf.Decode(nil, payload)
 		if ccfErr != nil {
 			return cadence.Event{}, pkgerrors.Wrapf(
