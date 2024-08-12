@@ -11,8 +11,8 @@ var (
 
 type MomentLockedEvent interface {
 	FlowID() uint64
-	Duration() float64
-	ExpiryTimestamp() float64
+	Duration() uint64
+	ExpiryTimestamp() uint64
 }
 
 type momentLockedEvent map[string]any
@@ -21,12 +21,12 @@ func (evt momentLockedEvent) FlowID() uint64 {
 	return evt["flowID"].(uint64)
 }
 
-func (evt momentLockedEvent) Duration() float64 {
-	return evt["duration"].(float64)
+func (evt momentLockedEvent) Duration() uint64 {
+	return evt["duration"].(uint64)
 }
 
-func (evt momentLockedEvent) ExpiryTimestamp() float64 {
-	return evt["expiryTimestamp"].(float64)
+func (evt momentLockedEvent) ExpiryTimestamp() uint64 {
+	return evt["expiryTimestamp"].(uint64)
 }
 
 var _ MomentLockedEvent = (*momentLockedEvent)(nil)
