@@ -5,7 +5,7 @@ import (
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
-var (
+const (
 	EventSetCreated = "TopShot.SetCreated"
 )
 
@@ -24,24 +24,17 @@ func (evt setCreatedEvent) Series() uint32 {
 	return evt["series"].(uint32)
 }
 
-func (evt setCreatedEvent) validate() error {
-	if evt["eventType"].(string) != EventSetCreated {
-		return fmt.Errorf("error validating event: event is not a valid set created event, expected type %s, got %s",
-			EventSetCreated, evt["eventType"].(string))
-	}
-	return nil
-}
-
 var _ SetCreatedEvent = (*setCreatedEvent)(nil)
 
 func DecodeSetCreatedEvent(b []byte) (SetCreatedEvent, error) {
-	eventMap, err := decoder.DecodeToEventMap(b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
-	event := setCreatedEvent(eventMap)
-	if err := event.validate(); err != nil {
-		return nil, fmt.Errorf("error decoding event: %w", err)
+	if cadenceValue.EventType.QualifiedIdentifier != EventSetCreated {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
 	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
+	event := setCreatedEvent(eventMap)
 	return event, nil
 }

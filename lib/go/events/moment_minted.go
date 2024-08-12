@@ -5,7 +5,7 @@ import (
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
-var (
+const (
 	// This variable specifies that there is a MomentMinted Event on a TopShot Contract located at address 0x04
 	EventMomentMinted = "TopShot.MomentMinted"
 )
@@ -43,24 +43,17 @@ func (evt momentMintedEvent) SubeditionId() uint32 {
 	return 0
 }
 
-func (evt momentMintedEvent) validate() error {
-	if evt["eventType"].(string) != EventMomentMinted {
-		return fmt.Errorf("error validating event: event is not a valid moment minted event, expected type %s, got %s",
-			EventMomentMinted, evt["eventType"].(string))
-	}
-	return nil
-}
-
 var _ MomentMintedEvent = (*momentMintedEvent)(nil)
 
 func DecodeMomentMintedEvent(b []byte) (MomentMintedEvent, error) {
-	eventMap, err := decoder.DecodeToEventMap(b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
-	event := momentMintedEvent(eventMap)
-	if err := event.validate(); err != nil {
-		return nil, fmt.Errorf("error decoding event: %w", err)
+	if cadenceValue.EventType.QualifiedIdentifier != EventMomentMinted {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
 	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
+	event := momentMintedEvent(eventMap)
 	return event, nil
 }

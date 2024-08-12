@@ -29,26 +29,19 @@ func (evt momentLockedEvent) ExpiryTimestamp() float64 {
 	return evt["expiryTimestamp"].(float64)
 }
 
-func (evt momentLockedEvent) validate() error {
-	if evt["eventType"].(string) != MomentLocked {
-		return fmt.Errorf("error validating event: event is not a valid moment locked event, expected type %s, got %s",
-			MomentLocked, evt["eventType"].(string))
-	}
-	return nil
-}
-
 var _ MomentLockedEvent = (*momentLockedEvent)(nil)
 
 func DecodeMomentLockedEvent(b []byte) (MomentLockedEvent, error) {
-	eventMap, err := decoder.DecodeToEventMap(b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
+	if cadenceValue.EventType.QualifiedIdentifier != MomentLocked {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
+	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
 
 	event := momentLockedEvent(eventMap)
-	if err := event.validate(); err != nil {
-		return nil, fmt.Errorf("error decoding event: %w", err)
-	}
 
 	return event, nil
 }

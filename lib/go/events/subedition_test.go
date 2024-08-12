@@ -26,7 +26,7 @@ func TestCadenceEvents_SubeditionCreated(t *testing.T) {
 		"TopShot.SubeditionCreated",
 		[]cadence.Field{
 			{
-				Identifier: "subeditionId",
+				Identifier: "subeditionID",
 				Type:       cadence.UInt32Type,
 			},
 			{
@@ -58,7 +58,7 @@ func TestCadenceEvents_SubeditionCreated(t *testing.T) {
 
 	assert.Equal(t, id, decodedSubeditionCreatedEventType.SubeditionId())
 	assert.Equal(t, name, decodedSubeditionCreatedEventType.Name())
-	assert.Equal(t, map[interface{}]interface{}{
+	assert.Equal(t, map[string]interface{}{
 		setKey:  setValue,
 		playKey: playValue,
 	}, decodedSubeditionCreatedEventType.MetaData())

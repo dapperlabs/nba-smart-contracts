@@ -5,7 +5,7 @@ import (
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
-var (
+const (
 	EventSetLocked = "TopShot.SetLocked"
 )
 
@@ -21,22 +21,15 @@ func (evt setLockedEvent) SetID() uint32 {
 	return evt["setID"].(uint32)
 }
 
-func (evt setLockedEvent) validate() error {
-	if evt["eventType"].(string) != EventSetLocked {
-		return fmt.Errorf("error validating event: event is not a valid set locked event, expected type %s, got %s",
-			EventSetLocked, evt["eventType"].(string))
-	}
-	return nil
-}
-
 func DecodeSetLockedEvent(b []byte) (SetLockedEvent, error) {
-	eventMap, err := decoder.DecodeToEventMap(b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
-	event := setLockedEvent(eventMap)
-	if err := event.validate(); err != nil {
-		return nil, fmt.Errorf("error decoding event: %w", err)
+	if cadenceValue.EventType.QualifiedIdentifier != EventSetLocked {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
 	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
+	event := setLockedEvent(eventMap)
 	return event, nil
 }

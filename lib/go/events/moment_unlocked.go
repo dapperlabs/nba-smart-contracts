@@ -5,7 +5,7 @@ import (
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
-var (
+const (
 	MomentUnlocked = "TopShotLocking.MomentUnlocked"
 )
 
@@ -19,26 +19,18 @@ func (evt momentUnlockedEvent) FlowID() uint64 {
 	return evt["flowID"].(uint64)
 }
 
-func (evt momentUnlockedEvent) validate() error {
-	if evt["eventType"].(string) != MomentUnlocked {
-		return fmt.Errorf("error validating event: event is not a valid moment unlocked event, expected type %s, got %s",
-			MomentUnlocked, evt["eventType"].(string))
-	}
-	return nil
-}
-
 var _ MomentUnlockedEvent = (*momentUnlockedEvent)(nil)
 
 func DecodeMomentUnlockedEvent(b []byte) (MomentUnlockedEvent, error) {
-	eventMap, err := decoder.DecodeToEventMap(b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
+	if cadenceValue.EventType.QualifiedIdentifier != MomentUnlocked {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
+	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
 
 	event := momentUnlockedEvent(eventMap)
-	if err := event.validate(); err != nil {
-		return nil, fmt.Errorf("error decoding event: %w", err)
-	}
-
 	return event, nil
 }

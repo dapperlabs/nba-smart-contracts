@@ -19,11 +19,11 @@ func TestCadenceEvents_PlayAddedToSet(t *testing.T) {
 		"TopShot.PlayAddedToSet",
 		[]cadence.Field{
 			{
-				Identifier: "setId",
+				Identifier: "setID",
 				Type:       cadence.UInt32Type,
 			},
 			{
-				Identifier: "playId",
+				Identifier: "playID",
 				Type:       cadence.UInt32Type,
 			},
 		},

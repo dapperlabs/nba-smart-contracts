@@ -19,7 +19,7 @@ func TestCadenceEvents_SetCreated(t *testing.T) {
 		"TopShot.SetCreated",
 		[]cadence.Field{
 			{
-				Identifier: "setId",
+				Identifier: "setID",
 				Type:       cadence.UInt32Type,
 			},
 			{

@@ -33,26 +33,19 @@ func (evt revealedEvent) NFTs() string {
 	return evt["nfts"].(string)
 }
 
-func (evt revealedEvent) validate() error {
-	if evt["eventType"].(string) != EventRevealed {
-		return fmt.Errorf("error validating event: event is not a valid revealed event, expected type %s, got %s",
-			EventRevealed, evt["eventType"].(string))
-	}
-	return nil
-}
-
 func parseNFTs(nft string) []string {
 	return strings.Split(nft, ",")
 }
 
 func DecodeRevealedEvent(b []byte) (RevealedEvent, error) {
-	eventMap, err := decoder.DecodeToEventMap(b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
-	event := revealedEvent(eventMap)
-	if err := event.validate(); err != nil {
-		return nil, fmt.Errorf("error decoding event: %w", err)
+	if cadenceValue.EventType.QualifiedIdentifier != EventRevealed {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
 	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
+	event := revealedEvent(eventMap)
 	return event, nil
 }
