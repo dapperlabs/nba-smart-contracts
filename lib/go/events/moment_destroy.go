@@ -5,7 +5,7 @@ import (
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
-var (
+const (
 	EventMomentDestroyed = "TopShot.MomentDestroyed"
 )
 

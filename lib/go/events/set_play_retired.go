@@ -1,10 +1,11 @@
 package events
 
 import (
+	"fmt"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
-var (
+const (
 	EventPlayRetiredFromSet = "TopShot.PlayRetiredFromSet"
 )
 
@@ -31,10 +32,14 @@ func (evt setPlayRetiredEvent) NumMoments() uint32 {
 var _ SetPlayRetiredEvent = (*setPlayRetiredEvent)(nil)
 
 func DecodeSetPlayRetiredEvent(b []byte) (SetPlayRetiredEvent, error) {
-	eventMap, err := decoder.DecodeToEventMap(b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
+	if cadenceValue.EventType.QualifiedIdentifier != EventPlayRetiredFromSet {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
+	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
 	event := setPlayRetiredEvent(eventMap)
 	return event, nil
 }

@@ -1,10 +1,11 @@
 package events
 
 import (
+	"fmt"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
-var (
+const (
 	EventPlayAddedToSet = "TopShot.PlayAddedToSet"
 )
 
@@ -26,10 +27,14 @@ func (evt playAddedToSetEvent) PlayID() uint32 {
 var _ PlayAddedToSetEvent = (*playAddedToSetEvent)(nil)
 
 func DecodePlayAddedToSetEvent(b []byte) (PlayAddedToSetEvent, error) {
-	eventMap, err := decoder.DecodeToEventMap(b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
+	if cadenceValue.EventType.QualifiedIdentifier != EventPlayAddedToSet {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
+	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
 	event := playAddedToSetEvent(eventMap)
 	return event, nil
 }

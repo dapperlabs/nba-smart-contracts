@@ -1,6 +1,7 @@
 package events
 
 import (
+	"fmt"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
@@ -31,10 +32,14 @@ func (evt momentLockedEvent) ExpiryTimestamp() float64 {
 var _ MomentLockedEvent = (*momentLockedEvent)(nil)
 
 func DecodeMomentLockedEvent(b []byte) (MomentLockedEvent, error) {
-	eventMap, err := decoder.DecodeToEventMap(b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
+	if cadenceValue.EventType.QualifiedIdentifier != MomentLocked {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
+	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
 
 	event := momentLockedEvent(eventMap)
 
