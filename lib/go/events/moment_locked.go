@@ -18,7 +18,7 @@ type MomentLockedEvent interface {
 type momentLockedEvent map[string]any
 
 func (evt momentLockedEvent) FlowID() uint64 {
-	return evt["flowID"].(uint64)
+	return evt["id"].(uint64)
 }
 
 func (evt momentLockedEvent) Duration() uint64 {
