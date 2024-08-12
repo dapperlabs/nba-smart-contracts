@@ -1,10 +1,11 @@
 package events
 
 import (
+	"fmt"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
-var (
+const (
 	// This variable specifies that there is a Deposit Event on a TopShot Contract located at address 0x04
 	EventDeposit = "TopShot.Deposit"
 )
@@ -37,10 +38,14 @@ func (evt depositEvent) Owner() string {
 }
 
 func DecodeDepositEvent(b []byte) (DepositEvent, error) {
-	eventMap, err := decoder.DecodeToEventMap(b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
+	if cadenceValue.EventType.QualifiedIdentifier != EventDeposit {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
+	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
 	event := depositEvent(eventMap)
 	return event, nil
 }

@@ -1,10 +1,11 @@
 package events
 
 import (
+	"fmt"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
-var (
+const (
 	EventSubeditionCreated = "TopShot.SubeditionCreated"
 )
 
@@ -34,10 +35,14 @@ func (evt subeditionCreatedEvent) MetaData() map[string]interface{} {
 }
 
 func DecodeSubeditionCreatedEvent(b []byte) (SubeditionCreatedEvent, error) {
-	eventMap, err := decoder.DecodeToEventMap(b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
+	if cadenceValue.EventType.QualifiedIdentifier != EventSubeditionCreated {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
+	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
 	event := subeditionCreatedEvent(eventMap)
 	return event, nil
 }

@@ -1,10 +1,11 @@
 package events
 
 import (
+	"fmt"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
-var (
+const (
 	EventWithdraw = "TopShot.Withdraw"
 )
 
@@ -35,10 +36,14 @@ func (evt withdrawEvent) Owner() string {
 }
 
 func DecodeWithdrawEvent(b []byte) (WithdrawEvent, error) {
-	eventMap, err := decoder.DecodeToEventMap(b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
+	if cadenceValue.EventType.QualifiedIdentifier != EventWithdraw {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
+	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
 	event := withdrawEvent(eventMap)
 	return event, nil
 }

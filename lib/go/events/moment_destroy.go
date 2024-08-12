@@ -1,10 +1,11 @@
 package events
 
 import (
+	"fmt"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
-var (
+const (
 	EventMomentDestroyed = "TopShot.MomentDestroyed"
 )
 
@@ -19,10 +20,14 @@ func (evt momentDestroyedEvent) Id() uint64 {
 }
 
 func DecodeMomentDestroyedEvent(b []byte) (MomentDestroyedEvent, error) {
-	eventMap, err := decoder.DecodeToEventMap(b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
+	if cadenceValue.EventType.QualifiedIdentifier != EventMomentDestroyed {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
+	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
 	event := momentDestroyedEvent(eventMap)
 	return event, nil
 }
