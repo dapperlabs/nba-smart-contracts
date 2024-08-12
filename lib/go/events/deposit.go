@@ -1,7 +1,6 @@
 package events
 
 import (
-	"fmt"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
@@ -37,22 +36,11 @@ func (evt depositEvent) Owner() string {
 	return evt.To()
 }
 
-func (evt depositEvent) validate() error {
-	if evt["eventType"].(string) != EventDeposit {
-		return fmt.Errorf("error validating event: event is not a valid moment destroyed event, expected type %s, got %s",
-			EventDeposit, evt["eventType"].(string))
-	}
-	return nil
-}
-
 func DecodeDepositEvent(b []byte) (DepositEvent, error) {
 	eventMap, err := decoder.DecodeToEventMap(b)
 	if err != nil {
 		return nil, err
 	}
 	event := depositEvent(eventMap)
-	if err := event.validate(); err != nil {
-		return nil, fmt.Errorf("error decoding event: %w", err)
-	}
 	return event, nil
 }

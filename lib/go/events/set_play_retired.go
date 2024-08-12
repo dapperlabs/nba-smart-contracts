@@ -1,7 +1,6 @@
 package events
 
 import (
-	"fmt"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
@@ -29,14 +28,6 @@ func (evt setPlayRetiredEvent) NumMoments() uint32 {
 	return evt["numMoments"].(uint32)
 }
 
-func (evt setPlayRetiredEvent) validate() error {
-	if evt["eventType"].(string) != EventPlayRetiredFromSet {
-		return fmt.Errorf("error validating event: event is not a valid play retired from set event, expected type %s, got %s",
-			EventPlayRetiredFromSet, evt["eventType"].(string))
-	}
-	return nil
-}
-
 var _ SetPlayRetiredEvent = (*setPlayRetiredEvent)(nil)
 
 func DecodeSetPlayRetiredEvent(b []byte) (SetPlayRetiredEvent, error) {
@@ -45,8 +36,5 @@ func DecodeSetPlayRetiredEvent(b []byte) (SetPlayRetiredEvent, error) {
 		return nil, err
 	}
 	event := setPlayRetiredEvent(eventMap)
-	if err := event.validate(); err != nil {
-		return nil, fmt.Errorf("error decoding event: %w", err)
-	}
 	return event, nil
 }

@@ -1,7 +1,6 @@
 package events
 
 import (
-	"fmt"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
@@ -43,14 +42,6 @@ func (evt momentMintedEvent) SubeditionId() uint32 {
 	return 0
 }
 
-func (evt momentMintedEvent) validate() error {
-	if evt["eventType"].(string) != EventMomentMinted {
-		return fmt.Errorf("error validating event: event is not a valid moment minted event, expected type %s, got %s",
-			EventMomentMinted, evt["eventType"].(string))
-	}
-	return nil
-}
-
 var _ MomentMintedEvent = (*momentMintedEvent)(nil)
 
 func DecodeMomentMintedEvent(b []byte) (MomentMintedEvent, error) {
@@ -59,8 +50,5 @@ func DecodeMomentMintedEvent(b []byte) (MomentMintedEvent, error) {
 		return nil, err
 	}
 	event := momentMintedEvent(eventMap)
-	if err := event.validate(); err != nil {
-		return nil, fmt.Errorf("error decoding event: %w", err)
-	}
 	return event, nil
 }
