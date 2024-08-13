@@ -16,7 +16,7 @@ type MomentUnlockedEvent interface {
 type momentUnlockedEvent map[string]any
 
 func (evt momentUnlockedEvent) FlowID() uint64 {
-	return evt["flowID"].(uint64)
+	return evt["id"].(uint64)
 }
 
 var _ MomentUnlockedEvent = (*momentUnlockedEvent)(nil)

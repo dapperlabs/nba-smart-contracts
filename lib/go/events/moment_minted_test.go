@@ -22,15 +22,15 @@ func TestCadenceEvents_MomentMinted(t *testing.T) {
 		"TopShot.MomentMinted",
 		[]cadence.Field{
 			{
-				Identifier: "momentId",
+				Identifier: "momentID",
 				Type:       cadence.UInt64Type,
 			},
 			{
-				Identifier: "playId",
+				Identifier: "playID",
 				Type:       cadence.UInt32Type,
 			},
 			{
-				Identifier: "setId",
+				Identifier: "setID",
 				Type:       cadence.UInt32Type,
 			},
 			{
@@ -38,7 +38,7 @@ func TestCadenceEvents_MomentMinted(t *testing.T) {
 				Type:       cadence.UInt32Type,
 			},
 			{
-				Identifier: "subeditionId",
+				Identifier: "subeditionID",
 				Type:       cadence.UInt32Type,
 			},
 		},
