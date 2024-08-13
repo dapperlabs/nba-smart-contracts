@@ -21,15 +21,15 @@ type MomentMintedEvent interface {
 type momentMintedEvent map[string]any
 
 func (evt momentMintedEvent) MomentId() uint64 {
-	return evt["momentId"].(uint64)
+	return evt["momentID"].(uint64)
 }
 
 func (evt momentMintedEvent) PlayId() uint32 {
-	return evt["playId"].(uint32)
+	return evt["playID"].(uint32)
 }
 
 func (evt momentMintedEvent) SetId() uint32 {
-	return evt["setId"].(uint32)
+	return evt["setID"].(uint32)
 }
 
 func (evt momentMintedEvent) SerialNumber() uint32 {
@@ -37,7 +37,7 @@ func (evt momentMintedEvent) SerialNumber() uint32 {
 }
 
 func (evt momentMintedEvent) SubeditionId() uint32 {
-	if val, ok := evt["subeditionId"]; ok {
+	if val, ok := evt["subeditionID"]; ok {
 		return val.(uint32)
 	}
 	return 0
