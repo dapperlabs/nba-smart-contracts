@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	EventMomentDestroyed = "TopShot.MomentDestroyed"
+	EventMomentDestroyed   = "TopShot.MomentDestroyed"
+	EventMomentDestroyedV2 = "TopShot.NFT.ResourceDestroyed"
 )
 
 type MomentDestroyedEvent interface {
@@ -24,7 +25,7 @@ func DecodeMomentDestroyedEvent(b []byte) (MomentDestroyedEvent, error) {
 	if err != nil {
 		return nil, err
 	}
-	if cadenceValue.EventType.QualifiedIdentifier != EventMomentDestroyed {
+	if cadenceValue.EventType.QualifiedIdentifier != EventMomentDestroyed && cadenceValue.EventType.QualifiedIdentifier != EventMomentDestroyedV2 {
 		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
 	}
 	eventMap, err := decoder.ConvertEvent(cadenceValue)
