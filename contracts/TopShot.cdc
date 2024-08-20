@@ -888,7 +888,7 @@ access(all) contract TopShot: NonFungibleToken {
             return url
         }
 
-        // Create an empty Collection for Pinnacle NFTs and return it to the caller
+        // Create an empty Collection for NBA NFTs and return it to the caller
         access(all) fun createEmptyCollection(): @{NonFungibleToken.Collection} {
             return <- TopShot.createEmptyCollection(nftType: Type<@TopShot.NFT>())
         }
