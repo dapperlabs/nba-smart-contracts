@@ -1,3 +1,6 @@
+export GOFLAGS :=-tags=no_cgo
+export CGO_ENABLED := 0
+
 .PHONY: test
 test:
 	$(MAKE) generate -C lib/go
