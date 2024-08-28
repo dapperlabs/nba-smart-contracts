@@ -35,13 +35,13 @@
     deposited to.
 **/
 
-import FungibleToken from "FungibleToken"
-import NonFungibleToken from "NonFungibleToken"
-import TopShot from "TopShot"
-import Market from "Market"
-import DapperUtilityCoin from "DapperUtilityCoin"
-import TopShotLocking from "TopShotLocking"
-import MetadataViews from "MetadataViews"
+import FungibleToken from 0xFUNGIBLETOKENADDRESS
+import NonFungibleToken from 0xNFTADDRESS
+import TopShot from 0xTOPSHOTADDRESS
+import Market from 0xMARKETADDRESS
+import DapperUtilityCoin from 0xDUCADDRESS
+import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
+import MetadataViews from 0xMETADATAVIEWSADDRESS
 
 access(all) contract TopShotMarketV3 {
 

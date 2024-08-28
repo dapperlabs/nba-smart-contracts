@@ -14,7 +14,7 @@ const (
 	marketV3File = "TopShotMarketV3.cdc"
 	// There is a MarketTopShot.cdc contract which was updated to be token agnostic, however this was not backwards compatible.
 	// MarketTopShotOldVersion.cdc is the current contract in production
-	marketFile                     = "MarketTopShotOldVersion.cdc"
+	marketFile                     = "Market.cdc"
 	shardedCollectionFile          = "TopShotShardedCollection.cdc"
 	adminReceiverFile              = "TopshotAdminReceiver.cdc"
 	topShotLockingFile             = "TopShotLocking.cdc"
