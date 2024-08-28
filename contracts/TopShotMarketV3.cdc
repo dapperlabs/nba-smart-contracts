@@ -35,13 +35,13 @@
     deposited to.
 **/
 
-import FungibleToken from 0xFUNGIBLETOKENADDRESS
-import NonFungibleToken from 0xNFTADDRESS
-import TopShot from 0xTOPSHOTADDRESS
-import Market from 0xMARKETADDRESS
-import DapperUtilityCoin from 0xDUCADDRESS
-import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
-import MetadataViews from 0xMETADATAVIEWSADDRESS
+import FungibleToken from "FungibleToken"
+import NonFungibleToken from "NonFungibleToken"
+import TopShot from "TopShot"
+import Market from "Market"
+import DapperUtilityCoin from "DapperUtilityCoin"
+import TopShotLocking from "TopShotLocking"
+import MetadataViews from "MetadataViews"
 
 access(all) contract TopShotMarketV3 {
 
@@ -83,10 +83,10 @@ access(all) contract TopShotMarketV3 {
     access(all) resource SaleCollection: Market.SalePublic {
 
         /// A collection of the moments that the user has for sale
-        access(self) var ownerCollection: Capability<auth(NonFungibleToken.Withdraw) &TopShot.Collection>
+        access(self) var ownerCollection: Capability<auth(NonFungibleToken.Withdraw, NonFungibleToken.Update) &TopShot.Collection>
 
         /// Capability to point at the V1 sale collection
-        access(self) var marketV1Capability: Capability<auth(NonFungibleToken.Withdraw) &Market.SaleCollection>?
+        access(self) var marketV1Capability: Capability<auth(Market.Create, NonFungibleToken.Withdraw, Market.Update) &Market.SaleCollection>?
 
         /// Dictionary of the low low prices for each NFT by ID
         access(self) var prices: {UInt64: UFix64}
@@ -104,11 +104,11 @@ access(all) contract TopShotMarketV3 {
         /// For example, if the percentage is 15%, cutPercentage = 0.15
         access(all) var cutPercentage: UFix64
 
-        init (ownerCollection: Capability<auth(NonFungibleToken.Withdraw) &TopShot.Collection>,
+        init (ownerCollection: Capability<auth(NonFungibleToken.Withdraw, NonFungibleToken.Update) &TopShot.Collection>,
               ownerCapability: Capability<&{FungibleToken.Receiver}>,
               beneficiaryCapability: Capability<&{FungibleToken.Receiver}>,
               cutPercentage: UFix64,
-              marketV1Capability: Capability<auth(NonFungibleToken.Withdraw) &Market.SaleCollection>?) {
+              marketV1Capability: Capability<auth(Market.Create, NonFungibleToken.Withdraw, Market.Update) &Market.SaleCollection>?) {
             pre {
                 // Check that the owner's moment collection capability is correct
                 ownerCollection.check(): 
@@ -319,11 +319,11 @@ access(all) contract TopShotMarketV3 {
     }
 
     /// createCollection returns a new collection resource to the caller
-    access(all) fun createSaleCollection(ownerCollection: Capability<auth(NonFungibleToken.Withdraw) &TopShot.Collection>,
+    access(all) fun createSaleCollection(ownerCollection: Capability<auth(NonFungibleToken.Withdraw, NonFungibleToken.Update) &TopShot.Collection>,
                                  ownerCapability: Capability<&{FungibleToken.Receiver}>,
                                  beneficiaryCapability: Capability<&{FungibleToken.Receiver}>,
                                  cutPercentage: UFix64,
-                                 marketV1Capability: Capability<auth(NonFungibleToken.Withdraw) &Market.SaleCollection>?): @SaleCollection {
+                                 marketV1Capability: Capability<auth(Market.Create, NonFungibleToken.Withdraw, Market.Update) &Market.SaleCollection>?): @SaleCollection {
 
         return <- create SaleCollection(ownerCollection: ownerCollection,
                                         ownerCapability: ownerCapability,
