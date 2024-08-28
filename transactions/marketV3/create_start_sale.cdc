@@ -13,14 +13,19 @@ transaction(tokenReceiverPath: PublicPath, beneficiaryAccount: Address, cutPerce
             let ownerCapability = acct.capabilities.get<&{FungibleToken.Receiver}>(tokenReceiverPath)!
             let beneficiaryCapability = getAccount(beneficiaryAccount).capabilities.get<&{FungibleToken.Receiver}>(tokenReceiverPath)!
 
-            let ownerCollection = acct.capabilities.storage.issue<auth(NonFungibleToken.Withdraw) &TopShot.Collection>(/storage/MomentCollection)
-
-            // get a capability for the v1 collection
-            var v1SaleCollection: Capability<auth(NonFungibleToken.Withdraw) &Market.SaleCollection>? = nil
-            if acct.storage.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection) != nil {
-                v1SaleCollection = acct.capabilities.storage.issue<auth(NonFungibleToken.Withdraw) &Market.SaleCollection>(/storage/topshotSaleCollection)
+            let ownerCollection = acct.storage.copy<Capability<auth(NonFungibleToken.Withdraw, NonFungibleToken.Update) &TopShot.Collection>>(/storage/MomentCollectionCap)
+            if ownerCollection == nil {
+                ownerCollection = acct.capabilities.storage.issue<auth(NonFungibleToken.Withdraw, NonFungibleToken.Update) &TopShot.Collection>(/storage/MomentCollection)
+                acct.storage.save(ownerCollection, to: /storage/MomentCollectionCap)
             }
 
+            // get a capability for the v1 collection
+            var v1SaleCollection = acct.storage.copy<Capability<auth(Market.Create, NonFungibleToken.Withdraw, Market.Update) &Market.SaleCollection>>(/storage/topshotSaleCollectionCap)
+            if v1SaleCollection == nil {
+                v1SaleCollection = acct.capabilities.storage.issue<auth(NonFungibleToken.Withdraw, NonFungibleToken.Update) &TopShot.Collection>(/storage/topshotSaleCollection)
+                acct.storage.save(v1SaleCollection, to: /storage/topshotSaleCollectionCap)
+            }		
+            
             // create a new sale collection
             let topshotSaleCollection <- TopShotMarketV3.createSaleCollection(ownerCollection: ownerCollection,
                                                                              ownerCapability: ownerCapability,
