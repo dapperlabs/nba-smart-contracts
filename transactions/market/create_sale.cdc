@@ -1,4 +1,5 @@
 import Market from 0xMARKETADDRESS
+import FungibleToken from 0xFUNGIBLETOKENADDRESS
 
 // This transaction creates a public sale collection capability that any user can interact with
 
@@ -10,16 +11,18 @@ import Market from 0xMARKETADDRESS
 
 transaction(tokenReceiverPath: PublicPath, beneficiaryAccount: Address, cutPercentage: UFix64) {
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(Storage, Capabilities) &Account) {
         
-        let ownerCapability = acct.getCapability(tokenReceiverPath)
+        let ownerCapability = acct.capabilities.get<&{FungibleToken.Receiver}>(tokenReceiverPath)!
 
-        let beneficiaryCapability = getAccount(beneficiaryAccount).getCapability(tokenReceiverPath)
+        let beneficiaryCapability = getAccount(beneficiaryAccount).capabilities.get<&{FungibleToken.Receiver}>(tokenReceiverPath)!
 
         let collection <- Market.createSaleCollection(ownerCapability: ownerCapability, beneficiaryCapability: beneficiaryCapability, cutPercentage: cutPercentage)
         
-        acct.save(<-collection, to: /storage/topshotSaleCollection)
-        
-        acct.link<&Market.SaleCollection{Market.SalePublic}>(/public/topshotSaleCollection, target: /storage/topshotSaleCollection)
+        acct.storage.save(<-collection, to: /storage/topshotSaleCollection)
+        acct.capabilities.publish(
+            acct.capabilities.storage.issue<&Market.SaleCollection>(/storage/topshotSaleCollection),
+            at: /public/topshotSaleCollection
+        )
     }
 }

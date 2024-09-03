@@ -16,26 +16,26 @@ func TestCadenceEvents_Withdraw(t *testing.T) {
 	address := flow.HexToAddress("0x12345678")
 	from := [8]byte(address)
 
-	withdrawEventType := cadence.EventType{
-		Location:            utils.TestLocation,
-		QualifiedIdentifier: "TopShot.Withdraw",
-		Fields: []cadence.Field{
+	withdrawEventType := cadence.NewEventType(
+		utils.TestLocation,
+		"TopShot.Withdraw",
+		[]cadence.Field{
 			{
 				Identifier: "id",
-				Type:       cadence.UInt64Type{},
+				Type:       cadence.UInt64Type,
 			},
 			{
 				Identifier: "from",
-				Type:       cadence.OptionalType{},
+				Type:       &cadence.OptionalType{},
 			},
 		},
-		Initializer: []cadence.Parameter{},
-	}
+		nil,
+	)
 
 	withdrawEvent := cadence.NewEvent([]cadence.Value{
 		cadence.NewUInt64(id),
 		cadence.NewOptional(cadence.NewAddress(from)),
-	}).WithType(&withdrawEventType)
+	}).WithType(withdrawEventType)
 
 	payload, err := jsoncdc.Encode(withdrawEvent)
 	require.NoError(t, err, "failed to encode withdraw cadence event")

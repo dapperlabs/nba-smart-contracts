@@ -21,25 +21,25 @@ func TestCadenceEvents_SubeditionCreated(t *testing.T) {
 		playValue = "1234"
 	)
 
-	playCreatedEventType := cadence.EventType{
-		Location:            utils.TestLocation,
-		QualifiedIdentifier: "TopShot.SubeditionCreated",
-		Fields: []cadence.Field{
+	subeditionCreatedEventType := cadence.NewEventType(
+		utils.TestLocation,
+		"TopShot.SubeditionCreated",
+		[]cadence.Field{
 			{
-				Identifier: "subeditionId",
-				Type:       cadence.UInt32Type{},
+				Identifier: "subeditionID",
+				Type:       cadence.UInt32Type,
 			},
 			{
 				Identifier: "name",
-				Type:       cadence.StringType{},
+				Type:       cadence.StringType,
 			},
 			{
 				Identifier: "metadata",
-				Type:       cadence.DictionaryType{},
+				Type:       &cadence.DictionaryType{},
 			},
 		},
-		Initializer: []cadence.Parameter{},
-	}
+		nil,
+	)
 
 	subeditionCreatedEvent := cadence.NewEvent([]cadence.Value{
 		cadence.NewUInt32(id),
@@ -48,7 +48,7 @@ func TestCadenceEvents_SubeditionCreated(t *testing.T) {
 			{Key: NewCadenceString(setKey), Value: NewCadenceString(setValue)},
 			{Key: NewCadenceString(playKey), Value: NewCadenceString(playValue)},
 		}),
-	}).WithType(&playCreatedEventType)
+	}).WithType(subeditionCreatedEventType)
 
 	payload, err := jsoncdc.Encode(subeditionCreatedEvent)
 	require.NoError(t, err, "failed to encode play created cadence event")
@@ -58,7 +58,7 @@ func TestCadenceEvents_SubeditionCreated(t *testing.T) {
 
 	assert.Equal(t, id, decodedSubeditionCreatedEventType.SubeditionId())
 	assert.Equal(t, name, decodedSubeditionCreatedEventType.Name())
-	assert.Equal(t, map[interface{}]interface{}{
+	assert.Equal(t, map[string]interface{}{
 		setKey:  setValue,
 		playKey: playValue,
 	}, decodedSubeditionCreatedEventType.MetaData())

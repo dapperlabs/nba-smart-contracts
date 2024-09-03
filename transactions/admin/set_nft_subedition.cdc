@@ -12,9 +12,9 @@ transaction(nftID: UInt64, subeditionID: UInt32, setID: UInt32, playID: UInt32) 
     // Local variable for the topshot Admin object
     let adminRef: &TopShot.Admin
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
         // borrow a reference to the admin resource
-        self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+        self.adminRef = acct.storage.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("No admin resource in storage")
     }
 

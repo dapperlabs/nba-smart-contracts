@@ -13,20 +13,21 @@ import (
 func TestCadenceEvents_SetLocked(t *testing.T) {
 	setID := uint32(1234)
 
-	setLockedEventType := cadence.EventType{
-		Location:            utils.TestLocation,
-		QualifiedIdentifier: "TopShot.SetLocked",
-		Fields: []cadence.Field{
+	setLockedEventType := cadence.NewEventType(
+		utils.TestLocation,
+		"TopShot.SetLocked",
+		[]cadence.Field{
 			{
 				Identifier: "setID",
-				Type:       cadence.UInt32Type{},
+				Type:       cadence.UInt32Type,
 			},
 		},
-	}
+		nil,
+	)
 
 	setLockedEvent := cadence.NewEvent([]cadence.Value{
 		cadence.NewUInt32(setID),
-	}).WithType(&setLockedEventType)
+	}).WithType(setLockedEventType)
 
 	payload, err := jsoncdc.Encode(setLockedEvent)
 	require.NoError(t, err, "failed to encode set locked cadence event")

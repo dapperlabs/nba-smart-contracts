@@ -12,12 +12,11 @@ import TopShot from 0xTOPSHOTADDRESS
 // Returns: [UInt64]
 // list of all moments' ids an account owns
 
-pub fun main(account: Address): [UInt64] {
+access(all) fun main(account: Address): [UInt64] {
 
     let acct = getAccount(account)
 
-    let collectionRef = acct.getCapability(/public/MomentCollection)
-                            .borrow<&{TopShot.MomentCollectionPublic}>()!
+    let collectionRef = acct.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)!
 
     log(collectionRef.getIDs())
 

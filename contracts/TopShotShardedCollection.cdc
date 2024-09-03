@@ -37,19 +37,28 @@
 
 import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
+import ViewResolver   from 0xVIEWRESOLVERADDRESS
 
-pub contract TopShotShardedCollection {
+access(all) contract TopShotShardedCollection {
 
     // ShardedCollection stores a dictionary of TopShot Collections
     // A Moment is stored in the field that corresponds to its id % numBuckets
-    pub resource ShardedCollection: TopShot.MomentCollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic { 
+    access(all) resource ShardedCollection: TopShot.MomentCollectionPublic, NonFungibleToken.CollectionPublic, NonFungibleToken.Provider, NonFungibleToken.Receiver {
         
         // Dictionary of topshot collections
-        pub var collections: @{UInt64: TopShot.Collection}
+        access(contract) var collections: @{UInt64: TopShot.Collection}
 
         // The number of buckets to split Moments into
         // This makes storage more efficient and performant
-        pub let numBuckets: UInt64
+        access(all) let numBuckets: UInt64
+
+        access(all) fun forEachID(_ f: fun (UInt64): Bool): Void {
+            for key in self.collections.keys {
+                 let col = &self.collections[key] as &TopShot.Collection?
+                 col?.forEachID(f)
+            }
+        }
+
 
         init(numBuckets: UInt64) {
             self.collections <- {}
@@ -59,7 +68,7 @@ pub contract TopShotShardedCollection {
             var i: UInt64 = 0
             while i < numBuckets {
 
-                self.collections[i] <-! TopShot.createEmptyCollection() as! @TopShot.Collection
+                self.collections[i] <-! TopShot.createEmptyCollection(nftType: Type<@TopShot.NFT>()) as! @TopShot.Collection
 
                 i = i + UInt64(1)
             }
@@ -67,7 +76,7 @@ pub contract TopShotShardedCollection {
 
         // withdraw removes a Moment from one of the Collections 
         // and moves it to the caller
-        pub fun withdraw(withdrawID: UInt64): @NonFungibleToken.NFT {
+        access(NonFungibleToken.Withdraw) fun withdraw(withdrawID: UInt64): @{NonFungibleToken.NFT} {
             post {
                 result.id == withdrawID: "The ID of the withdrawn NFT is incorrect"
             }
@@ -86,8 +95,8 @@ pub contract TopShotShardedCollection {
         //
         // Returns: @NonFungibleToken.Collection a Collection containing the moments
         //          that were withdrawn
-        pub fun batchWithdraw(ids: [UInt64]): @NonFungibleToken.Collection {
-            var batchCollection <- TopShot.createEmptyCollection()
+        access(NonFungibleToken.Withdraw) fun batchWithdraw(ids: [UInt64]): @{NonFungibleToken.Collection} {
+            var batchCollection <- TopShot.createEmptyCollection(nftType: Type<@TopShot.NFT>())
             
             // Iterate through the ids and withdraw them from the Collection
             for id in ids {
@@ -97,7 +106,7 @@ pub contract TopShotShardedCollection {
         }
 
         // deposit takes a Moment and adds it to the Collections dictionary
-        pub fun deposit(token: @NonFungibleToken.NFT) {
+        access(all) fun deposit(token: @{NonFungibleToken.NFT}) {
 
             // Find the bucket this corresponds to
             let bucket = token.id % self.numBuckets
@@ -110,7 +119,7 @@ pub contract TopShotShardedCollection {
 
         // batchDeposit takes a Collection object as an argument
         // and deposits each contained NFT into this Collection
-        pub fun batchDeposit(tokens: @NonFungibleToken.Collection) {
+        access(all) fun batchDeposit(tokens: @{NonFungibleToken.Collection}) {
             let keys = tokens.getIDs()
 
             // Iterate through the keys in the Collection and deposit each one
@@ -121,45 +130,25 @@ pub contract TopShotShardedCollection {
         }
 
         // getIDs returns an array of the IDs that are in the Collection
-        pub fun getIDs(): [UInt64] {
-
+        access(all) view fun getIDs(): [UInt64] {
             var ids: [UInt64] = []
             // Concatenate IDs in all the Collections
             for key in self.collections.keys {
-                for id in self.collections[key]?.getIDs() ?? [] {
-                    ids.append(id)
-                }
+                let collectionIDs = self.collections[key]?.getIDs() ?? []
+                ids = ids.concat(collectionIDs)
             }
             return ids
         }
 
-        // Safe way to borrow a reference to an NFT that does not panic
-        // Also now part of the NonFungibleToken.CollectionPublic interface
-        //
-        // Parameters: id: The ID of the NFT to get the reference for
-        //
-        // Returns: An optional reference to the desired NFT, will be nil if the passed ID does not exist
-        pub fun borrowNFTSafe(id: UInt64): &NonFungibleToken.NFT? {
-
-            // Get the bucket of the nft to be borrowed
-            let bucket = id % self.numBuckets
-
-            // Find NFT in the collections and borrow a reference
-            return self.collections[bucket]?.borrowNFTSafe(id: id) ?? nil
-        }
-
         // borrowNFT Returns a borrowed reference to a Moment in the Collection
         // so that the caller can read data and call methods from it
-        pub fun borrowNFT(id: UInt64): &NonFungibleToken.NFT {
-            post {
-                result.id == id: "The ID of the reference is incorrect"
-            }
+        access(all) view fun borrowNFT(_ id: UInt64): &{NonFungibleToken.NFT}? {
 
             // Get the bucket of the nft to be borrowed
             let bucket = id % self.numBuckets
 
             // Find NFT in the collections and borrow a reference
-            return self.collections[bucket]?.borrowNFT(id: id)!
+            return self.collections[bucket]?.borrowNFT(id)!
         }
 
         // borrowMoment Returns a borrowed reference to a Moment in the Collection
@@ -172,23 +161,39 @@ pub contract TopShotShardedCollection {
         // Parameters: id: The ID of the NFT to get the reference for
         //
         // Returns: A reference to the NFT
-        pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
+        access(all) view fun borrowMoment(id: UInt64): &TopShot.NFT? {
 
             // Get the bucket of the nft to be borrowed
             let bucket = id % self.numBuckets
 
-            return self.collections[bucket]?.borrowMoment(id: id) ?? nil
+            return self.collections[bucket]?.borrowMoment(id: id)!
         }
 
-        // If a transaction destroys the Collection object,
-        // All the NFTs contained within are also destroyed
-        destroy() {
-            destroy self.collections
+        // Return a list of NFT types that this receiver accepts
+        access(all) view fun getSupportedNFTTypes(): {Type: Bool} {
+            let supportedTypes: {Type: Bool} = {}
+            supportedTypes[Type<@TopShot.NFT>()] = true
+            return supportedTypes
         }
+
+        // Return whether or not the given type is accepted by the collection
+        // A collection that can accept any type should just return true by default
+        access(all) view fun isSupportedNFTType(type: Type): Bool {
+            if type == Type<@TopShot.NFT>() {
+                return true
+            }
+            return false
+        }
+
+        // Return the amount of NFTs stored in the collection
+        access(all) view fun getLength(): Int {
+            return self.getIDs().length
+        }
+
     }
 
     // Creates an empty ShardedCollection and returns it to the caller
-    pub fun createEmptyCollection(numBuckets: UInt64): @ShardedCollection {
+    access(all) fun createEmptyCollection(numBuckets: UInt64): @ShardedCollection {
         return <-create ShardedCollection(numBuckets: numBuckets)
     }
 }

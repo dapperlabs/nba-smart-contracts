@@ -17,26 +17,26 @@ func TestCadenceEvents_SubeditionAddedToMoment(t *testing.T) {
 		momentID     = uint64(1234)
 	)
 
-	playCreatedEventType := cadence.EventType{
-		Location:            utils.TestLocation,
-		QualifiedIdentifier: "TopShot.SubeditionAddedToMoment",
-		Fields: []cadence.Field{
+	subeditionAddedToMomentEventType := cadence.NewEventType(
+		utils.TestLocation,
+		"TopShot.SubeditionAddedToMoment",
+		[]cadence.Field{
 			{
 				Identifier: "momentID",
-				Type:       cadence.UInt64Type{},
+				Type:       cadence.UInt64Type,
 			},
 			{
 				Identifier: "subeditionID",
-				Type:       cadence.UInt32Type{},
+				Type:       cadence.UInt32Type,
 			},
 		},
-		Initializer: []cadence.Parameter{},
-	}
+		nil,
+	)
 
 	subeditionAddedToMomentEvent := cadence.NewEvent([]cadence.Value{
 		cadence.NewUInt64(momentID),
 		cadence.NewUInt32(subeditionID),
-	}).WithType(&playCreatedEventType)
+	}).WithType(subeditionAddedToMomentEventType)
 
 	payload, err := jsoncdc.Encode(subeditionAddedToMomentEvent)
 	require.NoError(t, err, "failed to encode subedition added to moment cadence event")

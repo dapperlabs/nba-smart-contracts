@@ -1,18 +1,13 @@
-import TopShot from 0xTOPSHOTADDRESS
-import NonFungibleToken from 0xNFTADDRESS
-import PackNFT from 0xPACKNFTADDRESS
-import MetadataViews from 0xMETADATAVIEWSADDRESS
+import NonFungibleToken from "NonFungibleToken"
+import PackNFT from "PackNFT"
+import TopShot from "TopShot"
 
-// Check to see if an account looks like it has been set up to hold Pinnacle NFTs and PackNFTs.
-pub fun main(address: Address): Bool {
+/// Check if an account has been set up to hold Pinnacle NFTs.
+///
+access(all) fun main(address: Address): Bool {
     let account = getAccount(address)
-    return account.getCapability<&{
-            NonFungibleToken.Receiver,
-            NonFungibleToken.CollectionPublic,
-            TopShot.MomentCollectionPublic,
-            MetadataViews.ResolverCollection
-        }>(/public/MomentCollection).check() &&
-        account.getCapability<&{
-            NonFungibleToken.CollectionPublic
-        }>(PackNFT.CollectionPublicPath).check()
+    return account.capabilities.borrow<
+        &TopShot.Collection>(/public/MomentCollection) != nil &&
+        account.capabilities.borrow<
+        &PackNFT.Collection>(PackNFT.CollectionPublicPath) != nil
 }

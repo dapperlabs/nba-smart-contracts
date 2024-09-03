@@ -2,12 +2,10 @@ package events
 
 import (
 	"fmt"
-
-	"github.com/onflow/cadence"
-	jsoncdc "github.com/onflow/cadence/encoding/json"
+	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
-var (
+const (
 	EventPlayRetiredFromSet = "TopShot.PlayRetiredFromSet"
 )
 
@@ -17,38 +15,31 @@ type SetPlayRetiredEvent interface {
 	NumMoments() uint32
 }
 
-type setPlayRetiredEvent cadence.Event
+type setPlayRetiredEvent map[string]any
 
 func (evt setPlayRetiredEvent) SetID() uint32 {
-	return uint32(evt.Fields[0].(cadence.UInt32))
+	return evt["setID"].(uint32)
 }
 
 func (evt setPlayRetiredEvent) PlayID() uint32 {
-	return uint32(evt.Fields[1].(cadence.UInt32))
+	return evt["playID"].(uint32)
 }
 
 func (evt setPlayRetiredEvent) NumMoments() uint32 {
-	return uint32(evt.Fields[2].(cadence.UInt32))
-}
-
-func (evt setPlayRetiredEvent) validate() error {
-	if evt.EventType.QualifiedIdentifier != EventPlayRetiredFromSet {
-		return fmt.Errorf("error validating event: event is not a valid play retired from set event, expected type %s, got %s",
-			EventPlayRetiredFromSet, evt.EventType.QualifiedIdentifier)
-	}
-	return nil
+	return evt["numMoments"].(uint32)
 }
 
 var _ SetPlayRetiredEvent = (*setPlayRetiredEvent)(nil)
 
 func DecodeSetPlayRetiredEvent(b []byte) (SetPlayRetiredEvent, error) {
-	value, err := jsoncdc.Decode(nil, b)
+	cadenceValue, err := decoder.GetCadenceEvent(b)
 	if err != nil {
 		return nil, err
 	}
-	event := setPlayRetiredEvent(value.(cadence.Event))
-	if err := event.validate(); err != nil {
-		return nil, fmt.Errorf("error decoding event: %w", err)
+	if cadenceValue.EventType.QualifiedIdentifier != EventPlayRetiredFromSet {
+		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
 	}
+	eventMap, err := decoder.ConvertEvent(cadenceValue)
+	event := setPlayRetiredEvent(eventMap)
 	return event, nil
 }

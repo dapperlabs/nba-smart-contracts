@@ -303,9 +303,6 @@ is a list of events that can be emitted, and what each event means.
 You can find definitions for interpreting these events in Go by seeing
 the `lib/go/events` package.
     
-- `pub event ContractInitialized()`
-    
-    This event is emitted when the `TopShot` contract is created.
 
 #### Events for plays
 - `pub event PlayCreated(id: UInt32, metadata: {String:String})`

@@ -14,10 +14,10 @@ transaction(plays: {UInt32: String}) {
     let firstKey: UInt32
     let lastKey: UInt32
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
 
         // borrow a reference to the admin resource
-        self.adminRef = acct.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
+        self.adminRef = acct.storage.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("No admin resource in storage")
         self.firstKey = plays.keys[0]
         self.lastKey = plays.keys[plays.keys.length - 1]

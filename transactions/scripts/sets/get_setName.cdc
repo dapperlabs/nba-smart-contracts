@@ -9,7 +9,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // Returns: String
 // Name of set with specified setID
 
-pub fun main(setID: UInt32): String {
+access(all) fun main(setID: UInt32): String {
 
     let name = TopShot.getSetName(setID: setID)
         ?? panic("Could not find the specified set")

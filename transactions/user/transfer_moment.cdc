@@ -17,12 +17,12 @@ import TopShot from 0xTOPSHOTADDRESS
 transaction(recipient: Address, withdrawID: UInt64) {
 
     // local variable for storing the transferred token
-    let transferToken: @NonFungibleToken.NFT
+    let transferToken: @{NonFungibleToken.NFT}
     
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
 
         // borrow a reference to the owner's collection
-        let collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
+        let collectionRef = acct.storage.borrow<auth(NonFungibleToken.Withdraw) &TopShot.Collection>(from: /storage/MomentCollection)
             ?? panic("Could not borrow a reference to the stored Moment collection")
         
         // withdraw the NFT
@@ -35,7 +35,7 @@ transaction(recipient: Address, withdrawID: UInt64) {
         let recipient = getAccount(recipient)
 
         // get the Collection reference for the receiver
-        let receiverRef = recipient.getCapability(/public/MomentCollection).borrow<&{TopShot.MomentCollectionPublic}>()!
+        let receiverRef = recipient.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)!
 
         // deposit the NFT in the receivers collection
         receiverRef.deposit(token: <-self.transferToken)

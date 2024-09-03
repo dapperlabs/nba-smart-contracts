@@ -13,20 +13,19 @@ import NonFungibleToken from 0xNFTADDRESS
 
 transaction(numBuckets: UInt64) {
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(Storage, Capabilities) &Account) {
 
-        if acct.borrow<&TopShotShardedCollection.ShardedCollection>(from: /storage/ShardedMomentCollection) == nil {
+        if acct.storage.borrow<&TopShotShardedCollection.ShardedCollection>(from: /storage/ShardedMomentCollection) == nil {
 
             let collection <- TopShotShardedCollection.createEmptyCollection(numBuckets: numBuckets)
             // Put a new Collection in storage
-            acct.save(<-collection, to: /storage/ShardedMomentCollection)
+            acct.storage.save(<-collection, to: /storage/ShardedMomentCollection)
 
-            // create a public capability for the collection
-            if acct.link<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection, target: /storage/ShardedMomentCollection) == nil {
-                acct.unlink(/public/MomentCollection)
-            }
-
-            acct.link<&{NonFungibleToken.Receiver, NonFungibleToken.CollectionPublic, TopShot.MomentCollectionPublic}>(/public/MomentCollection, target: /storage/ShardedMomentCollection)
+            acct.capabilities.unpublish(/public/MomentCollection)
+            acct.capabilities.publish(
+                acct.capabilities.storage.issue<&TopShotShardedCollection.ShardedCollection>(/storage/ShardedMomentCollection),
+                at: /public/MomentCollection
+            )
         } else {
 
             panic("Sharded Collection already exists!")

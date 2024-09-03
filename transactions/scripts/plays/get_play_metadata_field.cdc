@@ -11,7 +11,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // Returns: String
 // Value of specified metadata field associated with specified playID
 
-pub fun main(playID: UInt32, field: String): String {
+access(all) fun main(playID: UInt32, field: String): String {
 
     let field = TopShot.getPlayMetaDataByField(playID: playID, field: field) ?? panic("Play doesn't exist")
 

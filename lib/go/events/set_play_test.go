@@ -10,31 +10,30 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 func TestCadenceEvents_PlayAddedToSet(t *testing.T) {
 	setID := uint32(1234)
 	playID := uint32(1234)
 
-	playAddedToSetEventType := cadence.EventType{
-		Location:            utils.TestLocation,
-		QualifiedIdentifier: "TopShot.PlayAddedToSet",
-		Fields: []cadence.Field{
+	playAddedToSetEventType := cadence.NewEventType(
+		utils.TestLocation,
+		"TopShot.PlayAddedToSet",
+		[]cadence.Field{
 			{
-				Identifier: "setId",
-				Type:       cadence.UInt32Type{},
+				Identifier: "setID",
+				Type:       cadence.UInt32Type,
 			},
 			{
-				Identifier: "playId",
-				Type:       cadence.UInt32Type{},
+				Identifier: "playID",
+				Type:       cadence.UInt32Type,
 			},
 		},
-		Initializer: []cadence.Parameter{},
-	}
+		nil,
+	)
 
 	playAddedToSetEvent := cadence.NewEvent([]cadence.Value{
 		cadence.NewUInt32(setID),
 		cadence.NewUInt32(playID),
-	}).WithType(&playAddedToSetEventType)
+	}).WithType(playAddedToSetEventType)
 
 	payload, err := jsoncdc.Encode(playAddedToSetEvent)
 	require.NoError(t, err, "failed to encode play added to set cadence event")

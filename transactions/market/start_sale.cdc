@@ -1,5 +1,6 @@
 import TopShot from 0xTOPSHOTADDRESS
 import Market from 0xMARKETADDRESS
+import NonFungibleToken from 0xNFTADDRESS
 
 // This transaction is for a user to put a new moment up for sale
 // They must have TopShot Collection and a Market Sale Collection
@@ -12,17 +13,17 @@ import Market from 0xMARKETADDRESS
 
 transaction(momentID: UInt64, price: UFix64) {
 
-    let collectionRef: &TopShot.Collection
-    let saleCollectionRef: &Market.SaleCollection
+    let collectionRef: auth(NonFungibleToken.Withdraw) &TopShot.Collection
+    let saleCollectionRef: auth(Market.Create) &Market.SaleCollection
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(Storage, Capabilities) &Account) {
 
         // borrow a reference to the Top Shot Collection
-        self.collectionRef = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
+        self.collectionRef = acct.storage.borrow<auth(NonFungibleToken.Withdraw) &TopShot.Collection>(from: /storage/MomentCollection)
             ?? panic("Could not borrow from MomentCollection in storage")
 
         // borrow a reference to the topshot Sale Collection
-        self.saleCollectionRef = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+        self.saleCollectionRef = acct.storage.borrow<auth(Market.Create) &Market.SaleCollection>(from: /storage/topshotSaleCollection)
             ?? panic("Could not borrow from sale in storage")
     }
 

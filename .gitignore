@@ -2,3 +2,5 @@
 flow.json
 /imports
 .vscode
+.env
+**/vendor/

@@ -18,12 +18,12 @@ var addrG = "0G"
 var network = "mainnet"
 
 func TestTopShotContract(t *testing.T) {
-	contract := contracts.GenerateTopShotContract(addrA, addrA, addrA, addrA, addrA, network)
+	contract := contracts.GenerateTopShotContract(addrA, addrA, addrA, addrA, addrA, addrA, network)
 	assert.NotNil(t, contract)
 }
 
 func TestTopShotShardedCollectionContract(t *testing.T) {
-	contract := contracts.GenerateTopShotShardedCollectionContract(addrA, addrB)
+	contract := contracts.GenerateTopShotShardedCollectionContract(addrA, addrB, addrC)
 	assert.NotNil(t, contract)
 	assert.Contains(t, string(contract), addrA)
 }
@@ -47,7 +47,7 @@ func TestTopShotMarketV3Contract(t *testing.T) {
 }
 
 func TestFastBreakContract(t *testing.T) {
-	contract := contracts.GenerateFastBreakContract(addrA, addrB)
+	contract := contracts.GenerateFastBreakContract(addrA, addrB, addrC)
 	assert.NotNil(t, contract)
 	assert.Contains(t, string(contract), addrA)
 	assert.Contains(t, string(contract), addrB)

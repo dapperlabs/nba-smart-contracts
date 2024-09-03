@@ -6,7 +6,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // Returns: [TopShot.Play]
 // array of all plays created for Topshot
 
-pub fun main(): [TopShot.Subedition] {
+access(all) fun main(): &[TopShot.Subedition] {
 
     return TopShot.getAllSubeditions()
 }

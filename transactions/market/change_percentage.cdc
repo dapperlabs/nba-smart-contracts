@@ -9,12 +9,12 @@ import Market from 0xMARKETADDRESS
 transaction(newPercentage: UFix64) {
 
     // Local variable for the account's topshot sale collection
-    let topshotSaleCollectionRef: &Market.SaleCollection
+    let topshotSaleCollectionRef: auth(Market.Update) &Market.SaleCollection
 
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(Storage, Capabilities) &Account) {
 
         // borrow a reference to the owner's sale collection
-        self.topshotSaleCollectionRef = acct.borrow<&Market.SaleCollection>(from: /storage/topshotSaleCollection)
+        self.topshotSaleCollectionRef = acct.storage.borrow<auth(Market.Update) &Market.SaleCollection>(from: /storage/topshotSaleCollection)
             ?? panic("Could not borrow from sale in storage")
     }
 

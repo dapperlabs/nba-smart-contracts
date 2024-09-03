@@ -11,10 +11,9 @@ import Market from 0xMARKETADDRESS
 // Returns: UInt32
 // The setID of moment with specified ID
 
-pub fun main(sellerAddress: Address, momentID: UInt64): UInt32 {
+access(all) fun main(sellerAddress: Address, momentID: UInt64): UInt32 {
 
-    let saleRef = getAccount(sellerAddress).getCapability(/public/topshotSaleCollection)
-        .borrow<&{Market.SalePublic}>()
+    let saleRef =  getAccount(sellerAddress).capabilities.borrow<&Market.SaleCollection>(/public/topshotSaleCollection)
         ?? panic("Could not get public sale reference")
 
     let token = saleRef.borrowMoment(id: momentID)

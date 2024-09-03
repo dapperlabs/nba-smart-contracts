@@ -12,11 +12,10 @@ import TopShot from 0xTOPSHOTADDRESS
 // Returns: UInt32
 // The setID associated with a moment with a specified ID
 
-pub fun main(account: Address, id: UInt64): UInt32 {
+access(all) fun main(account: Address, id: UInt64): UInt32 {
 
     // borrow a public reference to the owner's moment collection 
-    let collectionRef = getAccount(account).getCapability(/public/MomentCollection)
-        .borrow<&{TopShot.MomentCollectionPublic}>()
+    let collectionRef = getAccount(account).capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
         ?? panic("Could not get public moment collection reference")
 
     // borrow a reference to the specified moment in the collection

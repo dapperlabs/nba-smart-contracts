@@ -1,10 +1,13 @@
 package test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/onflow/cadence"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
+	"github.com/onflow/flow-emulator/adapters"
+	"github.com/rs/zerolog"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
 
@@ -25,7 +28,9 @@ func TestSubeditions(t *testing.T) {
 
 	// Create a new user account
 	joshAccountKey, joshSigner := accountKeys.NewWithSigner()
-	joshAddress, _ := b.CreateAccount([]*flow.AccountKey{joshAccountKey}, nil)
+	logger := zerolog.Nop()
+	adapter := adapters.NewSDKAdapter(&logger, b)
+	joshAddress, _ := adapter.CreateAccount(context.Background(), []*flow.AccountKey{joshAccountKey}, nil)
 
 	firstName := CadenceString("FullName")
 
@@ -279,13 +284,14 @@ func TestSubeditions(t *testing.T) {
 
 		result = executeScriptAndCheck(t, b, templates.GenerateGetSubeditionByIDScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1))})
 
-		metadataFields := result.(cadence.Struct).Fields
+		subEditionMetadata := result.(cadence.Struct)
 
 		metadata = []cadence.KeyValuePair{{Key: playIDString, Value: value1}, {Key: setIDString, Value: value1}}
 		subeditionMetadata = CadenceStringDictionary(metadata)
-		assert.Equal(t, cadence.NewUInt32(1), metadataFields[0])
-		assert.Equal(t, subedition111Name, metadataFields[1])
-		assert.Equal(t, subeditionMetadata, metadataFields[2])
+
+		assert.Equal(t, cadence.NewUInt32(1), cadence.SearchFieldByName(subEditionMetadata, "subeditionID"))
+		assert.Equal(t, subedition111Name, cadence.SearchFieldByName(subEditionMetadata, "name"))
+		assert.Equal(t, subeditionMetadata, cadence.SearchFieldByName(subEditionMetadata, "metadata"))
 	})
 
 	t.Run("Should be able to link nft to subedition", func(t *testing.T) {
@@ -367,7 +373,6 @@ func TestSubeditions(t *testing.T) {
 		expectedMetadataExternalURL := "https://nbatopshot.com/moment/1"
 		expectedStoragePath := "/storage/MomentCollection"
 		expectedPublicPath := "/public/MomentCollection"
-		expectedPrivatePath := "/private/MomentCollection"
 		expectedCollectionName := "NBA-Top-Shot"
 		expectedCollectionDescription := "NBA Top Shot is your chance to own, sell, and trade official digital collectibles of the NBA and WNBA's greatest plays and players"
 		expectedCollectionSquareImage := "https://nbatopshot.com/static/img/og/og.png"
@@ -376,22 +381,20 @@ func TestSubeditions(t *testing.T) {
 		expectedTraitsCount := 6
 		expectedVideoURL := "https://assets.nbatopshot.com/media/1/video"
 
-		resultNFT := executeScriptAndCheck(t, b, templates.GenerateGetNFTMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
-		metadataViewNFT := resultNFT.(cadence.Struct)
-		assert.Equal(t, cadence.String(expectedMetadataName), metadataViewNFT.Fields[0])
-		assert.Equal(t, cadence.String(expectedMetadataDescription), metadataViewNFT.Fields[1])
-		assert.Equal(t, cadence.String(expectedMetadataThumbnail), metadataViewNFT.Fields[2])
-		assert.Equal(t, cadence.String(expectedMetadataExternalURL), metadataViewNFT.Fields[5])
-		assert.Equal(t, cadence.String(expectedStoragePath), metadataViewNFT.Fields[6])
-		assert.Equal(t, cadence.String(expectedPublicPath), metadataViewNFT.Fields[7])
-		assert.Equal(t, cadence.String(expectedPrivatePath), metadataViewNFT.Fields[8])
-		assert.Equal(t, cadence.String(expectedCollectionName), metadataViewNFT.Fields[9])
-		assert.Equal(t, cadence.String(expectedCollectionDescription), metadataViewNFT.Fields[10])
-		assert.Equal(t, cadence.String(expectedCollectionSquareImage), metadataViewNFT.Fields[11])
-		assert.Equal(t, cadence.String(expectedCollectionBannerImage), metadataViewNFT.Fields[12])
-		assert.Equal(t, cadence.UInt32(expectedRoyaltyReceiversCount), metadataViewNFT.Fields[13])
-		assert.Equal(t, cadence.UInt32(expectedTraitsCount), metadataViewNFT.Fields[14])
-		assert.Equal(t, cadence.String(expectedVideoURL), metadataViewNFT.Fields[15])
+		mvs := getTopShotMetadata(t, b, env, topshotAddr, 1)
+		assert.Equal(t, expectedMetadataName, mvs.Name)
+		assert.Equal(t, expectedMetadataDescription, mvs.Description)
+		assert.Equal(t, expectedMetadataThumbnail, mvs.Thumbnail)
+		assert.Equal(t, expectedMetadataExternalURL, mvs.ExternalURL)
+		assert.Equal(t, expectedStoragePath, mvs.StoragePath)
+		assert.Equal(t, expectedPublicPath, mvs.PublicPath)
+		assert.Equal(t, expectedCollectionName, mvs.CollectionName)
+		assert.Equal(t, expectedCollectionDescription, mvs.CollectionDescription)
+		assert.Equal(t, expectedCollectionSquareImage, mvs.CollectionSquareImage)
+		assert.Equal(t, expectedCollectionBannerImage, mvs.CollectionBannerImage)
+		assert.Equal(t, uint32(expectedRoyaltyReceiversCount), mvs.RoyaltyReceiversCount)
+		assert.Equal(t, uint32(expectedTraitsCount), mvs.TraitsCount)
+		assert.Equal(t, expectedVideoURL, mvs.VideoURL)
 
 		// Tests that top-shot specific metadata is discoverable on-chain
 		expectedPlayID := 1
@@ -400,9 +403,9 @@ func TestSubeditions(t *testing.T) {
 
 		resultTopShot := executeScriptAndCheck(t, b, templates.GenerateGetTopShotMetadataScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		metadataViewTopShot := resultTopShot.(cadence.Struct)
-		assert.Equal(t, cadence.UInt32(expectedSerialNumber), metadataViewTopShot.Fields[26])
-		assert.Equal(t, cadence.UInt32(expectedPlayID), metadataViewTopShot.Fields[27])
-		assert.Equal(t, cadence.UInt32(expectedSetID), metadataViewTopShot.Fields[28])
+		assert.Equal(t, cadence.UInt32(expectedSerialNumber), cadence.SearchFieldByName(metadataViewTopShot, "serialNumber").(cadence.UInt32))
+		assert.Equal(t, cadence.UInt32(expectedPlayID), cadence.SearchFieldByName(metadataViewTopShot, "playID").(cadence.UInt32))
+		assert.Equal(t, cadence.UInt32(expectedSetID), cadence.SearchFieldByName(metadataViewTopShot, "setID").(cadence.UInt32))
 	})
 
 	// Admin sends a transaction that locks the set

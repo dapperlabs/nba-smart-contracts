@@ -12,9 +12,9 @@ transaction(recipientAddress: Address, momentIDs: [UInt64]) {
 
     let transferTokens: @NonFungibleToken.Collection
     
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
 
-        self.transferTokens <- acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)!.batchWithdraw(ids: momentIDs)
+        self.transferTokens <- acct.storage.borrow<auth(NonFungibleToken.Withdraw) &TopShot.Collection>(from: /storage/MomentCollection)!.batchWithdraw(ids: momentIDs)
     }
 
     execute {
@@ -23,8 +23,8 @@ transaction(recipientAddress: Address, momentIDs: [UInt64]) {
         let recipient = getAccount(recipientAddress)
 
         // get the Collection reference for the receiver
-        let receiverRef = recipient.getCapability(/public/MomentCollection).borrow<&{TopShot.MomentCollectionPublic}>()
-            ?? panic("Could not borrow a reference to the recipients moment receiver")
+        let receiverRef = recipient.capabilities.borrow<&{TopShot.MomentCollectionPublic}>(/public/MomentCollection)
+            ?? panic("Cannot borrow a reference to the recipient's collection")
 
         // deposit the NFT in the receivers collection
         receiverRef.batchDeposit(token: <-self.transferTokens)

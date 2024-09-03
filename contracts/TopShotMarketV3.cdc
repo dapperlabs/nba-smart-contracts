@@ -43,26 +43,30 @@ import DapperUtilityCoin from 0xDUCADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 
-pub contract TopShotMarketV3 {
+access(all) contract TopShotMarketV3 {
+
+    access(all) entitlement Create
+    access(all) entitlement Cancel
+    access(all) entitlement Update
 
     // -----------------------------------------------------------------------
     // TopShot Market contract Event definitions
     // -----------------------------------------------------------------------
 
     /// emitted when a TopShot moment is listed for sale
-    pub event MomentListed(id: UInt64, price: UFix64, seller: Address?)
+    access(all) event MomentListed(id: UInt64, price: UFix64, seller: Address?)
     /// emitted when the price of a listed moment has changed
-    pub event MomentPriceChanged(id: UInt64, newPrice: UFix64, seller: Address?)
+    access(all) event MomentPriceChanged(id: UInt64, newPrice: UFix64, seller: Address?)
     /// emitted when a token is purchased from the market
-    pub event MomentPurchased(id: UInt64, price: UFix64, seller: Address?, momentName: String, momentDescription: String, momentThumbnailURL: String)
+    access(all) event MomentPurchased(id: UInt64, price: UFix64, seller: Address?, momentName: String, momentDescription: String, momentThumbnailURL: String)
     /// emitted when a moment has been withdrawn from the sale
-    pub event MomentWithdrawn(id: UInt64, owner: Address?)
+    access(all) event MomentWithdrawn(id: UInt64, owner: Address?)
 
     /// Path where the `SaleCollection` is stored
-    pub let marketStoragePath: StoragePath
+    access(all) let marketStoragePath: StoragePath
 
     /// Path where the public capability for the `SaleCollection` is
-    pub let marketPublicPath: PublicPath
+    access(all) let marketPublicPath: PublicPath
 
     /// SaleCollection
     ///
@@ -76,13 +80,13 @@ pub contract TopShotMarketV3 {
     ///
     /// The seller chooses who the beneficiary is and what percentage
     /// of the tokens gets taken from the purchase
-    pub resource SaleCollection: Market.SalePublic {
+    access(all) resource SaleCollection: Market.SalePublic {
 
         /// A collection of the moments that the user has for sale
-        access(self) var ownerCollection: Capability<&TopShot.Collection>
+        access(self) var ownerCollection: Capability<auth(NonFungibleToken.Withdraw, NonFungibleToken.Update) &TopShot.Collection>
 
         /// Capability to point at the V1 sale collection
-        access(self) var marketV1Capability: Capability<&Market.SaleCollection>?
+        access(self) var marketV1Capability: Capability<auth(Market.Create, NonFungibleToken.Withdraw, Market.Update) &Market.SaleCollection>?
 
         /// Dictionary of the low low prices for each NFT by ID
         access(self) var prices: {UInt64: UFix64}
@@ -98,13 +102,13 @@ pub contract TopShotMarketV3 {
 
         /// The percentage that is taken from every purchase for the beneficiary
         /// For example, if the percentage is 15%, cutPercentage = 0.15
-        pub var cutPercentage: UFix64
+        access(all) var cutPercentage: UFix64
 
-        init (ownerCollection: Capability<&TopShot.Collection>,
+        init (ownerCollection: Capability<auth(NonFungibleToken.Withdraw, NonFungibleToken.Update) &TopShot.Collection>,
               ownerCapability: Capability<&{FungibleToken.Receiver}>,
               beneficiaryCapability: Capability<&{FungibleToken.Receiver}>,
               cutPercentage: UFix64,
-              marketV1Capability: Capability<&Market.SaleCollection>?) {
+              marketV1Capability: Capability<auth(Market.Create, NonFungibleToken.Withdraw, Market.Update) &Market.SaleCollection>?) {
             pre {
                 // Check that the owner's moment collection capability is correct
                 ownerCollection.check(): 
@@ -136,12 +140,12 @@ pub contract TopShotMarketV3 {
         ///
         /// Parameters: tokenID: The id of the NFT to be put up for sale
         ///             price: The price of the NFT
-        pub fun listForSale(tokenID: UInt64, price: UFix64) {
+        access(Create) fun listForSale(tokenID: UInt64, price: UFix64) {
             pre {
                 self.ownerCollection.borrow()!.borrowMoment(id: tokenID) != nil:
                     "Moment does not exist in the owner's collection"
 
-                !TopShotLocking.isLocked(nftRef: self.ownerCollection.borrow()!.borrowNFT(id: tokenID)):
+                !TopShotLocking.isLocked(nftRef: self.ownerCollection.borrow()!.borrowNFT(tokenID)!):
                     "Moment is locked"
             }
 
@@ -155,7 +159,7 @@ pub contract TopShotMarketV3 {
         ///
         /// Parameters: tokenID: the ID of the token to withdraw from the sale
         ///
-        pub fun cancelSale(tokenID: UInt64) {
+        access(Cancel) fun cancelSale(tokenID: UInt64) {
             
             // First check this version of the sale
             if self.prices[tokenID] != nil {
@@ -193,7 +197,7 @@ pub contract TopShotMarketV3 {
         ///             buyTokens: the fungible tokens that are used to buy the NFT
         ///
         /// Returns: @TopShot.NFT: the purchased NFT
-        pub fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
+        access(all) fun purchase(tokenID: UInt64, buyTokens: @DapperUtilityCoin.Vault): @TopShot.NFT {
 
             // First check this sale collection for the NFT
             if self.prices[tokenID] != nil {
@@ -244,7 +248,7 @@ pub contract TopShotMarketV3 {
         ///
         /// Parameters: newOwnerCapability: The new fungible token capability for the account 
         ///                                 who received tokens for purchases
-        pub fun changeOwnerReceiver(_ newOwnerCapability: Capability<&{FungibleToken.Receiver}>) {
+        access(Update) fun changeOwnerReceiver(_ newOwnerCapability: Capability<&{FungibleToken.Receiver}>) {
             pre {
                 newOwnerCapability.borrow() != nil: 
                     "Owner's Receiver Capability is invalid!"
@@ -256,7 +260,7 @@ pub contract TopShotMarketV3 {
         ///
         /// Parameters: newBeneficiaryCapability the new capability for the beneficiary of the cut of the sale
         ///
-        pub fun changeBeneficiaryReceiver(_ newBeneficiaryCapability: Capability<&{FungibleToken.Receiver}>) {
+        access(Update) fun changeBeneficiaryReceiver(_ newBeneficiaryCapability: Capability<&{FungibleToken.Receiver}>) {
             pre {
                 newBeneficiaryCapability.borrow() != nil: 
                     "Beneficiary's Receiver Capability is invalid!" 
@@ -269,7 +273,7 @@ pub contract TopShotMarketV3 {
         /// Parameters: tokenID: The ID of the NFT whose price to get
         ///
         /// Returns: UFix64: The price of the token
-        pub fun getPrice(tokenID: UInt64): UFix64? {
+        access(all) view fun getPrice(tokenID: UInt64): UFix64? {
             if let price = self.prices[tokenID] {
                 return price
             } else if let marketV1 = self.marketV1Capability {
@@ -279,7 +283,7 @@ pub contract TopShotMarketV3 {
         }
 
         /// getIDs returns an array of token IDs that are for sale
-        pub fun getIDs(): [UInt64] {
+        access(all) view fun getIDs(): [UInt64] {
             let v3Keys = self.prices.keys
 
             // Add any V1 SaleCollection IDs if they exist
@@ -299,7 +303,7 @@ pub contract TopShotMarketV3 {
         /// Returns: &TopShot.NFT? Optional reference to a moment for sale 
         ///                        so that the caller can read its data
         ///
-        pub fun borrowMoment(id: UInt64): &TopShot.NFT? {
+        access(all) view fun borrowMoment(id: UInt64): &TopShot.NFT? {
             // first check this collection
             if self.prices[id] != nil {
                 let ref = self.ownerCollection.borrow()!.borrowMoment(id: id)
@@ -315,11 +319,11 @@ pub contract TopShotMarketV3 {
     }
 
     /// createCollection returns a new collection resource to the caller
-    pub fun createSaleCollection(ownerCollection: Capability<&TopShot.Collection>,
+    access(all) fun createSaleCollection(ownerCollection: Capability<auth(NonFungibleToken.Withdraw, NonFungibleToken.Update) &TopShot.Collection>,
                                  ownerCapability: Capability<&{FungibleToken.Receiver}>,
                                  beneficiaryCapability: Capability<&{FungibleToken.Receiver}>,
                                  cutPercentage: UFix64,
-                                 marketV1Capability: Capability<&Market.SaleCollection>?): @SaleCollection {
+                                 marketV1Capability: Capability<auth(Market.Create, NonFungibleToken.Withdraw, Market.Update) &Market.SaleCollection>?): @SaleCollection {
 
         return <- create SaleCollection(ownerCollection: ownerCollection,
                                         ownerCapability: ownerCapability,

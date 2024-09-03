@@ -13,14 +13,14 @@ import TopShotMarketV3 from 0xMARKETV3ADDRESS
 // purchaseAmount: the amount for which the user is paying for the moment; must not be less than the moment's price
 
 transaction(sellerAddress: Address, tokenID: UInt64, purchaseAmount: UFix64) {
-    prepare(acct: AuthAccount) {
+    prepare(acct: auth(BorrowValue) &Account) {
 
         // borrow a reference to the signer's collection
-        let collection = acct.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
+        let collection = acct.storage.borrow<&TopShot.Collection>(from: /storage/MomentCollection)
             ?? panic("Could not borrow reference to the Moment Collection")
 
         // borrow a reference to the signer's fungible token Vault
-        let provider = acct.borrow<&DapperUtilityCoin.Vault{FungibleToken.Provider}>(from: /storage/dapperUtilityCoinVault)!
+        let provider = acct.storage.borrow<auth(FungibleToken.Withdraw) &DapperUtilityCoin.Vault>(from: /storage/dapperUtilityCoinVault)!
         
         // withdraw tokens from the signer's vault
         let tokens <- provider.withdraw(amount: purchaseAmount) as! @DapperUtilityCoin.Vault
@@ -29,8 +29,7 @@ transaction(sellerAddress: Address, tokenID: UInt64, purchaseAmount: UFix64) {
         let seller = getAccount(sellerAddress)
 
         // borrow a public reference to the seller's sale collection
-        let topshotSaleCollection = seller.getCapability(TopShotMarketV3.marketPublicPath)
-            .borrow<&{Market.SalePublic}>()
+        let topshotSaleCollection = seller.capabilities.borrow<&TopShotMarketV3.SaleCollection>(/public/topshotSalev3Collection)
             ?? panic("Could not borrow public sale reference")
     
         // purchase the moment

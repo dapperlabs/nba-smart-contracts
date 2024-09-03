@@ -10,7 +10,7 @@ import TopShot from 0xTOPSHOTADDRESS
 // Returns: Bool
 // Whether specified set is locked
 
-pub fun main(setID: UInt32): Bool {
+access(all) fun main(setID: UInt32): Bool {
 
     let isLocked = TopShot.isSetLocked(setID: setID)
         ?? panic("Could not find the specified set")
