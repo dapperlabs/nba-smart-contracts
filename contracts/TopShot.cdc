@@ -1689,7 +1689,7 @@ access(all) contract TopShot: NonFungibleToken {
                 )
                 let squareImage = MetadataViews.Media(
                     file: MetadataViews.HTTPFile(
-                        url: "https://nbatopshot.com/static/img/og/og.png"
+                        url: "https://nbatopshot.com/static/favicon/favicon.svg"
                     ),
                     mediaType: "image/png"
                 )
