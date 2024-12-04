@@ -956,6 +956,18 @@ access(all) contract FastBreakV1: NonFungibleToken {
 
             }
         }
+
+        /// Convert a private path to a storage path using a "_PrivateCap" suffix convention, used for saving Aggregator and Supplier resources
+        ///
+        access(all) view fun convertPrivateToStoragePath(_ privatePath : PrivatePath) : StoragePath {
+            return StoragePath(identifier: privatePath.toString().replaceAll(of: "private/", with: "").concat("_PrivateCap"))!
+        }
+
+        /// Convert a private path to a storage path using a "_PrivateCap" suffix convention, used for saving Aggregator and Supplier resources
+        ///
+        access(all) view fun getPrivateCapPathFromStoragePath(_ storagePath : StoragePath) : StoragePath {
+            return StoragePath(identifier: storagePath.toString().replaceAll(of: "storage/", with: "").concat("_PrivateCap"))!
+        }
     }
 
     init() {
