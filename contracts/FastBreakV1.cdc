@@ -251,20 +251,12 @@ access(all) contract FastBreakV1: NonFungibleToken {
         /// Submit a Fast Break
         ///
         access(contract) fun submitFastBreak(submission: FastBreakV1.FastBreakSubmission) {
-            pre {
-                FastBreakV1.isValidSubmission(submissionDeadline: self.submissionDeadline) : "Submission missed deadline"
-            }
-
             self.submissions[submission.playerId] = submission
         }
 
         /// Update a Fast Break with new topshot moments
         ///
         access(contract) fun updateFastBreakTopshots(playerId: UInt64, topshotMoments: [UInt64]) {
-            pre {
-                FastBreakV1.isValidSubmission(submissionDeadline: self.submissionDeadline) : "Submission update missed deadline"
-            }
-
             let submission = &self.submissions[playerId] as &FastBreakV1.FastBreakSubmission?
                 ?? panic("Could not find submission for playerId: ".concat(playerId.toString()))
 
@@ -291,12 +283,6 @@ access(all) contract FastBreakV1: NonFungibleToken {
 
             return false
         }
-    }
-
-    /// Validate Fast Break Submission
-    ///
-    access(all) view fun isValidSubmission(submissionDeadline: UInt64): Bool {
-        return submissionDeadline > UInt64(getCurrentBlock().timestamp) 
     }
 
     /// Get a Fast Break Game by Id
@@ -955,18 +941,6 @@ access(all) contract FastBreakV1: NonFungibleToken {
                 )
 
             }
-        }
-
-        /// Convert a private path to a storage path using a "_PrivateCap" suffix convention, used for saving Aggregator and Supplier resources
-        ///
-        access(all) view fun convertPrivateToStoragePath(_ privatePath : PrivatePath) : StoragePath {
-            return StoragePath(identifier: privatePath.toString().replaceAll(of: "private/", with: "").concat("_PrivateCap"))!
-        }
-
-        /// Convert a private path to a storage path using a "_PrivateCap" suffix convention, used for saving Aggregator and Supplier resources
-        ///
-        access(all) view fun getPrivateCapPathFromStoragePath(_ storagePath : StoragePath) : StoragePath {
-            return StoragePath(identifier: storagePath.toString().replaceAll(of: "storage/", with: "").concat("_PrivateCap"))!
         }
     }
 
