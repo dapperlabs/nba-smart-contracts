@@ -296,7 +296,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
     /// Validate Fast Break Submission
     ///
     access(all) view fun isValidSubmission(submissionDeadline: UInt64): Bool {
-        return submissionDeadline > UInt64(getCurrentBlock().timestamp) 
+        return submissionDeadline > UInt64(getCurrentBlock().timestamp) + 60
     }
 
     /// Get a Fast Break Game by Id
