@@ -2,7 +2,7 @@ import NonFungibleToken from "NonFungibleToken"
 import PackNFT from "PackNFT"
 import TopShot from "TopShot"
 
-/// Check if an account has been set up to hold Pinnacle NFTs.
+/// Check if an account has been set up to hold TopShot NFTs.
 ///
 access(all) fun main(address: Address): Bool {
     let account = getAccount(address)
