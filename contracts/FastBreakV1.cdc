@@ -10,10 +10,10 @@
 
 */
 
-import NonFungibleToken from 0x1d7e57aa55817448
-import TopShot from 0x0b2a3299cc857e29
-import MetadataViews from 0x1d7e57aa55817448
-import TopShotMarketV3, Market from 0xc1e4f4f4c4257510
+import NonFungibleToken from 0xNFTADDRESS
+import TopShot from 0xTOPSHOTADDRESS
+import MetadataViews from 0xMETADATAVIEWSADDRESS
+import TopShotMarketV3, Market from 0xMARKETV3ADDRESS
 
 /// Game & Oracle Contract for Fast Break V1
 ///
