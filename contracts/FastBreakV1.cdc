@@ -10,10 +10,10 @@
 
 */
 
-import NonFungibleToken from 0xNFTADDRESS
-import TopShot from 0xTOPSHOTADDRESS
-import MetadataViews from 0xMETADATAVIEWSADDRESS
-import TopShotMarketV3, Market from 0xMARKETV3ADDRESS
+import NonFungibleToken from 0x1d7e57aa55817448
+import TopShot from 0x0b2a3299cc857e29
+import MetadataViews from 0x1d7e57aa55817448
+import TopShotMarketV3, Market from 0xc1e4f4f4c4257510
 
 /// Game & Oracle Contract for Fast Break V1
 ///
@@ -414,7 +414,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
                 FastBreakV1.accountPlayerMapping[ownerAddress] = self.id
             }
 
-           /// Validate Top Shots
+            /// Validate Top Shots
             let acct = getAccount(self.owner?.address!)
             let collectionRef = acct.capabilities.borrow<&TopShot.Collection>(/public/MomentCollection)
                 ?? panic("Player does not have top shot collection")
@@ -496,13 +496,21 @@ access(all) contract FastBreakV1: NonFungibleToken {
             let acct = getAccount(self.owner?.address!)
             let collectionRef = acct.capabilities.borrow<&TopShot.Collection>(/public/MomentCollection)
                 ?? panic("Player does not have top shot collection")
+            let marketV3CollectionRef = acct.capabilities.borrow<&TopShotMarketV3.SaleCollection>(/public/topshotSalev3Collection)
+            let marketV1CollectionRef = acct.capabilities.borrow<&Market.SaleCollection>(/public/topshotSaleCollection)
 
             /// Must own Top Shots to play Fast Break
             /// more efficient to borrow ref than to loop
             ///
             for flowId in topShots {
                 let topShotRef = collectionRef.borrowMoment(id: flowId)
-                    ?? panic("Top shot not owned in collection with flowId: ".concat(flowId.toString()))
+                if topShotRef == nil {
+                    let hasMarketPlaceV3 = marketV3CollectionRef != nil && marketV3CollectionRef!.borrowMoment(id: flowId) != nil
+                    let hasMarketV1 = marketV1CollectionRef != nil && marketV1CollectionRef!.borrowMoment(id: flowId) != nil
+                    if !hasMarketPlaceV3 && !hasMarketV1{
+                        panic("Top shot not owned in any collection with flowId: ".concat(flowId.toString()))
+                    }
+                }
             }
 
             let fastBreakGame = (&FastBreakV1.fastBreakGameByID[fastBreakGameID] as &FastBreakV1.FastBreakGame?)
