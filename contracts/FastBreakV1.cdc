@@ -427,10 +427,10 @@ access(all) contract FastBreakV1: NonFungibleToken {
             for flowId in topShots {
                 let topShotRef = collectionRef.borrowMoment(id: flowId)
                 if topShotRef == nil {
-                    let hasMarketPlaceV3 = marketV3CollectionRef != nil && marketV3CollectionRef.borrowMoment(id: flowId) != nil
-                    let hasMartketV1 = marketV1CollectionRef != nil && marketV1CollectionRef.borrowMoment(id: flowId)
-                    if !hasMarketPlaceV3 && !hasMartketV1{
-                        panic("does not own")
+                    let hasMarketPlaceV3 = marketV3CollectionRef != nil && marketV3CollectionRef!.borrowMoment(id: flowId) != nil
+                    let hasMarketV1 = marketV1CollectionRef != nil && marketV1CollectionRef!.borrowMoment(id: flowId) != nil
+                    if !hasMarketPlaceV3 && !hasMarketV1{
+                        panic("Top shot not owned in any collection with flowId: ".concat(flowId.toString()))
                     }
                 }
             }
