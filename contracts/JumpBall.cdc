@@ -7,29 +7,35 @@
         Corey Humeston: corey.humeston@dapperlabs.com
 */
 
-import NonFungibleToken from 0xNFTADDRESS
+import NonFungibleToken from 0x631e88ae7f1d7c20
 
 access(all) contract JumpBall {
     // Events
-    access(all) event GameCreated(gameID: UInt64, creator: Address)
+    access(all) event GameCreated(gameID: UInt64, creator: Address, opponent: Address, startTime: UFix64)
     access(all) event NFTDeposited(gameID: UInt64, nftID: UInt64, owner: Address)
     access(all) event NFTReturned(gameID: UInt64, nftID: UInt64, owner: Address)
     access(all) event NFTAwarded(gameID: UInt64, nftID: UInt64, previousOwner: Address, winner: Address)
     access(all) event StatisticSelected(gameID: UInt64, statistic: String, player: Address)
+    access(all) event WinnerDetermined(gameID: UInt64, winner: Address)
+    access(all) event TimeoutClaimed(gameID: UInt64, claimant: Address)
 
     // Resource to manage game-specific data
     access(all) resource Game {
-        pub let id: UInt64
-        pub let creator: Address
-        pub let opponent: Address
+        access(all) let id: UInt64
+        access(all) let creator: Address
+        access(all) let opponent: Address
+        access(all) let startTime: UFix64
+        access(all) let gameDuration: UFix64
         access(self) var selectedStatistic: String?
         access(self) var nfts: @{UInt64: NonFungibleToken.NFT}
         access(self) var ownership: {UInt64: Address}
 
-        init(id: UInt64, creator: Address) {
+        init(id: UInt64, creator: Address, opponent: Address, startTime: UFix64, gameDuration: UFix64) {
             self.id = id
             self.creator = creator
-            self.opponent = Address.zero()
+            self.opponent = opponent
+            self.startTime = startTime
+            self.gameDuration = gameDuration
             self.selectedStatistic = nil
             self.nfts <- {}
             self.ownership <- {}
@@ -48,6 +54,14 @@ access(all) contract JumpBall {
             return self.selectedStatistic
         }
 
+        access(all) fun getDepositCapForAddress(owner: Address): Capability<&{NonFungibleToken.Collection}> {
+            let depositCap = getAccount(owner).getCapability<&{NonFungibleToken.Collection}>(/public/NFTReceiver)
+            if !depositCap.check() {
+                panic("Deposit capability for owner is invalid.")
+            }
+            return depositCap
+        }
+
         // Deposit an NFT into the game
         access(all) fun depositNFT(nft: @NonFungibleToken.NFT, owner: Address) {
             let nftID = nft.id
@@ -56,34 +70,83 @@ access(all) contract JumpBall {
             emit NFTDeposited(gameID: self.id, nftID: nftID, owner: owner)
         }
 
-        // Award all NFTs to the winner
-        access(contract) fun transferAllToWinner(winnerCap: Capability<&{NonFungibleToken.Collection}>) {
-            let winnerCollection = winnerCap.borrow() ?? panic("Failed to borrow winner capability.")
-
-            for (nftID, nft) in self.nfts {
-                let previousOwner = self.ownership.remove(key: nftID)!
-                winnerCollection.deposit(token: <-nft)
-                emit NFTAwarded(gameID: self.id, nftID: nftID, previousOwner: previousOwner, winner: winnerCap.address)
+        // Return all NFTs to their original owners
+        access(contract) fun returnAllNFTs() {
+            let keys = self.nfts.keys
+            for key in keys {
+                let owner = self.ownership[key] ?? panic("Owner not found for NFT")
+                let depositCap = JumpBall.getDepositCapForAddress(owner: owner)
+                self.returnNFT(nftID: key, depositCap: depositCap)
             }
-
-            // Clear all NFTs after awarding them to the winner
-            self.nfts = {}
         }
 
-        // Return an NFT to its original owner
+        // Return a specific NFT to its original owner
         access(contract) fun returnNFT(nftID: UInt64, depositCap: Capability<&{NonFungibleToken.Collection}>) {
             pre {
                 self.ownership.containsKey(nftID): "NFT does not exist in this game."
             }
 
             let ownerAddress = self.ownership.remove(key: nftID)!
-            let receiver = depositCap.borrow() ?? panic("Failed to borrow receiver capability.")
+            let receiver = depositCap.borrow() ?? panic("Failed to borrono one has w receiver capability.")
             receiver.deposit(token: <-self.nfts.remove(key: nftID)!)
             emit NFTReturned(gameID: self.id, nftID: nftID, owner: ownerAddress)
         }
 
-        destroy() {
-            destroy self.nfts
+        // Award all NFTs to the winner
+        access(contract) fun transferAllToWinner(wi nner: Address, winnerCap: Capability<&{NonFungibleToken.Collection}>) {
+            let winnerCollection = winnerCap.borrow() ?? panic("Failed to borrow winner capability.")
+
+            let keys = self.nfts.keys
+            for key in keys {
+                let nft <- self.nfts.remove(key: key) ?? panic("NFT not found.")
+                let previousOwner = self.ownership.remove(key: key)!
+                winnerCollection.deposit(token: <-nft)
+                emit NFTAwarded(gameID: self.id, nftID: nftID, previousOwner: previousOwner, winner: winnerCap.address)
+            }
+        }
+    }
+
+    // Admin resource for game management
+    access(all) resource Admin {
+        access(all) fun determineWinner(gameID: UInt64, winnerCap: Capability<&{NonFungibleToken.Collection}>, stats: {UInt64: UInt64}) {
+            let game = JumpBall.games[gameID] ?? panic("Game does not exist.")
+
+            let creatorTotal = game.nfts.keys.reduce(0, fun(acc: UInt64, key: UInt64): UInt64 {
+                let owner = game.ownership[key] ?? panic("Owner not found.")
+                if owner == game.creator {
+                    return acc + (stats[key] ?? 0)
+                }
+                return acc
+            })
+
+            let opponentTotal = game.nfts.keys.reduce(0, fun(acc: UInt64, key: UInt64): UInt64 {
+                let owner = game.ownership[key] ?? panic("Owner not found.")
+                if owner == game.opponent {
+                    return acc + (stats[key] ?? 0)
+                }
+                return acc
+            })
+
+            let winner: Address
+            if creatorTotal > opponentTotal {
+                winner = game.creator
+            } else if opponentTotal > creatorTotal {
+                winner = game.opponent
+            } else {
+                // Tie: Return NFTs to their original owners.
+                emit WinnerDetermined(gameID: gameID, winner: Address(0))
+                let keys = game.nfts.keys
+                for key in keys {
+                    let originalOwner = game.ownership[key] ?? panic("Original owner not found for NFT.")
+                    let depositCap = JumpBall.getDepositCapForAddress(owner: originalOwner)
+                    game.returnNFT(nftID: key, owner: depositCap)
+                }
+            }
+
+            emit WinnerDetermined(gameID: gameID, winner: winner)
+
+            // Award NFTs to the winner
+            game.transferAllToWinner(winner: winner, winnerCap: winnerCap)
         }
     }
 
@@ -95,62 +158,72 @@ access(all) contract JumpBall {
     access(all) var userGames: {Address: [UInt64]}
 
     init() {
-        self.nextGameID = 1
-        self.games <- {}
-        self.userGames <- {}
+        JumpBall.nextGameID = 1
+        JumpBall.games <- {}
+        JumpBall.userGames <- {}
     }
 
     // Create a new game
-    access(all) fun createGame(creator: Address, opponent: Address): UInt64 {
-        let gameID = self.nextGameID
-        self.games[gameID] <- create Game(id: gameID, creator: creator, opponent: opponent)
-        self.nextGameID = self.nextGameID + 1
+    access(all) fun createGame(creator: Address, opponent: Address, startTime: UFix64, gameDuration: UFix64): UInt64 {
+        let gameID = JumpBall.nextGameID
+        JumpBall.games[gameID] <- create Game(id: gameID, creator: creator, opponent: opponent, startTime: startTime, gameDuration: gameDuration)
+        JumpBall.nextGameID = JumpBall.nextGameID + 1
 
         // Update userGames mapping
-        self.addGameForUser(creator, gameID)
-        self.addGameForUser(opponent, gameID)
+        JumpBall.addGameForUser(creator, gameID)
+        JumpBall.addGameForUser(opponent, gameID)
 
-        emit GameCreated(gameID: gameID, creator: creator)
+        emit GameCreated(gameID: gameID, creator: creator, opponent: opponent, startTime: startTime, gameDuration: gameDuration)
         return gameID
     }
 
     // Add a game to a user's list of games
     access(self) fun addGameForUser(user: Address, gameID: UInt64) {
-        if self.userGames[user] == nil {
-            self.userGames[user] = []
+        if JumpBall.userGames[user] == nil {
+            JumpBall.userGames[user] = []
         }
-        self.userGames[user]?.append(gameID)
+        JumpBall.userGames[user]?.append(gameID)
     }
 
     // Retrieve all games for a given user
     access(all) fun getGamesByUser(user: Address): [UInt64] {
-        return self.userGames[user] ?? []
+        return JumpBall.userGames[user] ?? []
     }
 
     // Get a reference to a specific game
     access(all) fun getGame(gameID: UInt64): &Game? {
-        return &self.games[gameID] as &Game?
+        return &JumpBall.games[gameID] as &Game?
+    }
+
+    // Handle timeout: allows uers to reclaim their moments
+    access(all) fun claimTimeout(gameID: UInt64, claimant: Address) {
+        let game = JumpBall.games[gameID] ?? panic("Game does not exist.")
+        pre {
+            !game.completed: "Game has already been completed."
+            JumpBall.getCurrentTime() > game.startTime + game.gameDuration: "Game timeout has not been reached."
+        }
+
+        emit TimeoutClaimed(gameID: gameID, claimant: claimant)
+        game.returnAllNFTs()
     }
 
     // Destroy a game and clean up resources
     access(all) fun destroyGame(gameID: UInt64) {
-        let game <- self.games.remove(key: gameID) ?? panic("Game does not exist.")
+        let game <- JumpBall.games.remove(key: gameID) ?? panic("Game does not exist.")
 
         // Remove game from userGames mapping
-        self.removeGameForUser(game.creator, gameID)
-        self.removeGameForUser(game.opponent, gameID)
+        JumpBall.removeGameForUser(game.creator, gameID)
+        JumpBall.removeGameForUser(game.opponent, gameID)
 
         destroy game
     }
 
     // Remove a game from a user's list of games
     access(self) fun removeGameForUser(user: Address, gameID: UInt64) {
-        if let gameIDs = self.userGames[user] {
-            self.userGames[user] = gameIDs.filter { $0 != gameID }
+        if let gameIDs = JumpBall.userGames[user] {
+            JumpBall.userGames[user] = gameIDs.filter(fun(id: UInt64): Bool {
+                return id != gameID
+            })
         }
-    }
-
-    destroy() {
-        destroy self.games
     }
 }
