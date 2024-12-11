@@ -129,12 +129,16 @@ access(all) contract JumpBall {
 
             let winner: Address
             if creatorTotal > opponentTotal {
-                winner = game.creator
+                // Creator wins
+                emit WinnerDetermined(gameID: gameID, winner: game.creator)
+                game.transferAllToWinner(winner: game.creator, winnerCap: winnerCap)
             } else if opponentTotal > creatorTotal {
-                winner = game.opponent
+                // Opponent wins
+                emit WinnerDetermined(gameID: gameID, winner: game.opponent)
+                game.transferAllToWinner(winner: game.opponent, winnerCap: winnerCap)
             } else {
                 // Tie: Return NFTs to their original owners.
-                emit WinnerDetermined(gameID: gameID, winner: Address(0))
+                emit WinnerDetermined(gameID: gameID, winner: Address.zero)
                 let keys = game.nfts.keys
                 for key in keys {
                     let originalOwner = game.ownership[key] ?? panic("Original owner not found for NFT.")
@@ -142,11 +146,6 @@ access(all) contract JumpBall {
                     game.returnNFT(nftID: key, owner: depositCap)
                 }
             }
-
-            emit WinnerDetermined(gameID: gameID, winner: winner)
-
-            // Award NFTs to the winner
-            game.transferAllToWinner(winner: winner, winnerCap: winnerCap)
         }
     }
 
