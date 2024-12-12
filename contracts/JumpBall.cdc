@@ -30,8 +30,11 @@ access(all) contract JumpBall {
         access(self) var selectedStatistic: String?
         access(self) var nfts: @{UInt64: NonFungibleToken.NFT}
         access(self) var ownership: {UInt64: Address}
+        access(self) var metadata: {String: AnyStruct}
+        access(self) let creatorCap: Capability<&{NonFungibleToken.Collection}>
+        access(self) let opponentCap: Capability<&{NonFungibleToken.Collection}>?
 
-        init(id: UInt64, creator: Address, startTime: UFix64, gameDuration: UFix64) {
+        init(id: UInt64, creator: Address, startTime: UFix64, gameDuration: UFix64, creatorCap: Capability<&{NonFungibleToken.Collection}>) {
             self.id = id
             self.creator = creator
             self.opponent = nil
@@ -39,7 +42,18 @@ access(all) contract JumpBall {
             self.gameDuration = gameDuration
             self.selectedStatistic = nil
             self.nfts <- {}
-            self.ownership <- {}
+            self.ownership = {}
+            self.metadata = {}
+            self.creatorCap = creatorCap
+            self.opponentCap = nil
+        }
+
+        access(all) fun setMetadata(key: String, value: AnyStruct) {
+            self.metadata[key] = value
+        }
+
+        access(all) fun getMetadata(key: String): AnyStruct? {
+            return self.metadata[key]
         }
 
         access(all) fun selectStatistic(statistic: String, player: Address) {
@@ -68,9 +82,20 @@ access(all) contract JumpBall {
             pre {
                 JumpBall.getCurrentTime() < self.startTime + self.gameDuration: "Cannot deposit NFT after the game has ended."
             }
+
             let nftID = nft.id
+
+            // Remove the existing NFT if it exists and destroy it
+            if let oldNFT <- self.nfts[nftID] {
+                destroy oldNFT
+            }
+
+            // Add the new NFT to the dictionary
             self.nfts[nftID] <-! nft
+
+            // Track ownership
             self.ownership[nftID] = owner
+
             emit NFTDeposited(gameID: self.id, nftID: nftID, owner: owner)
         }
 
@@ -110,22 +135,27 @@ access(all) contract JumpBall {
 
     // Admin resource for game management
     access(all) resource Admin {
-        access(all) fun determineWinner(gameID: UInt64, winnerCap: Capability<&{NonFungibleToken.Collection}>, stats: {UInt64: UInt64}) {
+        access(all) fun determineWinner(gameID: UInt64, stats: {UInt64: UInt64}) {
             let game = JumpBall.games[gameID] ?? panic("Game does not exist.")
 
-            let creatorTotal = self.calculateTotal(game: game, stats: stats, player: game.creator)
-            let opponentTotal = self.calculateTotal(game: game, stats: stats, player: game.opponent)
+            let creatorTotal = self.calculateTotal(game: game, address: game.creator, stats: stats)
+            let opponentTotal = self.calculateTotal(game: game, address: game.opponent, stats: stats)
 
             if creatorTotal > opponentTotal {
-                self.awardWinner(game: game, winner: game.creator, winnerCap: winnerCap)
+                self.awardWinner(game: game, winner: game.creator, winnerCap: game.creatorCap)
             } else if opponentTotal > creatorTotal {
-                self.awardWinner(game: game, winner: game.opponent, winnerCap: winnerCap)
+                let opponentCap = game.opponentCap ?? panic("Opponent capability not found.")
+                self.awardWinner(game: game, winner: game.opponent!, winnerCap: opponentCap)
             } else {
                 self.returnAllNFTs(game: game)
             }
         }
 
-        access(self) fun calculateTotal(game: &Game, address: Address, stats: {UInt64: UInt64}): UInt64 {
+        access(self) fun calculateTotal(game: &Game, address: Address?, stats: {UInt64: UInt64}): UInt64 {
+            if address == nil {
+                return 0
+            }
+
             return game.nfts.keys.reduce(0, fun(acc: UInt64, key: UInt64): UInt64 {
                 let owner = game.ownership[key] ?? panic("Owner not found.")
                 if owner == address {
@@ -163,12 +193,15 @@ access(all) contract JumpBall {
     }
 
     // Add an opponent to a game
-    access(all) fun addOpponent(gameID: UInt64, opponent: Address) {
+    access(all) fun addOpponent(gameID: UInt64, opponent: Address, opponentCap: Capability<&{NonFungibleToken.Collection}>) {
+        let game = JumpBall.games[gameID] ?? panic("Game does not exist.")
+
         pre {
             game.opponent == nil: "Opponent has already been added."
         }
-        let game = JumpBall.games[gameID] ?? panic("Game does not exist.")
+
         game.opponent = opponent
+        game.opponentCap = opponentCap
         JumpBall.addGameForUser(opponent, gameID)
         emit OpponentAdded(gameID: gameID, opponent: opponent)
     }
@@ -211,17 +244,27 @@ access(all) contract JumpBall {
     access(all) fun destroyGame(gameID: UInt64) {
         let game <- JumpBall.games.remove(key: gameID) ?? panic("Game does not exist.")
 
+        // Ensure all NFTs have been withdrawn
+        pre {
+            game.nfts.isEmpty: "All NFTs must be withdrawn before destroying the game."
+        }
+
         // Remove game from userGames mapping
         JumpBall.removeGameForUser(game.creator, gameID)
-        JumpBall.removeGameForUser(game.opponent, gameID)
+        if let opponent = game.opponent {
+            JumpBall.removeGameForUser(opponent, gameID)
+        }
 
+        // Destroy the game resource
         destroy game
     }
 
     // Remove a game from a user's list of games
     access(self) fun removeGameForUser(user: Address, gameID: UInt64) {
-        if let gameIDs = JumpBall.userGames[user] {
-            JumpBall.userGames[user] = gameIDs.filter(fun(id: UInt64): Bool { return id != gameID })
+        if JumpBall.userGames[user] != nil {
+            JumpBall.userGames[user] = JumpBall.userGames[user]!.filter(fun(id: UInt64): Bool {
+                return id != gameID
+            })
         }
     }
 
