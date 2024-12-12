@@ -111,41 +111,31 @@ access(all) contract JumpBall {
         access(all) fun determineWinner(gameID: UInt64, winnerCap: Capability<&{NonFungibleToken.Collection}>, stats: {UInt64: UInt64}) {
             let game = JumpBall.games[gameID] ?? panic("Game does not exist.")
 
-            let creatorTotal = game.nfts.keys.reduce(0, fun(acc: UInt64, key: UInt64): UInt64 {
-                let owner = game.ownership[key] ?? panic("Owner not found.")
-                if owner == game.creator {
-                    return acc + (stats[key] ?? 0)
-                }
-                return acc
-            })
+            let creatorTotal = self.calculateTotal(game: game, stats: stats, player: game.creator)
+            let opponentTotal = self.calculateTotal(game: game, stats: stats, player: game.opponent)
 
-            let opponentTotal = game.nfts.keys.reduce(0, fun(acc: UInt64, key: UInt64): UInt64 {
-                let owner = game.ownership[key] ?? panic("Owner not found.")
-                if owner == game.opponent {
-                    return acc + (stats[key] ?? 0)
-                }
-                return acc
-            })
-
-            let winner: Address
             if creatorTotal > opponentTotal {
-                // Creator wins
-                emit WinnerDetermined(gameID: gameID, winner: game.creator)
-                game.transferAllToWinner(winner: game.creator, winnerCap: winnerCap)
+                self.awardWinner(game: game, winner: game.creator, winnerCap: winnerCap)
             } else if opponentTotal > creatorTotal {
-                // Opponent wins
-                emit WinnerDetermined(gameID: gameID, winner: game.opponent)
-                game.transferAllToWinner(winner: game.opponent, winnerCap: winnerCap)
+                self.awardWinner(game: game, winner: game.opponent, winnerCap: winnerCap)
             } else {
-                // Tie: Return NFTs to their original owners.
-                emit WinnerDetermined(gameID: gameID, winner: Address.zero)
-                let keys = game.nfts.keys
-                for key in keys {
-                    let originalOwner = game.ownership[key] ?? panic("Original owner not found for NFT.")
-                    let depositCap = JumpBall.getDepositCapForAddress(owner: originalOwner)
-                    game.returnNFT(nftID: key, owner: depositCap)
-                }
+                self.returnAllNFTs(game: game)
             }
+        }
+
+        access(self) fun calculateTotal(game: &Game, address: Address, stats: {UInt64: UInt64}): UInt64 {
+            return game.nfts.keys.reduce(0, fun(acc: UInt64, key: UInt64): UInt64 {
+                let owner = game.ownership[key] ?? panic("Owner not found.")
+                if owner == address {
+                    return acc + (stats[key] ?? 0)
+                }
+                return acc
+            })
+        }
+
+        access(self) fun awardWinner(game: &Game, winner: Address, winnerCap: Capability<&{NonFungibleToken.Collection}>) {
+            emit WinnerDetermined(gameID: game.id, winner: winner)
+            game.transferAllToWinner(winner: winner, winnerCap: winnerCap)
         }
     }
 
@@ -194,13 +184,17 @@ access(all) contract JumpBall {
         return &JumpBall.games[gameID] as &Game?
     }
 
-    // Handle timeout: allows uers to reclaim their moments
+    // Handle timeout: allows users to reclaim their moments
     access(all) fun claimTimeout(gameID: UInt64, claimant: Address) {
-        let game = JumpBall.games[gameID] ?? panic("Game does not exist.")
         pre {
-            !game.completed: "Game has already been completed."
-            JumpBall.getCurrentTime() > game.startTime + game.gameDuration: "Game timeout has not been reached."
+            JumpBall.getCurrentTime() > JumpBall.games[gameID]?.startTime + JumpBall.games[gameID]?.gameDuration:
+            "Game is still in progress."
         }
+
+        let game = JumpBall.games[gameID] ?? panic("Game does not exist.")
+        let currentTime = getCurrentTime()
+        let gameStartTime = game.startTime
+        let gameDuration = game.gameDuration
 
         emit TimeoutClaimed(gameID: gameID, claimant: claimant)
         game.returnAllNFTs()
