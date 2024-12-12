@@ -251,12 +251,12 @@ access(all) contract JumpBall {
 
     // Add an opponent to a game
     access(all) fun addOpponent(gameID: UInt64, player: &Player) {
-        let game = JumpBall.games[gameID] ?? panic("Game does not exist.")
-
         pre {
             game.opponent == nil: "Opponent has already been added."
             player.canCreateGame(): "Player does not have a valid collection capability to be added as an opponent."
         }
+
+        let game = JumpBall.games[gameID] ?? panic("Game does not exist.")
 
         game.opponent = player.address
         game.opponentCap = player.collectionCap
@@ -297,12 +297,12 @@ access(all) contract JumpBall {
 
     // Destroy a game and clean up resources
     access(all) fun destroyGame(gameID: UInt64) {
-        let game <- JumpBall.games.remove(key: gameID) ?? panic("Game does not exist.")
-
         // Ensure all NFTs have been withdrawn
         pre {
             game.nfts.isEmpty: "All NFTs must be withdrawn before destroying the game."
         }
+
+        let game <- JumpBall.games.remove(key: gameID) ?? panic("Game does not exist.")
 
         // Remove game from userGames mapping
         JumpBall.removeGameForUser(game.creator, gameID)
