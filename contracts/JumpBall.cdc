@@ -133,6 +133,42 @@ access(all) contract JumpBall {
         }
     }
 
+    // Player resource for game participation
+    access(all) resource Player {
+        access(all) let address: Address
+        access(all) let collectionCap: Capability<&{NonFungibleToken.Collection}>
+
+        init(address: Address, collectionCap: Capability<&{NonFungibleToken.Collection}>) {
+            self.address = address
+            self.collectionCap = collectionCap
+        }
+
+        access(all) fun canCreateGame(): Bool {
+            return self.collectionCap.check()
+        }
+
+        access(all) fun createPlayer(account: AuthAccount) {
+            let collectionCap = account.capabilities.storage.issue<&{NonFungibleToken.Collection}>(/storage/UserNFTCollection)
+            account.capabilities.publish(collectionCap, at: /public/UserNFTCollection)
+
+            // Save the Player resource in storage
+            account.storage.save<@Player>(<- create Player(
+                address: account.address,
+                collectionCap: collectionCap
+            ), to: /storage/JumpBallPlayer)
+        }
+
+        // Store the Player resource in the account's storage
+        access(all) fun savePlayer(account: AuthAccount, player: @Player) {
+            account.save(<-player, to: /storage/JumpBallPlayer)
+            account.link<&Player>(/public/JumpBallPlayer, target: /storage/JumpBallPlayer)
+        }
+
+        access(all) fun getPlayer(account: PublicAccount): &Player? {
+            return account.getCapability<&Player>(/public/JumpBallPlayer).borrow()
+        }
+    }
+
     // Admin resource for game management
     access(all) resource Admin {
         access(all) fun determineWinner(gameID: UInt64, stats: {UInt64: UInt64}) {
@@ -147,7 +183,7 @@ access(all) contract JumpBall {
                 let opponentCap = game.opponentCap ?? panic("Opponent capability not found.")
                 self.awardWinner(game: game, winner: game.opponent!, winnerCap: opponentCap)
             } else {
-                self.returnAllNFTs(game: game)
+                game.returnAllNFTs()
             }
         }
 
@@ -179,31 +215,53 @@ access(all) contract JumpBall {
     init() {
         JumpBall.nextGameID = 1
         JumpBall.games <- {}
-        JumpBall.userGames <- {}
+        JumpBall.userGames = {}
+
+        // Initialize Player resource for contract owner
+        let collectionCap = self.account.capabilities.storage.issue<&{NonFungibleToken.Collection}>(/storage/OwnerNFTCollection)
+        self.account.capabilities.publish(collectionCap, at: /public/OwnerNFTCollection)
+
+        // Save the Player resource in storage
+        self.account.storage.save<@Player>(<- create Player(
+            address: self.account.address,
+            collectionCap: collectionCap
+        ), to: /storage/JumpBallPlayer)
     }
 
     // Create a new game
-    access(all) fun createGame(creator: Address, startTime: UFix64, gameDuration: UFix64): UInt64 {
+    access(all) fun createGame(player: &Player, startTime: UFix64, gameDuration: UFix64): UInt64 {
+        pre {
+            player.canCreateGame(): "Player does not have a valid collection capability to create a game."
+        }
+
         let gameID = JumpBall.nextGameID
-        JumpBall.games[gameID] <- create Game(id: gameID, creator: creator, startTime: startTime, gameDuration: gameDuration)
+        JumpBall.games[gameID] <- create Game(
+            id: gameID,
+            creator: player.address,
+            startTime: startTime,
+            gameDuration: gameDuration,
+            creatorCap: player.collectionCap
+        )
         JumpBall.nextGameID = JumpBall.nextGameID + 1
-        JumpBall.addGameForUser(creator, gameID)
-        emit GameCreated(gameID: gameID, creator: creator, startTime: startTime)
+        JumpBall.addGameForUser(player.address, gameID)
+
+        emit GameCreated(gameID: gameID, creator: player.address, startTime: startTime)
         return gameID
     }
 
     // Add an opponent to a game
-    access(all) fun addOpponent(gameID: UInt64, opponent: Address, opponentCap: Capability<&{NonFungibleToken.Collection}>) {
+    access(all) fun addOpponent(gameID: UInt64, player: &Player) {
         let game = JumpBall.games[gameID] ?? panic("Game does not exist.")
 
         pre {
             game.opponent == nil: "Opponent has already been added."
+            player.canCreateGame(): "Player does not have a valid collection capability to be added as an opponent."
         }
 
-        game.opponent = opponent
-        game.opponentCap = opponentCap
-        JumpBall.addGameForUser(opponent, gameID)
-        emit OpponentAdded(gameID: gameID, opponent: opponent)
+        game.opponent = player.address
+        game.opponentCap = player.collectionCap
+        JumpBall.addGameForUser(player.address, gameID)
+        emit OpponentAdded(gameID: gameID, opponent: player.address)
     }
 
     // Add a game to a user's list of games
@@ -232,9 +290,6 @@ access(all) contract JumpBall {
         }
 
         let game = JumpBall.games[gameID] ?? panic("Game does not exist.")
-        let currentTime = getCurrentTime()
-        let gameStartTime = game.startTime
-        let gameDuration = game.gameDuration
 
         emit TimeoutClaimed(gameID: gameID, claimant: claimant)
         game.returnAllNFTs()
