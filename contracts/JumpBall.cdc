@@ -170,8 +170,8 @@ access(all) contract JumpBall {
     }
 
     // Admin resource for game management
-    access(all) resource Admin {
-        access(all) fun determineWinner(gameID: UInt64, stats: {UInt64: UInt64}) {
+    access(self) resource Admin {
+        access(contract) fun determineWinner(gameID: UInt64, stats: {UInt64: UInt64}) {
             let game = JumpBall.games[gameID] ?? panic("Game does not exist.")
 
             let creatorTotal = self.calculateTotal(game: game, address: game.creator, stats: stats)
@@ -187,7 +187,7 @@ access(all) contract JumpBall {
             }
         }
 
-        access(self) fun calculateTotal(game: &Game, address: Address?, stats: {UInt64: UInt64}): UInt64 {
+        access(contract) fun calculateTotal(game: &Game, address: Address?, stats: {UInt64: UInt64}): UInt64 {
             if address == nil {
                 return 0
             }
@@ -201,7 +201,7 @@ access(all) contract JumpBall {
             })
         }
 
-        access(self) fun awardWinner(game: &Game, winner: Address, winnerCap: Capability<&{NonFungibleToken.Collection}>) {
+        access(contract) fun awardWinner(game: &Game, winner: Address, winnerCap: Capability<&{NonFungibleToken.Collection}>) {
             emit WinnerDetermined(gameID: game.id, winner: winner)
             game.transferAllToWinner(winner: winner, winnerCap: winnerCap)
         }
