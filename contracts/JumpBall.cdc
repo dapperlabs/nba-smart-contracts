@@ -7,18 +7,17 @@
         Corey Humeston: corey.humeston@dapperlabs.com
 */
 
-import NonFungibleToken from NonFungibleTokenAddress
+import NonFungibleToken from 0xf8d6e0586b0a20c7
 
 access(all) contract JumpBall {
     // Events
-    access(all) event GameCreated(gameID: UInt64, creator: Address, startTime: UFix64)
-    access(all) event OpponentAdded(gameID: UInt64, opponent: Address)
-    access(all) event NFTDeposited(gameID: UInt64, nftID: UInt64, owner: Address)
-    access(all) event NFTReturned(gameID: UInt64, nftID: UInt64, owner: Address)
-    access(all) event NFTAwarded(gameID: UInt64, nftID: UInt64, previousOwner: Address, winner: Address)
-    access(all) event StatisticSelected(gameID: UInt64, statistic: String, player: Address)
-    access(all) event WinnerDetermined(gameID: UInt64, winner: Address)
-    access(all) event TimeoutClaimed(gameID: UInt64, claimant: Address)
+    access(all) event GameCreated(gameID: String, creator: Address, startTime: UFix64)
+    access(all) event OpponentAdded(gameID: String, opponent: Address)
+    access(all) event NFTDeposited(gameID: String, nftID: UInt64, owner: Address)
+    access(all) event NFTReturned(gameID: String, nftID: UInt64, owner: Address)
+    access(all) event NFTAwarded(gameID: String, nftID: UInt64, previousOwner: Address, winner: Address)
+    access(all) event WinnerDetermined(gameID: String, winner: Address)
+    access(all) event TimeoutClaimed(gameID: String, claimant: Address)
 
     // Player resource for game participation
     access(all) resource Player {
@@ -42,21 +41,20 @@ access(all) contract JumpBall {
         }
 
         // Create a new game
-        access(all) fun createGame(startTime: UFix64, gameDuration: UFix64): UInt64 {
+        access(all) fun createGame(gameID: String, startTime: UFix64, gameDuration: UFix64, selectedStatistic: String): String {
             pre {
                 self.collectionCap.check(): "Player does not have a valid collection capability to create a game."
             }
 
-            let gameID = JumpBall.nextGameID
             JumpBall.games[gameID] <-! create Game(
                 id: gameID,
                 creator: self.address,
                 startTime: startTime,
                 gameDuration: gameDuration,
+                selectedStatistic: selectedStatistic,
                 creatorCap: self.collectionCap
             )
 
-            JumpBall.nextGameID = JumpBall.nextGameID + 1
             JumpBall.addGameForUser(user: self.address, gameID: gameID)
 
             emit GameCreated(gameID: gameID, creator: self.address, startTime: startTime)
@@ -64,7 +62,7 @@ access(all) contract JumpBall {
         }
 
         // Add an opponent to a game
-        access(all) fun addOpponent(gameID: UInt64) {
+        access(all) fun addOpponent(gameID: String) {
             let gameRef = &JumpBall.games[gameID] as &Game?
                     ?? panic("Game does not exist.")
 
@@ -81,25 +79,25 @@ access(all) contract JumpBall {
 
     // Resource to manage game-specific data
     access(all) resource Game {
-        access(all) let id: UInt64
+        access(all) let id: String
         access(all) let creator: Address
         access(all) var opponent: Address? // Opponent can be added later
         access(all) let startTime: UFix64
         access(all) let gameDuration: UFix64
-        access(self) var selectedStatistic: String?
+        access(self) var selectedStatistic: String
         access(self) var nfts: @{UInt64: {NonFungibleToken.NFT}}
         access(self) var ownership: {UInt64: Address}
         access(self) var metadata: {String: AnyStruct}
         access(self) let creatorCap: Capability<&{NonFungibleToken.Collection}>
         access(self) var opponentCap: Capability<&{NonFungibleToken.Collection}>?
 
-        init(id: UInt64, creator: Address, startTime: UFix64, gameDuration: UFix64, creatorCap: Capability<&{NonFungibleToken.Collection}>) {
+        init(id: String, creator: Address, startTime: UFix64, gameDuration: UFix64, selectedStatistic: String, creatorCap: Capability<&{NonFungibleToken.Collection}>) {
             self.id = id
             self.creator = creator
             self.opponent = nil
             self.startTime = startTime
             self.gameDuration = gameDuration
-            self.selectedStatistic = nil
+            self.selectedStatistic = selectedStatistic
             self.nfts <- {}
             self.ownership = {}
             self.metadata = {}
@@ -136,19 +134,6 @@ access(all) contract JumpBall {
 
         access(all) fun getOwnership(key: UInt64): Address? {
             return self.ownership[key]
-        }
-
-        access(all) fun selectStatistic(statistic: String, player: Address) {
-            pre {
-                self.selectedStatistic == nil: "Statistic has already been selected for this game."
-            }
-            self.selectedStatistic = statistic
-            emit StatisticSelected(gameID: self.id, statistic: statistic, player: player)
-        }
-
-        // Retrieve the selected statistic
-        access(all) fun getStatistic(): String? {
-            return self.selectedStatistic
         }
 
         access(all) fun getDepositCapForAddress(owner: Address): Capability<&{NonFungibleToken.Collection}> {
@@ -230,7 +215,7 @@ access(all) contract JumpBall {
 
     // Admin resource for game management
     access(all) resource Admin {
-        access(contract) fun determineWinner(gameID: UInt64, stats: {UInt64: UInt64}) {
+        access(contract) fun determineWinner(gameID: String, stats: {UInt64: UInt64}) {
             let game = &JumpBall.games[gameID] as &Game?
                 ?? panic("Game does not exist.")
 
@@ -283,16 +268,14 @@ access(all) contract JumpBall {
         )
     }
 
-    access(self) var nextGameID: UInt64
     access(all) var metadata: {String: AnyStruct}
-    access(all) var games: @{UInt64: Game}
-    access(all) var userGames: {Address: [UInt64]}
+    access(all) var games: @{String: Game}
+    access(all) var userGames: {Address: [String]}
     access(all) let admin: @Admin
 
     init() {
         self.metadata = {}
         self.admin <- create Admin()
-        self.nextGameID = 1
         self.games <- {}
         self.userGames = {}
 
@@ -317,7 +300,7 @@ access(all) contract JumpBall {
     }
 
     // Add a game to a user's list of games
-    access(self) fun addGameForUser(user: Address, gameID: UInt64) {
+    access(self) fun addGameForUser(user: Address, gameID: String) {
         if JumpBall.userGames[user] == nil {
             JumpBall.userGames[user] = []
         }
@@ -325,21 +308,21 @@ access(all) contract JumpBall {
     }
 
     // Retrieve all games for a given user
-    access(all) fun getGamesByUser(user: Address): [UInt64] {
+    access(all) fun getGamesByUser(user: Address): [String] {
         return JumpBall.userGames[user] ?? []
     }
 
     // Get a reference to a specific game
-    access(all) fun getGame(gameID: UInt64): &Game? {
+    access(all) fun getGame(gameID: String): &Game? {
         return &JumpBall.games[gameID] as &Game?
     }
 
-    access(all) fun gameExists(gameID: UInt64): Bool {
+    access(all) fun gameExists(gameID: String): Bool {
         return JumpBall.games[gameID] != nil
     }
 
     // Handle timeout: allows users to reclaim their moments
-    access(all) fun claimTimeout(gameID: UInt64, claimant: Address) {
+    access(all) fun claimTimeout(gameID: String, claimant: Address) {
         let gameRef = &JumpBall.games[gameID] as &Game?
             ?? panic("Game does not exist.")
 
@@ -352,7 +335,7 @@ access(all) contract JumpBall {
     }
 
     // Destroy a game and clean up resources
-    access(all) fun destroyGame(gameID: UInt64) {
+    access(all) fun destroyGame(gameID: String) {
         // Safely borrow a reference to the game
         let gameRef = &JumpBall.games[gameID] as &Game?
             ?? panic("Game does not exist.")
@@ -376,9 +359,9 @@ access(all) contract JumpBall {
     }
 
     // Remove a game from a user's list of games
-    access(self) fun removeGameForUser(user: Address, gameID: UInt64) {
+    access(self) fun removeGameForUser(user: Address, gameID: String) {
         if JumpBall.userGames[user] != nil {
-            JumpBall.userGames[user] = JumpBall.userGames[user]!.filter(view fun(id: UInt64): Bool {
+            JumpBall.userGames[user] = JumpBall.userGames[user]!.filter(view fun(id: String): Bool {
                 return id != gameID
             })
         }
@@ -390,7 +373,7 @@ access(all) contract JumpBall {
     }
 
     // Securely call determine winner from the admin resource
-    access(all) fun determineWinner(gameID: UInt64, stats: {UInt64: UInt64}) {
+    access(all) fun determineWinner(gameID: String, stats: {UInt64: UInt64}) {
         self.admin.determineWinner(gameID: gameID, stats: stats)
     }
 }
