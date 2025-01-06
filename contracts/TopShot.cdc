@@ -833,7 +833,7 @@ access(all) contract TopShot: NonFungibleToken {
             let excludedNames: [String] = ["TeamAtMomentNBAID"]
 
             // Create a dictionary of this NFT's traits with default metadata
-            let traits: {String: AnyStruct} = {
+            var traits: {String: AnyStruct} = {
                 "SeriesNumber": TopShot.getSetSeries(setID: self.data.setID),
                 "SetName": TopShot.getSetName(setID: self.data.setID),
                 "SerialNumber": self.data.serialNumber,
