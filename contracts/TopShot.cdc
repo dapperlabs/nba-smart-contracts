@@ -832,9 +832,6 @@ access(all) contract TopShot: NonFungibleToken {
             // sports radar team id
             let excludedNames: [String] = ["TeamAtMomentNBAID"]
 
-            // Retrieve this NFT's Play and Subedition details
-            let playMetadata = TopShot.getPlayMetaData(playID: self.data.playID) ?? {}
-
             // Create a dictionary of this NFT's traits with default metadata
             let traits: {String: AnyStruct} = {
                 "SeriesNumber": TopShot.getSetSeries(setID: self.data.setID),
