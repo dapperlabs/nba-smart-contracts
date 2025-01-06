@@ -845,10 +845,10 @@ access(all) contract TopShot: NonFungibleToken {
 
             // Add subedition specific data
             let subeditionID = TopShot.getMomentsSubedition(nftID: self.id) ?? 0
-            traits.insert(key: "SubeditionID", value: subeditionID)
+            traits.insert(key: "SubeditionID", subeditionID)
             if subeditionID > 0 {
                 let subedition = TopShot.getSubeditionByID(subeditionID: subeditionID)
-                traits.insert(key: "SubeditionName", value: subedition.name)
+                traits.insert(key: "SubeditionName", subedition.name)
             }
 
             return MetadataViews.dictToTraits(dict: traits, excludedNames: excludedNames)
@@ -909,7 +909,7 @@ access(all) contract TopShot: NonFungibleToken {
             return url
         }
 
-        // Create an empty Collection for NBA NFTs and return it to the caller
+        // Create an empty Collection for TopShot NFTs and return it to the caller
         access(all) fun createEmptyCollection(): @{NonFungibleToken.Collection} {
             return <- TopShot.createEmptyCollection(nftType: Type<@NFT>())
         }
@@ -1373,7 +1373,7 @@ access(all) contract TopShot: NonFungibleToken {
     // Parameters: setID: The id of the Set that is being searched
     //
     // Returns: The QuerySetData struct that has all the important information about the set
-    access(all) view fun getSetData(setID: UInt32): QuerySetData? {
+    access(all) fun getSetData(setID: UInt32): QuerySetData? {
         if TopShot.sets[setID] == nil {
             return nil
         }
@@ -1408,7 +1408,7 @@ access(all) contract TopShot: NonFungibleToken {
     // Parameters: setName: The name of the Set that is being searched
     //
     // Returns: An array of the IDs of the Set if it exists, or nil if doesn't
-    access(all) view fun getSetIDsByName(setName: String): [UInt32]? {
+    access(all) fun getSetIDsByName(setName: String): [UInt32]? {
         var setIDs: [UInt32] = []
 
         // Iterate through all the setDatas and search for the name
@@ -1446,7 +1446,7 @@ access(all) contract TopShot: NonFungibleToken {
     //             playID: The id of the Play that is being searched
     //
     // Returns: Boolean indicating if the edition is retired or not
-    access(all) view fun isEditionRetired(setID: UInt32, playID: UInt32): Bool? {
+    access(all) fun isEditionRetired(setID: UInt32, playID: UInt32): Bool? {
         // Return the retired status for the play in the set if it exists
         if let setdata = self.getSetData(setID: setID) {
             return setdata.getRetired()[playID]
@@ -1475,7 +1475,7 @@ access(all) contract TopShot: NonFungibleToken {
     //
     // Returns: The total number of Moments
     //          that have been minted from an edition
-    access(all) view fun getNumMomentsInEdition(setID: UInt32, playID: UInt32): UInt32? {
+    access(all) fun getNumMomentsInEdition(setID: UInt32, playID: UInt32): UInt32? {
         // Return the number of moments minted for the play in the set if it exists
         if let setdata = self.getSetData(setID: setID) {
             return setdata.getNumberMintedPerPlay()[playID]
@@ -1607,7 +1607,7 @@ access(all) contract TopShot: NonFungibleToken {
         //
         // returns: UInt32 Number of Moments, already minted for this Subedition
         //
-        access(all) view fun getNumberMintedPerSubedition(setID: UInt32, playID: UInt32, subeditionID: UInt32): UInt32 {
+        access(all) fun getNumberMintedPerSubedition(setID: UInt32, playID: UInt32, subeditionID: UInt32): UInt32 {
             let setPlaySubedition = self.getSetPlaySubeditionString(setID, playID, subeditionID)
             if !self.numberMintedPerSubedition.containsKey(setPlaySubedition) {
                 self.numberMintedPerSubedition.insert(key: setPlaySubedition, UInt32(0))
@@ -1625,8 +1625,10 @@ access(all) contract TopShot: NonFungibleToken {
         //
         //
         access(contract) fun addToNumberMintedPerSubedition(setID: UInt32, playID: UInt32, subeditionID: UInt32) {
+            let setPlaySubedition = self.getSetPlaySubeditionString(setID, playID, subeditionID)
+
             // Get number of moments minted for this subedition
-            let numberMinted = self.numberMintedPerSubedition[self.getSetPlaySubeditionString(setID, playID, subeditionID)]
+            let numberMinted = self.numberMintedPerSubedition[setPlaySubedition]
                 ?? panic("Could not find number of moments minted for specified Subedition!")
 
             // Increment the number of moments minted for this subedition
@@ -1702,7 +1704,7 @@ access(all) contract TopShot: NonFungibleToken {
                     file: MetadataViews.HTTPFile(
                         url: "https://nbatopshot.com/static/favicon/favicon.svg"
                     ),
-                    mediaType: "image/png"
+                    mediaType: "image/svg+xml"
                 )
                 return MetadataViews.NFTCollectionDisplay(
                     name: "NBA-Top-Shot",
