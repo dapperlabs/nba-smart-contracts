@@ -794,20 +794,9 @@ access(all) contract TopShot: NonFungibleToken {
                 case Type<MetadataViews.NFTCollectionData>():
                     return TopShot.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionData>())
                 case Type<MetadataViews.NFTCollectionDisplay>():
-                     return TopShot.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionDisplay>())
+                    return TopShot.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionDisplay>())
                 case Type<MetadataViews.Traits>():
-                    // sports radar team id
-                    let excludedNames: [String] = ["TeamAtMomentNBAID"]
-                    // non play specific traits
-                    let traitDictionary: {String: AnyStruct} = {
-                        "SeriesNumber": TopShot.getSetSeries(setID: self.data.setID),
-                        "SetName": TopShot.getSetName(setID: self.data.setID),
-                        "SerialNumber": self.data.serialNumber,
-                        "Locked": TopShotLocking.isLocked(nftRef: &self as &{NonFungibleToken.NFT})
-                    }
-                    // add play specific data
-                    let fullDictionary = self.mapPlayData(dict: traitDictionary)
-                    return MetadataViews.dictToTraits(dict: fullDictionary, excludedNames: excludedNames)
+                    return self.resolveTraitsView()
                 case Type<MetadataViews.Medias>():
                     return MetadataViews.Medias(
                         [
@@ -829,6 +818,37 @@ access(all) contract TopShot: NonFungibleToken {
 
             return nil
         }   
+
+        /// Resolve this NFT's Traits view
+        ///
+        access(all) fun resolveTraitsView(): MetadataViews.Traits {
+            // sports radar team id
+            let excludedNames: [String] = ["TeamAtMomentNBAID"]
+
+            // Retrieve this NFT's Play and Subedition details
+            let playMetadata = TopShot.getPlayMetaData(playID: self.data.playID) ?? {}
+
+            // Create a dictionary of this NFT's traits with default metadata
+            let traits: {String: AnyStruct} = {
+                "SeriesNumber": TopShot.getSetSeries(setID: self.data.setID),
+                "SetName": TopShot.getSetName(setID: self.data.setID),
+                "SerialNumber": self.data.serialNumber,
+                "Locked": TopShotLocking.isLocked(nftRef: &self as &{NonFungibleToken.NFT})
+            }
+
+            // Add play specific data
+            traits = self.mapPlayData(dict: traits)
+
+            // Add subedition specific data
+            let subeditionID = TopShot.getMomentsSubedition(nftID: self.id) ?? 0
+            traits.insert(key: "SubeditionID", value: subeditionID)
+            if subeditionID > 0 {
+                let subedition = TopShot.getSubeditionByID(subeditionID: subeditionID)
+                traits.insert(key: "SubeditionName", value: subedition.name)
+            }
+
+            return MetadataViews.dictToTraits(dict: traits, excludedNames: excludedNames)
+        }
 
         // Functions used for computing MetadataViews 
 
@@ -1482,7 +1502,7 @@ access(all) contract TopShot: NonFungibleToken {
     //
     // returns: UInt32? Subedition's ID if exists
     //
-    access(all) view fun getMomentsSubedition(nftID: UInt64):UInt32? {
+    access(all) view fun getMomentsSubedition(nftID: UInt64): UInt32? {
         let subeditionAdmin = self.account.storage.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
             ?? panic("No subedition admin resource in storage")
 
