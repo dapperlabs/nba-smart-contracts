@@ -47,7 +47,7 @@ import FungibleToken from 0xFUNGIBLETOKENADDRESS
 import NonFungibleToken from 0xNFTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
-import ViewResolver   from 0xVIEWRESOLVERADDRESS
+import ViewResolver from 0xVIEWRESOLVERADDRESS
 
 access(all) contract TopShot: NonFungibleToken {
     // -----------------------------------------------------------------------
@@ -155,7 +155,6 @@ access(all) contract TopShot: NonFungibleToken {
     // read the metadata associated with a specific play ID
     //
     access(all) struct Play {
-
         // The unique ID for the Play
         access(all) let playID: UInt32
 
@@ -195,7 +194,6 @@ access(all) contract TopShot: NonFungibleToken {
     // to modify any data in the private Set resource.
     //
     access(all) struct SetData {
-
         // Unique ID for the Set
         access(all) let setID: UInt32
 
@@ -238,7 +236,6 @@ access(all) contract TopShot: NonFungibleToken {
     // If retireAll() and lock() are called back-to-back,
     // the Set is closed off forever and nothing more can be done with it.
     access(all) resource Set {
-
         // Unique ID for the set
         access(all) let setID: UInt32
 
@@ -539,7 +536,6 @@ access(all) contract TopShot: NonFungibleToken {
     }
 
     access(all) struct MomentData {
-
         // The ID of the Set that the Moment comes from
         access(all) let setID: UInt32
 
@@ -555,14 +551,12 @@ access(all) contract TopShot: NonFungibleToken {
             self.playID = playID
             self.serialNumber = serialNumber
         }
-
     }
 
     // This is an implementation of a custom metadata view for Top Shot.
     // This view contains the play metadata.
     //
     access(all) struct TopShotMomentMetadataView {
-
         access(all) let fullName: String?
         access(all) let firstName: String?
         access(all) let lastName: String?
@@ -662,7 +656,6 @@ access(all) contract TopShot: NonFungibleToken {
     // The resource that represents the Moment NFTs
     //
     access(all) resource NFT: NonFungibleToken.NFT {
-
         // Global unique moment ID
         access(all) let id: UInt64
 
@@ -704,8 +697,8 @@ access(all) contract TopShot: NonFungibleToken {
                 .concat(playType)
         }
 
-        /// The description of the Moment.
-        /// If the Tagline prop exists, use is as the description; else, build the description using set, series, and serial number.
+        // The description of the Moment.
+        // If the Tagline prop exists, use is as the description; else, build the description using set, series, and serial number.
         access(all) view fun description(): String {
             // Return early if the tagline is non-empty
             if let tagline = TopShot.getPlayMetaDataByField(playID: self.data.playID, field: "Tagline") {
@@ -740,6 +733,7 @@ access(all) contract TopShot: NonFungibleToken {
             ]
         }
 
+        // resolves the view with the given type for the NFT
         access(all) fun resolveView(_ view: Type): AnyStruct? {
             switch view {
                 case Type<MetadataViews.Display>():
@@ -822,34 +816,29 @@ access(all) contract TopShot: NonFungibleToken {
                         ]
                     )
             }
-
             return nil
         }
 
-        /// Resolve this NFT's Traits view
-        ///
+        // resolves this NFT's Traits view
         access(all) fun resolveTraitsView(): MetadataViews.Traits {
             // sports radar team id
             let excludedNames: [String] = ["TeamAtMomentNBAID"]
+
+            // Get subedition
+            let subedition = TopShot.getSubeditionByNFTID(self.id)
 
             // Create a dictionary of this NFT's traits with default metadata
             var traits: {String: AnyStruct} = {
                 "SeriesNumber": TopShot.getSetSeries(setID: self.data.setID),
                 "SetName": TopShot.getSetName(setID: self.data.setID),
                 "SerialNumber": self.data.serialNumber,
-                "Locked": TopShotLocking.isLocked(nftRef: &self as &{NonFungibleToken.NFT})
+                "Locked": TopShotLocking.isLocked(nftRef: &self as &{NonFungibleToken.NFT}),
+                "Subedition": subedition?.name ?? "Standard",
+                "SubeditionID": subedition?.subeditionID ?? 0
             }
 
             // Add play specific data
             traits = self.mapPlayData(dict: traits)
-
-            // Add subedition specific data
-            let subeditionID = TopShot.getMomentsSubedition(nftID: self.id) ?? 0
-            traits.insert(key: "SubeditionID", subeditionID)
-            if subeditionID > 0 {
-                let subedition = TopShot.getSubeditionByID(subeditionID: subeditionID)
-                traits.insert(key: "SubeditionName", subedition.name)
-            }
 
             return MetadataViews.dictToTraits(dict: traits, excludedNames: excludedNames)
         }
@@ -874,6 +863,7 @@ access(all) contract TopShot: NonFungibleToken {
         access(all) view fun getMomentURL(): String {
             return "https://nbatopshot.com/moment/".concat(self.id.toString())
         }
+
         // getEditionName Moment's edition name is a combination of the Moment's setName and playID
         // `setName: #playID`
         access(all) view fun getEditionName(): String {
@@ -967,7 +957,6 @@ access(all) contract TopShot: NonFungibleToken {
         //
         // Returns: The ID of the created set
         access(all) fun createSet(name: String): UInt32 {
-
             // Create the new Set
             var newSet <- create Set(name: name)
 
@@ -1315,7 +1304,6 @@ access(all) contract TopShot: NonFungibleToken {
             }
             return nil
         }
-
     }
 
     // -----------------------------------------------------------------------
@@ -1515,6 +1503,20 @@ access(all) contract TopShot: NonFungibleToken {
         return subeditionAdmin.subeditionDatas[subeditionID]!
     }
 
+    // getSubeditionByNFTID returns the subedition struct that the NFT belongs to
+    //
+    // Parameters: nftID: The id of the NFT that is being searched
+    //
+    // Returns: The subedition struct that the NFT belongs to
+    access(all) view fun getSubeditionByNFTID(_ nftID: UInt64): &Subedition? {
+        let subeditionAdmin = self.account.storage.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
+            ?? panic("No subedition admin resource in storage")
+        if let subeditionID = subeditionAdmin.getMomentsSubedition(nftID: nftID) {
+            return subeditionAdmin.subeditionDatas[subeditionID]
+        }
+        return nil
+    }
+
     // This script reads the public nextSubeditionID from the SubeditionAdmin resource and
     // returns that number to the caller
     //
@@ -1525,6 +1527,7 @@ access(all) contract TopShot: NonFungibleToken {
             ?? panic("No subedition admin resource in storage")
         return subeditionAdmin.nextSubeditionID
     }
+
     // SubeditionAdmin is a resource that allows Set to mint Moments with Subeditions
     //
     access(all) struct Subedition {
@@ -1545,7 +1548,6 @@ access(all) contract TopShot: NonFungibleToken {
     }
 
     access(all) resource SubeditionAdmin {
-
         // Map of number of already minted Moments using Subedition.
         // When a new Moment with Subedition is minted, 1 is added to the
         // number in this map by the key, formed by concatinating of
@@ -1573,7 +1575,6 @@ access(all) contract TopShot: NonFungibleToken {
         // Returns: the ID of the new Subedition object
         //
         access(all) fun createSubedition(name: String, metadata: {String: String}): UInt32 {
-
             let newID = self.nextSubeditionID
 
             var newSubedition = Subedition(subeditionID: newID, name: name, metadata: metadata)
@@ -1670,14 +1671,12 @@ access(all) contract TopShot: NonFungibleToken {
     // Contract MetadataViews
     //------------------------------------------------------------
 
-    /// Return the metadata view types available for this contract
-    ///
+    // getContractViews returns the metadata view types available for this contract
     access(all) view fun getContractViews(resourceType: Type?): [Type] {
         return [Type<MetadataViews.NFTCollectionData>(), Type<MetadataViews.NFTCollectionDisplay>(), Type<MetadataViews.Royalties>()]
     }
 
-    /// Resolve this contract's metadata views
-    ///
+    // resolveContractView resolves this contract's metadata views
     access(all) view fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
         post {
             result == nil || result!.getType() == viewType: "The returned view must be of the given type or nil"
@@ -1733,7 +1732,6 @@ access(all) contract TopShot: NonFungibleToken {
         }
         return nil
     }
-
 
     // -----------------------------------------------------------------------
     // TopShot initialization function
