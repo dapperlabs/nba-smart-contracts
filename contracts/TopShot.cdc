@@ -1509,10 +1509,10 @@ access(all) contract TopShot: NonFungibleToken {
     //
     // Returns: The subedition struct that the NFT belongs to
     access(all) view fun getSubeditionByNFTID(_ nftID: UInt64): &Subedition? {
-        let subeditionAdmin = self.account.storage.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath())
-            ?? panic("No subedition admin resource in storage")
-        if let subeditionID = subeditionAdmin.getMomentsSubedition(nftID: nftID) {
-            return subeditionAdmin.subeditionDatas[subeditionID]
+        if let subeditionAdmin = self.account.storage.borrow<&SubeditionAdmin>(from: TopShot.SubeditionAdminStoragePath()) {
+            if let subeditionID = subeditionAdmin.getMomentsSubedition(nftID: nftID) {
+                return subeditionAdmin.subeditionDatas[subeditionID]
+            }
         }
         return nil
     }
