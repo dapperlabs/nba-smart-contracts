@@ -395,7 +395,7 @@ func TestMintNFTs(t *testing.T) {
 		expectedCollectionSquareImage := "https://nbatopshot.com/static/favicon/favicon.svg"
 		expectedCollectionBannerImage := "https://nbatopshot.com/static/img/top-shot-logo-horizontal-white.svg"
 		expectedRoyaltyReceiversCount := 1
-		expectedTraitsCount := 7
+		expectedTraitsCount := 9
 		expectedVideoURL := "https://assets.nbatopshot.com/media/1/video"
 
 		mvs := getTopShotMetadata(t, b, env, topshotAddr, 1)
