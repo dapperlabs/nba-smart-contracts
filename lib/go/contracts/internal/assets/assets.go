@@ -345,13 +345,11 @@ const AssetDebug = false
 // directory embedded in the file by go-bindata.
 // For example if you run go-bindata on data/... and data contains the
 // following hierarchy:
-//
-//	data/
-//	  foo.txt
-//	  img/
-//	    a.png
-//	    b.png
-//
+//     data/
+//       foo.txt
+//       img/
+//         a.png
+//         b.png
 // then AssetDir("data") would return []string{"foo.txt", "img"},
 // AssetDir("data/img") would return []string{"a.png", "b.png"},
 // AssetDir("foo.txt") and AssetDir("notexist") would return an error, and
@@ -384,14 +382,14 @@ type bintree struct {
 }
 
 var _bintree = &bintree{nil, map[string]*bintree{
-	"FastBreakV1.cdc":              {fastbreakv1Cdc, map[string]*bintree{}},
-	"Market.cdc":                   {marketCdc, map[string]*bintree{}},
-	"TopShot.cdc":                  {topshotCdc, map[string]*bintree{}},
-	"TopShotLocking.cdc":           {topshotlockingCdc, map[string]*bintree{}},
-	"TopShotMarketV2.cdc":          {topshotmarketv2Cdc, map[string]*bintree{}},
-	"TopShotMarketV3.cdc":          {topshotmarketv3Cdc, map[string]*bintree{}},
+	"FastBreakV1.cdc": {fastbreakv1Cdc, map[string]*bintree{}},
+	"Market.cdc": {marketCdc, map[string]*bintree{}},
+	"TopShot.cdc": {topshotCdc, map[string]*bintree{}},
+	"TopShotLocking.cdc": {topshotlockingCdc, map[string]*bintree{}},
+	"TopShotMarketV2.cdc": {topshotmarketv2Cdc, map[string]*bintree{}},
+	"TopShotMarketV3.cdc": {topshotmarketv3Cdc, map[string]*bintree{}},
 	"TopShotShardedCollection.cdc": {topshotshardedcollectionCdc, map[string]*bintree{}},
-	"TopshotAdminReceiver.cdc":     {topshotadminreceiverCdc, map[string]*bintree{}},
+	"TopshotAdminReceiver.cdc": {topshotadminreceiverCdc, map[string]*bintree{}},
 }}
 
 // RestoreAsset restores an asset under the given directory.
