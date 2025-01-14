@@ -13,7 +13,8 @@
 import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
-import TopShotMarketV3, Market from 0xMARKETV3ADDRESS
+import TopShotMarketV3 from 0xMARKETV3ADDRESS
+import Market from 0xMARKETV3ADDRESS
 
 /// Game & Oracle Contract for Fast Break V1
 ///
