@@ -23,6 +23,7 @@ const (
 	defaultTopshotAddress          = "TOPSHOTADDRESS"
 	defaultShardedAddress          = "SHARDEDADDRESS"
 	defaultMarketAddress           = "MARKETADDRESS"
+	defaultMarketV3Address         = "MARKETV3ADDRESS"
 	defaultMetadataviewsAddress    = "METADATAVIEWSADDRESS"
 	defaultTopShotLockingAddress   = "TOPSHOTLOCKINGADDRESS"
 	defaultTopShotRoyaltyAddress   = "TOPSHOTROYALTYADDRESS"
@@ -128,11 +129,12 @@ func GenerateTopShotLockingContractWithTopShotRuntimeAddr(nftAddr string, topsho
 
 // GenerateFastBreakContract returns a copy
 // of the FastBreakContract with the import addresses updated
-func GenerateFastBreakContract(nftAddr string, topshotAddr string, metadataViewsAddr string) []byte {
+func GenerateFastBreakContract(nftAddr string, topshotAddr string, metadataViewsAddr string, marketV3Address string) []byte {
 	fastBreakCode := assets.MustAssetString(fastBreakFile)
 	codeWithNFTAddr := strings.ReplaceAll(fastBreakCode, defaultNonFungibleTokenAddress, nftAddr)
 	codeWithTopShotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 	codeWithMetadataViewsAddr := strings.ReplaceAll(codeWithTopShotAddr, defaultMetadataviewsAddress, metadataViewsAddr)
+	code := strings.ReplaceAll(codeWithMetadataViewsAddr, defaultMarketV3Address, marketV3Address)
 
-	return []byte(codeWithMetadataViewsAddr)
+	return []byte(code)
 }

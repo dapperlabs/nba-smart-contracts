@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	fungibleToken "github.com/onflow/flow-ft/lib/go/contracts"
 	"testing"
 	"time"
 
@@ -21,18 +22,15 @@ import (
 
 // Tests all the main functionality of the TopShot Locking contract
 func TestFastBreak(t *testing.T) {
-	b := newBlockchain()
-
+	//b := newBlockchain()
+	tb := NewTopShotTestBlockchain(t)
+	b := tb.Blockchain
 	serviceKeySigner, err := b.ServiceKey().Signer()
 	assert.NoError(t, err)
 
 	accountKeys := test.AccountKeyGenerator()
 
-	env := templates.Environment{
-		FungibleTokenAddress: emulatorFTAddress,
-		FlowTokenAddress:     emulatorFlowTokenAddress,
-	}
-
+	env := tb.env
 	logger := zerolog.Nop()
 	adapter := adapters.NewSDKAdapter(&logger, b)
 
@@ -77,9 +75,67 @@ func TestFastBreak(t *testing.T) {
 	updateErr := updateContract(b, topShotLockingAddr, lockingSigner, "TopShotLocking", topShotLockingCodeWithRuntimeAddr)
 	assert.Nil(t, updateErr)
 
+	// Should be able to deploy the token contract
+	tokenCode := fungibleToken.CustomToken(
+		defaultfungibleTokenAddr,
+		env.MetadataViewsAddress,
+		env.FungibleTokenMetadataViewsAddress,
+		"DapperUtilityCoin",
+		"dapperUtilityCoin",
+		"1000.0",
+	)
+	tokenAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
+		{
+			Name:   "DapperUtilityCoin",
+			Source: string(tokenCode),
+		},
+	})
+	assert.NoError(t, err)
+	env.DUCAddress = tokenAddr.String()
+
+	// Setup with the first market contract
+	marketAccountKey, marketSigner := accountKeys.NewWithSigner()
+	marketCode := contracts.GenerateTopShotMarketContract(defaultfungibleTokenAddr, env.NFTAddress, topshotAddr.String(), env.DUCAddress)
+	marketAddr, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{marketAccountKey}, []sdktemplates.Contract{
+		{
+			Name:   "Market",
+			Source: string(marketCode),
+		},
+	})
+	assert.NoError(t, err)
+	env.TopShotMarketAddress = marketAddr.String()
+
+	// Should be able to deploy the third market contract
+	marketV3Code := contracts.GenerateTopShotMarketV3Contract(defaultfungibleTokenAddr, env.NFTAddress, topshotAddr.String(), marketAddr.String(), env.DUCAddress, env.TopShotLockingAddress, env.MetadataViewsAddress)
+
+	tx1 := sdktemplates.AddAccountContract(
+		marketAddr,
+		sdktemplates.Contract{
+			Name:   "TopShotMarketV3",
+			Source: string(marketV3Code),
+		},
+	)
+	tx1.
+		SetComputeLimit(100).
+		SetProposalKey(b.ServiceKey().Address, b.ServiceKey().Index, b.ServiceKey().SequenceNumber).
+		SetPayer(b.ServiceKey().Address)
+
+	signer, err := b.ServiceKey().Signer()
+	require.NoError(t, err)
+	signAndSubmit(
+		t, b, tx1,
+		[]flow.Address{b.ServiceKey().Address, marketAddr},
+		[]crypto.Signer{signer, marketSigner},
+		false,
+	)
+
+	_, err = b.CommitBlock()
+	require.NoError(t, err)
+	env.TopShotMarketV3Address = marketAddr.String()
+
 	// Deploy Fast Break
 	fastBreakKey, fastBreakSigner := test.AccountKeyGenerator().NewWithSigner()
-	fastBreakCode := contracts.GenerateFastBreakContract(nftAddr.String(), topshotAddr.String(), metadataViewsAddr.String())
+	fastBreakCode := contracts.GenerateFastBreakContract(nftAddr.String(), topshotAddr.String(), metadataViewsAddr.String(), env.TopShotMarketV3Address)
 	fastBreakAddr, fastBreakAddrErr := adapter.CreateAccount(context.Background(), []*flow.AccountKey{fastBreakKey}, []sdktemplates.Contract{
 		{
 			Name:   "FastBreakV1",
