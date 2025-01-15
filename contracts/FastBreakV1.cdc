@@ -232,9 +232,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
         /// Get a account's active Fast Break Submission
         ///
         access(all) view fun getFastBreakSubmissionByPlayerId(playerId: UInt64): FastBreakV1.FastBreakSubmission? {
-            let fastBreakSubmissions = self.submissions
-
-            return fastBreakSubmissions[playerId]
+            return self.submissions[playerId]
         }
 
         /// Add a statistic to the Fast Break during game creation
