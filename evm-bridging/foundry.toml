@@ -1,0 +1,10 @@
+[profile.default]
+runs = 10_000
+src = "src"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.24"
+ffi = true
+ast = true
+build_info = true
+extra_output = ["storageLayout"]
