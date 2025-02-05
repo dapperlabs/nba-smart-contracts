@@ -1,6 +1,6 @@
-# <h1 align="center"> NBA TopShot on FlowEVM [In Progress] </h1>
+# <h1 align="center"> NBA TopShot on FlowEVM [Initial Draft Version] </h1>
 
-This directory currently contains work in progress only.
+**! This directory currently contains work in progress only !**
 
 ## Introduction
 
@@ -75,9 +75,11 @@ flow transactions send ./cadence/transfer_flow_to_evm_address.cdc <evm_address_h
 
 ## Useful links
 
-- [Flow Develpers Doc - Using Foundry with Flow](https://developers.flow.com/evm/guides/foundry)
-- [Flow Develpers Doc - Interacting with COAs from Cadence](https://developers.flow.com/evm/cadence/interacting-with-coa)
+- [Flow Developers Doc - Using Foundry with Flow](https://developers.flow.com/evm/guides/foundry)
+- [Flow Developers Doc - Interacting with COAs from Cadence](https://developers.flow.com/evm/cadence/interacting-with-coa)
 - [evm-testnet.flowscan.io](https://evm-testnet.flowscan.io)
 - [Foundry references](https://book.getfoundry.sh/reference)
-- [GitHub - OpenZeppelin Upgradeable Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable)
 - [OpenZeppelin Doc - Foundry Upgrades](https://docs.openzeppelin.com/upgrades-plugins/foundry-upgrades)
+- [OpenZeppelin Doc - ERC721 Contracts v5](https://docs.openzeppelin.com/contracts/5.x/api/token/erc721)
+- [GitHub - OpenZeppelin Upgradeable Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable)
+- [GitHub - LimitBreak Creator Token Standards](https://github.com/limitbreakinc/creator-token-standards)

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
 import {Test} from "forge-std/Test.sol";
@@ -41,10 +41,11 @@ contract BridgedTopShotMomentsTest is Test {
             )
         );
 
+        // Set contract instance
         nftContract = BridgedTopShotMoments(proxyAddr);
     }
 
-    function test_GetContractInfo() public {
+    function test_GetContractInfo() public view {
         assertEq(nftContract.owner(), owner);
         assertEq(nftContract.name(), name);
         assertEq(nftContract.symbol(), symbol);
