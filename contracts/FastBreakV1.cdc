@@ -232,9 +232,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
         /// Get a account's active Fast Break Submission
         ///
         access(all) view fun getFastBreakSubmissionByPlayerId(playerId: UInt64): FastBreakV1.FastBreakSubmission? {
-            let fastBreakSubmissions = self.submissions
-
-            return fastBreakSubmissions[playerId]
+            return self.submissions[playerId]
         }
 
         /// Add a statistic to the Fast Break during game creation
@@ -276,9 +274,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
         /// Update the Fast Break score of an account
         ///
         access(contract) fun updateScore(playerId: UInt64, points: UInt64, win: Bool): Bool {
-            let submissions = self.submissions
-
-            let submission: FastBreakV1.FastBreakSubmission = submissions[playerId]
+            let submission: FastBreakV1.FastBreakSubmission = self.submissions[playerId]
                 ?? panic("Unable to find fast break submission for playerId: ".concat(playerId.toString()))
 
             let isPrevSubmissionWin = submission.win
