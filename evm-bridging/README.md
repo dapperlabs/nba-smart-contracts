@@ -32,13 +32,13 @@ source .env
 Run script to deploy and verify contracts (proxy and implementation):
 
 ```sh
-forge script --rpc-url $FLOW_RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --legacy scripts/Deploy.s.sol:DeployScript --broadcast --verify --verifier $VERIFIER_PROVIDER --verifier-url $VERIFIER_URL
+forge script --rpc-url $RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --legacy script/Deploy.s.sol:DeployScript --broadcast --verify --verifier $VERIFIER_PROVIDER --verifier-url $VERIFIER_URL
 ```
 
 If verification fails for one or both contracts, verify separately:
 
 ```sh
-forge verify-contract --rpc-url $FLOW_RPC_URL --verifier $VERIFIER_PROVIDER --verifier-url $VERIFIER_URL <address-of-contract-to-verify>
+forge verify-contract --rpc-url $RPC_URL --verifier $VERIFIER_PROVIDER --verifier-url $VERIFIER_URL <address-of-contract-to-verify>
 ```
 
 ## Run Transactions
@@ -46,19 +46,19 @@ forge verify-contract --rpc-url $FLOW_RPC_URL --verifier $VERIFIER_PROVIDER --ve
 Set NFT symbol (admin):
 
 ```sh
-cast send $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $FLOW_RPC_URL --private-key $PRIVATE_KEY --legacy "setSymbol(string)" <new-nft-symbol>
+cast send $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --legacy "setSymbol(string)" <new-nft-symbol>
 ```
 
 ## Execute Queries
 
 BalanceOf:
 ```sh
-cast call $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $FLOW_RPC_URL "balanceOf(address)(uint256)" $DEPLOYER_ADDRESS
+cast call $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL "balanceOf(address)(uint256)" $DEPLOYER_ADDRESS
 ```
 
 OwnerOf:
 ```sh
-cast call $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $FLOW_RPC_URL "ownerOf(uint256)(address)" <nft-id>
+cast call $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL "ownerOf(uint256)(address)" <nft-id>
 ```
 
 ## Misc

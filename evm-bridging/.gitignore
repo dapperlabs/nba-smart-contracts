@@ -10,7 +10,7 @@
 *.pem
 
 # dotenv file
-.env
+*.env
 
 # macOS
 .DS_Store

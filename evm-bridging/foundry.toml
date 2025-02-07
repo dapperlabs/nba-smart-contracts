@@ -6,6 +6,7 @@ optimizer_runs = 200
 src = "src"
 out = "out"
 libs = ["lib"]
+script = "script"
 test = "test"
 cache_path = "cache"
 build_info = true
