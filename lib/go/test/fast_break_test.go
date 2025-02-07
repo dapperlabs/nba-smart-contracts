@@ -2,9 +2,10 @@ package test
 
 import (
 	"context"
-	fungibleToken "github.com/onflow/flow-ft/lib/go/contracts"
 	"testing"
 	"time"
+
+	fungibleToken "github.com/onflow/flow-ft/lib/go/contracts"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
@@ -501,6 +502,16 @@ func TestFastBreak(t *testing.T) {
 			[][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(cadence.NewAddress(aliceAddress))},
 		)
 		assert.Equal(t, cadence.NewUInt64(100), result)
+
+		fastBreakRunIdCadence, _ := cadence.NewString(fastBreakRunId)
+
+		result = executeScriptAndCheck(
+			t,
+			b,
+			templates.GenerateGetPlayerWinCountForRunScript(env),
+			[][]byte{jsoncdc.MustEncode(fastBreakRunIdCadence), jsoncdc.MustEncode(cadence.NewAddress(aliceAddress))},
+		)
+		assert.Equal(t, cadence.NewUInt64(1), result)
 	})
 
 }
