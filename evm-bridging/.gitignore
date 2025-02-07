@@ -1,0 +1,16 @@
+# foundry - compiler files
+/out
+/cache
+
+# foundry - broadcast logs
+/broadcast
+
+# keys
+*.pkey
+*.pem
+
+# dotenv file
+*.env
+
+# macOS
+.DS_Store
