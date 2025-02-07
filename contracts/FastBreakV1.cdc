@@ -170,8 +170,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
         /// Write a new win to the Fast Break Run runWinCount
         ///
         access(contract) fun incrementRunWinCount(playerId: UInt64) {
-            let runWinCount = self.runWinCount
-            runWinCount[playerId] = (runWinCount[playerId] ?? 0) + 1
+            self.runWinCount[playerId] = (self.runWinCount[playerId] ?? 0) + 1
         }
     }
 
