@@ -2,6 +2,7 @@
 pragma solidity 0.8.24;
 
 import {Script} from "forge-std/Script.sol";
+import "forge-std/console.sol";
 import {Upgrades} from "openzeppelin-foundry-upgrades/src/Upgrades.sol";
 import {BridgedTopShotMoments} from "../src/BridgedTopShotMoments.sol";
 
@@ -13,13 +14,13 @@ contract DeployScript is Script {
         vm.startBroadcast(vm.envUint("DEPLOYER_PRIVATE_KEY"));
         console.log("Deployer address:", msg.sender);
 
-        // Set contract initialization parameters
+        // Set testnet contract initialization parameters
         address owner = msg.sender;
-        string memory name = "Bidged NBA TopShot Moments";
+        string memory name = "NBA Top Shot";
         string memory symbol = "TOPSHOT";
-        string memory cadenceNFTAddress = "cadenceNFTAddress";
-        string memory cadenceNFTIdentifier = "cadenceNFTIdentifier";
-        string memory contractURI = "contractURI";
+        string memory cadenceNFTAddress = "877931736ee77cff";
+        string memory cadenceNFTIdentifier = "A.877931736ee77cff.NFT";
+        string memory contractURI = "add-contract-URI-here";
 
         // Deploy NFT contract using UUPS proxy for upgradeability
         address proxyAddr = Upgrades.deployUUPSProxy(
