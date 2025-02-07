@@ -13,8 +13,7 @@
 import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
-import TopShotMarketV3 from 0xMARKETV3ADDRESS
-import Market from 0xMARKETV3ADDRESS
+import TopShotMarketV3, Market from 0xMARKETV3ADDRESS
 
 /// Game & Oracle Contract for Fast Break V1
 ///
@@ -171,8 +170,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
         /// Write a new win to the Fast Break Run runWinCount
         ///
         access(contract) fun incrementRunWinCount(playerId: UInt64) {
-            let runWinCount = self.runWinCount
-            runWinCount[playerId] = (runWinCount[playerId] ?? 0) + 1
+            self.runWinCount[playerId] = (self.runWinCount[playerId] ?? 0) + 1
         }
     }
 
@@ -232,9 +230,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
         /// Get a account's active Fast Break Submission
         ///
         access(all) view fun getFastBreakSubmissionByPlayerId(playerId: UInt64): FastBreakV1.FastBreakSubmission? {
-            let fastBreakSubmissions = self.submissions
-
-            return fastBreakSubmissions[playerId]
+            return self.submissions[playerId]
         }
 
         /// Add a statistic to the Fast Break during game creation
@@ -276,9 +272,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
         /// Update the Fast Break score of an account
         ///
         access(contract) fun updateScore(playerId: UInt64, points: UInt64, win: Bool): Bool {
-            let submissions = self.submissions
-
-            let submission: FastBreakV1.FastBreakSubmission = submissions[playerId]
+            let submission: FastBreakV1.FastBreakSubmission = self.submissions[playerId]
                 ?? panic("Unable to find fast break submission for playerId: ".concat(playerId.toString()))
 
             let isPrevSubmissionWin = submission.win
