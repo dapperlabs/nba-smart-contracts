@@ -7,6 +7,9 @@ import {ERC721EnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/t
 import {ERC721BurnableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {ERC721WrapperUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721WrapperUpgradeable.sol";
+
+import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import {IERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
@@ -27,6 +30,7 @@ contract BridgedTopShotMoments is
     ERC721BurnableUpgradeable,
     ERC721EnumerableUpgradeable,
     OwnableUpgradeable,
+    ERC721WrapperUpgradeable,
     ERC721TransferValidator,
     ICrossVM
 {
@@ -46,6 +50,7 @@ contract BridgedTopShotMoments is
 
     function initialize(
         address owner,
+        address underlyingToken,
         string memory name_,
         string memory symbol_,
         string memory _cadenceNFTAddress,
@@ -54,6 +59,7 @@ contract BridgedTopShotMoments is
     {
         __ERC721_init(name_, symbol_);
         __Ownable_init(owner);
+        __ERC721Wrapper_init(IERC721(underlyingToken));
         _customSymbol = symbol_;
         cadenceNFTAddress = _cadenceNFTAddress;
         cadenceNFTIdentifier = _cadenceNFTIdentifier;

@@ -83,3 +83,4 @@ flow transactions send ./cadence/transfer_flow_to_evm_address.cdc <evm_address_h
 - [OpenZeppelin Doc - ERC721 Contracts v5](https://docs.openzeppelin.com/contracts/5.x/api/token/erc721)
 - [GitHub - OpenZeppelin Upgradeable Contracts](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable)
 - [GitHub - LimitBreak Creator Token Standards](https://github.com/limitbreakinc/creator-token-standards)
+- [OpenSea Doc - Creator Fee Enforcement](https://docs.opensea.io/docs/creator-fee-enforcement)

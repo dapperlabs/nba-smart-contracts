@@ -5,6 +5,17 @@ import {Test} from "forge-std/Test.sol";
 import "forge-std/console.sol";
 import {Upgrades} from "openzeppelin-foundry-upgrades/src/Upgrades.sol";
 import {BridgedTopShotMoments} from "../src/BridgedTopShotMoments.sol";
+import {ERC721} from "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
+import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
+
+// Add this minimal ERC721 implementation for testing
+contract UnderlyingERC721 is ERC721, Ownable {
+    constructor(string memory name, string memory symbol) ERC721(name, symbol) Ownable(msg.sender) {}
+
+    function safeMint(address to, uint256 tokenId) public onlyOwner {
+        _safeMint(to, tokenId);
+    }
+}
 
 contract BridgedTopShotMomentsTest is Test {
     address owner;
@@ -14,11 +25,21 @@ contract BridgedTopShotMomentsTest is Test {
     string cadenceNFTIdentifier;
     string contractURI;
     BridgedTopShotMoments private nftContract;
+    UnderlyingERC721 private underlyingNftContract;
+    address underlyingNftContractAddress;
+    address underlyingNftContractOwner;
 
     // Runs before each test
     function setUp() public {
-        // Set initialization parameters
+        // Deploy underlying NFT contract
+        underlyingNftContractOwner = address(0x1111);
+        vm.startPrank(underlyingNftContractOwner);
+        underlyingNftContract = new UnderlyingERC721("Underlying NFT", "UNFT");
+        vm.stopPrank();
+
+        // Set NFT contract initialization parameters
         owner = msg.sender;
+        underlyingNftContractAddress = address(underlyingNftContract);
         name = "name";
         symbol = "symbol";
         cadenceNFTAddress = "cadenceNFTAddress";
@@ -32,6 +53,7 @@ contract BridgedTopShotMomentsTest is Test {
                 BridgedTopShotMoments.initialize,
                 (
                     owner,
+                    underlyingNftContractAddress,
                     name,
                     symbol,
                     cadenceNFTAddress,
@@ -45,6 +67,8 @@ contract BridgedTopShotMomentsTest is Test {
         nftContract = BridgedTopShotMoments(proxyAddr);
     }
 
+    /* Test contract initialization */
+
     function test_GetContractInfo() public view {
         assertEq(nftContract.owner(), owner);
         assertEq(nftContract.name(), name);
@@ -52,7 +76,10 @@ contract BridgedTopShotMomentsTest is Test {
         assertEq(nftContract.getCadenceAddress(), cadenceNFTAddress);
         assertEq(nftContract.getCadenceIdentifier(), cadenceNFTIdentifier);
         assertEq(nftContract.contractURI(), contractURI);
+        assertEq(address(nftContract.underlying()), underlyingNftContractAddress);
     }
+
+    /* Test core ERC721 operations */
 
     function test_MintNFT() public {
         address recipient = address(27);
@@ -215,6 +242,65 @@ contract BridgedTopShotMomentsTest is Test {
         nftContract.transferOwnership(newOwner);
         vm.stopPrank();
     }
+
+    /* Test ERC721Wrapper operations */
+
+    function test_WrapUnderlyingNFT() public {
+        address recipient = address(27);
+        uint256[] memory tokenIds = new uint256[](1);
+        tokenIds[0] = 101;
+
+        // Mint NFT to recipient and check balance and approval
+        vm.startPrank(underlyingNftContractOwner);
+        underlyingNftContract.safeMint(recipient, tokenIds[0]);
+        vm.stopPrank();
+        assertEq(underlyingNftContract.balanceOf(recipient), 1);
+
+        // Approve NFT from underlying contract for wrapping by BridgedTopShotMoments
+        vm.startPrank(recipient);
+        underlyingNftContract.approve(address(nftContract), tokenIds[0]);
+        vm.stopPrank();
+
+        // Wrap NFT and check balance and owner
+        vm.startPrank(recipient);
+        nftContract.depositFor(recipient, tokenIds);
+        vm.stopPrank();
+        assertEq(nftContract.balanceOf(recipient), 1);
+        assertEq(nftContract.ownerOf(tokenIds[0]), recipient);
+    }
+
+    function test_UnwrapUnderlyingNFT() public {
+        address recipient = address(27);
+        uint256[] memory tokenIds = new uint256[](1);
+        tokenIds[0] = 101;
+
+        // Mint NFT to recipient and check balance and approval
+        vm.startPrank(underlyingNftContractOwner);
+        underlyingNftContract.safeMint(recipient, tokenIds[0]);
+        vm.stopPrank();
+        assertEq(underlyingNftContract.balanceOf(recipient), 1);
+
+        // Approve NFT from underlying contract for wrapping by BridgedTopShotMoments
+        vm.startPrank(recipient);
+        underlyingNftContract.approve(address(nftContract), tokenIds[0]);
+        vm.stopPrank();
+
+        // Wrap NFT and check balance and owner
+        vm.startPrank(recipient);
+        nftContract.depositFor(recipient, tokenIds);
+        vm.stopPrank();
+        assertEq(nftContract.balanceOf(recipient), 1);
+        assertEq(nftContract.ownerOf(tokenIds[0]), recipient);
+
+        // Unwrap NFT and check balance and owner
+        vm.startPrank(recipient);
+        nftContract.withdrawTo(recipient, tokenIds);
+        vm.stopPrank();
+        assertEq(underlyingNftContract.balanceOf(recipient), 1);
+        assertEq(underlyingNftContract.ownerOf(tokenIds[0]), recipient);
+    }
+
+    /* Test Creator Token operations */
 
     function test_SetTransferValidator() public {
         // Check initial transfer validator
