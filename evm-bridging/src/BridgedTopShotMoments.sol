@@ -13,6 +13,10 @@ import {IERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
+import {ICreatorToken, ILegacyCreatorToken} from "./interfaces/ICreatorToken.sol";
+import {ITransferValidator721} from "./interfaces/ITransferValidator.sol";
+import {ERC721TransferValidator} from "./lib/ERC721TransferValidator.sol";
+
 import {ICrossVM} from "./interfaces/ICrossVM.sol";
 
 // Initial draft version of the BridgedTopShotMoments contract
@@ -23,12 +27,22 @@ contract BridgedTopShotMoments is
     ERC721BurnableUpgradeable,
     ERC721EnumerableUpgradeable,
     OwnableUpgradeable,
+    ERC721TransferValidator,
     ICrossVM
 {
     string public cadenceNFTAddress;
     string public cadenceNFTIdentifier;
     string public contractMetadata;
     string private _customSymbol;
+    RoyaltyInfo _royaltyInfo;
+
+    error InvalidRoyaltyBasisPoints(uint256 basisPoints);
+    error RoyaltyAddressCannotBeZeroAddress();
+    event RoyaltyInfoUpdated(address receiver, uint256 bps);
+    struct RoyaltyInfo {
+        address royaltyAddress;
+        uint96 royaltyBps;
+    }
 
     function initialize(
         address owner,
@@ -88,6 +102,7 @@ contract BridgedTopShotMoments is
         return interfaceId == type(IERC165).interfaceId || interfaceId == type(IERC721Metadata).interfaceId
             || interfaceId == type(IERC721Enumerable).interfaceId || interfaceId == type(ERC721BurnableUpgradeable).interfaceId
             || interfaceId == type(OwnableUpgradeable).interfaceId || interfaceId == type(ICrossVM).interfaceId
+            || interfaceId == type(ICreatorToken).interfaceId || interfaceId == type(ILegacyCreatorToken).interfaceId
             || super.supportsInterface(interfaceId);
     }
 
@@ -109,5 +124,80 @@ contract BridgedTopShotMoments is
 
     function _increaseBalance(address account, uint128 value) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
         super._increaseBalance(account, value);
+    }
+
+    function setRoyaltyInfo(RoyaltyInfo calldata newInfo) external onlyOwner {
+        // Revert if the new royalty address is the zero address.
+        if (newInfo.royaltyAddress == address(0)) {
+            revert RoyaltyAddressCannotBeZeroAddress();
+        }
+
+        // Revert if the new basis points is greater than 10_000.
+        if (newInfo.royaltyBps > 10_000) {
+            revert InvalidRoyaltyBasisPoints(newInfo.royaltyBps);
+        }
+
+        // Set the new royalty info.
+        _royaltyInfo = newInfo;
+
+        // Emit an event with the updated params.
+        emit RoyaltyInfoUpdated(newInfo.royaltyAddress, newInfo.royaltyBps);
+    }
+
+    function royaltyAddress() external view returns (address) {
+        return _royaltyInfo.royaltyAddress;
+    }
+
+    function royaltyBasisPoints() external view returns (uint256) {
+        return _royaltyInfo.royaltyBps;
+    }
+
+    function royaltyInfo(
+        uint256,
+        /* _tokenId */
+        uint256 _salePrice
+    ) external view returns (address receiver, uint256 royaltyAmount) {
+        // Put the royalty info on the stack for more efficient access.
+        RoyaltyInfo storage info = _royaltyInfo;
+
+        // Set the royalty amount to the sale price times the royalty basis
+        // points divided by 10_000.
+        royaltyAmount = (_salePrice * info.royaltyBps) / 10_000;
+
+        // Set the receiver of the royalty.
+        receiver = info.royaltyAddress;
+    }
+
+    function getTransferValidationFunction()
+        external
+        pure
+        returns (bytes4 functionSignature, bool isViewFunction)
+    {
+        functionSignature = ITransferValidator721.validateTransfer.selector;
+        isViewFunction = false;
+    }
+
+    function setTransferValidator(address newValidator) external onlyOwner {
+        _setTransferValidator(newValidator);
+    }
+
+    function _beforeTokenTransfers(
+        address from,
+        address to,
+        uint256 startTokenId,
+        uint256 /* quantity */
+    ) internal virtual {
+        if (from != address(0) && to != address(0)) {
+            // Call the transfer validator if one is set.
+            address transferValidator = _transferValidator;
+            if (transferValidator != address(0)) {
+                ITransferValidator721(transferValidator).validateTransfer(
+                    msg.sender,
+                    from,
+                    to,
+                    startTokenId
+                );
+            }
+        }
     }
 }
