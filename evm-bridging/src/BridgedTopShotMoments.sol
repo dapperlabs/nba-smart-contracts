@@ -2,7 +2,6 @@
 pragma solidity 0.8.24;
 
 import {ERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
-import {ERC721URIStorageUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import {ERC721EnumerableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";
 import {ERC721BurnableUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";
 import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
@@ -26,7 +25,6 @@ import {ICrossVM} from "./interfaces/ICrossVM.sol";
 contract BridgedTopShotMoments is
     Initializable,
     ERC721Upgradeable,
-    ERC721URIStorageUpgradeable,
     ERC721BurnableUpgradeable,
     ERC721EnumerableUpgradeable,
     OwnableUpgradeable,
@@ -38,6 +36,7 @@ contract BridgedTopShotMoments is
     string public cadenceNFTIdentifier;
     string public contractMetadata;
     string private _customSymbol;
+    string private _baseTokenURI;
     RoyaltyInfo _royaltyInfo;
 
     error InvalidRoyaltyBasisPoints(uint256 basisPoints);
@@ -53,6 +52,7 @@ contract BridgedTopShotMoments is
         address underlyingToken,
         string memory name_,
         string memory symbol_,
+        string memory baseTokenURI_,
         string memory _cadenceNFTAddress,
         string memory _cadenceNFTIdentifier,
         string memory _contractMetadata) public initializer
@@ -61,6 +61,7 @@ contract BridgedTopShotMoments is
         __Ownable_init(owner);
         __ERC721Wrapper_init(IERC721(underlyingToken));
         _customSymbol = symbol_;
+        _baseTokenURI = baseTokenURI_;
         cadenceNFTAddress = _cadenceNFTAddress;
         cadenceNFTIdentifier = _cadenceNFTIdentifier;
         contractMetadata = _contractMetadata;
@@ -78,15 +79,6 @@ contract BridgedTopShotMoments is
         return _customSymbol;
     }
 
-    function safeMint(address to, uint256 tokenId, string memory uri) public onlyOwner {
-        _safeMint(to, tokenId);
-        _setTokenURI(tokenId, uri);
-    }
-
-    function updateTokenURI(uint256 tokenId, string memory uri) public onlyOwner {
-        _setTokenURI(tokenId, uri);
-    }
-
     function setSymbol(string memory newSymbol) public onlyOwner {
         _setSymbol(newSymbol);
     }
@@ -95,14 +87,18 @@ contract BridgedTopShotMoments is
         return contractMetadata;
     }
 
-    function tokenURI(uint256 tokenId) public view override(ERC721Upgradeable, ERC721URIStorageUpgradeable) returns (string memory) {
+    function setBaseTokenURI(string memory newBaseTokenURI) public onlyOwner {
+        _baseTokenURI = newBaseTokenURI;
+    }
+
+    function tokenURI(uint256 tokenId) public view override(ERC721Upgradeable) returns (string memory) {
         return super.tokenURI(tokenId);
     }
 
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721Upgradeable, ERC721EnumerableUpgradeable, ERC721URIStorageUpgradeable)
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
         returns (bool)
     {
         return interfaceId == type(IERC165).interfaceId || interfaceId == type(IERC721Metadata).interfaceId
@@ -118,6 +114,10 @@ contract BridgedTopShotMoments is
 
     function _setSymbol(string memory newSymbol) internal {
         _customSymbol = newSymbol;
+    }
+
+    function _baseURI() internal view override returns (string memory) {
+        return _baseTokenURI;
     }
 
     function _update(address to, uint256 tokenId, address auth)

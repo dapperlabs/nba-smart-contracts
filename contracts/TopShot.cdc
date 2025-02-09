@@ -1671,6 +1671,12 @@ access(all) contract TopShot: NonFungibleToken {
     // Contract MetadataViews
     //------------------------------------------------------------
 
+    // temporary function to get test EVM address; should be replaced with new bridge metadata
+    // view and actual bridged EVM address
+    access(all) fun getBridgedEVMAddress(): String {
+        return "0x0000000000000000000000000000000000000000"
+    }
+
     // getContractViews returns the metadata view types available for this contract
     access(all) view fun getContractViews(resourceType: Type?): [Type] {
         return [Type<MetadataViews.NFTCollectionData>(), Type<MetadataViews.NFTCollectionDisplay>(), Type<MetadataViews.Royalties>()]

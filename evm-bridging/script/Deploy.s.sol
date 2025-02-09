@@ -18,6 +18,7 @@ contract DeployScript is Script {
         address owner = msg.sender;
         string memory name = "NBA Top Shot";
         string memory symbol = "TOPSHOT";
+        string memory baseTokenURI = "https://api.cryptokitties.co/tokenuri/";
         string memory cadenceNFTAddress = "877931736ee77cff";
         string memory cadenceNFTIdentifier = "A.877931736ee77cff.NFT";
         string memory contractURI = "add-contract-URI-here";
@@ -33,6 +34,7 @@ contract DeployScript is Script {
                     underlyingToken,
                     name,
                     symbol,
+                    baseTokenURI,
                     cadenceNFTAddress,
                     cadenceNFTIdentifier,
                     contractURI

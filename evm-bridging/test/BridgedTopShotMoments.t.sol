@@ -7,6 +7,7 @@ import {Upgrades} from "openzeppelin-foundry-upgrades/src/Upgrades.sol";
 import {BridgedTopShotMoments} from "../src/BridgedTopShotMoments.sol";
 import {ERC721} from "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
+import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 
 // Add this minimal ERC721 implementation for testing
 contract UnderlyingERC721 is ERC721, Ownable {
@@ -21,6 +22,7 @@ contract BridgedTopShotMomentsTest is Test {
     address owner;
     string name;
     string symbol;
+    string baseTokenURI;
     string cadenceNFTAddress;
     string cadenceNFTIdentifier;
     string contractURI;
@@ -28,20 +30,28 @@ contract BridgedTopShotMomentsTest is Test {
     UnderlyingERC721 private underlyingNftContract;
     address underlyingNftContractAddress;
     address underlyingNftContractOwner;
-
+    uint256[] nftIDs;
     // Runs before each test
     function setUp() public {
-        // Deploy underlying NFT contract
+        // Set owner
+        owner = msg.sender;
+
+        // Deploy underlying NFT contract and mint underlying NFTs to owner
         underlyingNftContractOwner = address(0x1111);
+        nftIDs = [101, 102, 103];
         vm.startPrank(underlyingNftContractOwner);
         underlyingNftContract = new UnderlyingERC721("Underlying NFT", "UNFT");
+        for (uint256 i = 0; i < nftIDs.length; i++) {
+            underlyingNftContract.safeMint(owner, nftIDs[i]);
+        }
         vm.stopPrank();
+        assertEq(underlyingNftContract.balanceOf(owner), nftIDs.length);
 
         // Set NFT contract initialization parameters
-        owner = msg.sender;
         underlyingNftContractAddress = address(underlyingNftContract);
         name = "name";
         symbol = "symbol";
+        baseTokenURI = "https://example.com/";
         cadenceNFTAddress = "cadenceNFTAddress";
         cadenceNFTIdentifier = "cadenceNFTIdentifier";
         contractURI = "contractURI";
@@ -56,6 +66,7 @@ contract BridgedTopShotMomentsTest is Test {
                     underlyingNftContractAddress,
                     name,
                     symbol,
+                    baseTokenURI,
                     cadenceNFTAddress,
                     cadenceNFTIdentifier,
                     contractURI
@@ -79,139 +90,121 @@ contract BridgedTopShotMomentsTest is Test {
         assertEq(address(nftContract.underlying()), underlyingNftContractAddress);
     }
 
-    /* Test core ERC721 operations */
 
-    function test_MintNFT() public {
-        address recipient = address(27);
-        uint256 tokenId = 101;
+    /* Test ERC721Wrapper operations */
 
-        // Mint NFT to recipient
+    function test_WrapNFTs() public {
+        // Approve and wrap NFT
         vm.startPrank(owner);
-        nftContract.safeMint(recipient, tokenId, "MOCK_URI");
+        underlyingNftContract.setApprovalForAll(address(nftContract), true);
+        nftContract.depositFor(owner, nftIDs);
         vm.stopPrank();
-
-        // Check NFT exists, owner, balance, and total supply
-        assertTrue(nftContract.exists(tokenId));
-        assertEq(nftContract.ownerOf(tokenId), recipient);
-        assertEq(nftContract.balanceOf(recipient), 1);
-        assertEq(nftContract.totalSupply(), 1);
+        assertEq(nftContract.balanceOf(owner), nftIDs.length);
+        assertEq(underlyingNftContract.balanceOf(owner), 0);
+        for (uint256 i = 0; i < nftIDs.length; i++) {
+            assertEq(nftContract.ownerOf(nftIDs[i]), owner);
+        }
     }
 
-    function test_RevertMintToZeroAddress() public {
-        // Expect revert when minting to zero address
+    function test_RevertWrapNFTsNotApproved() public {
         vm.startPrank(owner);
         vm.expectRevert();
-        nftContract.safeMint(address(0), 1, "MOCK_URI");
+        nftContract.depositFor(owner, nftIDs);
         vm.stopPrank();
     }
 
-    function test_TransferNFT() public {
-        address account1 = address(27);
-        address account2 = address(28);
-        uint256 tokenId = 101;
-
-        // Mint NFT to account1 and check balance
+    function test_RevertWrapNFTsZeroAddress() public {
         vm.startPrank(owner);
-        nftContract.safeMint(account1, tokenId, "MOCK_URI");
+        underlyingNftContract.setApprovalForAll(address(nftContract), true);
+        vm.expectRevert();
+        nftContract.depositFor(address(0), nftIDs);
         vm.stopPrank();
-        assertEq(nftContract.balanceOf(account1), 1);
+    }
+
+    function test_UnwrapNFTs() public {
+        // Approve and wrap NFT
+        vm.startPrank(owner);
+        underlyingNftContract.setApprovalForAll(address(nftContract), true);
+        nftContract.depositFor(owner, nftIDs);
+        vm.stopPrank();
+
+        // Unwrap NFT
+        vm.startPrank(owner);
+        nftContract.withdrawTo(owner, nftIDs);
+        vm.stopPrank();
+        assertEq(underlyingNftContract.balanceOf(owner), nftIDs.length);
+        assertEq(underlyingNftContract.balanceOf(address(nftContract)), 0);
+        for (uint256 i = 0; i < nftIDs.length; i++) {
+            assertEq(underlyingNftContract.ownerOf(nftIDs[i]), owner);
+        }
+    }
+
+    /* Test core ERC721 operations */
+
+    function test_TransferNFT() public {
+        address recipient = address(27);
+
+        // Approve and wrap NFT
+        vm.startPrank(owner);
+        underlyingNftContract.setApprovalForAll(address(nftContract), true);
+        nftContract.depositFor(owner, nftIDs);
+        vm.stopPrank();
 
         // Transfer NFT from account1 to account2 and check balances
-        vm.startPrank(account1);
-        nftContract.safeTransferFrom(account1, account2, tokenId);
+        vm.startPrank(owner);
+        nftContract.safeTransferFrom(owner, recipient, nftIDs[0]);
         vm.stopPrank();
-        assertEq(nftContract.balanceOf(account1), 0);
-        assertEq(nftContract.balanceOf(account2), 1);
-        assertEq(nftContract.ownerOf(tokenId), account2);
+        assertEq(nftContract.balanceOf(owner), nftIDs.length - 1);
+        assertEq(nftContract.balanceOf(recipient), 1);
+        assertEq(nftContract.ownerOf(nftIDs[0]), recipient);
     }
 
     function test_ApproveNFT() public {
-        address recipient = address(27);
         address operator = address(28);
-        uint256 tokenId = 101;
 
-        // Mint NFT to recipient and check balance and approval
+        // Approve and wrap NFT
         vm.startPrank(owner);
-        nftContract.safeMint(recipient, tokenId, "MOCK_URI");
+        underlyingNftContract.setApprovalForAll(address(nftContract), true);
+        nftContract.depositFor(owner, nftIDs);
         vm.stopPrank();
-        assertEq(nftContract.balanceOf(recipient), 1);
-        assertEq(nftContract.getApproved(tokenId), address(0));
 
         // Approve operator for NFT and check approval
-        vm.startPrank(recipient);
-        nftContract.approve(operator, tokenId);
-        vm.stopPrank();
-        assertEq(nftContract.getApproved(tokenId), operator);
-
-        // Transfer NFT from recipient to operator and check owner
-        vm.startPrank(operator);
-        nftContract.safeTransferFrom(recipient, address(29), tokenId);
-        vm.stopPrank();
-        assertEq(nftContract.ownerOf(tokenId), address(29));
-    }
-
-    function test_ApproveForAllNFTs() public {
-        address recipient = address(27);
-        address operator = address(28);
-        uint256 tokenId1 = 101;
-        uint256 tokenId2 = 102;
-
-        // Mint NFTs to recipient and check balance and total supply
         vm.startPrank(owner);
-        nftContract.safeMint(recipient, tokenId1, "MOCK_URI");
-        nftContract.safeMint(recipient, tokenId2, "MOCK_URI");
+        nftContract.approve(operator, nftIDs[0]);
         vm.stopPrank();
-        assertEq(nftContract.balanceOf(recipient), 2);
-        assertEq(nftContract.totalSupply(), 2);
-
-        // Approve operator for all NFTs and check approval
-        vm.startPrank(recipient);
-        nftContract.setApprovalForAll(operator, true);
-        vm.stopPrank();
-        assertEq(nftContract.isApprovedForAll(recipient, operator), true);
-
-        // Transfer NFTs from recipient to operator and check balances
-        vm.startPrank(operator);
-        nftContract.safeTransferFrom(recipient, address(30), tokenId1);
-        nftContract.safeTransferFrom(recipient, address(30), tokenId2);
-        vm.stopPrank();
-        assertEq(nftContract.balanceOf(recipient), 0);
-        assertEq(nftContract.balanceOf(address(30)), 2);
+        assertEq(nftContract.getApproved(nftIDs[0]), operator);
     }
 
     function test_BurnNFT() public {
-        address recipient = address(27);
-        uint256 tokenId = 101;
-
-        // Mint NFT to recipient and check balance
+        // Approve and wrap NFT
         vm.startPrank(owner);
-        nftContract.safeMint(recipient, tokenId, "MOCK_URI");
+        underlyingNftContract.setApprovalForAll(address(nftContract), true);
+        nftContract.depositFor(owner, nftIDs);
         vm.stopPrank();
-        assertEq(nftContract.balanceOf(recipient), 1);
 
         // Burn NFT and check balance
-        vm.startPrank(recipient);
-        nftContract.burn(tokenId);
+        vm.startPrank(owner);
+        nftContract.burn(nftIDs[0]);
         vm.stopPrank();
-        assertFalse(nftContract.exists(tokenId));
-        assertEq(nftContract.balanceOf(recipient), 0);
+        assertFalse(nftContract.exists(nftIDs[0]));
+        assertEq(nftContract.balanceOf(owner), nftIDs.length - 1);
     }
 
-    function test_UpdateTokenURI() public {
-        uint256 tokenId = 100;
+    function test_UpdateBaseTokenURI() public {
+        string memory newBaseTokenURI = "NEW_BASE_URI";
 
-        // Mint NFT to owner and check tokenURI
+        // Approve and wrap NFT
         vm.startPrank(owner);
-        nftContract.safeMint(owner, tokenId, "MOCK_URI");
+        underlyingNftContract.setApprovalForAll(address(nftContract), true);
+        nftContract.depositFor(owner, nftIDs);
         vm.stopPrank();
-        assertEq(nftContract.tokenURI(tokenId), "MOCK_URI");
+        assertEq(nftContract.tokenURI(nftIDs[0]), string(abi.encodePacked(baseTokenURI, Strings.toString(nftIDs[0]))));
 
         // Update tokenURI and check newURI
-        string memory newURI = "NEW_URI";
         vm.startPrank(owner);
-        nftContract.updateTokenURI(tokenId, newURI);
+        nftContract.setBaseTokenURI(newBaseTokenURI);
         vm.stopPrank();
-        assertEq(nftContract.tokenURI(tokenId), newURI);
+        assertEq(nftContract.tokenURI(nftIDs[0]), string(abi.encodePacked(newBaseTokenURI, Strings.toString(nftIDs[0]))));
     }
 
     function test_UpdateERC721Symbol() public {
@@ -241,63 +234,6 @@ contract BridgedTopShotMomentsTest is Test {
         vm.expectRevert();
         nftContract.transferOwnership(newOwner);
         vm.stopPrank();
-    }
-
-    /* Test ERC721Wrapper operations */
-
-    function test_WrapUnderlyingNFT() public {
-        address recipient = address(27);
-        uint256[] memory tokenIds = new uint256[](1);
-        tokenIds[0] = 101;
-
-        // Mint NFT to recipient and check balance and approval
-        vm.startPrank(underlyingNftContractOwner);
-        underlyingNftContract.safeMint(recipient, tokenIds[0]);
-        vm.stopPrank();
-        assertEq(underlyingNftContract.balanceOf(recipient), 1);
-
-        // Approve NFT from underlying contract for wrapping by BridgedTopShotMoments
-        vm.startPrank(recipient);
-        underlyingNftContract.approve(address(nftContract), tokenIds[0]);
-        vm.stopPrank();
-
-        // Wrap NFT and check balance and owner
-        vm.startPrank(recipient);
-        nftContract.depositFor(recipient, tokenIds);
-        vm.stopPrank();
-        assertEq(nftContract.balanceOf(recipient), 1);
-        assertEq(nftContract.ownerOf(tokenIds[0]), recipient);
-    }
-
-    function test_UnwrapUnderlyingNFT() public {
-        address recipient = address(27);
-        uint256[] memory tokenIds = new uint256[](1);
-        tokenIds[0] = 101;
-
-        // Mint NFT to recipient and check balance and approval
-        vm.startPrank(underlyingNftContractOwner);
-        underlyingNftContract.safeMint(recipient, tokenIds[0]);
-        vm.stopPrank();
-        assertEq(underlyingNftContract.balanceOf(recipient), 1);
-
-        // Approve NFT from underlying contract for wrapping by BridgedTopShotMoments
-        vm.startPrank(recipient);
-        underlyingNftContract.approve(address(nftContract), tokenIds[0]);
-        vm.stopPrank();
-
-        // Wrap NFT and check balance and owner
-        vm.startPrank(recipient);
-        nftContract.depositFor(recipient, tokenIds);
-        vm.stopPrank();
-        assertEq(nftContract.balanceOf(recipient), 1);
-        assertEq(nftContract.ownerOf(tokenIds[0]), recipient);
-
-        // Unwrap NFT and check balance and owner
-        vm.startPrank(recipient);
-        nftContract.withdrawTo(recipient, tokenIds);
-        vm.stopPrank();
-        assertEq(underlyingNftContract.balanceOf(recipient), 1);
-        assertEq(underlyingNftContract.ownerOf(tokenIds[0]), recipient);
     }
 
     /* Test Creator Token operations */

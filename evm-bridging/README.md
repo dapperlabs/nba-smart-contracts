@@ -20,6 +20,8 @@ Compile contracts and run tests:
 forge test --force -vvv
 ```
 
+Install Flow CLI: [Instructions](https://developers.flow.com/tools/flow-cli/install)
+
 ### Deploy & Verify Contracts
 
 Load environment variables after populating address and key details:
@@ -43,13 +45,47 @@ forge verify-contract --rpc-url $RPC_URL --verifier $VERIFIER_PROVIDER --verifie
 
 ## Run Transactions
 
+### Direct EVM Calls
+
 Set NFT symbol (admin):
 
 ```sh
 cast send $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --legacy "setSymbol(string)" <new-nft-symbol>
 ```
 
+### EVM Calls From Cadence
+
+Note: Populate arguments in json file before submitting the transactions.
+
+Bridge NFTs to EVM and wrap:
+
+```sh
+flow transactions send ./cadence/transactions/bridge_nfts_to_evm_and_wrap.cdc --args-json "$(cat ./cadence/transactions/bridge_nft_to_evm_and_wrap_args.json)" --network <network> --signer <signer> --gas-limit 8000
+```
+
+Wrap NFTs (NFTs already bridged to EVM):
+
+```sh
+flow transactions send ./cadence/transactions/wrap_nfts.cdc --args-json "$(cat ./cadence/transactions/wrap_nfts_args.json)" --network <network> --signer <signer>
+```
+
+Unwrap NFTs and Bridge NFTs from EVM:
+
+```sh
+flow transactions send ./cadence/transactions/unwrap_nfts_and_bridge_from_evm.cdc --args-json "$(cat ./cadence/transactions/unwrap_nfts_and_bridge_from_evm_args.json)" --network <network> --signer <signer> --gas-limit 8000
+```
+
+Unwrap NFTs:
+
+```sh
+flow transactions send ./cadence/transactions/unwrap_nfts.cdc --args-json "$(cat ./cadence/transactions/unwrap_nfts_args.json)" --network <network> --signer <signer>
+```
+
+
+
 ## Execute Queries
+
+### Direct EVM Calls
 
 BalanceOf:
 ```sh
@@ -59,6 +95,12 @@ cast call $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL "balanceOf(address
 OwnerOf:
 ```sh
 cast call $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL "ownerOf(uint256)(address)" <nft-id>
+```
+
+### EVM Calls From Cadence
+
+```sh
+flow scripts execute ./evm-bridging/cadence/scripts/get_underlying_erc721_address.cdc <nft_contract_flow_address> <nft_contract_evm_address> --network testnet
 ```
 
 ## Misc
