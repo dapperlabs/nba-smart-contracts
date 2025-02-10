@@ -22,6 +22,7 @@ contract BridgedTopShotMomentsTest is Test {
     address owner;
     address underlyingNftContractOwner;
     address underlyingNftContractAddress;
+    address vmBridgeAddress;
 
     string name;
     string symbol;
@@ -51,6 +52,7 @@ contract BridgedTopShotMomentsTest is Test {
 
         // Set NFT contract initialization parameters
         underlyingNftContractAddress = address(underlyingNftContract);
+        vmBridgeAddress = address(0x67890);
         name = "name";
         symbol = "symbol";
         baseTokenURI = "https://example.com/";
@@ -66,6 +68,7 @@ contract BridgedTopShotMomentsTest is Test {
                 (
                     owner,
                     underlyingNftContractAddress,
+                    vmBridgeAddress,
                     name,
                     symbol,
                     baseTokenURI,

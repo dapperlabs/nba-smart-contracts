@@ -20,6 +20,8 @@ import {ITransferValidator721} from "./interfaces/ITransferValidator.sol";
 import {ERC721TransferValidator} from "./lib/ERC721TransferValidator.sol";
 
 import {ICrossVM} from "./interfaces/ICrossVM.sol";
+import {BridgePermissionsUpgradeable} from "./lib/BridgePermissionsUpgradeable.sol";
+import {CrossVMBridgeFulfillmentUpgradeable} from "./lib/CrossVMBridgeFulfillmentUpgradeable.sol";
 
 /**
  * @title ERC-721 BridgedTopShotMoments
@@ -39,6 +41,8 @@ contract BridgedTopShotMoments is
     OwnableUpgradeable,
     ERC721WrapperUpgradeable,
     ERC721TransferValidator,
+    CrossVMBridgeFulfillmentUpgradeable,
+    BridgePermissionsUpgradeable,
     ICrossVM
 {
     // Cadence-specific identifiers for cross-chain bridging
@@ -77,6 +81,7 @@ contract BridgedTopShotMoments is
     function initialize(
         address owner,
         address underlyingToken,
+        address vmBridgeAddress,
         string memory name_,
         string memory symbol_,
         string memory baseTokenURI_,
@@ -90,6 +95,8 @@ contract BridgedTopShotMoments is
         __ERC721_init(name_, symbol_);
         __Ownable_init(owner);
         __ERC721Wrapper_init(IERC721(underlyingToken));
+        __CrossVMBridgeFulfillment_init(vmBridgeAddress);
+        __BridgePermissions_init();
         _customSymbol = symbol_;
         _baseTokenURI = baseTokenURI_;
         cadenceNFTAddress = _cadenceNFTAddress;
@@ -132,7 +139,7 @@ contract BridgedTopShotMoments is
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable, BridgePermissionsUpgradeable, CrossVMBridgeFulfillmentUpgradeable)
         returns (bool)
     {
         return interfaceId == type(IERC165).interfaceId || interfaceId == type(IERC721Metadata).interfaceId
@@ -164,6 +171,10 @@ contract BridgedTopShotMoments is
 
     function _increaseBalance(address account, uint128 value) internal override(ERC721Upgradeable, ERC721EnumerableUpgradeable) {
         super._increaseBalance(account, value);
+    }
+
+    function setBridgePermissions(bool permissions) external onlyOwner {
+        _setPermissions(permissions);
     }
 
     function setRoyaltyInfo(RoyaltyInfo calldata newInfo) external onlyOwner {
