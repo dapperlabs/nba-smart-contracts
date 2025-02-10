@@ -81,7 +81,7 @@ contract BridgedTopShotMoments is
      */
     function initialize(
         address owner,
-        address underlyingToken,
+        address underlyingNftContractAddress,
         address vmBridgeAddress,
         string memory name_,
         string memory symbol_,
@@ -90,12 +90,12 @@ contract BridgedTopShotMoments is
         string memory _cadenceNFTIdentifier,
         string memory _contractMetadata
     ) public initializer {
-        if (underlyingToken == address(0)) {
+        if (underlyingNftContractAddress == address(0)) {
             revert InvalidUnderlyingTokenAddress();
         }
         __ERC721_init(name_, symbol_);
         __Ownable_init(owner);
-        __ERC721Wrapper_init(IERC721(underlyingToken));
+        __ERC721Wrapper_init(IERC721(underlyingNftContractAddress));
         __CrossVMBridgeFulfillment_init(vmBridgeAddress);
         __BridgePermissions_init();
         _customSymbol = symbol_;
