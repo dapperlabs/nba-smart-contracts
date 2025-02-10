@@ -11,6 +11,7 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Metadata.sol";
 import {IERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import {ICreatorToken, ILegacyCreatorToken} from "./interfaces/ICreatorToken.sol";
@@ -34,7 +35,7 @@ contract BridgedTopShotMoments is
     string public cadenceNFTIdentifier;
     string public contractMetadata;
     string private _customSymbol;
-    RoyaltyInfo _royaltyInfo;
+    RoyaltyInfo private _royaltyInfo;
 
     error InvalidRoyaltyBasisPoints(uint256 basisPoints);
     error RoyaltyAddressCannotBeZeroAddress();
@@ -103,7 +104,7 @@ contract BridgedTopShotMoments is
             || interfaceId == type(IERC721Enumerable).interfaceId || interfaceId == type(ERC721BurnableUpgradeable).interfaceId
             || interfaceId == type(OwnableUpgradeable).interfaceId || interfaceId == type(ICrossVM).interfaceId
             || interfaceId == type(ICreatorToken).interfaceId || interfaceId == type(ILegacyCreatorToken).interfaceId
-            || super.supportsInterface(interfaceId);
+            || interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
     }
 
     function exists(uint256 tokenId) public view returns (bool) {
@@ -119,6 +120,10 @@ contract BridgedTopShotMoments is
         override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
         returns (address)
     {
+        // Add the beforeTokenTransfer hook
+        _beforeTokenTransfer(_ownerOf(tokenId), to, tokenId);
+
+        // Call parent implementation
         return super._update(to, tokenId, auth);
     }
 
@@ -152,9 +157,11 @@ contract BridgedTopShotMoments is
         return _royaltyInfo.royaltyBps;
     }
 
+    /**
+     * @dev Implements the IERC2981 interface.
+     */
     function royaltyInfo(
-        uint256,
-        /* _tokenId */
+        uint256 /* _tokenId */,
         uint256 _salePrice
     ) external view returns (address receiver, uint256 royaltyAmount) {
         // Put the royalty info on the stack for more efficient access.
@@ -181,11 +188,10 @@ contract BridgedTopShotMoments is
         _setTransferValidator(newValidator);
     }
 
-    function _beforeTokenTransfers(
+    function _beforeTokenTransfer(
         address from,
         address to,
-        uint256 startTokenId,
-        uint256 /* quantity */
+        uint256 startTokenId
     ) internal virtual {
         if (from != address(0) && to != address(0)) {
             // Call the transfer validator if one is set.
