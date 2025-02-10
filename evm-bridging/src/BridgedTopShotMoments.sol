@@ -29,7 +29,7 @@ import {CrossVMBridgeFulfillmentUpgradeable} from "./lib/CrossVMBridgeFulfillmen
  * @dev This contract implements multiple features:
  * - ERC721 standard functionality with enumeration and burning capabilities
  * - Wrapper functionality to handle NFTs from bridged-deployed contract
- * - Fulfillment functionality for Flow -> EVM bridging
+ * - Fulfillment functionality for Flow -> EVM bridging, once bridge onboarding allowed
  * - Cross-VM compatibility for Flow <-> EVM bridging
  * - Royalty management for secondary sales
  */
@@ -132,6 +132,9 @@ contract BridgedTopShotMoments is
         _baseTokenURI = newBaseTokenURI;
     }
 
+    /**
+     * @notice Returns the token URI for a given token ID.
+     */
     function tokenURI(uint256 tokenId) public view override(ERC721Upgradeable) returns (string memory) {
         return super.tokenURI(tokenId);
     }

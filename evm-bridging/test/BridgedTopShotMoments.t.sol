@@ -6,9 +6,11 @@ import "forge-std/console.sol";
 import {Upgrades} from "openzeppelin-foundry-upgrades/src/Upgrades.sol";
 import {BridgedTopShotMoments} from "../src/BridgedTopShotMoments.sol";
 import {ERC721} from "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
+import {IERC721Errors} from "openzeppelin-contracts/contracts/interfaces/draft-IERC6093.sol";
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
-
+import {CrossVMBridgeFulfillmentUpgradeable} from "../src/lib/CrossVMBridgeFulfillmentUpgradeable.sol";
+import {CrossVMBridgeCallableUpgradeable} from "../src/lib/CrossVMBridgeCallableUpgradeable.sol";
 // Add this minimal ERC721 implementation for testing
 contract UnderlyingERC721 is ERC721, Ownable {
     constructor(string memory name, string memory symbol) ERC721(name, symbol) Ownable(msg.sender) {}
@@ -144,6 +146,37 @@ contract BridgedTopShotMomentsTest is Test {
         }
     }
 
+    /* Test bridge fulfillment */
+
+    function test_FulfillToEVM() public {
+        uint256 nftID = 104;
+        vm.startPrank(vmBridgeAddress);
+        nftContract.fulfillToEVM(owner, nftID, "");
+        vm.stopPrank();
+        assertEq(nftContract.ownerOf(nftID), owner);
+    }
+
+    function test_RevertFulfillToEVMNotEscrowed() public {
+        uint256 nftID = 104;
+        vm.startPrank(vmBridgeAddress);
+        nftContract.fulfillToEVM(owner, nftID, "");
+        vm.stopPrank();
+
+        // Fail to fulfill NFT to EVM
+        vm.startPrank(vmBridgeAddress);
+        vm.expectRevert(abi.encodeWithSelector(CrossVMBridgeFulfillmentUpgradeable.FulfillmentFailedTokenNotEscrowed.selector, nftID, vmBridgeAddress));
+        nftContract.fulfillToEVM(owner, nftID, "");
+        vm.stopPrank();
+    }
+
+    function test_RevertFulfillToEVMNotBridge() public {
+        uint256 nftID = 104;
+        vm.startPrank(owner);
+        vm.expectRevert(abi.encodeWithSelector(CrossVMBridgeCallableUpgradeable.CrossVMBridgeCallableUnauthorizedAccount.selector, owner));
+        nftContract.fulfillToEVM(owner, nftID, "");
+        vm.stopPrank();
+    }
+
     /* Test core ERC721 operations */
 
     function test_TransferNFT() public {
@@ -273,5 +306,19 @@ contract BridgedTopShotMomentsTest is Test {
         vm.stopPrank();
         assertEq(nftContract.royaltyAddress(), owner);
         assertEq(nftContract.royaltyBasisPoints(), royaltyBps);
+
+        address newRoyaltyAddress = address(28);
+        uint96 newRoyaltyBps = 1000;
+        // Set royalty info again and check new info
+        vm.startPrank(owner);
+        nftContract.setRoyaltyInfo(
+            BridgedTopShotMoments.RoyaltyInfo({
+                royaltyAddress: newRoyaltyAddress,
+                royaltyBps: newRoyaltyBps
+            })
+        );
+        vm.stopPrank();
+        assertEq(nftContract.royaltyAddress(), newRoyaltyAddress);
+        assertEq(nftContract.royaltyBasisPoints(), newRoyaltyBps);
     }
 }
