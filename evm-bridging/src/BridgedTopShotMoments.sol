@@ -21,7 +21,16 @@ import {ERC721TransferValidator} from "./lib/ERC721TransferValidator.sol";
 
 import {ICrossVM} from "./interfaces/ICrossVM.sol";
 
-// Initial draft version of the BridgedTopShotMoments contract
+/**
+ * @title ERC-721 BridgedTopShotMoments
+ * @notice An upgradeable ERC721 contract for bridged NBA Top Shot Moments
+ * @dev This contract implements multiple features:
+ * - ERC721 standard functionality with enumeration and burning capabilities
+ * - Wrapper functionality to handle NFTs from bridged-deployed contract
+ * - Fulfillment functionality for Flow -> EVM bridging
+ * - Cross-VM compatibility for Flow <-> EVM bridging
+ * - Royalty management for secondary sales
+ */
 contract BridgedTopShotMoments is
     Initializable,
     ERC721Upgradeable,
@@ -32,21 +41,39 @@ contract BridgedTopShotMoments is
     ERC721TransferValidator,
     ICrossVM
 {
+    // Cadence-specific identifiers for cross-chain bridging
     string public cadenceNFTAddress;
     string public cadenceNFTIdentifier;
+
+    // Metadata-related fields
     string public contractMetadata;
     string private _customSymbol;
     string private _baseTokenURI;
-    RoyaltyInfo _royaltyInfo;
 
+    // Royalty configuration for secondary sales
+    RoyaltyInfo private _royaltyInfo;
+
+    // Error declarations
     error InvalidRoyaltyBasisPoints(uint256 basisPoints);
     error RoyaltyAddressCannotBeZeroAddress();
+    error InvalidUnderlyingTokenAddress();
+
+    // Event declarations
     event RoyaltyInfoUpdated(address receiver, uint256 bps);
+
+    /**
+     * @notice Stores royalty configuration for secondary sales
+     * @dev royaltyBps is in basis points (1/100th of a percent)
+     * e.g., 500 = 5%, max value is 10000 = 100%
+     */
     struct RoyaltyInfo {
         address royaltyAddress;
         uint96 royaltyBps;
     }
 
+    /**
+     * @dev Initializes the contract.
+     */
     function initialize(
         address owner,
         address underlyingToken,
@@ -55,8 +82,11 @@ contract BridgedTopShotMoments is
         string memory baseTokenURI_,
         string memory _cadenceNFTAddress,
         string memory _cadenceNFTIdentifier,
-        string memory _contractMetadata) public initializer
-    {
+        string memory _contractMetadata
+    ) public initializer {
+        if (underlyingToken == address(0)) {
+            revert InvalidUnderlyingTokenAddress();
+        }
         __ERC721_init(name_, symbol_);
         __Ownable_init(owner);
         __ERC721Wrapper_init(IERC721(underlyingToken));
@@ -79,12 +109,16 @@ contract BridgedTopShotMoments is
         return _customSymbol;
     }
 
+    function contractURI() public view returns (string memory) {
+        return contractMetadata;
+    }
+
     function setSymbol(string memory newSymbol) public onlyOwner {
         _setSymbol(newSymbol);
     }
 
-    function contractURI() public view returns (string memory) {
-        return contractMetadata;
+    function setContractURI(string memory newMetadata) external onlyOwner {
+        contractMetadata = newMetadata;
     }
 
     function setBaseTokenURI(string memory newBaseTokenURI) public onlyOwner {
@@ -159,8 +193,7 @@ contract BridgedTopShotMoments is
     }
 
     function royaltyInfo(
-        uint256,
-        /* _tokenId */
+        uint256 /* _tokenId */,
         uint256 _salePrice
     ) external view returns (address receiver, uint256 royaltyAmount) {
         // Put the royalty info on the stack for more efficient access.

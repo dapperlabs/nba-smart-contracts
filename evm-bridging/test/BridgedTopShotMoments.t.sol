@@ -20,6 +20,9 @@ contract UnderlyingERC721 is ERC721, Ownable {
 
 contract BridgedTopShotMomentsTest is Test {
     address owner;
+    address underlyingNftContractOwner;
+    address underlyingNftContractAddress;
+
     string name;
     string symbol;
     string baseTokenURI;
@@ -28,9 +31,8 @@ contract BridgedTopShotMomentsTest is Test {
     string contractURI;
     BridgedTopShotMoments private nftContract;
     UnderlyingERC721 private underlyingNftContract;
-    address underlyingNftContractAddress;
-    address underlyingNftContractOwner;
     uint256[] nftIDs;
+
     // Runs before each test
     function setUp() public {
         // Set owner
@@ -91,10 +93,10 @@ contract BridgedTopShotMomentsTest is Test {
     }
 
 
-    /* Test ERC721Wrapper operations */
+    /* Test wrapping operations */
 
     function test_WrapNFTs() public {
-        // Approve and wrap NFT
+        // Approve and wrap NFTs
         vm.startPrank(owner);
         underlyingNftContract.setApprovalForAll(address(nftContract), true);
         nftContract.depositFor(owner, nftIDs);
@@ -122,13 +124,13 @@ contract BridgedTopShotMomentsTest is Test {
     }
 
     function test_UnwrapNFTs() public {
-        // Approve and wrap NFT
+        // Approve and wrap NFTs
         vm.startPrank(owner);
         underlyingNftContract.setApprovalForAll(address(nftContract), true);
         nftContract.depositFor(owner, nftIDs);
         vm.stopPrank();
 
-        // Unwrap NFT
+        // Unwrap NFTs
         vm.startPrank(owner);
         nftContract.withdrawTo(owner, nftIDs);
         vm.stopPrank();
@@ -190,7 +192,9 @@ contract BridgedTopShotMomentsTest is Test {
         assertEq(nftContract.balanceOf(owner), nftIDs.length - 1);
     }
 
-    function test_UpdateBaseTokenURI() public {
+    /* Test admin operations */
+
+    function test_SetBaseTokenURI() public {
         string memory newBaseTokenURI = "NEW_BASE_URI";
 
         // Approve and wrap NFT
@@ -207,7 +211,7 @@ contract BridgedTopShotMomentsTest is Test {
         assertEq(nftContract.tokenURI(nftIDs[0]), string(abi.encodePacked(newBaseTokenURI, Strings.toString(nftIDs[0]))));
     }
 
-    function test_UpdateERC721Symbol() public {
+    function test_SetERC721Symbol() public {
         // Check initial symbol
         string memory initialSymbol = nftContract.symbol();
         assertEq(initialSymbol, symbol);
@@ -220,7 +224,7 @@ contract BridgedTopShotMomentsTest is Test {
         assertEq(nftContract.symbol(), newSymbol);
     }
 
-    function test_TestTransferContractOwnership() public {
+    function test_TransferContractOwnership() public {
         address newOwner = address(27);
         vm.startPrank(owner);
         nftContract.transferOwnership(newOwner);

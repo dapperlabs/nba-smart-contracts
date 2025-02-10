@@ -729,6 +729,7 @@ access(all) contract TopShot: NonFungibleToken {
                 Type<MetadataViews.NFTCollectionDisplay>(),
                 Type<MetadataViews.Serial>(),
                 Type<MetadataViews.Traits>(),
+                // Type<MetadataViews.CrossVMPointer>(),
                 Type<MetadataViews.Medias>()
             ]
         }
@@ -815,6 +816,8 @@ access(all) contract TopShot: NonFungibleToken {
                             )
                         ]
                     )
+                // case Type<MetadataViews.CrossVMPointer>():
+                //     return TopShot.resolveCrossVMPointerView()
             }
             return nil
         }
@@ -1671,15 +1674,14 @@ access(all) contract TopShot: NonFungibleToken {
     // Contract MetadataViews
     //------------------------------------------------------------
 
-    // temporary function to get test EVM address; should be replaced with new bridge metadata
-    // view and actual bridged EVM address
-    access(all) fun getBridgedEVMAddress(): String {
-        return "0x0000000000000000000000000000000000000000"
-    }
-
     // getContractViews returns the metadata view types available for this contract
     access(all) view fun getContractViews(resourceType: Type?): [Type] {
-        return [Type<MetadataViews.NFTCollectionData>(), Type<MetadataViews.NFTCollectionDisplay>(), Type<MetadataViews.Royalties>()]
+        return [
+            Type<MetadataViews.NFTCollectionData>(),
+            Type<MetadataViews.NFTCollectionDisplay>(),
+            // Type<MetadataViews.CrossVMPointer>(),
+            Type<MetadataViews.Royalties>()
+        ]
     }
 
     // resolveContractView resolves this contract's metadata views
@@ -1723,21 +1725,33 @@ access(all) contract TopShot: NonFungibleToken {
                         "instagram": MetadataViews.ExternalURL("https://www.instagram.com/nbatopshot")
                     }
                 )
-                case Type<MetadataViews.Royalties>():
-                    let royaltyReceiver: Capability<&{FungibleToken.Receiver}> =
-                        getAccount(TopShot.RoyaltyAddress()).capabilities.get<&{FungibleToken.Receiver}>(MetadataViews.getRoyaltyReceiverPublicPath())!
-                    return MetadataViews.Royalties(
-                        [
-                            MetadataViews.Royalty(
-                                receiver: royaltyReceiver,
-                                cut: 0.05,
-                                description: "NBATopShot marketplace royalty"
-                            )
-                        ]
-                    )
+            case Type<MetadataViews.Royalties>():
+                let royaltyReceiver: Capability<&{FungibleToken.Receiver}> =
+                    getAccount(TopShot.RoyaltyAddress()).capabilities.get<&{FungibleToken.Receiver}>(MetadataViews.getRoyaltyReceiverPublicPath())!
+                return MetadataViews.Royalties(
+                    [
+                        MetadataViews.Royalty(
+                            receiver: royaltyReceiver,
+                            cut: 0.05,
+                            description: "NBATopShot marketplace royalty"
+                        )
+                    ]
+                )
+            // case Type<MetadataViews.CrossVMPointer>():
+            //     return self.resolveCrossVMPointerView()
         }
         return nil
     }
+
+    // resolveCrossVMPointerView resolves the CrossVMPointer view
+    // access(all) view fun resolveCrossVMPointerView(): MetadataViews.CrossVMPointer {
+    //     return MetadataViews.CrossVMPointer(
+    //         cadenceType: Type<@TopShot>(),
+    //         cadenceAddress: self.account.address,
+    //         evmContractAddress: "0x0000000000000000000000000000000000000000",
+    //         isCadenceNative: true
+    //     )
+    // }
 
     // -----------------------------------------------------------------------
     // TopShot initialization function
