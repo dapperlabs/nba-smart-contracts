@@ -90,6 +90,12 @@ cast call $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL "tokenURI(uint256)
 
 # Set NFT symbol (admin only)
 cast send $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --legacy "setSymbol(string)" <new-nft-symbol>
+
+# Set transfer validator (admin only)
+cast send $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --legacy "setTransferValidator(address)" <validator-address>
+
+# Set royalty info (admin only)
+cast send $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --legacy "setRoyaltyInfo((address,uint96))" "(<royalty-receiver-address>,<royalty-basis-points>)"
 ```
 
 ### Cadence Operations
@@ -114,6 +120,9 @@ flow transactions send ./cadence/transactions/unwrap_nfts.cdc --args-json "$(cat
 
 # Query ERC721 address
 flow scripts execute ./evm-bridging/cadence/scripts/get_underlying_erc721_address.cdc <nft_contract_flow_address> <nft_contract_evm_address> --network testnet
+
+# Set up royalty management (admin only)
+flow transactions send ./cadence/transactions/admin/set_up_royalty_management.cdc --args-json "$(cat ./cadence/transactions/admin/set_up_royalty_management_args.json)" --network <network> --signer <signer>
 ```
 
 ### Testnet Setup
