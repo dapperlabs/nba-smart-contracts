@@ -4,6 +4,28 @@
 
 The `BridgedTopShotMoments` smart contract enables NBA Top Shot moments to exist on FlowEVM as ERC721 tokens. Each ERC721 token is a 1:1 reference to a Cadence-native NBA Top Shot moment, maintaining the same metadata and uniqueness while allowing users to leverage both Flow and EVM ecosystems.
 
+### Core Features
+
+1. **ERC721 Implementation**
+   - Full ERC721 compliance with enumeration support
+   - Metadata support with customizable base URI
+   - Burning capability for token destruction
+
+2. **Bridge Integration**
+   - Wrapper functionality for ERC721s from bridged-deployed contract
+   - Cross-VM compatibility for Flow ↔ EVM bridging (after bridge upgrade allowing custom associations, and after contract is onboarded to the bridge)
+     - Fulfillment of ERC721s from Flow to EVM
+     - Bridge permissions management
+     - Cadence-specific identifiers tracking
+
+3. **Royalty Management**
+   - ERC2981 royalty standard implementation
+   - Transfer validation for royalty enforcement via ERC721C/Token Creator Standard
+   - Configurable royalty rates (in basis points)
+   - Updatable royalty receiver address
+
+> **Note**: This contract is under active development. Features and implementations may change.
+
 
 ## Prerequisites
 
