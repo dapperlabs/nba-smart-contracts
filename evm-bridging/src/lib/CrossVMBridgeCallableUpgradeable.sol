@@ -2,7 +2,7 @@
 pragma solidity 0.8.24;
 
 import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
-import {ICrossVMBridgeFulfillment} from "../interfaces/ICrossVMBridgeFulfillment.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 
 /**
  * @title CrossVMBridgeCallable
@@ -48,5 +48,12 @@ abstract contract CrossVMBridgeCallableUpgradeable is ContextUpgradeable {
         if (vmBridgeAddress() != _msgSender()) {
             revert CrossVMBridgeCallableUnauthorizedAccount(_msgSender());
         }
+    }
+
+    /**
+     * @dev Allows a caller to determine the contract conforms to the `CrossVMFulfillment` interface
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual returns (bool) {
+        return interfaceId == type(IERC165).interfaceId || interfaceId == type(CrossVMBridgeCallableUpgradeable).interfaceId;
     }
 }

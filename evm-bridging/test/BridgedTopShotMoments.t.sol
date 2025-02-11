@@ -9,8 +9,9 @@ import {ERC721} from "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
 import {IERC721Errors} from "openzeppelin-contracts/contracts/interfaces/draft-IERC6093.sol";
 import {Ownable} from "openzeppelin-contracts/contracts/access/Ownable.sol";
 import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
-import {CrossVMBridgeFulfillmentUpgradeable} from "../src/lib/CrossVMBridgeFulfillmentUpgradeable.sol";
+import {CrossVMBridgeERC721FulfillmentUpgradeable} from "../src/lib/CrossVMBridgeERC721FulfillmentUpgradeable.sol";
 import {CrossVMBridgeCallableUpgradeable} from "../src/lib/CrossVMBridgeCallableUpgradeable.sol";
+
 // Add this minimal ERC721 implementation for testing
 contract UnderlyingERC721 is ERC721, Ownable {
     constructor(string memory name, string memory symbol) ERC721(name, symbol) Ownable(msg.sender) {}
@@ -164,7 +165,7 @@ contract BridgedTopShotMomentsTest is Test {
 
         // Fail to fulfill NFT to EVM
         vm.startPrank(vmBridgeAddress);
-        vm.expectRevert(abi.encodeWithSelector(CrossVMBridgeFulfillmentUpgradeable.FulfillmentFailedTokenNotEscrowed.selector, nftID, vmBridgeAddress));
+        vm.expectRevert(abi.encodeWithSelector(CrossVMBridgeERC721FulfillmentUpgradeable.FulfillmentFailedTokenNotEscrowed.selector, nftID, vmBridgeAddress));
         nftContract.fulfillToEVM(owner, nftID, "");
         vm.stopPrank();
     }

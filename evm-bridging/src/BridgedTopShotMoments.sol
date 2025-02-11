@@ -22,7 +22,7 @@ import {ERC721TransferValidator} from "./lib/ERC721TransferValidator.sol";
 
 import {ICrossVM} from "./interfaces/ICrossVM.sol";
 import {BridgePermissionsUpgradeable} from "./lib/BridgePermissionsUpgradeable.sol";
-import {CrossVMBridgeFulfillmentUpgradeable} from "./lib/CrossVMBridgeFulfillmentUpgradeable.sol";
+import {CrossVMBridgeERC721FulfillmentUpgradeable} from "./lib/CrossVMBridgeERC721FulfillmentUpgradeable.sol";
 
 /**
  * @title ERC-721 BridgedTopShotMoments
@@ -42,7 +42,7 @@ contract BridgedTopShotMoments is
     OwnableUpgradeable,
     ERC721WrapperUpgradeable,
     ERC721TransferValidator,
-    CrossVMBridgeFulfillmentUpgradeable,
+    CrossVMBridgeERC721FulfillmentUpgradeable,
     BridgePermissionsUpgradeable,
     ICrossVM
 {
@@ -96,7 +96,7 @@ contract BridgedTopShotMoments is
         __ERC721_init(name_, symbol_);
         __Ownable_init(owner);
         __ERC721Wrapper_init(IERC721(underlyingNftContractAddress));
-        __CrossVMBridgeFulfillment_init(vmBridgeAddress);
+        __CrossVMBridgeERC721Fulfillment_init(vmBridgeAddress);
         __BridgePermissions_init();
         _customSymbol = symbol_;
         _baseTokenURI = baseTokenURI_;
@@ -143,7 +143,7 @@ contract BridgedTopShotMoments is
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721Upgradeable, ERC721EnumerableUpgradeable, BridgePermissionsUpgradeable, CrossVMBridgeFulfillmentUpgradeable)
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable, BridgePermissionsUpgradeable, CrossVMBridgeERC721FulfillmentUpgradeable)
         returns (bool)
     {
         return interfaceId == type(IERC165).interfaceId || interfaceId == type(IERC721Metadata).interfaceId
