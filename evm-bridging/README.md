@@ -97,6 +97,9 @@ cast send $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL --private-key $DEP
 > **Note**: Populate arguments in json file before submitting the transactions.
 
 ```sh
+# Transfer erc721 NFTs
+flow transactions send ./cadence/transactions/transfer_erc721s_to_evm_address.cdc --args-json "$(cat ./cadence/transactions/transfer_erc721s_to_evm_address_args.json)" --network <network> --signer <signer>
+
 # Bridge and wrap NFTs
 flow transactions send ./cadence/transactions/bridge_nfts_to_evm_and_wrap.cdc --args-json "$(cat ./cadence/transactions/bridge_nft_to_evm_and_wrap_args.json)" --network <network> --signer <signer> --gas-limit 8000
 

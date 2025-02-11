@@ -12,36 +12,41 @@ import "FlowEVMBridge"
 import "FlowEVMBridgeConfig"
 import "FlowEVMBridgeUtils"
 
-/// Bridges NFTs with provided IDs from Cadence to EVM and wraps them in a wrapper ERC721
+/// Bridges wrapped NFTs with provided IDs from EVM to Cadence
 ///
-/// @param wrapperERC721Address: EVM address of the wrapper ERC721 NFT
-/// @param nftIDs: Array of IDs of the NFTs to wrap
+/// @param wrapperERC721Address: The EVM address of the wrapper ERC721 NFT
+/// @param nftIDs: The ERC721 ids of the NFTs to bridge to Cadence from EVM
 ///
-transaction(
-    wrapperERC721Address: String,
-    nftIDs: [UInt64]
-) {
-    let nftType: Type
-    let collection: auth(NonFungibleToken.Withdraw) &{NonFungibleToken.Collection}
-    let coa: auth(EVM.Bridge, EVM.Call) &EVM.CadenceOwnedAccount
-    let scopedProvider: @ScopedFTProviders.ScopedFTProvider
+transaction(wrapperERC721Address: String, nftIDs: [UInt256]) {
 
-    prepare(signer: auth(CopyValue, BorrowValue, IssueStorageCapabilityController, PublishCapability, SaveValue) &Account) {
+    let nftType: Type
+    let collection: &{NonFungibleToken.Collection}
+    let scopedProvider: @ScopedFTProviders.ScopedFTProvider
+    let coa: auth(EVM.Bridge, EVM.Call) &EVM.CadenceOwnedAccount
+
+    prepare(signer: auth(BorrowValue, CopyValue, IssueStorageCapabilityController, PublishCapability, SaveValue, UnpublishCapability) &Account) {
+        /* --- Reference the signer's CadenceOwnedAccount --- */
+        //
         // Borrow a reference to the signer's COA
-        self.coa = signer.storage.borrow<auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount>(from: /storage/evm)
-            ?? panic("No COA found in signer's account")
+        self.coa = signer.storage.borrow<auth(EVM.Bridge, EVM.Call) &EVM.CadenceOwnedAccount>(from: /storage/evm)
+            ?? panic("Could not borrow COA signer's account at path /storage/evm")
 
         // Get NFT identifier from EVM contract
         let nftIdentifier = getNFTIdentifier(self.coa, EVM.addressFromString(wrapperERC721Address))
 
-        // Get NFT collection info
+        /* --- Construct the NFT type --- */
+        //
+        // Construct the NFT type from the provided identifier
         self.nftType = CompositeType(nftIdentifier)
             ?? panic("Could not construct NFT type from identifier: ".concat(nftIdentifier))
+        // Parse the NFT identifier into its components
         let nftContractAddress = FlowEVMBridgeUtils.getContractAddress(fromType: self.nftType)
             ?? panic("Could not get contract address from identifier: ".concat(nftIdentifier))
         let nftContractName = FlowEVMBridgeUtils.getContractName(fromType: self.nftType)
             ?? panic("Could not get contract name from identifier: ".concat(nftIdentifier))
 
+        /* --- Reference the signer's NFT Collection --- */
+        //
         // Borrow a reference to the NFT collection, configuring if necessary
         let viewResolver = getAccount(nftContractAddress).contracts.borrow<&{ViewResolver}>(name: nftContractName)
             ?? panic("Could not borrow ViewResolver from NFT contract with name "
@@ -52,21 +57,22 @@ transaction(
                 viewType: Type<MetadataViews.NFTCollectionData>()
             ) as! MetadataViews.NFTCollectionData?
             ?? panic("Could not resolve NFTCollectionData view for NFT type ".concat(self.nftType.identifier))
-        self.collection = signer.storage.borrow<auth(NonFungibleToken.Withdraw) &{NonFungibleToken.Collection}>(
-                from: collectionData.storagePath
-            ) ?? panic("Could not borrow a NonFungibleToken Collection from the signer's storage path "
-                .concat(collectionData.storagePath.toString()))
+        if signer.storage.borrow<&{NonFungibleToken.Collection}>(from: collectionData.storagePath) == nil {
+            signer.storage.save(<-collectionData.createEmptyCollection(), to: collectionData.storagePath)
+            signer.capabilities.unpublish(collectionData.publicPath)
+            let collectionCap = signer.capabilities.storage.issue<&{NonFungibleToken.Collection}>(collectionData.storagePath)
+            signer.capabilities.publish(collectionCap, at: collectionData.publicPath)
+        }
+        self.collection = signer.storage.borrow<&{NonFungibleToken.Collection}>(from: collectionData.storagePath)
+            ?? panic("Could not borrow a NonFungibleToken Collection from the signer's storage path "
+                    .concat(collectionData.storagePath.toString()))
 
-        // Withdraw the requested NFT & set a cap on the withdrawable bridge fee
+        /* --- Configure a ScopedFTProvider --- */
+        //
+        // Set a cap on the withdrawable bridge fee
         var approxFee = FlowEVMBridgeUtils.calculateBridgeFee(
                 bytes: 400_000 // 400 kB as upper bound on movable storage used in a single transaction
             ) + (FlowEVMBridgeConfig.baseFee * UFix64(nftIDs.length))
-
-        // Check that the NFT is onboarded
-        let requiresOnboarding = FlowEVMBridge.typeRequiresOnboarding(self.nftType)
-            ?? panic("Bridge does not support the requested asset type ".concat(nftIdentifier))
-        assert(!requiresOnboarding, message: "NFT must be onboarded before bridging and wrapping")
-
         // Issue and store bridge-dedicated Provider Capability in storage if necessary
         if signer.storage.type(at: FlowEVMBridgeConfig.providerCapabilityStoragePath) == nil {
             let providerCap = signer.capabilities.storage.issue<auth(FungibleToken.Withdraw) &{FungibleToken.Provider}>(
@@ -74,57 +80,58 @@ transaction(
             )
             signer.storage.save(providerCap, to: FlowEVMBridgeConfig.providerCapabilityStoragePath)
         }
-
         // Copy the stored Provider capability and create a ScopedFTProvider
         let providerCapCopy = signer.storage.copy<Capability<auth(FungibleToken.Withdraw) &{FungibleToken.Provider}>>(
-            from: FlowEVMBridgeConfig.providerCapabilityStoragePath)
-                ?? panic("Invalid FungibleToken Provider Capability found in storage at path "
-                    .concat(FlowEVMBridgeConfig.providerCapabilityStoragePath.toString()))
+                from: FlowEVMBridgeConfig.providerCapabilityStoragePath
+            ) ?? panic("Invalid FungibleToken Provider Capability found in storage at path "
+                .concat(FlowEVMBridgeConfig.providerCapabilityStoragePath.toString()))
         let providerFilter = ScopedFTProviders.AllowanceFilter(approxFee)
         self.scopedProvider <- ScopedFTProviders.createScopedFTProvider(
-            provider: providerCapCopy,
-            filters: [ providerFilter ],
-            expiration: getCurrentBlock().timestamp + 1.0
-        )
+                provider: providerCapCopy,
+                filters: [ providerFilter ],
+                expiration: getCurrentBlock().timestamp + 1.0
+            )
     }
 
     execute {
-        // Iterate over requested IDs and bridge each NFT to the signer's COA in EVM
-        for id in nftIDs {
-            // Withdraw the NFT & ensure it's the correct type
-            let nft <-self.collection.withdraw(withdrawID: id)
-            assert(
-                nft.getType() == self.nftType,
-                message: "Bridged nft type mismatch - requested: ".concat(self.nftType.identifier)
-                    .concat(", received: ").concat(nft.getType().identifier)
-            )
-            // Execute the bridge to EVM for the current ID
-            self.coa.depositNFT(
-                nft: <-nft,
-                feeProvider: &self.scopedProvider as auth(FungibleToken.Withdraw) &{FungibleToken.Provider}
-            )
-        }
-
-        // Destroy the ScopedFTProvider
-        destroy self.scopedProvider
-
         // Get contract addresses
         let wrapperAddress = EVM.addressFromString(wrapperERC721Address)
         let underlyingAddress = getUnderlyingERC721Address(self.coa, wrapperAddress)
 
         // Approve contract to withdraw underlying NFTs from signer's coa
-        call(self.coa, underlyingAddress,
+        call(self.coa, wrapperAddress,
             functionSig: "setApprovalForAll(address,bool)",
-            args: [wrapperAddress, true]
+            args: [underlyingAddress, true]
         )
 
-        // Wrap NFTs with provided IDs
+        // Unwrap NFTs with provided IDs
         call(self.coa, wrapperAddress,
-            functionSig: "depositFor(address,uint256[])",
+            functionSig: "withdrawTo(address,uint256[])",
             args: [self.coa.address(), nftIDs]
         )
+
+        // Iterate over the provided nftIDs
+        for id in nftIDs {
+            // Execute the bridge
+            let nft: @{NonFungibleToken.NFT} <- self.coa.withdrawNFT(
+                type: self.nftType,
+                id: id,
+                feeProvider: &self.scopedProvider as auth(FungibleToken.Withdraw) &{FungibleToken.Provider}
+            )
+            // Ensure the bridged nft is the correct type
+            assert(
+                nft.getType() == self.nftType,
+                message: "Bridged nft type mismatch - requested: ".concat(self.nftType.identifier)
+                    .concat(", received: ").concat(nft.getType().identifier)
+            )
+            // Deposit the bridged NFT into the signer's collection
+            self.collection.deposit(token: <-nft)
+        }
+        // Destroy the ScopedFTProvider
+        destroy self.scopedProvider
     }
 }
+
 
 /// Gets the NFT identifier from the EVM contract
 ///
@@ -145,6 +152,8 @@ access(all) fun getNFTIdentifier(
 
     return decodedResult[0] as! String
 }
+
+
 
 /// Gets the underlying ERC721 address
 ///
