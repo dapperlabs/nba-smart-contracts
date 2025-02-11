@@ -16,6 +16,7 @@ import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
 import {IERC721Metadata} from "@openzeppelin/contracts/interfaces/IERC721Metadata.sol";
 import {IERC721Enumerable} from "@openzeppelin/contracts/interfaces/IERC721Enumerable.sol";
 import {ICrossVMBridgeERC721Fulfillment} from "../src/interfaces/ICrossVMBridgeERC721Fulfillment.sol";
+import {ICrossVMBridgeCallable} from "../src/interfaces/ICrossVMBridgeCallable.sol";
 import {ICrossVM} from "../src/interfaces/ICrossVM.sol";
 import {ICreatorToken, ILegacyCreatorToken} from "../src/interfaces/ICreatorToken.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
@@ -194,7 +195,7 @@ contract BridgedTopShotMomentsTest is Test {
 
         // Fail to fulfill NFT to EVM
         vm.startPrank(vmBridgeAddress);
-        vm.expectRevert(abi.encodeWithSelector(CrossVMBridgeERC721FulfillmentUpgradeable.FulfillmentFailedTokenNotEscrowed.selector, nftID, vmBridgeAddress));
+        vm.expectRevert(abi.encodeWithSelector(ICrossVMBridgeERC721Fulfillment.FulfillmentFailedTokenNotEscrowed.selector, nftID, vmBridgeAddress));
         nftContract.fulfillToEVM(owner, nftID, "");
         vm.stopPrank();
     }
@@ -202,7 +203,7 @@ contract BridgedTopShotMomentsTest is Test {
     function test_RevertFulfillToEVMNotBridge() public {
         uint256 nftID = 104;
         vm.startPrank(owner);
-        vm.expectRevert(abi.encodeWithSelector(CrossVMBridgeCallableUpgradeable.CrossVMBridgeCallableUnauthorizedAccount.selector, owner));
+        vm.expectRevert(abi.encodeWithSelector(ICrossVMBridgeCallable.CrossVMBridgeCallableUnauthorizedAccount.selector, owner));
         nftContract.fulfillToEVM(owner, nftID, "");
         vm.stopPrank();
     }
