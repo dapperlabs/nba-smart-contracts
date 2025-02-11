@@ -1,113 +1,99 @@
-# <h1 align="center"> NBA TopShot on FlowEVM [Initial Draft Version] </h1>
-
-**! This directory currently contains work in progress only !**
+# <h1 align="center"> NBA TopShot on FlowEVM </h1>
 
 ## Introduction
 
-The `BridgedTopShotMoments` smart contract facilitates the creation of 1:1 ERC721 references for existing Cadence-native NBA Top Shot moments. By associating these references with the same metadata, it ensures seamless integration and interaction between Cadence and FlowEVM environments. This allows users to enjoy the benefits of both ecosystems while maintaining the integrity and uniqueness of their NBA Top Shot moments.
+The `BridgedTopShotMoments` smart contract enables NBA Top Shot moments to exist on FlowEVM as ERC721 tokens. Each ERC721 token is a 1:1 reference to a Cadence-native NBA Top Shot moment, maintaining the same metadata and uniqueness while allowing users to leverage both Flow and EVM ecosystems.
 
-## Getting Started
 
-Install Foundry:
+## Prerequisites
+
+1. Install Foundry:
 
 ```sh
 curl -L https://foundry.paradigm.xyz | bash
 foundryup
 ```
 
-Compile contracts and run tests:
+2. Install Flow CLI: [Instructions](https://developers.flow.com/tools/flow-cli/install)
+
+## Development
+
+1. Compile and test contracts:
+
 ```sh
 forge test --force -vvv
 ```
 
-Install Flow CLI: [Instructions](https://developers.flow.com/tools/flow-cli/install)
+2. Set up environment:
 
-### Deploy & Verify Contracts
-
-Load environment variables after populating address and key details:
 
 ```sh
 cp .env.example.testnet .env
+# Add your account details to .env and source it
 source .env
 ```
 
-Run script to deploy and verify contracts (proxy and implementation):
+3. Deploy and verify contracts:
 
 ```sh
+# Deploy both proxy and implementation contracts
 forge script --rpc-url $RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --legacy script/Deploy.s.sol:DeployScript --broadcast --verify --verifier $VERIFIER_PROVIDER --verifier-url $VERIFIER_URL
-```
 
-If verification fails for one or both contracts, verify separately:
-
-```sh
+# If verification fails, verify individually
 forge verify-contract --rpc-url $RPC_URL --verifier $VERIFIER_PROVIDER --verifier-url $VERIFIER_URL <address-of-contract-to-verify>
 ```
 
-## Run Transactions
+## Usage
 
-### Direct EVM Calls
-
-Set NFT symbol (admin):
+### EVM Operations
 
 ```sh
+# Approve operator for a NFT
+cast send $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL --private-key <private-key> --legacy "approve(address,uint256)" <operator-address> <token-id>
+
+# Approve operator for all NFTs
+cast send $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL --private-key <private-key> --legacy "setApprovalForAll(address,bool)" <operator-address> <true>
+
+# Transfer NFT
+cast send $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL --private-key <private-key> --legacy "safeTransferFrom(address,address,uint256)" <from-address> <to-address> <token-id>
+
+# Query balance
+cast call $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL "balanceOf(address)(uint256)" $DEPLOYER_ADDRESS
+
+# Query owner
+cast call $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL "ownerOf(uint256)(address)" <nft-id>
+
+# Query token URI
+cast call $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL "tokenURI(uint256)(string)" <nft-id>
+
+# Set NFT symbol (admin only)
 cast send $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --legacy "setSymbol(string)" <new-nft-symbol>
 ```
 
-### EVM Calls From Cadence
+### Cadence Operations
 
-Note: Populate arguments in json file before submitting the transactions.
-
-Bridge NFTs to EVM and wrap:
+> **Note**: Populate arguments in json file before submitting the transactions.
 
 ```sh
+# Bridge and wrap NFTs
 flow transactions send ./cadence/transactions/bridge_nfts_to_evm_and_wrap.cdc --args-json "$(cat ./cadence/transactions/bridge_nft_to_evm_and_wrap_args.json)" --network <network> --signer <signer> --gas-limit 8000
-```
 
-Wrap NFTs (NFTs already bridged to EVM):
-
-```sh
+# Wrap already-bridged NFTs
 flow transactions send ./cadence/transactions/wrap_nfts.cdc --args-json "$(cat ./cadence/transactions/wrap_nfts_args.json)" --network <network> --signer <signer>
-```
 
-Unwrap NFTs and Bridge NFTs from EVM:
-
-```sh
+# Unwrap and bridge back NFTs
 flow transactions send ./cadence/transactions/unwrap_nfts_and_bridge_from_evm.cdc --args-json "$(cat ./cadence/transactions/unwrap_nfts_and_bridge_from_evm_args.json)" --network <network> --signer <signer> --gas-limit 8000
-```
 
-Unwrap NFTs:
-
-```sh
+# Unwrap NFTs
 flow transactions send ./cadence/transactions/unwrap_nfts.cdc --args-json "$(cat ./cadence/transactions/unwrap_nfts_args.json)" --network <network> --signer <signer>
-```
 
-
-
-## Execute Queries
-
-### Direct EVM Calls
-
-BalanceOf:
-```sh
-cast call $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL "balanceOf(address)(uint256)" $DEPLOYER_ADDRESS
-```
-
-OwnerOf:
-```sh
-cast call $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL "ownerOf(uint256)(address)" <nft-id>
-```
-
-### EVM Calls From Cadence
-
-```sh
+# Query ERC721 address
 flow scripts execute ./evm-bridging/cadence/scripts/get_underlying_erc721_address.cdc <nft_contract_flow_address> <nft_contract_evm_address> --network testnet
 ```
 
-## Misc
+### Testnet Setup
 
-Fund testnet Flow EVM account:
-
-1. Use Flow Faucet: https://faucet.flow.com/fund-account
+1. Get testnet FLOW from [Flow Faucet](https://faucet.flow.com/fund-account)
 
 2. Transfer FLOW to EVM address:
 

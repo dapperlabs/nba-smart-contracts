@@ -12,6 +12,16 @@ import {Strings} from "openzeppelin-contracts/contracts/utils/Strings.sol";
 import {CrossVMBridgeERC721FulfillmentUpgradeable} from "../src/lib/CrossVMBridgeERC721FulfillmentUpgradeable.sol";
 import {CrossVMBridgeCallableUpgradeable} from "../src/lib/CrossVMBridgeCallableUpgradeable.sol";
 
+import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
+import {IERC721Metadata} from "@openzeppelin/contracts/interfaces/IERC721Metadata.sol";
+import {IERC721Enumerable} from "@openzeppelin/contracts/interfaces/IERC721Enumerable.sol";
+import {ICrossVMBridgeERC721Fulfillment} from "../src/interfaces/ICrossVMBridgeERC721Fulfillment.sol";
+import {ICrossVM} from "../src/interfaces/ICrossVM.sol";
+import {ICreatorToken, ILegacyCreatorToken} from "../src/interfaces/ICreatorToken.sol";
+import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
+import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
+import {IBridgePermissions} from "../src/interfaces/IBridgePermissions.sol";
+
 // Add this minimal ERC721 implementation for testing
 contract UnderlyingERC721 is ERC721, Ownable {
     constructor(string memory name, string memory symbol) ERC721(name, symbol) Ownable(msg.sender) {}
@@ -86,6 +96,21 @@ contract BridgedTopShotMomentsTest is Test {
         nftContract = BridgedTopShotMoments(proxyAddr);
     }
 
+    /* Test interface implementations */
+
+    function test_SupportsInterface() public view {
+        assertEq(nftContract.supportsInterface(type(IERC165).interfaceId), true);
+        assertEq(nftContract.supportsInterface(type(IERC721).interfaceId), true);
+        assertEq(nftContract.supportsInterface(type(IERC721Metadata).interfaceId), true);
+        assertEq(nftContract.supportsInterface(type(IERC721Enumerable).interfaceId), true);
+        assertEq(nftContract.supportsInterface(type(ICrossVM).interfaceId), true);
+        assertEq(nftContract.supportsInterface(type(ICreatorToken).interfaceId), true);
+        assertEq(nftContract.supportsInterface(type(ILegacyCreatorToken).interfaceId), true);
+        assertEq(nftContract.supportsInterface(type(IERC2981).interfaceId), true);
+        assertEq(nftContract.supportsInterface(type(ICrossVMBridgeERC721Fulfillment).interfaceId), true);
+        assertEq(nftContract.supportsInterface(type(IBridgePermissions).interfaceId), true);
+    }
+
     /* Test contract initialization */
 
     function test_GetContractInfo() public view {
@@ -96,6 +121,10 @@ contract BridgedTopShotMomentsTest is Test {
         assertEq(nftContract.getCadenceIdentifier(), cadenceNFTIdentifier);
         assertEq(nftContract.contractURI(), contractURI);
         assertEq(address(nftContract.underlying()), underlyingNftContractAddress);
+        assertEq(nftContract.vmBridgeAddress(), vmBridgeAddress);
+        assertEq(nftContract.getTransferValidator(), address(0));
+        assertEq(nftContract.royaltyAddress(), address(0));
+        assertEq(nftContract.royaltyBasisPoints(), 0);
     }
 
 
