@@ -40,7 +40,7 @@ contract BridgedTopShotMoments is
 
     error InvalidRoyaltyBasisPoints(uint256 basisPoints);
     error RoyaltyAddressCannotBeZeroAddress();
-    event RoyaltyInfoUpdated(address indexed receiver, uint256 bps);
+    event RoyaltyInfoUpdated(address receiver, uint256 bps);
     struct RoyaltyInfo {
         address royaltyAddress;
         uint96 royaltyBps;
