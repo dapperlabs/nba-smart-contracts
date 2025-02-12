@@ -63,6 +63,16 @@ abstract contract CrossVMBridgeERC721FulfillmentUpgradeable is ICrossVMBridgeERC
     }
 
     /**
+     * @dev Returns whether the token is exists or not defined positively by whether the owner of
+     * the token is 0x0.
+     * 
+     * @param _id the ID of the token in question
+     */
+    function exists(uint256 _id) public view returns (bool) {
+        return _ownerOf(_id) != address(0);
+    }
+
+    /**
      * @dev Allows a caller to determine the contract conforms to implemented interfaces
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(CrossVMBridgeCallableUpgradeable, ERC721Upgradeable, IERC165) returns (bool) {

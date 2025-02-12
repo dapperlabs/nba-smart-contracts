@@ -166,10 +166,6 @@ contract BridgedTopShotMoments is
             || interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    function exists(uint256 tokenId) public view returns (bool) {
-        return _ownerOf(tokenId) != address(0);
-    }
-
     function _setSymbol(string memory newSymbol) internal {
         _customSymbol = newSymbol;
     }

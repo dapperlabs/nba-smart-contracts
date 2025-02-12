@@ -1,4 +1,3 @@
-
 pragma solidity 0.8.24;
 
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
@@ -25,6 +24,8 @@ interface ICrossVMBridgeERC721Fulfillment is IERC165 {
      * @param _id the ID of the token in question
      */
     function isEscrowed(uint256 _id) external view returns (bool);
+
+    function exists(uint256 _id) external view returns (bool);
 
     /**
      * @dev Fulfills the bridge request, minting (if non-existent) or transferring (if escrowed) the
