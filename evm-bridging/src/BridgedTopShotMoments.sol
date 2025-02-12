@@ -29,7 +29,8 @@ contract BridgedTopShotMoments is
     ERC721EnumerableUpgradeable,
     OwnableUpgradeable,
     ERC721TransferValidator,
-    ICrossVM
+    ICrossVM,
+    IERC2981
 {
     string public cadenceNFTAddress;
     string public cadenceNFTIdentifier;
@@ -39,7 +40,7 @@ contract BridgedTopShotMoments is
 
     error InvalidRoyaltyBasisPoints(uint256 basisPoints);
     error RoyaltyAddressCannotBeZeroAddress();
-    event RoyaltyInfoUpdated(address receiver, uint256 bps);
+    event RoyaltyInfoUpdated(address indexed receiver, uint256 bps);
     struct RoyaltyInfo {
         address royaltyAddress;
         uint96 royaltyBps;
@@ -97,7 +98,7 @@ contract BridgedTopShotMoments is
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721Upgradeable, ERC721EnumerableUpgradeable, ERC721URIStorageUpgradeable)
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable, ERC721URIStorageUpgradeable, IERC165)
         returns (bool)
     {
         return interfaceId == type(IERC165).interfaceId || interfaceId == type(IERC721Metadata).interfaceId
