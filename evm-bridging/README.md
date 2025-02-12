@@ -50,7 +50,7 @@ forge test --force -vvv
 
 
 ```sh
-cp .env.example.testnet .env
+cp .env.flowevm.testnet.example .env
 # Add your account details to .env and source it
 source .env
 ```

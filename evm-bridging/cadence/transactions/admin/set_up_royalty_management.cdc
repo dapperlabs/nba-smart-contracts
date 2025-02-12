@@ -29,7 +29,7 @@ transaction(
         // Set royalty info
         call(coa, EVM.addressFromString(erc721C),
             functionSig: "setRoyaltyInfo((address,uint96))",
-            args: [[EVM.addressFromString(validator), royaltyBasisPoints]]
+            args: [[EVM.addressFromString(royaltyRecipient), royaltyBasisPoints]]
         )
     }
 }
