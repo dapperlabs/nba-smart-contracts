@@ -139,7 +139,11 @@ access(all) fun getNFTIdentifier(
         value: EVM.Balance(attoflow: 0)
     )
 
-    assert(res.status == EVM.Status.successful, message: "Call to get underlying ERC721 address failed")
+    assert(res.status == EVM.Status.successful,
+        message: "Failed to call 'getCadenceIdentifier()'\n\t\t error code: "
+            .concat(res.errorCode.toString()).concat("\n\t\t message: ")
+            .concat(res.errorMessage)
+    )
     let decodedResult = EVM.decodeABI(types: [Type<String>()], data: res.data)
     assert(decodedResult.length == 1, message: "Invalid response length")
 
@@ -159,7 +163,11 @@ access(all) fun getUnderlyingERC721Address(
         value: EVM.Balance(attoflow: 0)
     )
 
-    assert(res.status == EVM.Status.successful, message: "Call to get underlying ERC721 address failed")
+    assert(res.status == EVM.Status.successful,
+        message: "Failed to call 'underlying()'\n\t\t error code: "
+            .concat(res.errorCode.toString()).concat("\n\t\t message: ")
+            .concat(res.errorMessage)
+    )
     let decodedResult = EVM.decodeABI(types: [Type<EVM.EVMAddress>()], data: res.data)
     assert(decodedResult.length == 1, message: "Invalid response length")
 

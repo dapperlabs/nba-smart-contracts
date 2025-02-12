@@ -72,7 +72,7 @@ contract BridgedTopShotMomentsTest is Test {
         baseTokenURI = "https://example.com/";
         cadenceNFTAddress = "cadenceNFTAddress";
         cadenceNFTIdentifier = "cadenceNFTIdentifier";
-        contractURI = "contractURI";
+        contractURI = 'data:application/json;utf8,{"name": "Name of NFT","description":"Description of NFT"}';
 
         // Deploy NFT contract using UUPS proxy for upgradeability
         address proxyAddr = Upgrades.deployUUPSProxy(

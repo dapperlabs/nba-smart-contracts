@@ -65,6 +65,8 @@ contract BridgedTopShotMoments is
 
     // Event declarations
     event RoyaltyInfoUpdated(address receiver, uint256 bps);
+    event ContractURIUpdated();
+    event MetadataUpdate(uint256 tokenId);
 
     /**
      * @notice Stores royalty configuration for secondary sales
@@ -125,12 +127,22 @@ contract BridgedTopShotMoments is
         _setSymbol(newSymbol);
     }
 
+    /**
+     * @notice Sets the contract URI, whether an offchain metadata URL or a JSON object
+     * (i.e. `data:application/json;utf8,{"name":"...","description":"..."}`).
+     */
     function setContractURI(string memory newMetadata) external onlyOwner {
         contractMetadata = newMetadata;
+
+        // Indicate that the metadata has been updated (https://docs.opensea.io/docs/contract-level-metadata)
+        emit ContractURIUpdated();
     }
 
     function setBaseTokenURI(string memory newBaseTokenURI) public onlyOwner {
         _baseTokenURI = newBaseTokenURI;
+
+        // Indicate that the metadata has been updated (https://docs.opensea.io/docs/metadata-standards#metadata-updates)
+        emit MetadataUpdate(type(uint256).max);
     }
 
     /**

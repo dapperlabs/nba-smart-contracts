@@ -104,25 +104,25 @@ cast send $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL --private-key $DEP
 
 ```sh
 # Transfer erc721 NFTs
-flow transactions send ./cadence/transactions/transfer_erc721s_to_evm_address.cdc --args-json "$(cat ./cadence/transactions/transfer_erc721s_to_evm_address_args.json)" --network <network> --signer <signer>
+flow transactions send ./evm-bridging/cadence/transactions/transfer_erc721s_to_evm_address.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/transfer_erc721s_to_evm_address_args.json)" --network <network> --signer <signer>
 
 # Bridge and wrap NFTs
-flow transactions send ./cadence/transactions/bridge_nfts_to_evm_and_wrap.cdc --args-json "$(cat ./cadence/transactions/bridge_nft_to_evm_and_wrap_args.json)" --network <network> --signer <signer> --gas-limit 8000
+flow transactions send ./evm-bridging/cadence/transactions/bridge_nfts_to_evm_and_wrap.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/bridge_nfts_to_evm_and_wrap_args.json)" --network <network> --signer <signer> --gas-limit 8000
 
 # Wrap already-bridged NFTs
-flow transactions send ./cadence/transactions/wrap_nfts.cdc --args-json "$(cat ./cadence/transactions/wrap_nfts_args.json)" --network <network> --signer <signer>
+flow transactions send ./evm-bridging/cadence/transactions/wrap_nfts.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/wrap_nfts_args.json)" --network <network> --signer <signer>
 
 # Unwrap and bridge back NFTs
-flow transactions send ./cadence/transactions/unwrap_nfts_and_bridge_from_evm.cdc --args-json "$(cat ./cadence/transactions/unwrap_nfts_and_bridge_from_evm_args.json)" --network <network> --signer <signer> --gas-limit 8000
+flow transactions send ./evm-bridging/cadence/transactions/unwrap_nfts_and_bridge_from_evm.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/unwrap_nfts_and_bridge_from_evm_args.json)" --network <network> --signer <signer> --gas-limit 8000
 
 # Unwrap NFTs
-flow transactions send ./cadence/transactions/unwrap_nfts.cdc --args-json "$(cat ./cadence/transactions/unwrap_nfts_args.json)" --network <network> --signer <signer>
+flow transactions send ./evm-bridging/cadence/transactions/unwrap_nfts.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/unwrap_nfts_args.json)" --network <network> --signer <signer>
 
 # Query ERC721 address
 flow scripts execute ./evm-bridging/cadence/scripts/get_underlying_erc721_address.cdc <nft_contract_flow_address> <nft_contract_evm_address> --network testnet
 
 # Set up royalty management (admin only)
-flow transactions send ./cadence/transactions/admin/set_up_royalty_management.cdc --args-json "$(cat ./cadence/transactions/admin/set_up_royalty_management_args.json)" --network <network> --signer <signer>
+flow transactions send ./evm-bridging/cadence/transactions/admin/set_up_royalty_management.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/admin/set_up_royalty_management_args.json)" --network <network> --signer <signer>
 ```
 
 ### Testnet Setup
@@ -132,7 +132,7 @@ flow transactions send ./cadence/transactions/admin/set_up_royalty_management.cd
 2. Transfer FLOW to EVM address:
 
 ```sh
-flow transactions send ./cadence/transfer_flow_to_evm_address.cdc <evm_address_hex> <ufix64_amount> --network testnet --signer testnet-account
+flow transactions send ./evm-bridging/cadence/transactions/transfer_flow_to_evm_address.cdc <evm_address_hex> <ufix64_amount> --network testnet --signer testnet-account
 ```
 
 ## Useful links
