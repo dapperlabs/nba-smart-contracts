@@ -7,9 +7,10 @@ The `BridgedTopShotMoments` smart contract enables NBA Top Shot moments to exist
 ### Core Features
 
 1. **ERC721 Implementation**
-   - Full ERC721 compliance with enumeration support
-   - Metadata support with customizable base URI
-   - Burning capability for token destruction
+   - Full ERC721 compliance with enumeration and burning capabilities
+   - NFT metadata support with customizable base URI
+   - Ownable contract for admin operations
+   - Upgradeable via UUPS proxy
 
 2. **Bridge Integration**
    - Wrapper functionality for ERC721s from bridged-deployed contract
