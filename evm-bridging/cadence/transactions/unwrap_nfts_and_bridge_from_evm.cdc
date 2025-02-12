@@ -94,18 +94,8 @@ transaction(wrapperERC721Address: String, nftIDs: [UInt256]) {
     }
 
     execute {
-        // Get contract addresses
-        let wrapperAddress = EVM.addressFromString(wrapperERC721Address)
-        let underlyingAddress = getUnderlyingERC721Address(self.coa, wrapperAddress)
-
-        // Approve contract to withdraw underlying NFTs from signer's coa
-        call(self.coa, wrapperAddress,
-            functionSig: "setApprovalForAll(address,bool)",
-            args: [underlyingAddress, true]
-        )
-
         // Unwrap NFTs with provided IDs
-        call(self.coa, wrapperAddress,
+        call(self.coa, EVM.addressFromString(wrapperERC721Address),
             functionSig: "withdrawTo(address,uint256[])",
             args: [self.coa.address(), nftIDs]
         )
