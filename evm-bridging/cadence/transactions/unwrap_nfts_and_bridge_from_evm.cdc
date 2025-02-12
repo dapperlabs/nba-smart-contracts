@@ -95,7 +95,7 @@ transaction(wrapperERC721Address: String, nftIDs: [UInt256]) {
 
     execute {
         // Unwrap NFTs with provided IDs
-        call(self.coa, EVM.addressFromString(wrapperERC721Address),
+        mustCall(self.coa, EVM.addressFromString(wrapperERC721Address),
             functionSig: "withdrawTo(address,uint256[])",
             args: [self.coa.address(), nftIDs]
         )
@@ -167,7 +167,7 @@ access(all) fun getUnderlyingERC721Address(
 
 /// Calls a function on an EVM contract from provided coa
 ///
-access(all) fun call(
+access(all) fun mustCall(
     _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
     _ contractAddr: EVM.EVMAddress,
     functionSig: String,

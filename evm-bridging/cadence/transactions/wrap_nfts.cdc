@@ -24,13 +24,13 @@ transaction(
         let underlyingAddress = getUnderlyingERC721Address(self.coa, wrapperAddress)
 
         // Approve contract to withdraw underlying NFTs from signer's coa
-        call(self.coa, underlyingAddress,
+        mustCall(self.coa, underlyingAddress,
             functionSig: "setApprovalForAll(address,bool)",
             args: [wrapperAddress, true]
         )
 
         // Wrap NFTs with provided IDs
-        call(self.coa, wrapperAddress,
+        mustCall(self.coa, wrapperAddress,
             functionSig: "depositFor(address,uint256[])",
             args: [self.coa.address(), nftIDs]
         )
@@ -59,7 +59,7 @@ access(all) fun getUnderlyingERC721Address(
 
 /// Calls a function on an EVM contract from provided coa
 ///
-access(all) fun call(
+access(all) fun mustCall(
     _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
     _ contractAddr: EVM.EVMAddress,
     functionSig: String,

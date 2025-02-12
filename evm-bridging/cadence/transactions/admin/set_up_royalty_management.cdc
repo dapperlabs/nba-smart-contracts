@@ -21,13 +21,13 @@ transaction(
             ?? panic("Could not find coa in signer's account.")
 
         // Set validator contract
-        call(coa, EVM.addressFromString(erc721C),
+        mustCall(coa, EVM.addressFromString(erc721C),
             functionSig: "setTransferValidator(address)",
             args: [EVM.addressFromString(validator)]
         )
 
         // Set royalty info
-        call(coa, EVM.addressFromString(erc721C),
+        mustCall(coa, EVM.addressFromString(erc721C),
             functionSig: "setRoyaltyInfo((address,uint96))",
             args: [[EVM.addressFromString(royaltyRecipient), royaltyBasisPoints]]
         )
@@ -36,7 +36,7 @@ transaction(
 
 /// Calls a function on an EVM contract from provided coa
 ///
-access(all) fun call(
+access(all) fun mustCall(
     _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
     _ contractAddr: EVM.EVMAddress,
     functionSig: String,

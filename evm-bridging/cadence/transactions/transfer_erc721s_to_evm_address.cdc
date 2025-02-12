@@ -25,7 +25,7 @@ transaction(
 
         // Transfer NFTs from signer's COA to provided EVM address
         for nftID in nftIDs {
-            call(coa, erc721,
+            mustCall(coa, erc721,
                 functionSig: "safeTransferFrom(address,address,uint256)",
                 args: [coa.address(), to, nftID]
             )
@@ -35,7 +35,7 @@ transaction(
 
 /// Calls a function on an EVM contract from provided coa
 ///
-access(all) fun call(
+access(all) fun mustCall(
     _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
     _ contractAddr: EVM.EVMAddress,
     functionSig: String,
