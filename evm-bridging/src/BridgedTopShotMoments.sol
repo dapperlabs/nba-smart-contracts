@@ -44,7 +44,8 @@ contract BridgedTopShotMoments is
     ERC721TransferValidator,
     CrossVMBridgeERC721FulfillmentUpgradeable,
     BridgePermissionsUpgradeable,
-    ICrossVM
+    ICrossVM,
+    IERC2981
 {
     // Cadence-specific identifiers for cross-chain bridging
     string public cadenceNFTAddress;
@@ -155,7 +156,7 @@ contract BridgedTopShotMoments is
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721Upgradeable, ERC721EnumerableUpgradeable, BridgePermissionsUpgradeable, CrossVMBridgeERC721FulfillmentUpgradeable)
+        override(ERC721Upgradeable, ERC721EnumerableUpgradeable, BridgePermissionsUpgradeable, CrossVMBridgeERC721FulfillmentUpgradeable, IERC165)
         returns (bool)
     {
         return interfaceId == type(IERC165).interfaceId || interfaceId == type(IERC721Metadata).interfaceId
