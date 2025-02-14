@@ -18,10 +18,12 @@ contract DeployScript is Script {
         address owner = msg.sender;
         string memory name = "NBA Top Shot";
         string memory symbol = "TOPSHOT";
+        string memory baseTokenURI = "https://api.cryptokitties.co/tokenuri/";
         string memory cadenceNFTAddress = "877931736ee77cff";
         string memory cadenceNFTIdentifier = "A.877931736ee77cff.NFT";
-        string memory contractURI = "add-contract-URI-here";
-
+        string memory contractURI = 'data:application/json;utf8,{"name": "Name of NFT","description":"Description of NFT"}';
+        address underlyingNftContractAddress = address(0x12345);
+        address vmBridgeAddress = address(0x67890);
         // Deploy NFT contract using UUPS proxy for upgradeability
         address proxyAddr = Upgrades.deployUUPSProxy(
             "BridgedTopShotMoments.sol",
@@ -29,8 +31,11 @@ contract DeployScript is Script {
                 BridgedTopShotMoments.initialize,
                 (
                     owner,
+                    underlyingNftContractAddress,
+                    vmBridgeAddress,
                     name,
                     symbol,
+                    baseTokenURI,
                     cadenceNFTAddress,
                     cadenceNFTIdentifier,
                     contractURI

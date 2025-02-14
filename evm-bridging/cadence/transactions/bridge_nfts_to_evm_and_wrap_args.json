@@ -1,0 +1,15 @@
+[
+    {
+        "type": "String",
+        "value": ""
+    },
+    {
+        "type": "Array",
+        "value": [
+            {
+                "type": "UInt64",
+                "value": ""
+            }
+        ]
+    }
+]

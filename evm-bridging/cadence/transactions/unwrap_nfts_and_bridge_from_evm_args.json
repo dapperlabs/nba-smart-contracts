@@ -1,0 +1,19 @@
+[
+    {
+        "type": "String",
+        "value": ""
+    },
+    {
+        "type": "String",
+        "value": ""
+    },
+    {
+        "type": "Array",
+        "value": [
+            {
+                "type": "UInt256",
+                "value": ""
+            }
+        ]
+    }
+]
