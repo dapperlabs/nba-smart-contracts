@@ -34,6 +34,12 @@ transaction(
             functionSig: "depositFor(address,uint256[])",
             args: [self.coa.address(), nftIDs]
         )
+
+        // Revoke approval for contract to withdraw underlying NFTs from signer's coa
+        mustCall(self.coa, underlyingAddress,
+            functionSig: "setApprovalForAll(address,bool)",
+            args: [wrapperAddress, false]
+        )
     }
 }
 

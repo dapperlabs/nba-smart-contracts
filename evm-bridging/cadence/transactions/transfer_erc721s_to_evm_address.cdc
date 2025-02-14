@@ -3,10 +3,11 @@ import "FungibleToken"
 import "FlowToken"
 import "EVM"
 
-/// Transfers an NFT from the signer's COA to an EVM address
+/// Transfers ERC721s from the signer's COA to an EVM address. All tokens must be defined in the same
+/// contract and will be sent to the defined recipient.
 ///
-/// @param erc721Address - The address of the ERC721 contract
-/// @param toEVMAddress - The address to transfer the NFT to
+/// @param erc721Address - The EVM address of the ERC721 contract
+/// @param toEVMAddress - The EVM address to transfer the NFT to
 /// @param nftIDs - The IDs of the NFTs to transfer
 ///
 transaction(
@@ -40,7 +41,7 @@ access(all) fun mustCall(
     _ contractAddr: EVM.EVMAddress,
     functionSig: String,
     args: [AnyStruct],
-) {
+): EVM.EVMResult {
     let res = coa.call(
         to: contractAddr,
         data: EVM.encodeABIWithSignature(functionSig, args),
@@ -53,4 +54,6 @@ access(all) fun mustCall(
             .concat(res.errorCode.toString()).concat("\n\t\t message: ")
             .concat(res.errorMessage)
     )
+
+    return res
 }

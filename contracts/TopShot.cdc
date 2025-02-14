@@ -1746,7 +1746,7 @@ access(all) contract TopShot: NonFungibleToken {
     // resolveCrossVMPointerView resolves the CrossVMPointer view
     // access(all) view fun resolveCrossVMPointerView(): MetadataViews.CrossVMPointer {
     //     return MetadataViews.CrossVMPointer(
-    //         cadenceType: Type<@TopShot>(),
+    //         cadenceType: Type<@TopShot.NFT>(),
     //         cadenceAddress: self.account.address,
     //         evmContractAddress: "0x0000000000000000000000000000000000000000",
     //         isCadenceNative: true

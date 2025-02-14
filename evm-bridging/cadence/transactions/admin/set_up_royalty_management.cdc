@@ -5,9 +5,9 @@ import "EVM"
 
 /// Sets up royalty management for an ERC721 contract
 ///
-/// @param erc721C - The address of the ERC721 contract
-/// @param validator - The address of the validator contract
-/// @param royaltyRecipient - The address of the royalty recipient
+/// @param erc721C - The EVM address of the ERC721 contract
+/// @param validator - The EVM address of the validator contract
+/// @param royaltyRecipient - The EVM address of the royalty recipient
 /// @param royaltyBasisPoints - The royalty basis points (0-10000)
 transaction(
     erc721C: String,
@@ -41,7 +41,7 @@ access(all) fun mustCall(
     _ contractAddr: EVM.EVMAddress,
     functionSig: String,
     args: [AnyStruct],
-) {
+): EVM.EVMResult {
     let res = coa.call(
         to: contractAddr,
         data: EVM.encodeABIWithSignature(functionSig, args),
@@ -54,4 +54,6 @@ access(all) fun mustCall(
             .concat(res.errorCode.toString()).concat("\n\t\t message: ")
             .concat(res.errorMessage)
     )
+
+    return res
 }

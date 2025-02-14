@@ -14,7 +14,7 @@ The `BridgedTopShotMoments` smart contract enables NBA Top Shot moments to exist
 
 2. **Bridge Integration**
    - Wrapper functionality for ERC721s from bridged-deployed contract
-   - Cross-VM compatibility for Flow ↔ EVM bridging (after bridge upgrade allowing custom associations, and after contract is onboarded to the bridge)
+   - Cross-VM compatibility for Flow ↔ EVM bridging (after [FLIP-318](https://github.com/onflow/flips/pull/319) implementation allowing custom associations, and after contract is onboarded to the bridge)
      - Fulfillment of ERC721s from Flow to EVM
      - Bridge permissions management
      - Cadence-specific identifiers tracking
