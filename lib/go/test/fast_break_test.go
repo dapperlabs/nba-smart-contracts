@@ -44,6 +44,21 @@ func TestFastBreak(t *testing.T) {
 	metadataViewsAddr := flow.HexToAddress("f8d6e0586b0a20c7")
 	env.MetadataViewsAddress = metadataViewsAddr.String()
 
+	evmAddr := flow.HexToAddress("f8d6e0586b0a20c7")
+	env.EVMAddress = evmAddr.String()
+
+	// Deploy CrossVMMetadataViews contract
+	crossVMMetadataViewsKey, _ := test.AccountKeyGenerator().NewWithSigner()
+	crossVMMetadataViewsCode := contracts.GenerateCrossVMMetadataViewsContract(evmAddr.String(), viewResolverAddr.String())
+	crossVMMetadataViewsAddr, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{crossVMMetadataViewsKey}, []sdktemplates.Contract{
+		{
+			Name:   "CrossVMMetadataViews",
+			Source: string(crossVMMetadataViewsCode),
+		},
+	})
+	assert.Nil(t, err)
+	env.CrossVMMetadataViewsAddress = crossVMMetadataViewsAddr.String()
+
 	// Deploy TopShot Locking contract
 	lockingKey, lockingSigner := test.AccountKeyGenerator().NewWithSigner()
 	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
@@ -60,7 +75,17 @@ func TestFastBreak(t *testing.T) {
 	env.FTSwitchboardAddress = topShotRoyaltyAddr.String()
 
 	// Deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(defaultfungibleTokenAddr, nftAddr.String(), metadataViewsAddr.String(), viewResolverAddr.String(), topShotLockingAddr.String(), topShotRoyaltyAddr.String(), Network)
+	topshotCode := contracts.GenerateTopShotContract(
+		defaultfungibleTokenAddr,
+		nftAddr.String(),
+		metadataViewsAddr.String(),
+		viewResolverAddr.String(),
+		crossVMMetadataViewsAddr.String(),
+		evmAddr.String(),
+		topShotLockingAddr.String(),
+		topShotRoyaltyAddr.String(),
+		Network,
+	)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, topshotAddrErr := adapter.CreateAccount(context.Background(), []*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{

@@ -48,6 +48,8 @@ import NonFungibleToken from 0xNFTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 import ViewResolver from 0xVIEWRESOLVERADDRESS
+import CrossVMMetadataViews from 0xCROSSVMMETADATAVIEWSADDRESS
+import EVM from 0xEVMADDRESS
 
 access(all) contract TopShot: NonFungibleToken {
     // -----------------------------------------------------------------------
@@ -727,9 +729,9 @@ access(all) contract TopShot: NonFungibleToken {
                 Type<MetadataViews.ExternalURL>(),
                 Type<MetadataViews.NFTCollectionData>(),
                 Type<MetadataViews.NFTCollectionDisplay>(),
+                Type<CrossVMMetadataViews.EVMPointer>(),
                 Type<MetadataViews.Serial>(),
                 Type<MetadataViews.Traits>(),
-                // Type<MetadataViews.CrossVMPointer>(),
                 Type<MetadataViews.Medias>()
             ]
         }
@@ -797,6 +799,8 @@ access(all) contract TopShot: NonFungibleToken {
                     return TopShot.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionData>())
                 case Type<MetadataViews.NFTCollectionDisplay>():
                     return TopShot.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionDisplay>())
+                case Type<CrossVMMetadataViews.EVMPointer>():
+                    return TopShot.resolveContractView(resourceType: nil, viewType: Type<CrossVMMetadataViews.EVMPointer>())
                 case Type<MetadataViews.Traits>():
                     return self.resolveTraitsView()
                 case Type<MetadataViews.Medias>():
@@ -816,8 +820,6 @@ access(all) contract TopShot: NonFungibleToken {
                             )
                         ]
                     )
-                // case Type<MetadataViews.CrossVMPointer>():
-                //     return TopShot.resolveCrossVMPointerView()
             }
             return nil
         }
@@ -1679,13 +1681,13 @@ access(all) contract TopShot: NonFungibleToken {
         return [
             Type<MetadataViews.NFTCollectionData>(),
             Type<MetadataViews.NFTCollectionDisplay>(),
-            // Type<MetadataViews.CrossVMPointer>(),
+            Type<CrossVMMetadataViews.EVMPointer>(),
             Type<MetadataViews.Royalties>()
         ]
     }
 
     // resolveContractView resolves this contract's metadata views
-    access(all) view fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
+    access(all) fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
         post {
             result == nil || result!.getType() == viewType: "The returned view must be of the given type or nil"
         }
@@ -1737,21 +1739,17 @@ access(all) contract TopShot: NonFungibleToken {
                         )
                     ]
                 )
-            // case Type<MetadataViews.CrossVMPointer>():
-            //     return self.resolveCrossVMPointerView()
+            case Type<CrossVMMetadataViews.EVMPointer>():
+                return CrossVMMetadataViews.EVMPointer(
+                    cadenceType: Type<@TopShot.NFT>(),
+                    cadenceContractAddress: self.account.address,
+                    // TODO: Replace with actual EVM contract address
+                    evmContractAddress: EVM.addressFromString("0x1234565789012345657890123456578901234565"),
+                    nativeVM: CrossVMMetadataViews.VM.Cadence
+                )
         }
         return nil
     }
-
-    // resolveCrossVMPointerView resolves the CrossVMPointer view
-    // access(all) view fun resolveCrossVMPointerView(): MetadataViews.CrossVMPointer {
-    //     return MetadataViews.CrossVMPointer(
-    //         cadenceType: Type<@TopShot.NFT>(),
-    //         cadenceAddress: self.account.address,
-    //         evmContractAddress: "0x0000000000000000000000000000000000000000",
-    //         isCadenceNative: true
-    //     )
-    // }
 
     // -----------------------------------------------------------------------
     // TopShot initialization function

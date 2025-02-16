@@ -18,7 +18,7 @@ var addrG = "0G"
 var network = "mainnet"
 
 func TestTopShotContract(t *testing.T) {
-	contract := contracts.GenerateTopShotContract(addrA, addrA, addrA, addrA, addrA, addrA, network)
+	contract := contracts.GenerateTopShotContract(addrA, addrA, addrA, addrA, addrA, addrA, addrA, addrA, network)
 	assert.NotNil(t, contract)
 }
 
