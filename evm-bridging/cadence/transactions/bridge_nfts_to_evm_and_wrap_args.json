@@ -11,5 +11,12 @@
                 "value": ""
             }
         ]
+    },
+    {
+        "type": "Optional",
+        "value": {
+            "type": "String",
+            "value": ""
+        }
     }
 ]

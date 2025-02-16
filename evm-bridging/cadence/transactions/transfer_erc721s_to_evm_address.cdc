@@ -20,17 +20,11 @@ transaction(
         let coa = signer.storage.borrow<auth(EVM.Call) &EVM.CadenceOwnedAccount>(from: /storage/evm)
             ?? panic("Could not find coa in signer's account.")
 
-        // Parse addresses
-        let erc721 = EVM.addressFromString(erc721Address)
-        let to = EVM.addressFromString(toEVMAddress)
-
         // Transfer NFTs from signer's COA to provided EVM address
-        for nftID in nftIDs {
-            mustCall(coa, erc721,
-                functionSig: "safeTransferFrom(address,address,uint256)",
-                args: [coa.address(), to, nftID]
-            )
-        }
+        mustTransferNFTs(coa, EVM.addressFromString(erc721Address),
+            nftIDs: nftIDs,
+            to: EVM.addressFromString(toEVMAddress),
+        )
     }
 }
 
@@ -40,7 +34,7 @@ access(all) fun mustCall(
     _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
     _ contractAddr: EVM.EVMAddress,
     functionSig: String,
-    args: [AnyStruct],
+    args: [AnyStruct]
 ): EVM.EVMResult {
     let res = coa.call(
         to: contractAddr,
@@ -56,4 +50,45 @@ access(all) fun mustCall(
     )
 
     return res
+}
+
+/// Transfers NFTs from the provided COA to the provided EVM address
+///
+access(all) fun mustTransferNFTs(
+    _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
+    _ erc721Address: EVM.EVMAddress,
+    nftIDs: [UInt64],
+    to: EVM.EVMAddress
+) {
+    for id in nftIDs {
+        assert(isOwner(coa, erc721Address, id, coa.address()), message: "NFT not owned by signer's COA")
+        mustCall(coa, erc721Address,
+            functionSig: "safeTransferFrom(address,address,uint256)",
+            args: [coa.address(), to, id]
+        )
+        assert(isOwner(coa, erc721Address, id, to), message: "NFT not transferred to recipient")
+    }
+}
+
+/// Checks if the provided NFT is owned by the provided EVM address
+///
+access(all) fun isOwner(
+    _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
+    _ erc721Address: EVM.EVMAddress,
+    _ nftID: UInt64,
+    _ ownerToCheck: EVM.EVMAddress
+): Bool {
+    let res = coa.call(
+        to: erc721Address,
+        data: EVM.encodeABIWithSignature("ownerOf(uint256)", [nftID]),
+        gasLimit: 100_000,
+        value: EVM.Balance(attoflow: 0)
+    )
+    assert(res.status == EVM.Status.successful, message: "Call to ERC721.ownerOf(uint256) failed")
+    let decodedRes = EVM.decodeABI(types: [Type<EVM.EVMAddress>()], data: res.data)
+    if decodedRes.length == 1 {
+        let actualOwner = decodedRes[0] as! EVM.EVMAddress
+        return actualOwner.equals(ownerToCheck)
+    }
+    return false
 }

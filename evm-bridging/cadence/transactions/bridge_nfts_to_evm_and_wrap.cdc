@@ -3,36 +3,42 @@ import "NonFungibleToken"
 import "ViewResolver"
 import "MetadataViews"
 import "FlowToken"
-
 import "ScopedFTProviders"
-
 import "EVM"
-
 import "FlowEVMBridge"
 import "FlowEVMBridgeConfig"
 import "FlowEVMBridgeUtils"
+import "CrossVMMetadataViews"
 
-/// Bridges NFTs with provided IDs from Cadence to EVM and wraps them in a wrapper ERC721
+/// Bridges NFTs with provided IDs from Cadence to EVM, wrapping them in a wrapper ERC721 if applicable.
 ///
-/// @param wrapperERC721Address: EVM address of the wrapper ERC721 NFT
+/// @param nftIdentifier: The identifier of the NFT to wrap and bridge (e.g., 'A.877931736ee77cff.TopShot.NFT')
 /// @param nftIDs: Array of IDs of the NFTs to wrap
+/// @param recipientEvmAddressIfnotCoa: The EVM address
 ///
 transaction(
-    wrapperERC721Address: String,
-    nftIDs: [UInt64]
+    nftIdentifier: String,
+    nftIDs: [UInt64],
+    recipientEvmAddressIfnotCoa: String?
 ) {
     let nftType: Type
     let collection: auth(NonFungibleToken.Withdraw) &{NonFungibleToken.Collection}
     let coa: auth(EVM.Bridge, EVM.Call) &EVM.CadenceOwnedAccount
     let scopedProvider: @ScopedFTProviders.ScopedFTProvider
+    let viewResolver: &{ViewResolver}
 
     prepare(signer: auth(CopyValue, BorrowValue, IssueStorageCapabilityController, PublishCapability, SaveValue) &Account) {
-        // Borrow a reference to the signer's COA
-        self.coa = signer.storage.borrow<auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount>(from: /storage/evm)
-            ?? panic("No COA found in signer's account")
-
-        // Get NFT identifier from EVM contract
-        let nftIdentifier = getNFTIdentifier(self.coa, EVM.addressFromString(wrapperERC721Address))
+        // Retrieve or create COA in signer's account
+        if let coa = signer.storage.borrow<auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount>(from: /storage/evm) {
+            self.coa = coa
+        } else {
+            signer.storage.save<@EVM.CadenceOwnedAccount>(<- EVM.createCadenceOwnedAccount(), to: /storage/evm)
+            signer.capabilities.publish(
+                signer.capabilities.storage.issue<&EVM.CadenceOwnedAccount>(/storage/evm),
+                at: /public/evm
+            )
+            self.coa = signer.storage.borrow<auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount>(from: /storage/evm)!
+        }
 
         // Get NFT collection info
         self.nftType = CompositeType(nftIdentifier)
@@ -43,11 +49,11 @@ transaction(
             ?? panic("Could not get contract name from identifier: ".concat(nftIdentifier))
 
         // Borrow a reference to the NFT collection, configuring if necessary
-        let viewResolver = getAccount(nftContractAddress).contracts.borrow<&{ViewResolver}>(name: nftContractName)
+        self.viewResolver = getAccount(nftContractAddress).contracts.borrow<&{ViewResolver}>(name: nftContractName)
             ?? panic("Could not borrow ViewResolver from NFT contract with name "
                 .concat(nftContractName).concat(" and address ")
                 .concat(nftContractAddress.toString()))
-        let collectionData = viewResolver.resolveContractView(
+        let collectionData = self.viewResolver.resolveContractView(
                 resourceType: self.nftType,
                 viewType: Type<MetadataViews.NFTCollectionData>()
             ) as! MetadataViews.NFTCollectionData?
@@ -92,7 +98,7 @@ transaction(
         // Iterate over requested IDs and bridge each NFT to the signer's COA in EVM
         for id in nftIDs {
             // Withdraw the NFT & ensure it's the correct type
-            let nft <-self.collection.withdraw(withdrawID: id)
+            let nft <- self.collection.withdraw(withdrawID: id)
             assert(
                 nft.getType() == self.nftType,
                 message: "Bridged nft type mismatch - requested: ".concat(self.nftType.identifier)
@@ -100,7 +106,7 @@ transaction(
             )
             // Execute the bridge to EVM for the current ID
             self.coa.depositNFT(
-                nft: <-nft,
+                nft: <- nft,
                 feeProvider: &self.scopedProvider as auth(FungibleToken.Withdraw) &{FungibleToken.Provider}
             )
         }
@@ -108,52 +114,135 @@ transaction(
         // Destroy the ScopedFTProvider
         destroy self.scopedProvider
 
-        // Get contract addresses
-        let wrapperAddress = EVM.addressFromString(wrapperERC721Address)
-        let underlyingAddress = getUnderlyingERC721Address(self.coa, wrapperAddress)
-
-        // Approve contract to withdraw underlying NFTs from signer's coa
-        mustCall(self.coa, underlyingAddress,
-            functionSig: "setApprovalForAll(address,bool)",
-            args: [wrapperAddress, true]
-        )
-
-        // Wrap NFTs with provided IDs
-        mustCall(self.coa, wrapperAddress,
-            functionSig: "depositFor(address,uint256[])",
-            args: [self.coa.address(), nftIDs]
-        )
-
-        // Revoke approval for contract to withdraw underlying NFTs from signer's coa
-        mustCall(self.coa, underlyingAddress,
-            functionSig: "setApprovalForAll(address,bool)",
-            args: [wrapperAddress, false]
+        // Wrap NFTs if applicable
+        wrapAndTransferNFTsIfApplicable(self.coa,
+            nftIDs: nftIDs,
+            nftType: self.nftType,
+            viewResolver: self.viewResolver,
+            recipientIfNotCoa: recipientEvmAddressIfnotCoa != nil: EVM.addressFromString(recipientEvmAddressIfnotCoa!) ? nil
         )
     }
 }
 
-/// Gets the NFT identifier from the EVM contract
+/// Wraps and transfers bridged NFTs into a project's custom ERC721 wrapper contract on EVM, if applicable.
+/// Enables projects to use their own ERC721 contract while leveraging the bridge's underlying contract,
+/// until direct custom contract support is added to the bridge.
 ///
-access(all) fun getNFTIdentifier(
+/// @param coa: The COA of the signer
+/// @param nftIDs: The IDs of the NFTs to wrap
+/// @param nftType: The type of the NFTs to wrap
+/// @param viewResolver: The ViewResolver of the NFT contract
+/// @param recipientIfNotCoa: The EVM address to transfer the wrapped NFTs to, nil if the NFTs should stay in signer's COA
+///
+access(all) fun wrapAndTransferNFTsIfApplicable(
+    _ coa: auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount,
+    nftIDs: [UInt64],
+    nftType: Type,
+    viewResolver: &{ViewResolver},
+    recipientIfNotCoa: EVM.EVMAddress?
+) {
+    // Get the project-defined ERC721 address if it exists
+    if let crossVMPointer = viewResolver.resolveContractView(
+            resourceType: nftType,
+            viewType: Type<CrossVMMetadataViews.EVMPointer>()
+    ) as! CrossVMMetadataViews.EVMPointer? {
+        // Get the underlying ERC721 address if it exists
+        if let underlyingAddress = getUnderlyingERC721Address(coa, crossVMPointer.evmContractAddress) {
+            // Wrap NFTs if underlying ERC721 address matches bridge's associated address for NFT type
+            if underlyingAddress.equals(FlowEVMBridgeConfig.getEVMAddressAssociated(with: nftType)!) {
+                // Approve contract to withdraw underlying NFTs from signer's coa
+                mustCall(coa, underlyingAddress,
+                    functionSig: "setApprovalForAll(address,bool)",
+                    args: [crossVMPointer.evmContractAddress, true]
+                )
+
+                // Wrap NFTs with provided IDs, and check if the call was successful
+                let res = mustCall(coa, crossVMPointer.evmContractAddress,
+                    functionSig: "depositFor(address,uint256[])",
+                    args: [coa.address(), nftIDs]
+                )
+                let decodedRes = EVM.decodeABI(types: [Type<Bool>()], data: res.data)
+                assert(decodedRes.length == 1, message: "Invalid response length")
+                assert(decodedRes[0] as! Bool, message: "Failed to wrap NFTs")
+
+                // Transfer NFTs to recipient if provided
+                if let to = recipientIfNotCoa {
+                    mustTransferNFTs(coa, crossVMPointer.evmContractAddress, nftIDs: nftIDs, to: to)
+                }
+
+                // Revoke approval for contract to withdraw underlying NFTs from signer's coa
+                mustCall(coa, underlyingAddress,
+                    functionSig: "setApprovalForAll(address,bool)",
+                    args: [crossVMPointer.evmContractAddress, false]
+                )
+            }
+        }
+    }
+}
+
+/// Calls a function on an EVM contract from provided coa
+///
+access(all) fun mustCall(
     _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
-    _ wrapperAddress: EVM.EVMAddress
-): String {
+    _ contractAddr: EVM.EVMAddress,
+    functionSig: String,
+    args: [AnyStruct]
+): EVM.EVMResult {
     let res = coa.call(
-        to: wrapperAddress,
-        data: EVM.encodeABIWithSignature("getCadenceIdentifier()", []),
-        gasLimit: 100_000,
+        to: contractAddr,
+        data: EVM.encodeABIWithSignature(functionSig, args),
+        gasLimit: 400_000,
         value: EVM.Balance(attoflow: 0)
     )
 
     assert(res.status == EVM.Status.successful,
-        message: "Failed to call 'getCadenceIdentifier()'\n\t\t error code: "
+        message: "Failed to call '".concat(functionSig).concat("'\n\t\t error code: ")
             .concat(res.errorCode.toString()).concat("\n\t\t message: ")
             .concat(res.errorMessage)
     )
-    let decodedResult = EVM.decodeABI(types: [Type<String>()], data: res.data)
-    assert(decodedResult.length == 1, message: "Invalid response length")
 
-    return decodedResult[0] as! String
+    return res
+}
+
+/// Transfers NFTs from the provided COA to the provided EVM address
+///
+access(all) fun mustTransferNFTs(
+    _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
+    _ erc721Address: EVM.EVMAddress,
+    nftIDs: [UInt64],
+    to: EVM.EVMAddress
+) {
+    for id in nftIDs {
+        assert(isOwner(coa, erc721Address, id, coa.address()), message: "NFT not owned by signer's COA")
+        mustCall(coa, erc721Address,
+            functionSig: "safeTransferFrom(address,address,uint256)",
+            args: [coa.address(), to, id]
+        )
+        assert(isOwner(coa, erc721Address, id, to), message: "NFT not transferred to recipient")
+    }
+}
+
+/// Checks if the provided NFT is owned by the provided EVM address
+///
+access(all) fun isOwner(
+    _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
+    _ erc721Address: EVM.EVMAddress,
+    _ nftID: UInt64,
+    _ ownerToCheck: EVM.EVMAddress
+): Bool {
+    let res = coa.call(
+        to: erc721Address,
+        data: EVM.encodeABIWithSignature("ownerOf(uint256)", [nftID]),
+        gasLimit: 100_000,
+        value: EVM.Balance(attoflow: 0)
+    )
+    assert(res.status == EVM.Status.successful, message: "Call to ERC721.ownerOf(uint256) failed")
+    let decodedRes = EVM.decodeABI(types: [Type<EVM.EVMAddress>()], data: res.data)
+    if decodedRes.length == 1 {
+        let actualOwner = decodedRes[0] as! EVM.EVMAddress
+        return actualOwner.equals(ownerToCheck)
+    }
+    return false
 }
 
 /// Gets the underlying ERC721 address
@@ -178,26 +267,4 @@ access(all) fun getUnderlyingERC721Address(
     assert(decodedResult.length == 1, message: "Invalid response length")
 
     return decodedResult[0] as! EVM.EVMAddress
-}
-
-/// Calls a function on an EVM contract from provided coa
-///
-access(all) fun mustCall(
-    _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
-    _ contractAddr: EVM.EVMAddress,
-    functionSig: String,
-    args: [AnyStruct],
-) {
-    let res = coa.call(
-        to: contractAddr,
-        data: EVM.encodeABIWithSignature(functionSig, args),
-        gasLimit: 400_000,
-        value: EVM.Balance(attoflow: 0)
-    )
-
-    assert(res.status == EVM.Status.successful,
-        message: "Failed to call '".concat(functionSig).concat("'\n\t\t error code: ")
-            .concat(res.errorCode.toString()).concat("\n\t\t message: ")
-            .concat(res.errorMessage)
-    )
 }
