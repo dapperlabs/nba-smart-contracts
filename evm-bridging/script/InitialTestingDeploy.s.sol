@@ -6,7 +6,7 @@ import "forge-std/console.sol";
 import {Upgrades} from "openzeppelin-foundry-upgrades/src/Upgrades.sol";
 import {BridgedTopShotMoments} from "../src/BridgedTopShotMoments.sol";
 
-contract DeployScript is Script {
+contract InitialTestingScript is Script {
     function setUp() public {}
 
     function run() external returns (address, address) {
