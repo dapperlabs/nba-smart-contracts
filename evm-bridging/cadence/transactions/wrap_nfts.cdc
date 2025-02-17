@@ -69,8 +69,8 @@ access(all) fun mustCall(
     _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
     _ contractAddr: EVM.EVMAddress,
     functionSig: String,
-    args: [AnyStruct],
-) {
+    args: [AnyStruct]
+): EVM.Result {
     let res = coa.call(
         to: contractAddr,
         data: EVM.encodeABIWithSignature(functionSig, args),
@@ -83,4 +83,6 @@ access(all) fun mustCall(
             .concat(res.errorCode.toString()).concat("\n\t\t message: ")
             .concat(res.errorMessage)
     )
+
+    return res
 }

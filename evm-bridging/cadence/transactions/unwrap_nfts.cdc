@@ -54,7 +54,7 @@ access(all) fun mustCall(
     _ contractAddr: EVM.EVMAddress,
     functionSig: String,
     args: [AnyStruct],
-) {
+): EVM.Result {
     let res = coa.call(
         to: contractAddr,
         data: EVM.encodeABIWithSignature(functionSig, args),
@@ -67,4 +67,6 @@ access(all) fun mustCall(
             .concat(res.errorCode.toString()).concat("\n\t\t message: ")
             .concat(res.errorMessage)
     )
+
+    return res
 }
