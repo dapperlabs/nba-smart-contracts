@@ -21,6 +21,7 @@ import (
 // Overflow prefixes signer names with the current network - e.g. "emulator-topshot-signer"
 // Ensure accounts in flow.json are named accordingly
 var networks = []string{"emulator", "testnet", "mainnet"}
+var scriptTypes = []string{"setup", "tests"}
 
 // Addresses by network
 type addressesByNetwork struct {
@@ -87,8 +88,8 @@ func main() {
 	dir, err := os.Getwd()
 	checkNoErr(err)
 
-	// Get network from command line argument
-	network := getSpecifiedNetwork()
+	// Get network and script type from command line argument
+	scriptType, network := getSpecifiedNetworkAndScriptType()
 
 	// Initialize provider
 	p := provider{
@@ -111,6 +112,16 @@ func main() {
 	// Retrieve or create COA
 	p.retrieveOrCreateCOA()
 
+	// Deploy test contract
+	switch scriptType {
+	case "setup":
+		p.setupProject()
+	case "tests":
+		p.tests()
+	}
+}
+
+func (p *provider) setupProject() {
 	// Compile contracts
 	recompileContracts()
 
@@ -150,6 +161,21 @@ func main() {
 	p.setRoyaltyManagement()
 
 	log.Printf("\n\nSETUP COMPLETE!")
+}
+
+func (p *provider) tests() {
+	if p.Network != "emulator" {
+		log.Fatal("Test script can only be run on the emulator network")
+	}
+	testContractAddr := p.deployContract("TestContract", "")
+
+	log.Printf("\t...running test uint array encoding tx")
+	result := p.OverflowState.Tx("tests/test_uint_array_encoding",
+		WithSigner(p.TopshotAccountName),
+		WithArg("evmContractAddress", testContractAddr),
+	)
+	checkNoErr(result.Err)
+	log.Printf("Tx executed%s", separatorString())
 }
 
 func (p *provider) deployContract(name, encodedConstructorData string) string {
@@ -297,17 +323,23 @@ func (p *provider) setRoyaltyManagement() {
 	log.Printf("Royalty management set up%s", separatorString())
 }
 
-// Parse network argument from command line
-func getSpecifiedNetwork() string {
-	if len(os.Args) < 2 {
-		log.Fatal("Please provide a network as an argument: ", networks)
+// Parse script type and network argument from command line
+func getSpecifiedNetworkAndScriptType() (string, string) {
+	if len(os.Args) < 3 {
+		log.Fatal("Please provide a network and script type as an argument: ", networks)
 	}
-	network := os.Args[1]
+	scriptType := os.Args[1]
+	network := os.Args[2]
+
+	if !slices.Contains(scriptTypes, scriptType) {
+		log.Fatal("Please provide a valid script type as an argument: ", scriptTypes)
+	}
 
 	if !slices.Contains(networks, network) {
 		log.Fatal("Please provide a valid network as an argument: ", networks)
 	}
-	return network
+
+	return scriptType, network
 }
 
 // Extract deployed contract address from TransactionExecuted event
