@@ -51,8 +51,6 @@ import ViewResolver from 0xVIEWRESOLVERADDRESS
 import CrossVMMetadataViews from 0xCROSSVMMETADATAVIEWSADDRESS
 import EVM from 0xEVMADDRESS
 
-
-
 access(all) contract TopShot: NonFungibleToken {
     // -----------------------------------------------------------------------
     // TopShot deployment variables
