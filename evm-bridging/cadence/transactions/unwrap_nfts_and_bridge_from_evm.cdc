@@ -232,11 +232,12 @@ access(all) fun isNFTWrapped(
         return false
     }
 
-    // Decode and return the underlying ERC721 address
+    // Decode and compare the addresses
     let decodedResult = EVM.decodeABI(
         types: [Type<EVM.EVMAddress>()],
         data: res.data
     )
     assert(decodedResult.length == 1, message: "Invalid response length")
-    return decodedResult[0] as! EVM.EVMAddress == wrapper
+    let owner = decodedResult[0] as! EVM.EVMAddress
+    return owner.toString() == wrapper.toString()
 }

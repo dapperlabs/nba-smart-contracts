@@ -47,7 +47,9 @@ abstract contract BridgePermissionsUpgradeable is Initializable, ERC165Upgradeab
      * Emits a {PermissionsUpdated} event.
      */
     function _setPermissions(bool permissions) internal {
-        _permissions = permissions;
-        emit PermissionsUpdated(permissions);
+        if (_permissions != permissions) {
+            _permissions = permissions;
+            emit PermissionsUpdated(permissions);
+        }
     }
 }

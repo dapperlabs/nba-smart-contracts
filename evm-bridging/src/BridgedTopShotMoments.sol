@@ -14,6 +14,7 @@ import {IERC721Metadata} from "@openzeppelin/contracts/token/ERC721/extensions/I
 import {IERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
+import {IERC4906} from "@openzeppelin/contracts/interfaces/IERC4906.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 import {ICreatorToken, ILegacyCreatorToken} from "./interfaces/ICreatorToken.sol";
@@ -45,7 +46,8 @@ contract BridgedTopShotMoments is
     CrossVMBridgeERC721FulfillmentUpgradeable,
     BridgePermissionsUpgradeable,
     ICrossVM,
-    IERC2981
+    IERC2981,
+    IERC4906
 {
     // Cadence-specific identifiers for cross-chain bridging
     string public cadenceNFTAddress;
@@ -67,7 +69,6 @@ contract BridgedTopShotMoments is
     // Event declarations
     event RoyaltyInfoUpdated(address receiver, uint256 bps);
     event ContractURIUpdated();
-    event MetadataUpdate(uint256 tokenId);
 
     /**
      * @notice Stores royalty configuration for secondary sales
