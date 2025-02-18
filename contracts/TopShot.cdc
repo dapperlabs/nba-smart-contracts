@@ -48,6 +48,10 @@ import NonFungibleToken from 0xNFTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 import ViewResolver from 0xVIEWRESOLVERADDRESS
+import CrossVMMetadataViews from 0xCROSSVMMETADATAVIEWSADDRESS
+import EVM from 0xEVMADDRESS
+
+
 
 access(all) contract TopShot: NonFungibleToken {
     // -----------------------------------------------------------------------
@@ -729,7 +733,7 @@ access(all) contract TopShot: NonFungibleToken {
                 Type<MetadataViews.NFTCollectionDisplay>(),
                 Type<MetadataViews.Serial>(),
                 Type<MetadataViews.Traits>(),
-                // Type<MetadataViews.CrossVMPointer>(),
+                Type<CrossVMMetadataViews.EVMPointer>()
                 Type<MetadataViews.Medias>()
             ]
         }
@@ -816,8 +820,8 @@ access(all) contract TopShot: NonFungibleToken {
                             )
                         ]
                     )
-                // case Type<MetadataViews.CrossVMPointer>():
-                //     return TopShot.resolveCrossVMPointerView()
+                case Type<CrossVMMetadataViews.EVMPointer>():
+                    return TopShot.resolveContractView(resourceType: nil, viewType: Type<CrossVMMetadataViews.EVMPointer>())
             }
             return nil
         }
@@ -1679,7 +1683,7 @@ access(all) contract TopShot: NonFungibleToken {
         return [
             Type<MetadataViews.NFTCollectionData>(),
             Type<MetadataViews.NFTCollectionDisplay>(),
-            // Type<MetadataViews.CrossVMPointer>(),
+            Type<CrossVMMetadataViews.EVMPointer>()
             Type<MetadataViews.Royalties>()
         ]
     }
@@ -1737,21 +1741,28 @@ access(all) contract TopShot: NonFungibleToken {
                         )
                     ]
                 )
-            // case Type<MetadataViews.CrossVMPointer>():
-            //     return self.resolveCrossVMPointerView()
+            case Type<CrossVMMetadataViews.EVMPointer>():
+               // TODO: update address to be ERC721c contract address
+               let evmContractAddress = EVM.addressFromString(
+                       "0x93DB3a99251224c386ec71a5b06D7BAF3969b680"
+                   )
+               // Since this NFT is distributed in Cadence, it's declared as Cadence-native
+               let nativeVM = CrossVMMetadataViews.VM.Cadence
+               return CrossVMMetadataViews.EVMPointer(
+                   cadenceType: Type<@TopShot.NFT>(),
+                   cadenceContractAddress: self.account.address,
+                   evmContractAddress: evmContractAddress,
+                   nativeVM: nativeVM
+               )
+               case Type<CrossVMMetadataViews.EVMBytesMetadata>():
+                   let bridgedMetadata = (self.resolveView(Type<MetadataViews.EVMBridgedMetadata>()) as! MetadataViews.EVMBridgedMetadata?)!
+                   let uri = bridgedMetadata.uri.uri()
+                   let encodedURI = EVM.encodeABI([uri])
+                   let evmBytes = EVM.EVMBytes(value: encodedURI)
+                   return CrossVMMetadataViews.EVMBytesMetadata(bytes: evmBytes)
         }
         return nil
     }
-
-    // resolveCrossVMPointerView resolves the CrossVMPointer view
-    // access(all) view fun resolveCrossVMPointerView(): MetadataViews.CrossVMPointer {
-    //     return MetadataViews.CrossVMPointer(
-    //         cadenceType: Type<@TopShot>(),
-    //         cadenceAddress: self.account.address,
-    //         evmContractAddress: "0x0000000000000000000000000000000000000000",
-    //         isCadenceNative: true
-    //     )
-    // }
 
     // -----------------------------------------------------------------------
     // TopShot initialization function
