@@ -76,6 +76,10 @@ forge verify-contract --rpc-url $RPC_URL --verifier $VERIFIER_PROVIDER --verifie
 # If deploying on emulator, start emulator
 flow emulator --config-path ./cadence/transactions/admin/deploy/flow.json --transaction-fees
 
+# Use go 1.22.3
+go install golang.org/dl/go1.22.3@latest
+go1.22.3 download
+
 # Deploy both proxy and implementation contracts
 go1.22.3 run main.go <network-name>
 ```

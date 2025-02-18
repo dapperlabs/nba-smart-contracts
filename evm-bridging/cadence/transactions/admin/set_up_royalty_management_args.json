@@ -1,18 +1,18 @@
 [
     {
         "type": "String",
-        "value": ""
+        "value": "0x7C2EE6E1A84599F82373c262375248a539893354"
     },
     {
         "type": "String",
-        "value": ""
+        "value": "0xA000027A9B2802E1ddf7000061001e5c005A0000"
     },
     {
         "type": "String",
-        "value": ""
+        "value": "0xaB0244cc460d946728BAd1ae6E5ff4C1DEf95087"
     },
     {
         "type": "UInt128",
-        "value": ""
+        "value": "500"
     }
 ]

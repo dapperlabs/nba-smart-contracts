@@ -95,6 +95,15 @@
 		"emulator-topshot-signer" : {
 			"address": "f8d6e0586b0a20c7",
 			"key": "fe809cc837ddcd7e761a482721c050aae43657448db859f4eb8fc421e9609938"
+		},
+		"testnet-topshot-signer": {
+			"address": "877931736ee77cff",
+			"key": {
+				"type": "google-kms",
+				"index": 2,
+				"hashAlgorithm": "SHA2_256",
+				"resourceID": "projects/dl-studio-platform-staging/locations/global/keyRings/flow-testnet-cosigners/cryptoKeys/topshot-signer/cryptoKeyVersions/1"
+			}
 		}
 	}
 }
