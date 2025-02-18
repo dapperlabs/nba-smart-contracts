@@ -134,24 +134,15 @@ flow transactions send ./evm-bridging/cadence/transactions/unwrap_nfts_and_bridg
 flow transactions send ./evm-bridging/cadence/transactions/unwrap_nfts.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/unwrap_nfts_args.json)" --network <network> --signer <signer>
 
 # Query ERC721 address
-flow scripts execute ./evm-bridging/cadence/scripts/get_underlying_erc721_address.cdc <nft_contract_flow_address> <nft_contract_evm_address> --network testnet
+flow scripts execute ./evm-bridging/cadence/scripts/get_evm_address_string.cdc <flow_address> --network testnet
 
 # Set up royalty management (admin only)
 flow transactions send ./evm-bridging/cadence/transactions/admin/set_up_royalty_management.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/admin/set_up_royalty_management_args.json)" --network <network> --signer <signer>
 ```
 
-### Testnet Setup
-
-1. Get testnet FLOW from [Flow Faucet](https://faucet.flow.com/fund-account)
-
-2. Transfer FLOW to EVM address:
-
-```sh
-flow transactions send ./evm-bridging/cadence/transactions/transfer_flow_to_evm_address.cdc <evm_address_hex> <ufix64_amount> --network testnet --signer testnet-account
-```
-
 ## Useful links
 
+- [Flow Faucet](https://faucet.flow.com/fund-account)
 - [Flow Developers Doc - Using Foundry with Flow](https://developers.flow.com/evm/guides/foundry)
 - [Flow Developers Doc - Interacting with COAs from Cadence](https://developers.flow.com/evm/cadence/interacting-with-coa)
 - [evm-testnet.flowscan.io](https://evm-testnet.flowscan.io)
