@@ -820,6 +820,12 @@ access(all) contract TopShot: NonFungibleToken {
                     )
                 case Type<CrossVMMetadataViews.EVMPointer>():
                     return TopShot.resolveContractView(resourceType: nil, viewType: Type<CrossVMMetadataViews.EVMPointer>())
+                case Type<CrossVMMetadataViews.EVMBytesMetadata>():
+                    let bridgedMetadata = (self.resolveView(Type<MetadataViews.EVMBridgedMetadata>()) as! MetadataViews.EVMBridgedMetadata?)!
+                    let uri = bridgedMetadata.uri.uri()
+                    let encodedURI = EVM.encodeABI([uri])
+                    let evmBytes = EVM.EVMBytes(value: encodedURI)
+                    return CrossVMMetadataViews.EVMBytesMetadata(bytes: evmBytes)
             }
             return nil
         }
@@ -1752,12 +1758,6 @@ access(all) contract TopShot: NonFungibleToken {
                    evmContractAddress: evmContractAddress,
                    nativeVM: nativeVM
                )
-               case Type<CrossVMMetadataViews.EVMBytesMetadata>():
-                   let bridgedMetadata = (self.resolveView(Type<MetadataViews.EVMBridgedMetadata>()) as! MetadataViews.EVMBridgedMetadata?)!
-                   let uri = bridgedMetadata.uri.uri()
-                   let encodedURI = EVM.encodeABI([uri])
-                   let evmBytes = EVM.EVMBytes(value: encodedURI)
-                   return CrossVMMetadataViews.EVMBytesMetadata(bytes: evmBytes)
         }
         return nil
     }
