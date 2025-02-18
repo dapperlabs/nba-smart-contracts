@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -23,13 +24,13 @@ var networks = []string{"emulator", "testnet", "mainnet"}
 
 // Addresses by network
 type addressesByNetwork struct {
-	topShotFlow                  string
-	topshotCoa                   string
-	bridgedDeployedTopshotERC721 string
-	flowEvmBridgeCoa             string
-	transferValidator            string
-	royaltyRecipient             string
-	proxyContract                string
+	topShotFlow                 string
+	topshotCoa                  string
+	bridgeDeployedTopshotERC721 string
+	flowEvmBridgeCoa            string
+	transferValidator           string
+	royaltyRecipient            string
+	proxyContract               string
 }
 
 const (
@@ -39,23 +40,23 @@ const (
 // Addresses by network
 var addresses = map[string]addressesByNetwork{
 	"emulator": {
-		topShotFlow:                  "abcdef1234567890",
-		flowEvmBridgeCoa:             placeholderEvmAddress,
-		bridgedDeployedTopshotERC721: placeholderEvmAddress,
-		transferValidator:            "0xA000027A9B2802E1ddf7000061001e5c005A0000",
-		royaltyRecipient:             placeholderEvmAddress,
+		topShotFlow:                 "abcdef1234567890",
+		flowEvmBridgeCoa:            placeholderEvmAddress,
+		bridgeDeployedTopshotERC721: placeholderEvmAddress,
+		transferValidator:           "0xA000027A9B2802E1ddf7000061001e5c005A0000",
+		royaltyRecipient:            placeholderEvmAddress,
 	},
 	"testnet": {
-		topShotFlow:                  "877931736ee77cff",
-		flowEvmBridgeCoa:             "0x0000000000000000000000023f946ffbc8829bfd",
-		bridgedDeployedTopshotERC721: "0xB3627E6f7F1cC981217f789D7737B1f3a93EC519",
-		transferValidator:            "0xA000027A9B2802E1ddf7000061001e5c005A0000", // StrictAuthorizedTransferSecurityRegistry
-		royaltyRecipient:             placeholderEvmAddress,
+		topShotFlow:                 "877931736ee77cff",
+		flowEvmBridgeCoa:            "0x0000000000000000000000023f946ffbc8829bfd",
+		bridgeDeployedTopshotERC721: "0xB3627E6f7F1cC981217f789D7737B1f3a93EC519",
+		transferValidator:           "0xA000027A9B2802E1ddf7000061001e5c005A0000", // StrictAuthorizedTransferSecurityRegistry
+		royaltyRecipient:            placeholderEvmAddress,
 	},
 	"mainnet": {
-		topShotFlow:                  "0b2a3299cc857e29",
-		flowEvmBridgeCoa:             "0x00000000000000000000000249250a5c27ecab3b",
-		bridgedDeployedTopshotERC721: "0x50AB3a827aD268e9D5A24D340108FAD5C25dAD5f",
+		topShotFlow:                 "0b2a3299cc857e29",
+		flowEvmBridgeCoa:            "0x00000000000000000000000249250a5c27ecab3b",
+		bridgeDeployedTopshotERC721: "0x50AB3a827aD268e9D5A24D340108FAD5C25dAD5f",
 		// TODO: confirm StrictAuthorizedTransferSecurityRegistry or CreatorTokenTransferValidator (0x721C0078c2328597Ca70F5451ffF5A7B38D4E947)
 		transferValidator: "0xA000027A9B2802E1ddf7000061001e5c005A0000", // StrictAuthorizedTransferSecurityRegistry
 		// TODO: get royalty recipient
@@ -107,10 +108,38 @@ func main() {
 	}
 	log.Printf("Provider initialized%s", separatorString())
 
-	// Deploy implementation and proxy contracts
+	// Retrieve or create COA
 	p.retrieveOrCreateCOA()
+
+	// Compile contracts
 	recompileContracts()
-	p.deployContracts()
+
+	// Deploy implementation contract
+	implementationAddr := p.deployContract("BridgedTopShotMoments", "")
+
+	// Generate encoded initialize function call
+	encodedInitializeFunctionCall := generateEncodedInitializeFunctionCall(
+		p.Addresses.topshotCoa,
+		p.Addresses.bridgeDeployedTopshotERC721,
+		p.Addresses.flowEvmBridgeCoa,
+		`"NBA Top Shot"`,
+		"TOPSHOT",
+		// TODO: replace with actual baseTokenURI
+		"https://api.cryptokitties.co/tokenuri/",
+		p.Addresses.topShotFlow,
+		fmt.Sprintf("A.%s.TopShot.NFT", p.Addresses.topShotFlow),
+		// TODO: replace with actual contract metadata
+		`data:application/json;utf8,{\"name\": \"Name of NFT\",\"description\":\"Description of NFT\"}`,
+	)
+
+	// Deploy proxy contract
+	proxyAddr := p.deployContract("ERC1967Proxy",
+		generateProxyEncodedConstructorData(
+			fmt.Sprintf("0x%s", implementationAddr),
+			fmt.Sprintf("0x%s", encodedInitializeFunctionCall),
+		),
+	)
+	p.Addresses.proxyContract = fmt.Sprintf("0x%s", proxyAddr)
 
 	// Verify contracts
 	if p.Network == "testnet" || p.Network == "mainnet" {
@@ -121,6 +150,108 @@ func main() {
 	p.setRoyaltyManagement()
 
 	log.Printf("\n\nSETUP COMPLETE!")
+}
+
+func (p *provider) deployContract(name, encodedConstructorData string) string {
+	log.Printf("\t...deploying %s contract", name)
+
+	// Concatenate contract and constructor bytecodes
+	bytecode := fmt.Sprintf("%s%s",
+		p.getContractBytecodeFromABIFile(name),
+		encodedConstructorData,
+	)
+
+	// Deploy contract and return address
+	result := p.OverflowState.Tx("admin/deploy/deploy_contract",
+		WithSigner(p.TopshotAccountName),
+		WithArg("bytecode", bytecode),
+		WithArg("gasLimit", p.GasLimit),
+	)
+	checkNoErr(result.Err)
+	address := getContractAddressFromEVMEvent(result)
+	log.Printf("%s contract deployed to address: %s%s", name, address, separatorString())
+	return address
+}
+
+// Read contract ABI file and return the bytecode object
+func (p *provider) getContractBytecodeFromABIFile(contractName string) string {
+	// Read ABI
+	abiFile, err := os.ReadFile(filepath.Join(p.Dir, fmt.Sprintf("out/%s.sol/%s.json", contractName, contractName)))
+	if err != nil {
+		log.Fatalf("Error reading file: %v", err)
+	}
+
+	// Parse and return bytecode object without 0x prefix
+	var abi struct {
+		Bytecode struct {
+			Object string `json:"object"`
+		} `json:"bytecode"`
+	}
+	if err := json.Unmarshal(abiFile, &abi); err != nil {
+		log.Fatalf("Error parsing JSON: %v", err)
+	}
+	return abi.Bytecode.Object[2:]
+}
+
+func generateProxyEncodedConstructorData(implementationAddr, abiEncodedInitializeFunctionCall string) string {
+	//Run 'cast abi-encode'
+	abiEncodeCmd := exec.Command(
+		"cast",
+		"abi-encode",
+		"constructor(address,bytes)",
+		implementationAddr,
+		abiEncodedInitializeFunctionCall,
+	)
+	// Print command for logging
+	log.Println("Executing command:", abiEncodeCmd.String())
+
+	// Get error output
+	var out, stderr bytes.Buffer
+	abiEncodeCmd.Stdout = &out
+	abiEncodeCmd.Stderr = &stderr
+	if err := abiEncodeCmd.Run(); err != nil {
+		log.Fatalf("abiEncode: Failed to run 'cast abi-encode' and get output from command: %v; %s", err, stderr.String())
+	}
+
+	return out.String()[2:]
+}
+
+// Generate ABI encoded initializer data for proxy contract
+func generateEncodedInitializeFunctionCall(
+	owner,
+	underlyingNftContractAddress,
+	vmBridgeAddress,
+	name,
+	symbol,
+	baseTokenURI,
+	cadenceNFTAddress,
+	cadenceNFTIdentifier,
+	contractMetadata string,
+) string {
+	//Run 'cast abi-encode'
+	abiEncodeCmd := exec.Command(
+		"cast",
+		"abi-encode",
+		`initialize(address,address,address,string,string,string,string,string,string)`,
+		owner,
+		underlyingNftContractAddress,
+		vmBridgeAddress,
+		name,
+		symbol,
+		baseTokenURI,
+		cadenceNFTAddress,
+		cadenceNFTIdentifier,
+		contractMetadata,
+	)
+	// Print command for logging
+	log.Println("Executing command:", abiEncodeCmd.String())
+
+	// Run and return output without 0x prefix
+	output, err := abiEncodeCmd.Output()
+	if err != nil {
+		log.Fatalf("generateAbiEncodedInitializeFunctionCall: Failed to run 'cast abi-encode' and get output from command: %v", err)
+	}
+	return string(output)[2:]
 }
 
 // Retrieve or create a COA
@@ -146,51 +277,6 @@ func (p *provider) retrieveOrCreateCOA() {
 		log.Printf("Created new COA with EVM address: %s%s", topshotCOAHex, separatorString())
 	}
 	p.Addresses.topshotCoa = fmt.Sprintf("0x%s", topshotCOAHex.(string))
-}
-
-// Deploy implementation and proxy contracts
-func (p *provider) deployContracts() {
-	// Deploy implementation contract
-	log.Printf("\t...deploying implementation contract")
-	deployImplementationResult := p.OverflowState.Tx("admin/deploy/deploy_contract",
-		WithSigner(p.TopshotAccountName),
-		WithArg("bytecode", p.getContractBytecodeFromABI("BridgedTopShotMoments")),
-		WithArg("gasLimit", p.GasLimit),
-	)
-	checkNoErr(deployImplementationResult.Err)
-	implementationAddr := getContractAddressFromEVMEvent(deployImplementationResult)
-	log.Printf("Implementation contract deployed to address: %s%s", implementationAddr, separatorString())
-
-	// Generate initialize data
-	initializeData := generateAbiEncodedInitializerData(
-		p.Addresses.topshotCoa,
-		p.Addresses.bridgedDeployedTopshotERC721,
-		p.Addresses.flowEvmBridgeCoa,
-		`"NBA Top Shot"`,
-		"TOPSHOT",
-		// TODO: replace with actual baseTokenURI
-		"https://api.cryptokitties.co/tokenuri/",
-		p.Addresses.topShotFlow,
-		fmt.Sprintf("A.%s.TopShot.NFT", p.Addresses.topShotFlow),
-		// TODO: replace with actual contract metadata
-		`data:application/json;utf8,{\"name\": \"Name of NFT\",\"description\":\"Description of NFT\"}`,
-	)
-
-	// Deploy proxy contract
-	log.Printf("\t...deploying proxy contract")
-	deployProxyResult := p.OverflowState.Tx("admin/deploy/deploy_contract",
-		WithSigner(p.TopshotAccountName),
-		WithArg("bytecode", fmt.Sprintf("%s%s",
-			p.getContractBytecodeFromABI("ERC1967Proxy"),
-			initializeData,
-		)),
-		WithArg("gasLimit", p.GasLimit),
-		WithArg("implementation", implementationAddr),
-	)
-	checkNoErr(deployProxyResult.Err)
-	proxyAddr := getContractAddressFromEVMEvent(deployProxyResult)
-	p.Addresses.proxyContract = fmt.Sprintf("0x%s", proxyAddr)
-	log.Printf("Proxy contract deployed to address: %s%s", proxyAddr, separatorString())
 }
 
 // Set up royalty management
@@ -234,26 +320,6 @@ func getContractAddressFromEVMEvent(res *OverflowResult) string {
 	return strings.ToLower(strings.Split(contractAddr.(string), "x")[1])
 }
 
-// Read contract ABI file and return the bytecode object
-func (p *provider) getContractBytecodeFromABI(contractName string) string {
-	// Read ABI
-	abiFile, err := os.ReadFile(filepath.Join(p.Dir, fmt.Sprintf("out/%s.sol/%s.json", contractName, contractName)))
-	if err != nil {
-		log.Fatalf("Error reading file: %v", err)
-	}
-
-	// Parse and return bytecode object without 0x prefix
-	var abi struct {
-		Bytecode struct {
-			Object string `json:"object"`
-		} `json:"bytecode"`
-	}
-	if err := json.Unmarshal(abiFile, &abi); err != nil {
-		log.Fatalf("Error parsing JSON: %v", err)
-	}
-	return abi.Bytecode.Object[2:]
-}
-
 // Compile contracts by running 'forge clean' and 'forge build'
 func recompileContracts() {
 	// Run 'forge clean'
@@ -271,44 +337,6 @@ func recompileContracts() {
 		log.Fatalf("Failed to run 'forge build': %v", err)
 	}
 	log.Println("Output:\n", string(buildCmdOutput))
-}
-
-// Generate ABI encoded initializer data for proxy contract
-func generateAbiEncodedInitializerData(
-	owner,
-	underlyingNftContractAddress,
-	vmBridgeAddress,
-	name,
-	symbol,
-	baseTokenURI,
-	cadenceNFTAddress,
-	cadenceNFTIdentifier,
-	contractMetadata string,
-) string {
-	//Run 'cast abi-encode'
-	abiEncodeCmd := exec.Command(
-		"cast",
-		"abi-encode",
-		`initialize(address,address,address,string,string,string,string,string,string)`,
-		owner,
-		underlyingNftContractAddress,
-		vmBridgeAddress,
-		name,
-		symbol,
-		baseTokenURI,
-		cadenceNFTAddress,
-		cadenceNFTIdentifier,
-		contractMetadata,
-	)
-	// Print command for logging
-	log.Println("Executing command:", abiEncodeCmd.String())
-
-	// Run and return output without 0x prefix
-	output, err := abiEncodeCmd.Output()
-	if err != nil {
-		log.Fatalf("Failed to run 'cast abi-encode' and get output from command: %v", err)
-	}
-	return string(output)[2:]
 }
 
 func checkNoErr(err error) {

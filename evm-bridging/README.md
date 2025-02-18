@@ -41,13 +41,17 @@ foundryup
 
 ## Development
 
-1. Compile and test contracts:
+### Tests
+
+Compile and test contracts:
 
 ```sh
 forge test --force -vvv
 ```
 
-2. Set up environment:
+### Deploy Using EVM (Initial Testing)
+
+1. Set up environment:
 
 
 ```sh
@@ -56,7 +60,7 @@ cp .env.flowevm.testnet.example .env
 source .env
 ```
 
-3. Deploy and verify contracts:
+2. Deploy and verify contracts:
 
 ```sh
 # Deploy both proxy and implementation contracts
@@ -64,6 +68,16 @@ forge script --rpc-url $RPC_URL --private-key $DEPLOYER_PRIVATE_KEY --legacy scr
 
 # If verification fails, verify individually
 forge verify-contract --rpc-url $RPC_URL --verifier $VERIFIER_PROVIDER --verifier-url $VERIFIER_URL <address-of-contract-to-verify>
+```
+
+### Deploy Using Flow
+
+```sh
+# If deploying on emulator, start emulator
+flow emulator --config-path ./cadence/transactions/admin/deploy/flow.json --transaction-fees
+
+# Deploy both proxy and implementation contracts
+go1.22.3 run main.go <network-name>
 ```
 
 ## Usage
