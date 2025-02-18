@@ -51,15 +51,14 @@ var addresses = map[string]addressesByNetwork{
 		topShotFlow:                 "877931736ee77cff",
 		flowEvmBridgeCoa:            "0x0000000000000000000000023f946ffbc8829bfd",
 		bridgeDeployedTopshotERC721: "0xB3627E6f7F1cC981217f789D7737B1f3a93EC519",
-		transferValidator:           "0xA000027A9B2802E1ddf7000061001e5c005A0000", // StrictAuthorizedTransferSecurityRegistry
+		transferValidator:           "0x721C0078c2328597Ca70F5451ffF5A7B38D4E947", // CreatorTokenTransferValidator
 		royaltyRecipient:            placeholderEvmAddress,
 	},
 	"mainnet": {
 		topShotFlow:                 "0b2a3299cc857e29",
 		flowEvmBridgeCoa:            "0x00000000000000000000000249250a5c27ecab3b",
 		bridgeDeployedTopshotERC721: "0x50AB3a827aD268e9D5A24D340108FAD5C25dAD5f",
-		// TODO: confirm StrictAuthorizedTransferSecurityRegistry or CreatorTokenTransferValidator (0x721C0078c2328597Ca70F5451ffF5A7B38D4E947)
-		transferValidator: "0xA000027A9B2802E1ddf7000061001e5c005A0000", // StrictAuthorizedTransferSecurityRegistry
+		transferValidator:           "0x721C0078c2328597Ca70F5451ffF5A7B38D4E947", // CreatorTokenTransferValidator
 		// TODO: get royalty recipient
 		royaltyRecipient: placeholderEvmAddress,
 	},
