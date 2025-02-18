@@ -199,7 +199,7 @@ access(all) fun getUnderlyingERC721Address(
     )
 
     // If the call fails, return nil
-    if res.status != EVM.Status.successful {
+    if res.status != EVM.Status.successful || res.data.length == 0 {
         return nil
     }
 
@@ -228,7 +228,7 @@ access(all) fun isNFTWrapped(
     )
 
     // If the call fails, return false
-    if res.status != EVM.Status.successful {
+    if res.status != EVM.Status.successful || res.data.length == 0{
         return false
     }
 
