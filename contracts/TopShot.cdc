@@ -1687,7 +1687,7 @@ access(all) contract TopShot: NonFungibleToken {
         return [
             Type<MetadataViews.NFTCollectionData>(),
             Type<MetadataViews.NFTCollectionDisplay>(),
-            Type<CrossVMMetadataViews.EVMPointer>()
+            Type<CrossVMMetadataViews.EVMPointer>(),
             Type<MetadataViews.Royalties>()
         ]
     }
