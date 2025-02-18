@@ -222,12 +222,12 @@ access(all) fun isNFTWrapped(
 ): Bool {
     let res = coa.call(
         to: underlying,
-        data: EVM.encodeABIWithSignature("ownerOf(uint256)(address)", [nftID]),
+        data: EVM.encodeABIWithSignature("ownerOf(uint256)", [nftID]),
         gasLimit: 100_000,
         value: EVM.Balance(attoflow: 0)
     )
 
-    // If the call fails, return nil
+    // If the call fails, return false
     if res.status != EVM.Status.successful {
         return false
     }
