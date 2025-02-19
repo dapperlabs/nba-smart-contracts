@@ -137,8 +137,8 @@ access(all) fun unwrapNFTsIfApplicable(
     // Get the project-defined ERC721 address if it exists
     if let crossVMPointer = viewResolver.resolveContractView(
             resourceType: nftType,
-            viewType: Type<MetadataViews.CrossVMPointer>()
-    ) as! MetadataViews.CrossVMPointer? {
+            viewType: Type<CrossVMMetadataViews.EVMPointer>()
+    ) as! CrossVMMetadataViews.EVMPointer? {
         // Get the underlying ERC721 address if it exists
         if let underlyingAddress = getUnderlyingERC721Address(coa, crossVMPointer.evmContractAddress) {
             for id in nftIDs {
