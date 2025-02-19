@@ -85,6 +85,7 @@ func TestFastBreak(t *testing.T) {
 		topShotLockingAddr.String(),
 		topShotRoyaltyAddr.String(),
 		Network,
+		FlowEvmContractAddr,
 	)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, topshotAddrErr := adapter.CreateAccount(context.Background(), []*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
