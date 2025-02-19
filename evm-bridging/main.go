@@ -12,10 +12,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/onflow/go-ethereum/accounts/abi"
-
 	. "github.com/bjartek/overflow/v2"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 /**
