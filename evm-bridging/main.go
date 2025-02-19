@@ -57,7 +57,7 @@ var configByNetwork = map[string]config{
 		topShotFlowAddr:                 "877931736ee77cff",
 		flowEvmBridgeCoaAddr:            "0x0000000000000000000000023f946ffbc8829bfd",
 		bridgeDeployedTopshotERC721Addr: "0xB3627E6f7F1cC981217f789D7737B1f3a93EC519",
-		transferValidatorAddr:           "0x721C0078c2328597Ca70F5451ffF5A7B38D4E947", // CreatorTokenTransferValidator
+		transferValidatorAddr:           "0x721C002B0059009a671D00aD1700c9748146cd1B", // CreatorTokenTransferValidator
 		royaltyRecipientAddr:            placeholderEvmAddress,
 		rpcUrl:                          "https://testnet.evm.nodes.onflow.org",
 		verifierUrl:                     "https://evm-testnet.flowscan.io/api",
@@ -67,7 +67,7 @@ var configByNetwork = map[string]config{
 		topShotFlowAddr:                 "0b2a3299cc857e29",
 		flowEvmBridgeCoaAddr:            "0x00000000000000000000000249250a5c27ecab3b",
 		bridgeDeployedTopshotERC721Addr: "0x50AB3a827aD268e9D5A24D340108FAD5C25dAD5f",
-		transferValidatorAddr:           "0x721C0078c2328597Ca70F5451ffF5A7B38D4E947", // CreatorTokenTransferValidator
+		transferValidatorAddr:           "0x721C002B0059009a671D00aD1700c9748146cd1B", // CreatorTokenTransferValidator
 		// TODO: get royalty recipient
 		royaltyRecipientAddr: placeholderEvmAddress,
 		rpcUrl:               "https://mainnet.evm.nodes.onflow.org",
@@ -146,12 +146,10 @@ func (p *provider) setupProject() {
 		p.Config.flowEvmBridgeCoaAddr,
 		"NBA Top Shot",
 		"TOPSHOT",
-		// TODO: replace with actual baseTokenURI
-		"https://api.cryptokitties.co/tokenuri/",
+		"https://metadata-api.production.studio-platform.dapperlabs.com/v1/topshot/moment/",
 		p.Config.topShotFlowAddr,
 		fmt.Sprintf("A.%s.TopShot.NFT", p.Config.topShotFlowAddr),
-		// TODO: replace with actual contract metadata
-		`data:application/json;utf8,{\"name\": \"Name of NFT\",\"description\":\"Description of NFT\"}`,
+		`data:application/json;utf8,{\"name\":\"NBA Top Shot\",\"description\":\"NBA Top Shot is your chance to own, sell, and trade official digital collectibles of the NBA and WNBA's greatest plays and players.\",\"image\": \"https://assets.nbatopshot.com/open_sea/favicon.svg\",\"external_link\":\"https://nbatopshot.com\",\"banner_image\":\"https://assets.nbatopshot.com/open_sea/topshot_banner_1400_350.jpg\",\"featured_image\":\"https://assets.nbatopshot.com/open_sea/topshot_banner_600_400.jpg\"}`,
 	)
 
 	// Deploy proxy contract
@@ -244,8 +242,6 @@ func (p *provider) getContractBytecodeFromABIFile(contractName string) string {
 func generateProxyEncodedConstructorData(implementationAddr, abiEncodedInitializeFunctionCall string) string {
 	implementationAddr = strings.TrimPrefix(implementationAddr, "0x")
 	abiEncodedInitializeFunctionCall = strings.TrimPrefix(abiEncodedInitializeFunctionCall, "0x")
-	fmt.Printf("abiEncodedInitializeFunctionCall is like this: %+v\n", abiEncodedInitializeFunctionCall)
-	//Run 'cast abi-encode'
 	initCallBytes, err := hex.DecodeString(abiEncodedInitializeFunctionCall)
 	if err != nil {
 		log.Fatalf("Failed to decode init call hex: %v", err)
@@ -254,9 +250,9 @@ func generateProxyEncodedConstructorData(implementationAddr, abiEncodedInitializ
 		"type": "constructor",
 		"inputs": [
 			{"name": "implementation", "type": "address"},
-			{"name": "initializeCall", "type": "bytes"}
+			{"name": "_data", "type": "bytes"}
 		]
-}]`
+	}]`
 
 	parsedABI, err := abi.JSON(strings.NewReader(contractABI))
 	if err != nil {
@@ -264,8 +260,6 @@ func generateProxyEncodedConstructorData(implementationAddr, abiEncodedInitializ
 	}
 
 	implementation := common.HexToAddress(implementationAddr)
-	// Print command for logging
-	//encodedBytes := common.FromHex(abiEncodedInitializeFunctionCall)
 	data, err := parsedABI.Pack("", implementation, initCallBytes)
 	if err != nil {
 		log.Fatalf("Failed to pack proxy ABI: %v", err)
@@ -327,10 +321,10 @@ func generateEncodedInitializeFunctionCall(
 		{"name": "vmBridgeAddress", "type": "address"},
 		{"name": "name", "type": "string"},
 		{"name": "symbol", "type": "string"},
-		{"name": "baseTokenURI", "type": "string"},
-		{"name": "cadenceNFTAddress", "type": "string"},
-		{"name": "cadenceNFTIdentifier", "type": "string"},
-		{"name": "contractMetadata", "type": "string"}
+		{"name": "baseTokenURI_", "type": "string"},
+		{"name": "_cadenceNFTAddress", "type": "string"},
+		{"name": "_cadenceNFTIdentifier", "type": "string"},
+		{"name": "_contractMetadata", "type": "string"}
 	]
 }]` // Print command for logging
 	parsedABI, err := abi.JSON(strings.NewReader(contractABI))
