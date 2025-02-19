@@ -152,7 +152,7 @@ func (p *provider) setupProject() {
 		p.Config.topShotFlowAddr,
 		fmt.Sprintf("A.%s.TopShot.NFT", p.Config.topShotFlowAddr),
 		// TODO: replace with actual contract metadata
-		`{"name": "Name of NFT","description":"Description of NFT"}`,
+		`data:application/json;utf8,{\"name\": \"Name of NFT\",\"description\":\"Description of NFT\"}`,
 	)
 
 	// Deploy proxy contract
