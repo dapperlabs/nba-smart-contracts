@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/onflow/cadence/runtime/common"
+	"github.com/onflow/cadence/common"
 	"github.com/onflow/flow-emulator/adapters"
 	"github.com/rs/zerolog"
 
