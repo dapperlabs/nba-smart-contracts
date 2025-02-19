@@ -85,6 +85,11 @@ go1.22.3 run main.go <script-type> <network-name>
 
 # for example:
 go1.22.3 run main.go setup emulator
+
+# If there is error: 
+# vendor/github.com/onflow/crypto/blst_include.h:5:10: fatal error: 'consts.h' file not found
+# #include "consts.h"
+CGO_ENABLED=0 go1.22.3 run -tags=no_cgo main.go setup emulator
 ```
 
 ## Usage
