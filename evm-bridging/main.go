@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -10,6 +11,9 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/onflow/go-ethereum/accounts/abi"
 
 	. "github.com/bjartek/overflow/v2"
 )
@@ -141,14 +145,14 @@ func (p *provider) setupProject() {
 		p.Config.topshotCoaAddr,
 		p.Config.bridgeDeployedTopshotERC721Addr,
 		p.Config.flowEvmBridgeCoaAddr,
-		`"NBA Top Shot"`,
+		"NBA Top Shot",
 		"TOPSHOT",
 		// TODO: replace with actual baseTokenURI
 		"https://api.cryptokitties.co/tokenuri/",
 		p.Config.topShotFlowAddr,
 		fmt.Sprintf("A.%s.TopShot.NFT", p.Config.topShotFlowAddr),
 		// TODO: replace with actual contract metadata
-		`data:application/json;utf8,{\"name\": \"Name of NFT\",\"description\":\"Description of NFT\"}`,
+		`{"name": "Name of NFT","description":"Description of NFT"}`,
 	)
 
 	// Deploy proxy contract
@@ -190,11 +194,24 @@ func (p *provider) tests() {
 func (p *provider) deployContract(name, encodedConstructorData string) string {
 	log.Printf("\t...deploying %s contract", name)
 
-	// Concatenate contract and constructor bytecodes
-	bytecode := fmt.Sprintf("%s%s",
-		p.getContractBytecodeFromABIFile(name),
-		encodedConstructorData,
-	)
+	// Get contract bytecode
+	bytecode := p.getContractBytecodeFromABIFile(name)
+	// Debug log the bytecode
+	log.Printf("Original bytecode: %s", bytecode)
+
+	// NEW: Properly handle the constructor data
+	if encodedConstructorData != "" {
+		// Remove 0x prefix if present
+		encodedConstructorData = strings.TrimPrefix(encodedConstructorData, "0x")
+		// Ensure both parts are valid hex strings
+		if _, err := hex.DecodeString(bytecode); err != nil {
+			log.Fatalf("Invalid bytecode hex: %v", err)
+		}
+		if _, err := hex.DecodeString(encodedConstructorData); err != nil {
+			log.Fatalf("Invalid constructor data hex: %v", err)
+		}
+		bytecode = bytecode + encodedConstructorData
+	}
 
 	// Deploy contract and return address
 	result := p.OverflowState.Tx("admin/deploy/deploy_contract",
@@ -229,64 +246,41 @@ func (p *provider) getContractBytecodeFromABIFile(contractName string) string {
 }
 
 func generateProxyEncodedConstructorData(implementationAddr, abiEncodedInitializeFunctionCall string) string {
+	implementationAddr = strings.TrimPrefix(implementationAddr, "0x")
+	abiEncodedInitializeFunctionCall = strings.TrimPrefix(abiEncodedInitializeFunctionCall, "0x")
+	fmt.Printf("abiEncodedInitializeFunctionCall is like this: %+v\n", abiEncodedInitializeFunctionCall)
 	//Run 'cast abi-encode'
-	cmd := exec.Command(
-		"cast",
-		"abi-encode",
-		"constructor(address,bytes)",
-		implementationAddr,
-		abiEncodedInitializeFunctionCall,
-	)
-	// Print command for logging
-	log.Println("Executing command:", cmd.String())
-
-	// Get error output
-	var out, stderr bytes.Buffer
-	cmd.Stdout = &out
-	cmd.Stderr = &stderr
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("abiEncode: Failed to run 'cast abi-encode' and get output from command: %v; %s", err, stderr.String())
-	}
-
-	return out.String()[2:]
-}
-
-// Generate ABI encoded initializer data for proxy contract
-func generateEncodedInitializeFunctionCall(
-	owner,
-	underlyingNftContractAddress,
-	vmBridgeAddress,
-	name,
-	symbol,
-	baseTokenURI,
-	cadenceNFTAddress,
-	cadenceNFTIdentifier,
-	contractMetadata string,
-) string {
-	//Run 'cast abi-encode'
-	cmd := exec.Command(
-		"cast",
-		"abi-encode",
-		`initialize(address,address,address,string,string,string,string,string,string)`,
-		owner,
-		underlyingNftContractAddress,
-		vmBridgeAddress,
-		name,
-		symbol,
-		baseTokenURI,
-		cadenceNFTAddress,
-		cadenceNFTIdentifier,
-		contractMetadata,
-	)
-	// Print command for logging
-	log.Println("Executing command:", cmd.String())
-
-	// Run and return output without 0x prefix
-	output, err := cmd.Output()
+	initCallBytes, err := hex.DecodeString(abiEncodedInitializeFunctionCall)
 	if err != nil {
-		log.Fatalf("generateAbiEncodedInitializeFunctionCall: Failed to run 'cast abi-encode' and get output from command: %v", err)
+		log.Fatalf("Failed to decode init call hex: %v", err)
 	}
-	return string(output)[2:]
+	const contractABI = `[{
+		"type": "constructor",
+		"inputs": [
+			{"name": "implementation", "type": "address"},
+			{"name": "initializeCall", "type": "bytes"}
+		]
+}]`
+
+	parsedABI, err := abi.JSON(strings.NewReader(contractABI))
+	if err != nil {
+		log.Fatalf("Failed to parse ABI: %v", err)
+	}
+
+	implementation := common.HexToAddress(implementationAddr)
+	// Print command for logging
+	//encodedBytes := common.FromHex(abiEncodedInitializeFunctionCall)
+	data, err := parsedABI.Pack("", implementation, initCallBytes)
+	if err != nil {
+		log.Fatalf("Failed to pack proxy ABI: %v", err)
+	}
+
+	// Convert to hex string
+	hexData := hex.EncodeToString(data)
+
+	// Debug log
+	log.Printf("Constructor data hex: %s", hexData)
+	return hexData
 }
 
 func (p *provider) verifyContract(contractAddr string) string {
@@ -316,12 +310,74 @@ func (p *provider) verifyContract(contractAddr string) string {
 	return out.String()[2:]
 }
 
+// Generate ABI encoded initializer data for proxy contract
+func generateEncodedInitializeFunctionCall(
+	owner,
+	underlyingNftContractAddress,
+	vmBridgeAddress,
+	name,
+	symbol,
+	baseTokenURI,
+	cadenceNFTAddress,
+	cadenceNFTIdentifier,
+	contractMetadata string,
+) string {
+	const contractABI = `[{
+	"name": "initialize",
+	"type": "function",
+	"inputs": [
+		{"name": "owner", "type": "address"},
+		{"name": "underlyingNftContractAddress", "type": "address"},
+		{"name": "vmBridgeAddress", "type": "address"},
+		{"name": "name", "type": "string"},
+		{"name": "symbol", "type": "string"},
+		{"name": "baseTokenURI", "type": "string"},
+		{"name": "cadenceNFTAddress", "type": "string"},
+		{"name": "cadenceNFTIdentifier", "type": "string"},
+		{"name": "contractMetadata", "type": "string"}
+	]
+}]` // Print command for logging
+	parsedABI, err := abi.JSON(strings.NewReader(contractABI))
+	if err != nil {
+		log.Fatalf("Failed to parse ABI: %v", err)
+	}
+	owner = ensureHexPrefix(owner)
+	underlyingNftContractAddress = ensureHexPrefix(underlyingNftContractAddress)
+	vmBridgeAddress = ensureHexPrefix(vmBridgeAddress)
+
+	ownerAddr := common.HexToAddress(owner)
+	nftContractAddr := common.HexToAddress(underlyingNftContractAddress)
+	bridgeAddr := common.HexToAddress(vmBridgeAddress)
+
+	// Run and return output without 0x prefix
+	data, err := parsedABI.Pack(
+		"initialize",
+		ownerAddr,
+		nftContractAddr,
+		bridgeAddr,
+		name,
+		symbol,
+		baseTokenURI,
+		cadenceNFTAddress,
+		cadenceNFTIdentifier,
+		contractMetadata,
+	)
+	if err != nil {
+		log.Fatalf("Failed to pack ABI: %v", err)
+	}
+
+	log.Printf("Encoded ABI: 0x%x", data) // Output the hex-encoded transaction data
+	return hex.EncodeToString(data)
+}
+
 // Retrieve or create a COA
 func (p *provider) retrieveOrCreateCOA() {
 	log.Printf("\t...retrieving COA")
+	log.Printf(p.TopshotAccountName)
 	topshotCOAHex, err := p.OverflowState.Script("get_evm_address_string",
 		WithArg("flowAddress", p.OverflowState.Address(p.TopshotAccountName)),
 	).GetAsInterface()
+	log.Printf(fmt.Sprintf("%v", topshotCOAHex), err)
 	checkNoErr(err)
 	if topshotCOAHex != nil {
 		log.Printf("Using existing COA with EVM address: %s", topshotCOAHex)
@@ -415,4 +471,12 @@ func checkNoErr(err error) {
 
 func separatorString() string {
 	return "\n--------------------------------\n"
+}
+
+// NEW: Added helper function
+func ensureHexPrefix(addr string) string {
+	if !strings.HasPrefix(addr, "0x") {
+		return "0x" + addr
+	}
+	return addr
 }

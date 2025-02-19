@@ -81,7 +81,10 @@ go install golang.org/dl/go1.22.3@latest
 go1.22.3 download
 
 # Deploy both proxy and implementation contracts
-go1.22.3 run main.go <network-name>
+go1.22.3 run main.go <script-type> <network-name>
+
+# for example:
+go1.22.3 run main.go setup emulator
 ```
 
 ## Usage
