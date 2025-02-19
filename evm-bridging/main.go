@@ -23,15 +23,18 @@ import (
 var networks = []string{"emulator", "testnet", "mainnet"}
 var scriptTypes = []string{"setup", "tests"}
 
-// Addresses by network
-type addressesByNetwork struct {
-	topShotFlow                 string
-	topshotCoa                  string
-	bridgeDeployedTopshotERC721 string
-	flowEvmBridgeCoa            string
-	transferValidator           string
-	royaltyRecipient            string
-	proxyContract               string
+// Config by network
+type config struct {
+	topShotFlowAddr                 string
+	topshotCoaAddr                  string
+	bridgeDeployedTopshotERC721Addr string
+	flowEvmBridgeCoaAddr            string
+	transferValidatorAddr           string
+	royaltyRecipientAddr            string
+	proxyContractAddr               string
+	rpcUrl                          string
+	verifierUrl                     string
+	verifierProvider                string
 }
 
 const (
@@ -39,28 +42,34 @@ const (
 )
 
 // Addresses by network
-var addresses = map[string]addressesByNetwork{
+var configByNetwork = map[string]config{
 	"emulator": {
-		topShotFlow:                 "abcdef1234567890",
-		flowEvmBridgeCoa:            placeholderEvmAddress,
-		bridgeDeployedTopshotERC721: placeholderEvmAddress,
-		transferValidator:           "0xA000027A9B2802E1ddf7000061001e5c005A0000",
-		royaltyRecipient:            placeholderEvmAddress,
+		topShotFlowAddr:                 "abcdef1234567890",
+		flowEvmBridgeCoaAddr:            placeholderEvmAddress,
+		bridgeDeployedTopshotERC721Addr: placeholderEvmAddress,
+		transferValidatorAddr:           "0xA000027A9B2802E1ddf7000061001e5c005A0000",
+		royaltyRecipientAddr:            placeholderEvmAddress,
 	},
 	"testnet": {
-		topShotFlow:                 "877931736ee77cff",
-		flowEvmBridgeCoa:            "0x0000000000000000000000023f946ffbc8829bfd",
-		bridgeDeployedTopshotERC721: "0xB3627E6f7F1cC981217f789D7737B1f3a93EC519",
-		transferValidator:           "0x721C0078c2328597Ca70F5451ffF5A7B38D4E947", // CreatorTokenTransferValidator
-		royaltyRecipient:            placeholderEvmAddress,
+		topShotFlowAddr:                 "877931736ee77cff",
+		flowEvmBridgeCoaAddr:            "0x0000000000000000000000023f946ffbc8829bfd",
+		bridgeDeployedTopshotERC721Addr: "0xB3627E6f7F1cC981217f789D7737B1f3a93EC519",
+		transferValidatorAddr:           "0x721C0078c2328597Ca70F5451ffF5A7B38D4E947", // CreatorTokenTransferValidator
+		royaltyRecipientAddr:            placeholderEvmAddress,
+		rpcUrl:                          "https://testnet.evm.nodes.onflow.org",
+		verifierUrl:                     "https://evm-testnet.flowscan.io/api",
+		verifierProvider:                "blockscout",
 	},
 	"mainnet": {
-		topShotFlow:                 "0b2a3299cc857e29",
-		flowEvmBridgeCoa:            "0x00000000000000000000000249250a5c27ecab3b",
-		bridgeDeployedTopshotERC721: "0x50AB3a827aD268e9D5A24D340108FAD5C25dAD5f",
-		transferValidator:           "0x721C0078c2328597Ca70F5451ffF5A7B38D4E947", // CreatorTokenTransferValidator
+		topShotFlowAddr:                 "0b2a3299cc857e29",
+		flowEvmBridgeCoaAddr:            "0x00000000000000000000000249250a5c27ecab3b",
+		bridgeDeployedTopshotERC721Addr: "0x50AB3a827aD268e9D5A24D340108FAD5C25dAD5f",
+		transferValidatorAddr:           "0x721C0078c2328597Ca70F5451ffF5A7B38D4E947", // CreatorTokenTransferValidator
 		// TODO: get royalty recipient
-		royaltyRecipient: placeholderEvmAddress,
+		royaltyRecipientAddr: placeholderEvmAddress,
+		rpcUrl:               "https://mainnet.evm.nodes.onflow.org",
+		verifierUrl:          "https://evm.flowscan.io/api",
+		verifierProvider:     "blockscout",
 	},
 }
 
@@ -69,7 +78,7 @@ type provider struct {
 	Dir                string
 	TopshotAccountName string
 	Network            string
-	Addresses          addressesByNetwork
+	Config             config
 	GasLimit           int
 	*OverflowState
 }
@@ -95,7 +104,7 @@ func main() {
 		Dir:                dir,
 		TopshotAccountName: "topshot-signer",
 		Network:            network,
-		Addresses:          addresses[network],
+		Config:             configByNetwork[network],
 		GasLimit:           15000000,
 		OverflowState: Overflow(
 			WithNetwork(network),
@@ -129,15 +138,15 @@ func (p *provider) setupProject() {
 
 	// Generate encoded initialize function call
 	encodedInitializeFunctionCall := generateEncodedInitializeFunctionCall(
-		p.Addresses.topshotCoa,
-		p.Addresses.bridgeDeployedTopshotERC721,
-		p.Addresses.flowEvmBridgeCoa,
+		p.Config.topshotCoaAddr,
+		p.Config.bridgeDeployedTopshotERC721Addr,
+		p.Config.flowEvmBridgeCoaAddr,
 		`"NBA Top Shot"`,
 		"TOPSHOT",
 		// TODO: replace with actual baseTokenURI
 		"https://api.cryptokitties.co/tokenuri/",
-		p.Addresses.topShotFlow,
-		fmt.Sprintf("A.%s.TopShot.NFT", p.Addresses.topShotFlow),
+		p.Config.topShotFlowAddr,
+		fmt.Sprintf("A.%s.TopShot.NFT", p.Config.topShotFlowAddr),
 		// TODO: replace with actual contract metadata
 		`data:application/json;utf8,{\"name\": \"Name of NFT\",\"description\":\"Description of NFT\"}`,
 	)
@@ -149,11 +158,12 @@ func (p *provider) setupProject() {
 			fmt.Sprintf("0x%s", encodedInitializeFunctionCall),
 		),
 	)
-	p.Addresses.proxyContract = fmt.Sprintf("0x%s", proxyAddr)
+	p.Config.proxyContractAddr = fmt.Sprintf("0x%s", proxyAddr)
 
 	// Verify contracts
 	if p.Network == "testnet" || p.Network == "mainnet" {
-		// TODO
+		p.verifyContract(implementationAddr)
+		p.verifyContract(proxyAddr)
 	}
 
 	// Set up royalty management
@@ -220,7 +230,7 @@ func (p *provider) getContractBytecodeFromABIFile(contractName string) string {
 
 func generateProxyEncodedConstructorData(implementationAddr, abiEncodedInitializeFunctionCall string) string {
 	//Run 'cast abi-encode'
-	abiEncodeCmd := exec.Command(
+	cmd := exec.Command(
 		"cast",
 		"abi-encode",
 		"constructor(address,bytes)",
@@ -228,13 +238,13 @@ func generateProxyEncodedConstructorData(implementationAddr, abiEncodedInitializ
 		abiEncodedInitializeFunctionCall,
 	)
 	// Print command for logging
-	log.Println("Executing command:", abiEncodeCmd.String())
+	log.Println("Executing command:", cmd.String())
 
 	// Get error output
 	var out, stderr bytes.Buffer
-	abiEncodeCmd.Stdout = &out
-	abiEncodeCmd.Stderr = &stderr
-	if err := abiEncodeCmd.Run(); err != nil {
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
 		log.Fatalf("abiEncode: Failed to run 'cast abi-encode' and get output from command: %v; %s", err, stderr.String())
 	}
 
@@ -254,7 +264,7 @@ func generateEncodedInitializeFunctionCall(
 	contractMetadata string,
 ) string {
 	//Run 'cast abi-encode'
-	abiEncodeCmd := exec.Command(
+	cmd := exec.Command(
 		"cast",
 		"abi-encode",
 		`initialize(address,address,address,string,string,string,string,string,string)`,
@@ -269,14 +279,41 @@ func generateEncodedInitializeFunctionCall(
 		contractMetadata,
 	)
 	// Print command for logging
-	log.Println("Executing command:", abiEncodeCmd.String())
+	log.Println("Executing command:", cmd.String())
 
 	// Run and return output without 0x prefix
-	output, err := abiEncodeCmd.Output()
+	output, err := cmd.Output()
 	if err != nil {
 		log.Fatalf("generateAbiEncodedInitializeFunctionCall: Failed to run 'cast abi-encode' and get output from command: %v", err)
 	}
 	return string(output)[2:]
+}
+
+func (p *provider) verifyContract(contractAddr string) string {
+	//Run 'cast abi-encode'
+	cmd := exec.Command(
+		"forge",
+		"verify-contract",
+		"--rpc-url",
+		p.Config.rpcUrl,
+		"--verifier",
+		p.Config.verifierProvider,
+		"--verifier-url",
+		p.Config.verifierUrl,
+		contractAddr,
+	)
+	// Print command for logging
+	log.Println("Executing command:", cmd.String())
+
+	// Get error output
+	var out, stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("abiEncode: Failed to run 'cast abi-encode' and get output from command: %v; %s", err, stderr.String())
+	}
+
+	return out.String()[2:]
 }
 
 // Retrieve or create a COA
@@ -301,21 +338,21 @@ func (p *provider) retrieveOrCreateCOA() {
 		checkNoErr(err)
 		log.Printf("Created new COA with EVM address: %s%s", topshotCOAHex, separatorString())
 	}
-	p.Addresses.topshotCoa = fmt.Sprintf("0x%s", topshotCOAHex.(string))
+	p.Config.topshotCoaAddr = fmt.Sprintf("0x%s", topshotCOAHex.(string))
 }
 
 // Set up royalty management
 func (p *provider) setRoyaltyManagement() {
-	if p.Addresses.proxyContract == "" {
+	if p.Config.proxyContractAddr == "" {
 		log.Fatal("Proxy contract not deployed")
 	}
 
 	log.Printf("\t...setting up royalty management")
 	setRoyaltyManagementResult := p.OverflowState.Tx("admin/set_up_royalty_management",
 		WithSigner(p.TopshotAccountName),
-		WithArg("erc721C", p.Addresses.proxyContract),
-		WithArg("validator", p.Addresses.transferValidator),
-		WithArg("royaltyRecipient", p.Addresses.royaltyRecipient),
+		WithArg("erc721C", p.Config.proxyContractAddr),
+		WithArg("validator", p.Config.transferValidatorAddr),
+		WithArg("royaltyRecipient", p.Config.royaltyRecipientAddr),
 		WithArg("royaltyBasisPoints", 500),
 	)
 	checkNoErr(setRoyaltyManagementResult.Err)
