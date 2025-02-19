@@ -199,7 +199,7 @@ access(all) fun getUnderlyingERC721Address(
     )
 
     // If the call fails, return nil
-    if res.status != EVM.Status.successful {
+    if res.status != EVM.Status.successful || res.data.length == 0 {
         return nil
     }
 
@@ -222,13 +222,13 @@ access(all) fun isNFTWrapped(
 ): Bool {
     let res = coa.call(
         to: underlying,
-        data: EVM.encodeABIWithSignature("ownerOf(uint256)(address)", [nftID]),
+        data: EVM.encodeABIWithSignature("ownerOf(uint256)", [nftID]),
         gasLimit: 100_000,
         value: EVM.Balance(attoflow: 0)
     )
 
-    // If the call fails, return nil
-    if res.status != EVM.Status.successful {
+    // If the call fails, return false
+    if res.status != EVM.Status.successful || res.data.length == 0{
         return false
     }
 

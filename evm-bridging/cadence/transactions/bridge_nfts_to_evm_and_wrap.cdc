@@ -245,12 +245,12 @@ access(all) fun isOwner(
     return false
 }
 
-/// Gets the underlying ERC721 address
+/// Gets the underlying ERC721 address if it exists (i.e. if the ERC721 is a wrapper)
 ///
 access(all) fun getUnderlyingERC721Address(
     _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
     _ wrapperAddress: EVM.EVMAddress
-): EVM.EVMAddress {
+): EVM.EVMAddress? {
     let res = coa.call(
         to: wrapperAddress,
         data: EVM.encodeABIWithSignature("underlying()", []),
@@ -258,13 +258,16 @@ access(all) fun getUnderlyingERC721Address(
         value: EVM.Balance(attoflow: 0)
     )
 
-    assert(res.status == EVM.Status.successful,
-        message: "Failed to call 'underlying()'\n\t\t error code: "
-            .concat(res.errorCode.toString()).concat("\n\t\t message: ")
-            .concat(res.errorMessage)
-    )
-    let decodedResult = EVM.decodeABI(types: [Type<EVM.EVMAddress>()], data: res.data)
-    assert(decodedResult.length == 1, message: "Invalid response length")
+    // If the call fails, return nil
+    if res.status != EVM.Status.successful || res.data.length == 0 {
+        return nil
+    }
 
+    // Decode and return the underlying ERC721 address
+    let decodedResult = EVM.decodeABI(
+        types: [Type<EVM.EVMAddress>()],
+        data: res.data
+    )
+    assert(decodedResult.length == 1, message: "Invalid response length")
     return decodedResult[0] as! EVM.EVMAddress
 }
