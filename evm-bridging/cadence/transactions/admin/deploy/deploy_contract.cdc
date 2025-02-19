@@ -4,7 +4,7 @@ import "EVM"
 
 /// Deploys a compiled solidity contract from bytecode to the EVM, with the signer's COA as the deployer
 ///
-transaction(bytecode: String, constructorArgs: [String], gasLimit: UInt64) {
+transaction(bytecode: String, gasLimit: UInt64) {
     let coa: auth(EVM.Deploy) &EVM.CadenceOwnedAccount
 
     prepare(signer: auth(BorrowValue) &Account) {
@@ -13,11 +13,8 @@ transaction(bytecode: String, constructorArgs: [String], gasLimit: UInt64) {
     }
 
     execute {
-
-        let code = bytecode.concat(String.encodeHex(constructorArgs)).decodeHex()
-
         let result = self.coa.deploy(
-            code: code,
+            code: bytecode.decodeHex(),
             gasLimit: gasLimit,
             value: EVM.Balance(attoflow: 0)
         )
