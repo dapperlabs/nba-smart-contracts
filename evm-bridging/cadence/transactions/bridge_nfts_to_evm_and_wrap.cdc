@@ -119,7 +119,7 @@ transaction(
             nftIDs: nftIDs,
             nftType: self.nftType,
             viewResolver: self.viewResolver,
-            recipientIfNotCoa: recipientEvmAddressIfnotCoa != nil: EVM.addressFromString(recipientEvmAddressIfnotCoa!) ? nil
+            recipientIfNotCoa: recipientEvmAddressIfnotCoa != nil ? EVM.addressFromString(recipientEvmAddressIfnotCoa!) : nil
         )
     }
 }
