@@ -196,10 +196,7 @@ func (p *provider) deployContract(name, encodedConstructorData string) string {
 
 	// Get contract bytecode
 	bytecode := p.getContractBytecodeFromABIFile(name)
-	// Debug log the bytecode
-	log.Printf("Original bytecode: %s", bytecode)
 
-	// NEW: Properly handle the constructor data
 	if encodedConstructorData != "" {
 		// Remove 0x prefix if present
 		encodedConstructorData = strings.TrimPrefix(encodedConstructorData, "0x")
@@ -373,11 +370,9 @@ func generateEncodedInitializeFunctionCall(
 // Retrieve or create a COA
 func (p *provider) retrieveOrCreateCOA() {
 	log.Printf("\t...retrieving COA")
-	log.Printf(p.TopshotAccountName)
 	topshotCOAHex, err := p.OverflowState.Script("get_evm_address_string",
 		WithArg("flowAddress", p.OverflowState.Address(p.TopshotAccountName)),
 	).GetAsInterface()
-	log.Printf(fmt.Sprintf("%v", topshotCOAHex), err)
 	checkNoErr(err)
 	if topshotCOAHex != nil {
 		log.Printf("Using existing COA with EVM address: %s", topshotCOAHex)
