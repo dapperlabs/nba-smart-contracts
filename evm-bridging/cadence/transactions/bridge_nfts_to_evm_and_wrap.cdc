@@ -135,7 +135,7 @@ transaction(
 /// @param recipientIfNotCoa: The EVM address to transfer the wrapped NFTs to, nil if the NFTs should stay in signer's COA
 ///
 access(all) fun wrapAndTransferNFTsIfApplicable(
-    _ coa: auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount,
+    _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
     nftIDs: [UInt64],
     nftType: Type,
     viewResolver: &{ViewResolver},
