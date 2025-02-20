@@ -1743,8 +1743,7 @@ access(all) contract TopShot: NonFungibleToken {
                 return CrossVMMetadataViews.EVMPointer(
                     cadenceType: Type<@TopShot.NFT>(),
                     cadenceContractAddress: self.account.address,
-                    // TODO: Replace with actual EVM contract address
-                    evmContractAddress: EVM.addressFromString("0x1234565789012345657890123456578901234565"),
+                    evmContractAddress: EVM.addressFromString(${EVMCONTRACTADDRESS}),
                     nativeVM: CrossVMMetadataViews.VM.Cadence
                 )
         }

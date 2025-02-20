@@ -49,6 +49,7 @@ const (
 	MetadataViewsReplaceAddress = `"MetadataViews"`
 	ViewResolverReplaceAddress  = `"ViewResolver"`
 	Network                     = `"mainnet"`
+	FlowEvmContractAddr         = `"0x1234565789012345657890123456578901234565"`
 )
 
 // topshotTestContext will expose sugar for common actions needed to bootstrap testing
@@ -141,6 +142,7 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 		topShotLockingAddr.String(),
 		royaltyAddr.String(),
 		Network,
+		FlowEvmContractAddr,
 	)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
@@ -821,6 +823,7 @@ func TestTransferAdmin(t *testing.T) {
 		topShotLockingAddr.String(),
 		royaltyAddr.String(),
 		Network,
+		FlowEvmContractAddr,
 	)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := adapter.CreateAccount(context.Background(), []*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{

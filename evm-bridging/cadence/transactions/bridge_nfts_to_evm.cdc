@@ -12,9 +12,9 @@ import "CrossVMMetadataViews"
 
 /// Bridges NFTs with provided IDs from Cadence to EVM, wrapping them in a wrapper ERC721 if applicable.
 ///
-/// @param nftIdentifier: The identifier of the NFT to wrap and bridge (e.g., 'A.877931736ee77cff.TopShot.NFT')
-/// @param nftIDs: Array of IDs of the NFTs to wrap
-/// @param recipientEvmAddressIfnotCoa: The EVM address
+/// @param nftIdentifier: The identifier of the NFT to wrap and bridge (e.g., 'A.0b2a3299cc857e29.TopShot.NFT')
+/// @param nftIDs: The IDs of the NFTs to bridge to EVM from Cadence
+/// @param recipientEvmAddressIfnotCoa: The EVM address to transfer the NFTs to, nil if the NFTs should stay in signer's COA
 ///
 transaction(
     nftIdentifier: String,
@@ -40,7 +40,7 @@ transaction(
             self.coa = signer.storage.borrow<auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount>(from: /storage/evm)!
         }
 
-        // Get NFT collection info
+        // Get NFT type, address, and name from the provided identifier
         self.nftType = CompositeType(nftIdentifier)
             ?? panic("Could not construct NFT type from identifier: ".concat(nftIdentifier))
         let nftContractAddress = FlowEVMBridgeUtils.getContractAddress(fromType: self.nftType)
@@ -95,7 +95,7 @@ transaction(
     }
 
     execute {
-        // Iterate over requested IDs and bridge each NFT to the signer's COA in EVM
+        // Bridge each NFT from the signer's collection in Cadence to the signer's COA in EVM
         for id in nftIDs {
             // Withdraw the NFT & ensure it's the correct type
             let nft <- self.collection.withdraw(withdrawID: id)
@@ -114,12 +114,12 @@ transaction(
         // Destroy the ScopedFTProvider
         destroy self.scopedProvider
 
-        // Wrap NFTs if applicable
+        // Wrap NFTs and transfer to recipient if applicable
         wrapAndTransferNFTsIfApplicable(self.coa,
             nftIDs: nftIDs,
             nftType: self.nftType,
             viewResolver: self.viewResolver,
-            recipientIfNotCoa: recipientEvmAddressIfnotCoa != nil: EVM.addressFromString(recipientEvmAddressIfnotCoa!) ? nil
+            recipientIfNotCoa: recipientEvmAddressIfnotCoa != nil ? EVM.addressFromString(recipientEvmAddressIfnotCoa!) : nil
         )
     }
 }
@@ -191,14 +191,18 @@ access(all) fun mustCall(
     let res = coa.call(
         to: contractAddr,
         data: EVM.encodeABIWithSignature(functionSig, args),
-        gasLimit: 400_000,
+        gasLimit: 4_000_000,
         value: EVM.Balance(attoflow: 0)
     )
 
     assert(res.status == EVM.Status.successful,
-        message: "Failed to call '".concat(functionSig).concat("'\n\t\t error code: ")
-            .concat(res.errorCode.toString()).concat("\n\t\t message: ")
-            .concat(res.errorMessage)
+        message: "Failed to call '".concat(functionSig)
+            .concat("\n\t error code: ").concat(res.errorCode.toString())
+            .concat("\n\t error message: ").concat(res.errorMessage)
+            .concat("\n\t gas used: ").concat(res.gasUsed.toString())
+            .concat("\n\t args count: ").concat(args.length.toString())
+            .concat("\n\t caller address: 0x").concat(coa.address().toString())
+            .concat("\n\t contract address: 0x").concat(contractAddr.toString())
     )
 
     return res

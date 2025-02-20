@@ -463,6 +463,7 @@ func TestTopShotLocking(t *testing.T) {
 			topShotLockingAddr.String(),
 			env.FTSwitchboardAddress,
 			Network,
+			FlowEvmContractAddr,
 		)
 		fakeTopshotAccountKey, fakeTopshotSigner := accountKeys.NewWithSigner()
 		fakeTopshotAddress, _ := adapter.CreateAccount(context.Background(), []*flow.AccountKey{fakeTopshotAccountKey}, []sdktemplates.Contract{

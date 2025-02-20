@@ -4,3 +4,4 @@ flow.json
 .vscode
 .env
 **/vendor/
+*.pkey

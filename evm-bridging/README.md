@@ -127,23 +127,20 @@ cast send $DEPLOYED_PROXY_CONTRACT_ADDRESS --rpc-url $RPC_URL --private-key $DEP
 
 ### Cadence Operations
 
-> **Note**: Populate arguments in json file before submitting the transactions.
+#### Notes
+
+- Ensure all transaction arguments are populated in the corresponding JSON file template before submission
+- If you encounter an `insufficient computation` error, increase the gas limit (i.e., `--gas-limit <new-gas-limit>`)
 
 ```sh
 # Transfer erc721 NFTs
 flow transactions send ./evm-bridging/cadence/transactions/transfer_erc721s_to_evm_address.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/transfer_erc721s_to_evm_address_args.json)" --network <network> --signer <signer>
 
-# Bridge and wrap NFTs
-flow transactions send ./evm-bridging/cadence/transactions/bridge_nfts_to_evm_and_wrap.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/bridge_nfts_to_evm_and_wrap_args.json)" --network <network> --signer <signer> --gas-limit 8000
+# Bridge NFTs to EVM (wraps NFTs if applicable)
+flow transactions send ./evm-bridging/cadence/transactions/bridge_nfts_to_evm.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/bridge_nfts_to_evm_args.json)" --network <network> --signer <signer> --gas-limit 8000
 
-# Wrap already-bridged NFTs
-flow transactions send ./evm-bridging/cadence/transactions/wrap_nfts.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/wrap_nfts_args.json)" --network <network> --signer <signer>
-
-# Unwrap and bridge back NFTs
-flow transactions send ./evm-bridging/cadence/transactions/unwrap_nfts_and_bridge_from_evm.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/unwrap_nfts_and_bridge_from_evm_args.json)" --network <network> --signer <signer> --gas-limit 8000
-
-# Unwrap NFTs
-flow transactions send ./evm-bridging/cadence/transactions/unwrap_nfts.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/unwrap_nfts_args.json)" --network <network> --signer <signer>
+# Bridge NFTs from EVM (unwraps NFTs if applicable)
+flow transactions send ./evm-bridging/cadence/transactions/bridge_nfts_from_evm.cdc --args-json "$(cat ./evm-bridging/cadence/transactions/bridge_nfts_from_evm_args.json)" --network <network> --signer <signer> --gas-limit 8000
 
 # Query ERC721 address
 flow scripts execute ./evm-bridging/cadence/scripts/get_evm_address_string.cdc <flow_address> --network testnet

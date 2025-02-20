@@ -39,14 +39,18 @@ access(all) fun mustCall(
     let res = coa.call(
         to: contractAddr,
         data: EVM.encodeABIWithSignature(functionSig, args),
-        gasLimit: 400_000,
+        gasLimit: 4_000_000,
         value: EVM.Balance(attoflow: 0)
     )
 
     assert(res.status == EVM.Status.successful,
-        message: "Failed to call '".concat(functionSig).concat("'\n\t\t error code: ")
-            .concat(res.errorCode.toString()).concat("\n\t\t message: ")
-            .concat(res.errorMessage)
+        message: "Failed to call '".concat(functionSig)
+            .concat("\n\t error code: ").concat(res.errorCode.toString())
+            .concat("\n\t error message: ").concat(res.errorMessage)
+            .concat("\n\t gas used: ").concat(res.gasUsed.toString())
+            .concat("\n\t args count: ").concat(args.length.toString())
+            .concat("\n\t caller address: 0x").concat(coa.address().toString())
+            .concat("\n\t contract address: 0x").concat(contractAddr.toString())
     )
 
     return res

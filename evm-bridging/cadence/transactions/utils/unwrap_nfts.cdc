@@ -1,9 +1,9 @@
 import "EVM"
 
-/// Wraps NFTs with provided IDs
+/// Unwraps NFTs with provided IDs
 ///
 /// @param wrapperERC721Address: EVM address of the wrapper ERC721 NFT
-/// @param nftIDs: Array of IDs of the NFTs to wrap
+/// @param nftIDs: Array of IDs of the NFTs to unwrap
 ///
 transaction(
     wrapperERC721Address: String,
@@ -19,26 +19,10 @@ transaction(
     }
 
     execute {
-        // Get contract addresses
-        let wrapperAddress = EVM.addressFromString(wrapperERC721Address)
-        let underlyingAddress = getUnderlyingERC721Address(self.coa, wrapperAddress)
-
-        // Approve contract to withdraw underlying NFTs from signer's coa
-        mustCall(self.coa, underlyingAddress,
-            functionSig: "setApprovalForAll(address,bool)",
-            args: [wrapperAddress, true]
-        )
-
-        // Wrap NFTs with provided IDs
-        mustCall(self.coa, wrapperAddress,
-            functionSig: "depositFor(address,uint256[])",
+        // Unwrap NFTs with provided IDs
+        mustCall(self.coa, EVM.addressFromString(wrapperERC721Address),
+            functionSig: "withdrawTo(address,uint256[])",
             args: [self.coa.address(), nftIDs]
-        )
-
-        // Revoke approval for contract to withdraw underlying NFTs from signer's coa
-        mustCall(self.coa, underlyingAddress,
-            functionSig: "setApprovalForAll(address,bool)",
-            args: [wrapperAddress, false]
         )
     }
 }
@@ -74,14 +58,18 @@ access(all) fun mustCall(
     let res = coa.call(
         to: contractAddr,
         data: EVM.encodeABIWithSignature(functionSig, args),
-        gasLimit: 400_000,
+        gasLimit: 4_000_000,
         value: EVM.Balance(attoflow: 0)
     )
 
     assert(res.status == EVM.Status.successful,
-        message: "Failed to call '".concat(functionSig).concat("'\n\t\t error code: ")
-            .concat(res.errorCode.toString()).concat("\n\t\t message: ")
-            .concat(res.errorMessage)
+        message: "Failed to call '".concat(functionSig)
+            .concat("\n\t error code: ").concat(res.errorCode.toString())
+            .concat("\n\t error message: ").concat(res.errorMessage)
+            .concat("\n\t gas used: ").concat(res.gasUsed.toString())
+            .concat("\n\t args count: ").concat(args.length.toString())
+            .concat("\n\t caller address: 0x").concat(coa.address().toString())
+            .concat("\n\t contract address: 0x").concat(contractAddr.toString())
     )
 
     return res
