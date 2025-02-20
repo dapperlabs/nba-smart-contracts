@@ -4,9 +4,9 @@ pragma solidity 0.8.24;
 import {Script} from "forge-std/Script.sol";
 import "forge-std/console.sol";
 import {Upgrades} from "openzeppelin-foundry-upgrades/src/Upgrades.sol";
-import {BridgedTopShotMoments} from "../src/BridgedTopShotMoments.sol";
+import {TestNFTContract} from "../src/test-contracts/TestNFTContract.sol";
 
-contract InitialTestingScript is Script {
+contract InitialTestingDeployScript is Script {
     function setUp() public {}
 
     function run() external returns (address, address) {
@@ -16,20 +16,20 @@ contract InitialTestingScript is Script {
 
         // Set testnet contract initialization parameters
         address owner = msg.sender;
-        string memory name = "NBA Top Shot";
-        string memory symbol = "TOPSHOT";
+        string memory name = "Test NFT";
+        string memory symbol = "TEST";
         string memory baseTokenURI = "https://api.cryptokitties.co/tokenuri/";
-        string memory cadenceNFTAddress = "877931736ee77cff";
-        string memory cadenceNFTIdentifier = "A.877931736ee77cff.TopShot.NFT";
+        string memory cadenceNFTAddress = "abcdef1234567890";
+        string memory cadenceNFTIdentifier = "A.abcdef1234567890.TestNFT.NFT";
         string memory contractURI = 'data:application/json;utf8,{"name": "Name of NFT","description":"Description of NFT"}';
         address underlyingNftContractAddress = address(0x12345);
         address vmBridgeAddress = address(0x67890);
 
         // Deploy NFT contract using UUPS proxy for upgradeability
         address proxyAddr = Upgrades.deployUUPSProxy(
-            "BridgedTopShotMoments.sol",
+            "TestNFTContract.sol",
             abi.encodeCall(
-                BridgedTopShotMoments.initialize,
+                TestNFTContract.initialize,
                 (
                     owner,
                     underlyingNftContractAddress,

@@ -44,7 +44,7 @@ const (
 	placeholderEvmAddress = "0x1234567890abcdef1234567890abcdef12345678"
 )
 
-// Addresses by network
+// Deployment configuration by network
 var configByNetwork = map[string]config{
 	"emulator": {
 		topShotFlowAddr:                 "abcdef1234567890",
@@ -57,7 +57,7 @@ var configByNetwork = map[string]config{
 		topShotFlowAddr:                 "877931736ee77cff",
 		flowEvmBridgeCoaAddr:            "0x0000000000000000000000023f946ffbc8829bfd",
 		bridgeDeployedTopshotERC721Addr: "0xB3627E6f7F1cC981217f789D7737B1f3a93EC519",
-		transferValidatorAddr:           "0x721C002B0059009a671D00aD1700c9748146cd1B", // CreatorTokenTransferValidator
+		transferValidatorAddr:           "0xA000027A9B2802E1ddf7000061001e5c005A0000", // StrictAuthorizedTransferSecurityRegistry
 		royaltyRecipientAddr:            placeholderEvmAddress,
 		rpcUrl:                          "https://testnet.evm.nodes.onflow.org",
 		verifierUrl:                     "https://evm-testnet.flowscan.io/api",
@@ -67,7 +67,7 @@ var configByNetwork = map[string]config{
 		topShotFlowAddr:                 "0b2a3299cc857e29",
 		flowEvmBridgeCoaAddr:            "0x00000000000000000000000249250a5c27ecab3b",
 		bridgeDeployedTopshotERC721Addr: "0x50AB3a827aD268e9D5A24D340108FAD5C25dAD5f",
-		transferValidatorAddr:           "0x721C002B0059009a671D00aD1700c9748146cd1B", // CreatorTokenTransferValidator
+		transferValidatorAddr:           "0xA000027A9B2802E1ddf7000061001e5c005A0000", // StrictAuthorizedTransferSecurityRegistry
 		// TODO: get royalty recipient
 		royaltyRecipientAddr: placeholderEvmAddress,
 		rpcUrl:               "https://mainnet.evm.nodes.onflow.org",
@@ -86,7 +86,7 @@ type provider struct {
 	*OverflowState
 }
 
-// To run, execute 'go run main.go $NETWORK'
+// To run, execute 'go run main.go <script-type> <network-name>'
 func main() {
 	// Check prerequisites
 	for _, prerequisite := range []string{"forge", "cast", "flow"} {
@@ -139,7 +139,7 @@ func (p *provider) setupProject() {
 	// Deploy implementation contract
 	implementationAddr := p.deployContract("BridgedTopShotMoments", "")
 
-	// Generate encoded initialize function call
+	// Generate encoded initialize function call, ensure valid values are passed
 	encodedInitializeFunctionCall := generateEncodedInitializeFunctionCall(
 		p.Config.topshotCoaAddr,
 		p.Config.bridgeDeployedTopshotERC721Addr,
