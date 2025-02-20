@@ -16,9 +16,10 @@ var addrE = "0E"
 var addrF = "0F"
 var addrG = "0G"
 var network = "mainnet"
+var flowEvmContractAddr = "0x1234565789012345657890123456578901234565"
 
 func TestTopShotContract(t *testing.T) {
-	contract := contracts.GenerateTopShotContract(addrA, addrA, addrA, addrA, addrA, addrA, network)
+	contract := contracts.GenerateTopShotContract(addrA, addrA, addrA, addrA, addrA, addrA, addrA, addrA, network, flowEvmContractAddr)
 	assert.NotNil(t, contract)
 }
 

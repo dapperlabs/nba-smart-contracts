@@ -48,6 +48,8 @@ import NonFungibleToken from 0xNFTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 import ViewResolver from 0xVIEWRESOLVERADDRESS
+import CrossVMMetadataViews from 0xCROSSVMMETADATAVIEWSADDRESS
+import EVM from 0xEVMADDRESS
 
 access(all) contract TopShot: NonFungibleToken {
     // -----------------------------------------------------------------------
@@ -727,6 +729,7 @@ access(all) contract TopShot: NonFungibleToken {
                 Type<MetadataViews.ExternalURL>(),
                 Type<MetadataViews.NFTCollectionData>(),
                 Type<MetadataViews.NFTCollectionDisplay>(),
+                Type<CrossVMMetadataViews.EVMPointer>(),
                 Type<MetadataViews.Serial>(),
                 Type<MetadataViews.Traits>(),
                 Type<MetadataViews.Medias>()
@@ -796,6 +799,8 @@ access(all) contract TopShot: NonFungibleToken {
                     return TopShot.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionData>())
                 case Type<MetadataViews.NFTCollectionDisplay>():
                     return TopShot.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionDisplay>())
+                case Type<CrossVMMetadataViews.EVMPointer>():
+                    return TopShot.resolveContractView(resourceType: nil, viewType: Type<CrossVMMetadataViews.EVMPointer>())
                 case Type<MetadataViews.Traits>():
                     return self.resolveTraitsView()
                 case Type<MetadataViews.Medias>():
@@ -1673,11 +1678,16 @@ access(all) contract TopShot: NonFungibleToken {
 
     // getContractViews returns the metadata view types available for this contract
     access(all) view fun getContractViews(resourceType: Type?): [Type] {
-        return [Type<MetadataViews.NFTCollectionData>(), Type<MetadataViews.NFTCollectionDisplay>(), Type<MetadataViews.Royalties>()]
+        return [
+            Type<MetadataViews.NFTCollectionData>(),
+            Type<MetadataViews.NFTCollectionDisplay>(),
+            Type<CrossVMMetadataViews.EVMPointer>(),
+            Type<MetadataViews.Royalties>()
+        ]
     }
 
     // resolveContractView resolves this contract's metadata views
-    access(all) view fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
+    access(all) fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
         post {
             result == nil || result!.getType() == viewType: "The returned view must be of the given type or nil"
         }
@@ -1717,18 +1727,25 @@ access(all) contract TopShot: NonFungibleToken {
                         "instagram": MetadataViews.ExternalURL("https://www.instagram.com/nbatopshot")
                     }
                 )
-                case Type<MetadataViews.Royalties>():
-                    let royaltyReceiver: Capability<&{FungibleToken.Receiver}> =
-                        getAccount(TopShot.RoyaltyAddress()).capabilities.get<&{FungibleToken.Receiver}>(MetadataViews.getRoyaltyReceiverPublicPath())!
-                    return MetadataViews.Royalties(
-                        [
-                            MetadataViews.Royalty(
-                                receiver: royaltyReceiver,
-                                cut: 0.05,
-                                description: "NBATopShot marketplace royalty"
-                            )
-                        ]
-                    )
+            case Type<MetadataViews.Royalties>():
+                let royaltyReceiver: Capability<&{FungibleToken.Receiver}> =
+                    getAccount(TopShot.RoyaltyAddress()).capabilities.get<&{FungibleToken.Receiver}>(MetadataViews.getRoyaltyReceiverPublicPath())!
+                return MetadataViews.Royalties(
+                    [
+                        MetadataViews.Royalty(
+                            receiver: royaltyReceiver,
+                            cut: 0.05,
+                            description: "NBATopShot marketplace royalty"
+                        )
+                    ]
+                )
+            case Type<CrossVMMetadataViews.EVMPointer>():
+                return CrossVMMetadataViews.EVMPointer(
+                    cadenceType: Type<@TopShot.NFT>(),
+                    cadenceContractAddress: self.account.address,
+                    evmContractAddress: EVM.addressFromString(${EVMCONTRACTADDRESS}),
+                    nativeVM: CrossVMMetadataViews.VM.Cadence
+                )
         }
         return nil
     }
