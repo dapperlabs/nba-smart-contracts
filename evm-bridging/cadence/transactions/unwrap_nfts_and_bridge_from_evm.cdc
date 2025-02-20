@@ -12,8 +12,8 @@ import "CrossVMMetadataViews"
 
 /// Bridges NFTs with provided IDs from EVM to Cadence, unwrapping them first if applicable.
 ///
-/// @param nftIdentifier: The identifier of the NFT to unwrap and bridge (e.g., 'A.877931736ee77cff.TopShot.NFT')
-/// @param nftIDs: The ERC721 ids of the NFTs to bridge to Cadence from EVM
+/// @param nftIdentifier: The identifier of the NFT to unwrap and bridge (e.g., 'A.0b2a3299cc857e29.TopShot.NFT')
+/// @param nftIDs: The IDs of the NFTs to bridge to Cadence from EVM
 ///
 transaction(nftIdentifier: String, nftIDs: [UInt256]) {
 
@@ -130,7 +130,7 @@ transaction(nftIdentifier: String, nftIDs: [UInt256]) {
 ///
 access(all) fun unwrapNFTsIfApplicable(
     _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
-    nftIDs: [UInt64],
+    nftIDs: [UInt256],
     nftType: Type,
     viewResolver: &{ViewResolver}
 ) {
@@ -216,7 +216,7 @@ access(all) fun getUnderlyingERC721Address(
 ///
 access(all) fun isNFTWrapped(
     _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
-    nftID: UInt64,
+    nftID: UInt256,
     underlying: EVM.EVMAddress,
     wrapper: EVM.EVMAddress
 ): Bool {

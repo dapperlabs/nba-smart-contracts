@@ -12,9 +12,9 @@ import "CrossVMMetadataViews"
 
 /// Bridges NFTs with provided IDs from Cadence to EVM, wrapping them in a wrapper ERC721 if applicable.
 ///
-/// @param nftIdentifier: The identifier of the NFT to wrap and bridge (e.g., 'A.877931736ee77cff.TopShot.NFT')
+/// @param nftIdentifier: The identifier of the NFT to wrap and bridge (e.g., 'A.0b2a3299cc857e29.TopShot.NFT')
 /// @param nftIDs: Array of IDs of the NFTs to wrap
-/// @param recipientEvmAddressIfnotCoa: The EVM address
+/// @param recipientEvmAddressIfnotCoa: The EVM address to transfer the NFTs to, nil if the NFTs should stay in signer's COA
 ///
 transaction(
     nftIdentifier: String,
