@@ -199,6 +199,7 @@ access(all) fun mustCall(
         message: "Failed to call '".concat(functionSig).concat("'\n\t\t error code: ")
             .concat(res.errorCode.toString()).concat("\n\t\t message: ")
             .concat(res.errorMessage)
+            .concat("\n\t\t coa evm address: 0x").concat(coa.address().toString())
     )
 
     return res
