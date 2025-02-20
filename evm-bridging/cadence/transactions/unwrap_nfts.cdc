@@ -53,20 +53,22 @@ access(all) fun mustCall(
     _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
     _ contractAddr: EVM.EVMAddress,
     functionSig: String,
-    args: [AnyStruct],
+    args: [AnyStruct]
 ): EVM.Result {
     let res = coa.call(
         to: contractAddr,
         data: EVM.encodeABIWithSignature(functionSig, args),
-        gasLimit: 400_000,
+        gasLimit: 4_000_000,
         value: EVM.Balance(attoflow: 0)
     )
 
     assert(res.status == EVM.Status.successful,
-        message: "Failed to call '".concat(functionSig).concat("'\n\t\t error code: ")
-            .concat(res.errorCode.toString()).concat("\n\t\t message: ")
-            .concat(res.errorMessage)
-            .concat("\n\t\t coa evm address: 0x").concat(coa.address().toString())
+        message: "Failed to call '".concat(functionSig)
+            .concat("\n\t error code: ").concat(res.errorCode.toString())
+            .concat("\n\t error message: ").concat(res.errorMessage)
+            .concat("\n\t gas used: ").concat(res.gasUsed.toString())
+            .concat("\n\t caller address: 0x").concat(coa.address().toString())
+            .concat("\n\t contract address: 0x").concat(contractAddr.toString())
     )
 
     return res
