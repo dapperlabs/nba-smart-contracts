@@ -17,17 +17,17 @@ import {IERC2981} from "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import {IERC4906} from "@openzeppelin/contracts/interfaces/IERC4906.sol";
 import {ERC165} from "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import {ICreatorToken, ILegacyCreatorToken} from "./interfaces/ICreatorToken.sol";
-import {ITransferValidator721} from "./interfaces/ITransferValidator.sol";
-import {ERC721TransferValidator} from "./lib/ERC721TransferValidator.sol";
+import {ICreatorToken, ILegacyCreatorToken} from "../interfaces/ICreatorToken.sol";
+import {ITransferValidator721} from "../interfaces/ITransferValidator.sol";
+import {ERC721TransferValidator} from "../lib/ERC721TransferValidator.sol";
 
-import {ICrossVM} from "./interfaces/ICrossVM.sol";
-import {BridgePermissionsUpgradeable} from "./lib/BridgePermissionsUpgradeable.sol";
-import {CrossVMBridgeERC721FulfillmentUpgradeable} from "./lib/CrossVMBridgeERC721FulfillmentUpgradeable.sol";
+import {ICrossVM} from "../interfaces/ICrossVM.sol";
+import {BridgePermissionsUpgradeable} from "../lib/BridgePermissionsUpgradeable.sol";
+import {CrossVMBridgeERC721FulfillmentUpgradeable} from "../lib/CrossVMBridgeERC721FulfillmentUpgradeable.sol";
 
 /**
- * @title ERC-721 BridgedTopShotMoments
- * @notice A NFT contract for bridged NBA Top Shot Moments
+ * @title ERC-721 TestNFTContract
+ * @notice A NFT contract for testing
  * @dev This contract implements the following core features:
  * - ERC721 standard functionality with ownership, enumeration, and burning capabilities
  * - Upgradability via proxy and initializer pattern
@@ -36,7 +36,7 @@ import {CrossVMBridgeERC721FulfillmentUpgradeable} from "./lib/CrossVMBridgeERC7
  * - Cross-VM compatibility for Flow <-> EVM bridging
  * - Royalty management for secondary sales
  */
-contract BridgedTopShotMoments is
+contract TestNFTContract is
     Initializable,
     ERC721Upgradeable,
     ERC721BurnableUpgradeable,
