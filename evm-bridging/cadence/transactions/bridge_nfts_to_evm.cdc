@@ -200,6 +200,7 @@ access(all) fun mustCall(
             .concat("\n\t error code: ").concat(res.errorCode.toString())
             .concat("\n\t error message: ").concat(res.errorMessage)
             .concat("\n\t gas used: ").concat(res.gasUsed.toString())
+            .concat("\n\t args count: ").concat(args.length.toString())
             .concat("\n\t caller address: 0x").concat(coa.address().toString())
             .concat("\n\t contract address: 0x").concat(contractAddr.toString())
     )
