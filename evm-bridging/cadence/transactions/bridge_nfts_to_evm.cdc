@@ -13,7 +13,7 @@ import "CrossVMMetadataViews"
 /// Bridges NFTs with provided IDs from Cadence to EVM, wrapping them in a wrapper ERC721 if applicable.
 ///
 /// @param nftIdentifier: The identifier of the NFT to wrap and bridge (e.g., 'A.0b2a3299cc857e29.TopShot.NFT')
-/// @param nftIDs: Array of IDs of the NFTs to wrap
+/// @param nftIDs: The IDs of the NFTs to bridge to EVM from Cadence
 /// @param recipientEvmAddressIfnotCoa: The EVM address to transfer the NFTs to, nil if the NFTs should stay in signer's COA
 ///
 transaction(
@@ -40,7 +40,7 @@ transaction(
             self.coa = signer.storage.borrow<auth(EVM.Call, EVM.Bridge) &EVM.CadenceOwnedAccount>(from: /storage/evm)!
         }
 
-        // Get NFT collection info
+        // Get NFT type, address, and name from the provided identifier
         self.nftType = CompositeType(nftIdentifier)
             ?? panic("Could not construct NFT type from identifier: ".concat(nftIdentifier))
         let nftContractAddress = FlowEVMBridgeUtils.getContractAddress(fromType: self.nftType)
@@ -95,7 +95,7 @@ transaction(
     }
 
     execute {
-        // Iterate over requested IDs and bridge each NFT to the signer's COA in EVM
+        // Bridge each NFT from the signer's collection in Cadence to the signer's COA in EVM
         for id in nftIDs {
             // Withdraw the NFT & ensure it's the correct type
             let nft <- self.collection.withdraw(withdrawID: id)
@@ -114,7 +114,7 @@ transaction(
         // Destroy the ScopedFTProvider
         destroy self.scopedProvider
 
-        // Wrap NFTs if applicable
+        // Wrap NFTs and transfer to recipient if applicable
         wrapAndTransferNFTsIfApplicable(self.coa,
             nftIDs: nftIDs,
             nftType: self.nftType,

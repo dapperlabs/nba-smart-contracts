@@ -27,9 +27,10 @@ import {CrossVMBridgeERC721FulfillmentUpgradeable} from "./lib/CrossVMBridgeERC7
 
 /**
  * @title ERC-721 BridgedTopShotMoments
- * @notice An upgradeable ERC721 contract for bridged NBA Top Shot Moments
- * @dev This contract implements multiple features:
- * - ERC721 standard functionality with enumeration and burning capabilities
+ * @notice A NFT contract for bridged NBA Top Shot Moments
+ * @dev This contract implements the following core features:
+ * - ERC721 standard functionality with ownership, enumeration, and burning capabilities
+ * - Upgradability via proxy and initializer pattern
  * - Wrapper functionality to handle NFTs from bridged-deployed contract
  * - Fulfillment functionality for Flow -> EVM bridging, once bridge onboarding allowed
  * - Cross-VM compatibility for Flow <-> EVM bridging
