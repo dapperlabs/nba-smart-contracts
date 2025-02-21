@@ -730,7 +730,7 @@ access(all) contract TopShot: NonFungibleToken {
                 Type<MetadataViews.NFTCollectionData>(),
                 Type<MetadataViews.NFTCollectionDisplay>(),
                 Type<CrossVMMetadataViews.EVMPointer>(),
-                Type<MetadataViews.EVMBridgedMetadata>()
+                Type<MetadataViews.EVMBridgedMetadata>(),
                 Type<MetadataViews.Serial>(),
                 Type<MetadataViews.Traits>(),
                 Type<MetadataViews.Medias>()
