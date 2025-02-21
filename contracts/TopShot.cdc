@@ -730,6 +730,7 @@ access(all) contract TopShot: NonFungibleToken {
                 Type<MetadataViews.NFTCollectionData>(),
                 Type<MetadataViews.NFTCollectionDisplay>(),
                 Type<CrossVMMetadataViews.EVMPointer>(),
+                Type<MetadataViews.EVMBridgedMetadata>()
                 Type<MetadataViews.Serial>(),
                 Type<MetadataViews.Traits>(),
                 Type<MetadataViews.Medias>()
@@ -801,6 +802,17 @@ access(all) contract TopShot: NonFungibleToken {
                     return TopShot.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionDisplay>())
                 case Type<CrossVMMetadataViews.EVMPointer>():
                     return TopShot.resolveContractView(resourceType: nil, viewType: Type<CrossVMMetadataViews.EVMPointer>())
+                case Type<MetadataViews.EVMBridgedMetadata>():
+                    // Project-defined ERC721 EVM contract stores baseURI, name, and symbol in its own contract storage
+                    // Name, symbol, and baseURI below are only used for legacy bridge-deployed ERC721 contract
+                    return MetadataViews.EVMBridgedMetadata(
+                        name: "NBA-Top-Shot",
+                        symbol: "NBAT",
+                        uri: MetadataViews.URI(
+                            baseURI: ${EVMBASEURI},
+                            value: self.id.toString()
+                        )
+                    )
                 case Type<MetadataViews.Traits>():
                     return self.resolveTraitsView()
                 case Type<MetadataViews.Medias>():
