@@ -58,7 +58,7 @@ var configByNetwork = map[string]config{
 		flowEvmBridgeCoaAddr:            "0x0000000000000000000000023f946ffbc8829bfd",
 		bridgeDeployedTopshotERC721Addr: "0xB3627E6f7F1cC981217f789D7737B1f3a93EC519",
 		transferValidatorAddr:           "0xA000027A9B2802E1ddf7000061001e5c005A0000", // StrictAuthorizedTransferSecurityRegistry
-		royaltyRecipientAddr:            placeholderEvmAddress,
+		royaltyRecipientAddr:            "0x000000000000000000000002958e48adcfd5d1c7", // owned by 0x078246e1386888f3
 		rpcUrl:                          "https://testnet.evm.nodes.onflow.org",
 		verifierUrl:                     "https://evm-testnet.flowscan.io/api",
 		verifierProvider:                "blockscout",
@@ -68,11 +68,10 @@ var configByNetwork = map[string]config{
 		flowEvmBridgeCoaAddr:            "0x00000000000000000000000249250a5c27ecab3b",
 		bridgeDeployedTopshotERC721Addr: "0x50AB3a827aD268e9D5A24D340108FAD5C25dAD5f",
 		transferValidatorAddr:           "0xA000027A9B2802E1ddf7000061001e5c005A0000", // StrictAuthorizedTransferSecurityRegistry
-		// TODO: get royalty recipient
-		royaltyRecipientAddr: placeholderEvmAddress,
-		rpcUrl:               "https://mainnet.evm.nodes.onflow.org",
-		verifierUrl:          "https://evm.flowscan.io/api",
-		verifierProvider:     "blockscout",
+		royaltyRecipientAddr:            "0x000000000000000000000002b4c7594cb1b9e654", // owned by 0x065fb66f8d2d780a
+		rpcUrl:                          "https://mainnet.evm.nodes.onflow.org",
+		verifierUrl:                     "https://evm.flowscan.io/api",
+		verifierProvider:                "blockscout",
 	},
 }
 
