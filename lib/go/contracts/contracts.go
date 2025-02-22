@@ -32,13 +32,14 @@ const (
 	defaultCrossVMMetadataViewsAddress = "CROSSVMMETADATAVIEWSADDRESS"
 	defaultNetwork                     = "${NETWORK}"
 	defaultEVMContractAddress          = "${EVMCONTRACTADDRESS}"
+	defaultEVMBaseURI                  = "${EVMBASEURI}"
 	fastBreakFile                      = "FastBreakV1.cdc"
 	crossVMMetadataViewsFile           = "imports/CrossVMMetadataViews.cdc"
 )
 
 // GenerateTopShotContract returns a copy
 // of the topshot contract with the import addresses updated
-func GenerateTopShotContract(ftAddr, nftAddr, metadataViewsAddr, viewResolverAddr, crossVMMetadataViewsAddr, evmAddr, topShotLockingAddr, royaltyAddr, network, flowEvmContractAddr string) []byte {
+func GenerateTopShotContract(ftAddr, nftAddr, metadataViewsAddr, viewResolverAddr, crossVMMetadataViewsAddr, evmAddr, topShotLockingAddr, royaltyAddr, network, flowEvmContractAddr, evmBaseURI string) []byte {
 
 	topShotCode := assets.MustAssetString(topshotFile)
 
@@ -62,7 +63,9 @@ func GenerateTopShotContract(ftAddr, nftAddr, metadataViewsAddr, viewResolverAdd
 
 	codeWithEVMContractAddress := strings.ReplaceAll(codeWithNetwork, defaultEVMContractAddress, flowEvmContractAddr)
 
-	return []byte(codeWithEVMContractAddress)
+	codeWithEVMBaseURI := strings.ReplaceAll(codeWithEVMContractAddress, defaultEVMBaseURI, evmBaseURI)
+
+	return []byte(codeWithEVMBaseURI)
 }
 
 // GenerateTopShotShardedCollectionContract returns a copy
