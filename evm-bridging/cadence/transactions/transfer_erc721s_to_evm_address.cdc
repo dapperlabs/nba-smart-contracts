@@ -61,7 +61,7 @@ access(all) fun mustCall(
 access(all) fun mustTransferNFTs(
     _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
     _ erc721Address: EVM.EVMAddress,
-    nftIDs: [UInt64],
+    nftIDs: [UInt256],
     to: EVM.EVMAddress
 ) {
     for id in nftIDs {
@@ -79,7 +79,7 @@ access(all) fun mustTransferNFTs(
 access(all) fun isOwner(
     _ coa: auth(EVM.Call) &EVM.CadenceOwnedAccount,
     _ erc721Address: EVM.EVMAddress,
-    _ nftID: UInt64,
+    _ nftID: UInt256,
     _ ownerToCheck: EVM.EVMAddress
 ): Bool {
     let res = coa.call(
