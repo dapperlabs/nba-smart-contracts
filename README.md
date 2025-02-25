@@ -49,16 +49,18 @@ the core functionality of the NFT.
 
 | Network | Contract Address     |
 |---------|----------------------|
-| Testnet | `0x877931736ee77cff` |
-| Mainnet | `0x0b2a3299cc857e29` |
+| Testnet | [`0x877931736ee77cff`](https://contractbrowser.com/A.877931736ee77cff.TopShot) |
+| Mainnet | [`0x0b2a3299cc857e29`](https://contractbrowser.com/A.0b2a3299cc857e29.TopShot) |
+
+> **Note**: Bridged Top Shot Moments are available on Flow EVM. See the [EVM Bridging README](evm-bridging/README.md) for contract addresses and details.
 
 `MarketTopShot.cdc`: This is the top shot marketplace contract that allows users
 to buy and sell their NFTs.
 
 | Network | Contract Address     |
 |---------|----------------------|
-| Testnet | `0x547f177b243b4d80` |
-| Mainnet | `0xc1e4f4f4c4257510` |
+| Testnet | [`0x547f177b243b4d80`](https://contractbrowser.com/A.547f177b243b4d80.TopShotMarketV3) |
+| Mainnet | [`0xc1e4f4f4c4257510`](https://contractbrowser.com/A.c1e4f4f4c4257510.TopShotMarketV3) |
 
 ### Non Fungible Token Standard
 
@@ -107,6 +109,8 @@ minting Moments, and transferring Moments.
  Go is the only language that is supported, but we are hoping to add javascript
  and other languages soon. See the README in `lib/go/` for more information
  about how to use the Go packages.
+ - `evm-bridging/` : This directory contains the smart contracts and transactions
+ for the EVM bridging functionality.
 
 ## Top Shot Contract Overview
 
@@ -516,14 +520,3 @@ The works in these folders
 
 are under the Unlicense
 https://github.com/onflow/flow-NFT/blob/master/LICENSE
-
-
-
-
-
-
-
-
-
-
-
