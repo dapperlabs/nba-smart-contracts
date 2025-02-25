@@ -8,7 +8,7 @@ The `BridgedTopShotMoments` smart contract enables NBA Top Shot moments to exist
 
 |Testnet|Mainnet|
 |---|---|
-|[0x87859e1d295e5065A2c73be242e3abBd56BAa576](https://evm-testnet.flowscan.io/address/0x87859e1d295e5065A2c73be242e3abBd56BAa576)|| [0x84c6a2e6765E88427c41bB38C82a78b570e24709](https://evm.flowscan.io/address/0x84c6a2e6765E88427c41bB38C82a78b570e24709)
+|[0x87859e1d295e5065A2c73be242e3abBd56BAa576](https://evm-testnet.flowscan.io/address/0x87859e1d295e5065A2c73be242e3abBd56BAa576)| [0x84c6a2e6765E88427c41bB38C82a78b570e24709](https://evm.flowscan.io/address/0x84c6a2e6765E88427c41bB38C82a78b570e24709) |
 
 ### Core Features
 

@@ -1,6 +1,3 @@
-import "Burner"
-import "FungibleToken"
-import "FlowToken"
 import "EVM"
 
 /// Sets up royalty management for an ERC721 contract
