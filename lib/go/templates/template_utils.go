@@ -44,6 +44,8 @@ type Environment struct {
 	FungibleTokenMetadataViewsAddress string
 	FTSwitchboardAddress              string
 	ViewResolverAddress               string
+	CrossVMMetadataViewsAddress       string
+	EVMAddress                        string
 }
 
 func uint32ToCadenceArr(nums []uint32) []byte {

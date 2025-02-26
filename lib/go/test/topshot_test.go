@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/onflow/cadence"
+	"github.com/onflow/cadence/common"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
-	"github.com/onflow/cadence/runtime/common"
 	"github.com/onflow/flow-emulator/adapters"
 	"github.com/onflow/flow-emulator/emulator"
 	fungibleToken "github.com/onflow/flow-ft/lib/go/contracts"
@@ -49,6 +49,8 @@ const (
 	MetadataViewsReplaceAddress = `"MetadataViews"`
 	ViewResolverReplaceAddress  = `"ViewResolver"`
 	Network                     = `"mainnet"`
+	FlowEvmContractAddr         = `"0x1234565789012345657890123456578901234565"`
+	EvmBaseURI                  = `"https://base.uri/moment/"`
 )
 
 // topshotTestContext will expose sugar for common actions needed to bootstrap testing
@@ -56,6 +58,8 @@ type topshotTestBlockchain struct {
 	*emulator.Blockchain
 	env                            templates.Environment
 	topshotAdminAddr               flow.Address
+	evmAddr                        flow.Address
+	crossVMMetadataViewsAddr       flow.Address
 	metadataViewsAddr              flow.Address
 	fungibleTokenMetadataViewsAddr flow.Address
 	viewResolverAddr               flow.Address
@@ -96,6 +100,20 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 	fungibleTokenMetadataViewsAddr := flow.HexToAddress("ee82856bf20e2aa6")
 	env.FungibleTokenMetadataViewsAddress = fungibleTokenMetadataViewsAddr.String()
 
+	evmAddr := flow.HexToAddress("f8d6e0586b0a20c7")
+	env.EVMAddress = evmAddr.String()
+
+	// Deploy CrossVMMetadataViews contract
+	crossVMMetadataViewsCode := contracts.GenerateCrossVMMetadataViewsContract(evmAddr.String(), viewResolverAddr.String())
+	crossVMMetadataViewsAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
+		{
+			Name:   "CrossVMMetadataViews",
+			Source: string(crossVMMetadataViewsCode),
+		},
+	})
+	require.NoError(t, err)
+	env.CrossVMMetadataViewsAddress = crossVMMetadataViewsAddr.String()
+
 	// Deploy TopShot Locking contract
 	lockingKey, lockingSigner := test.AccountKeyGenerator().NewWithSigner()
 	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
@@ -115,7 +133,19 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 	require.NoError(t, err)
 
 	// Deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), viewResolverAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
+	topshotCode := contracts.GenerateTopShotContract(
+		emulatorFTAddress,
+		nftAddr.String(),
+		metadataViewsAddr.String(),
+		viewResolverAddr.String(),
+		crossVMMetadataViewsAddr.String(),
+		evmAddr.String(),
+		topShotLockingAddr.String(),
+		royaltyAddr.String(),
+		Network,
+		FlowEvmContractAddr,
+		EvmBaseURI,
+	)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{
@@ -186,6 +216,8 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 		Blockchain:                     b,
 		env:                            env,
 		topshotAdminAddr:               topshotAddr,
+		evmAddr:                        evmAddr,
+		crossVMMetadataViewsAddr:       crossVMMetadataViewsAddr,
 		metadataViewsAddr:              metadataViewsAddr,
 		topshotLockingAddr:             topShotLockingAddr,
 		fungibleTokenMetadataViewsAddr: fungibleTokenMetadataViewsAddr,
@@ -737,6 +769,21 @@ func TestTransferAdmin(t *testing.T) {
 
 	env.FungibleTokenMetadataViewsAddress = fungibleTokenMetadataViewsAddr.String()
 
+	evmAddr := flow.HexToAddress("f8d6e0586b0a20c7")
+	env.EVMAddress = evmAddr.String()
+
+	// Deploy CrossVMMetadataViews contract
+	crossVMMetadataViewsKey, _ := test.AccountKeyGenerator().NewWithSigner()
+	crossVMMetadataViewsCode := contracts.GenerateCrossVMMetadataViewsContract(evmAddr.String(), viewResolverAddr.String())
+	crossVMMetadataViewsAddr, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{crossVMMetadataViewsKey}, []sdktemplates.Contract{
+		{
+			Name:   "CrossVMMetadataViews",
+			Source: string(crossVMMetadataViewsCode),
+		},
+	})
+	assert.Nil(t, err)
+	env.CrossVMMetadataViewsAddress = crossVMMetadataViewsAddr.String()
+
 	// Deploy TopShot Locking contract
 	topshotLockingCode := contracts.GenerateTopShotLockingContract(nftAddr.String())
 	topShotLockingAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
@@ -768,7 +815,19 @@ func TestTransferAdmin(t *testing.T) {
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
 	// First, deploy the topshot contract
-	topshotCode := contracts.GenerateTopShotContract(emulatorFTAddress, nftAddr.String(), metadataViewsAddr.String(), viewResolverAddr.String(), topShotLockingAddr.String(), royaltyAddr.String(), Network)
+	topshotCode := contracts.GenerateTopShotContract(
+		emulatorFTAddress,
+		nftAddr.String(),
+		metadataViewsAddr.String(),
+		viewResolverAddr.String(),
+		crossVMMetadataViewsAddr.String(),
+		evmAddr.String(),
+		topShotLockingAddr.String(),
+		royaltyAddr.String(),
+		Network,
+		FlowEvmContractAddr,
+		EvmBaseURI,
+	)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := adapter.CreateAccount(context.Background(), []*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
 		{

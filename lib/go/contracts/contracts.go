@@ -1,6 +1,6 @@
 package contracts
 
-//go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../../../contracts -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../../../contracts
+//go:generate go run github.com/kevinburke/go-bindata/go-bindata -prefix ../../../contracts -o internal/assets/assets.go -pkg assets -nometadata -nomemcopy ../../../contracts ../../../contracts/imports
 
 import (
 	"strings"
@@ -14,27 +14,32 @@ const (
 	marketV3File = "TopShotMarketV3.cdc"
 	// There is a MarketTopShot.cdc contract which was updated to be token agnostic, however this was not backwards compatible.
 	// MarketTopShotOldVersion.cdc is the current contract in production
-	marketFile                     = "Market.cdc"
-	shardedCollectionFile          = "TopShotShardedCollection.cdc"
-	adminReceiverFile              = "TopshotAdminReceiver.cdc"
-	topShotLockingFile             = "TopShotLocking.cdc"
-	defaultNonFungibleTokenAddress = "NFTADDRESS"
-	defaultFungibleTokenAddress    = "FUNGIBLETOKENADDRESS"
-	defaultTopshotAddress          = "TOPSHOTADDRESS"
-	defaultShardedAddress          = "SHARDEDADDRESS"
-	defaultMarketAddress           = "MARKETADDRESS"
-	defaultMarketV3Address         = "MARKETV3ADDRESS"
-	defaultMetadataviewsAddress    = "METADATAVIEWSADDRESS"
-	defaultTopShotLockingAddress   = "TOPSHOTLOCKINGADDRESS"
-	defaultTopShotRoyaltyAddress   = "TOPSHOTROYALTYADDRESS"
-	defaultViewResolverAddress     = "VIEWRESOLVERADDRESS"
-	defaultNetwork                 = "${NETWORK}"
-	fastBreakFile                  = "FastBreakV1.cdc"
+	marketFile                         = "Market.cdc"
+	shardedCollectionFile              = "TopShotShardedCollection.cdc"
+	adminReceiverFile                  = "TopshotAdminReceiver.cdc"
+	topShotLockingFile                 = "TopShotLocking.cdc"
+	defaultNonFungibleTokenAddress     = "NFTADDRESS"
+	defaultFungibleTokenAddress        = "FUNGIBLETOKENADDRESS"
+	defaultTopshotAddress              = "TOPSHOTADDRESS"
+	defaultShardedAddress              = "SHARDEDADDRESS"
+	defaultMarketAddress               = "MARKETADDRESS"
+	defaultMarketV3Address             = "MARKETV3ADDRESS"
+	defaultMetadataviewsAddress        = "METADATAVIEWSADDRESS"
+	defaultTopShotLockingAddress       = "TOPSHOTLOCKINGADDRESS"
+	defaultTopShotRoyaltyAddress       = "TOPSHOTROYALTYADDRESS"
+	defaultViewResolverAddress         = "VIEWRESOLVERADDRESS"
+	defaultEVMAddress                  = "EVMADDRESS"
+	defaultCrossVMMetadataViewsAddress = "CROSSVMMETADATAVIEWSADDRESS"
+	defaultNetwork                     = "${NETWORK}"
+	defaultEVMContractAddress          = "${EVMCONTRACTADDRESS}"
+	defaultEVMBaseURI                  = "${EVMBASEURI}"
+	fastBreakFile                      = "FastBreakV1.cdc"
+	crossVMMetadataViewsFile           = "imports/CrossVMMetadataViews.cdc"
 )
 
 // GenerateTopShotContract returns a copy
 // of the topshot contract with the import addresses updated
-func GenerateTopShotContract(ftAddr string, nftAddr string, metadataViewsAddr string, viewResolverAddr string, topShotLockingAddr string, royaltyAddr string, network string) []byte {
+func GenerateTopShotContract(ftAddr, nftAddr, metadataViewsAddr, viewResolverAddr, crossVMMetadataViewsAddr, evmAddr, topShotLockingAddr, royaltyAddr, network, flowEvmContractAddr, evmBaseURI string) []byte {
 
 	topShotCode := assets.MustAssetString(topshotFile)
 
@@ -42,7 +47,11 @@ func GenerateTopShotContract(ftAddr string, nftAddr string, metadataViewsAddr st
 
 	codeWithNFTAddr := strings.ReplaceAll(codeWithFTAddr, defaultNonFungibleTokenAddress, nftAddr)
 
-	codeWithMetadataViewsAddr := strings.ReplaceAll(codeWithNFTAddr, defaultViewResolverAddress, viewResolverAddr)
+	codeWithCrossVMMetadataViewsAddr := strings.ReplaceAll(codeWithNFTAddr, defaultCrossVMMetadataViewsAddress, crossVMMetadataViewsAddr)
+
+	codewWithEvmAddr := strings.ReplaceAll(codeWithCrossVMMetadataViewsAddr, defaultEVMAddress, evmAddr)
+
+	codeWithMetadataViewsAddr := strings.ReplaceAll(codewWithEvmAddr, defaultViewResolverAddress, viewResolverAddr)
 
 	codeWithViewResolverAddr := strings.ReplaceAll(codeWithMetadataViewsAddr, defaultMetadataviewsAddress, metadataViewsAddr)
 
@@ -52,7 +61,11 @@ func GenerateTopShotContract(ftAddr string, nftAddr string, metadataViewsAddr st
 
 	codeWithNetwork := strings.ReplaceAll(codeWithTopShotRoyaltyAddr, defaultNetwork, network)
 
-	return []byte(codeWithNetwork)
+	codeWithEVMContractAddress := strings.ReplaceAll(codeWithNetwork, defaultEVMContractAddress, flowEvmContractAddr)
+
+	codeWithEVMBaseURI := strings.ReplaceAll(codeWithEVMContractAddress, defaultEVMBaseURI, evmBaseURI)
+
+	return []byte(codeWithEVMBaseURI)
 }
 
 // GenerateTopShotShardedCollectionContract returns a copy
@@ -137,4 +150,12 @@ func GenerateFastBreakContract(nftAddr string, topshotAddr string, metadataViews
 	code := strings.ReplaceAll(codeWithMetadataViewsAddr, defaultMarketV3Address, marketV3Address)
 
 	return []byte(code)
+}
+
+func GenerateCrossVMMetadataViewsContract(evmAddr string, viewResolverAddr string) []byte {
+	crossVMMetadataViewsCode := assets.MustAssetString(crossVMMetadataViewsFile)
+	codeWithEVMAddr := strings.ReplaceAll(crossVMMetadataViewsCode, defaultEVMAddress, evmAddr)
+	codeWithViewResolverAddr := strings.ReplaceAll(codeWithEVMAddr, defaultViewResolverAddress, viewResolverAddr)
+
+	return []byte(codeWithViewResolverAddr)
 }
