@@ -806,7 +806,7 @@ access(all) contract TopShot: NonFungibleToken {
                     // Project-defined ERC721 EVM contract stores baseURI, name, and symbol in its own contract storage
                     // Name, symbol, and baseURI below are only used for legacy bridge-deployed ERC721 contract
                     return MetadataViews.EVMBridgedMetadata(
-                        name: "NBA-Top-Shot",
+                        name: "NBA Top Shot",
                         symbol: "NBAT",
                         uri: MetadataViews.URI(
                             baseURI: ${EVMBASEURI},
@@ -1728,7 +1728,7 @@ access(all) contract TopShot: NonFungibleToken {
                     mediaType: "image/svg+xml"
                 )
                 return MetadataViews.NFTCollectionDisplay(
-                    name: "NBA-Top-Shot",
+                    name: "NBA Top Shot",
                     description: "NBA Top Shot is your chance to own, sell, and trade official digital collectibles of the NBA and WNBA's greatest plays and players",
                     externalURL: MetadataViews.ExternalURL("https://nbatopshot.com"),
                     squareImage: squareImage,

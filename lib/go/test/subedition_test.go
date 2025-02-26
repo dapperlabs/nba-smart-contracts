@@ -373,7 +373,7 @@ func TestSubeditions(t *testing.T) {
 		expectedMetadataExternalURL := "https://nbatopshot.com/moment/1"
 		expectedStoragePath := "/storage/MomentCollection"
 		expectedPublicPath := "/public/MomentCollection"
-		expectedCollectionName := "NBA-Top-Shot"
+		expectedCollectionName := "NBA Top Shot"
 		expectedCollectionDescription := "NBA Top Shot is your chance to own, sell, and trade official digital collectibles of the NBA and WNBA's greatest plays and players"
 		expectedCollectionSquareImage := "https://nbatopshot.com/static/favicon/favicon.svg"
 		expectedCollectionBannerImage := "https://nbatopshot.com/static/img/top-shot-logo-horizontal-white.svg"

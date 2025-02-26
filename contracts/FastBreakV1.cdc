@@ -794,7 +794,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
                     mediaType: "image/png"
                 )
                 return MetadataViews.NFTCollectionDisplay(
-                    name: "NBA-Top-Shot Fast Break",
+                    name: "NBA Top Shot Fast Break",
                     description: "The game of Fast Break is very simple. Collectors will select five players every night for fifteen nights. Each night has different stats and different scores that your team must beat in order to get awarded a win.",
                     externalURL: MetadataViews.ExternalURL("https://nbatopshot.com/fastbreak"),
                     squareImage: squareImage,
