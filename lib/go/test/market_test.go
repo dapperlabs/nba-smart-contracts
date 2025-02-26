@@ -2,6 +2,8 @@ package test
 
 import (
 	"context"
+	"testing"
+
 	"github.com/onflow/cadence"
 	"github.com/onflow/cadence/common"
 	jsoncdc "github.com/onflow/cadence/encoding/json"
@@ -9,14 +11,14 @@ import (
 	fungibleToken "github.com/onflow/flow-ft/lib/go/contracts"
 	fungibleTokenTemplates "github.com/onflow/flow-ft/lib/go/templates"
 	"github.com/rs/zerolog"
-	"testing"
+
+	"strings"
 
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/contracts"
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/templates"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
 	sdktemplates "github.com/onflow/flow-go-sdk/templates"
-	"strings"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
