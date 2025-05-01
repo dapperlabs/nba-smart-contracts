@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/onflow/cadence/runtime/common"
+	"github.com/onflow/cadence/common"
 	"github.com/onflow/flow-emulator/adapters"
 	"github.com/rs/zerolog"
 
@@ -453,7 +453,19 @@ func TestTopShotLocking(t *testing.T) {
 
 	t.Run("Should not be able to lock a non-TopShot.NFT", func(t *testing.T) {
 		// Deploy a copy of the TopShot to a new address contract
-		fakeTopshotCode := contracts.GenerateTopShotContract(defaultfungibleTokenAddr, env.NFTAddress, env.MetadataViewsAddress, env.ViewResolverAddress, topShotLockingAddr.String(), env.FTSwitchboardAddress, Network)
+		fakeTopshotCode := contracts.GenerateTopShotContract(
+			defaultfungibleTokenAddr,
+			env.NFTAddress,
+			env.MetadataViewsAddress,
+			env.ViewResolverAddress,
+			env.CrossVMMetadataViewsAddress,
+			env.EVMAddress,
+			topShotLockingAddr.String(),
+			env.FTSwitchboardAddress,
+			Network,
+			FlowEvmContractAddr,
+			EvmBaseURI,
+		)
 		fakeTopshotAccountKey, fakeTopshotSigner := accountKeys.NewWithSigner()
 		fakeTopshotAddress, _ := adapter.CreateAccount(context.Background(), []*flow.AccountKey{fakeTopshotAccountKey}, []sdktemplates.Contract{
 			{

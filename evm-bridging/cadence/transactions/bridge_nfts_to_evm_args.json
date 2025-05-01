@@ -1,0 +1,22 @@
+[
+    {
+        "type": "String",
+        "value": ""
+    },
+    {
+        "type": "Array",
+        "value": [
+            {
+                "type": "UInt64",
+                "value": ""
+            }
+        ]
+    },
+    {
+        "type": "Optional",
+        "value": {
+            "type": "String",
+            "value": ""
+        }
+    }
+]

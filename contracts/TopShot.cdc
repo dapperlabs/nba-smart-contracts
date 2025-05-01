@@ -48,6 +48,8 @@ import NonFungibleToken from 0xNFTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 import ViewResolver from 0xVIEWRESOLVERADDRESS
+import CrossVMMetadataViews from 0xCROSSVMMETADATAVIEWSADDRESS
+import EVM from 0xEVMADDRESS
 
 access(all) contract TopShot: NonFungibleToken {
     // -----------------------------------------------------------------------
@@ -727,6 +729,8 @@ access(all) contract TopShot: NonFungibleToken {
                 Type<MetadataViews.ExternalURL>(),
                 Type<MetadataViews.NFTCollectionData>(),
                 Type<MetadataViews.NFTCollectionDisplay>(),
+                Type<CrossVMMetadataViews.EVMPointer>(),
+                Type<MetadataViews.EVMBridgedMetadata>(),
                 Type<MetadataViews.Serial>(),
                 Type<MetadataViews.Traits>(),
                 Type<MetadataViews.Medias>()
@@ -796,6 +800,19 @@ access(all) contract TopShot: NonFungibleToken {
                     return TopShot.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionData>())
                 case Type<MetadataViews.NFTCollectionDisplay>():
                     return TopShot.resolveContractView(resourceType: nil, viewType: Type<MetadataViews.NFTCollectionDisplay>())
+                case Type<CrossVMMetadataViews.EVMPointer>():
+                    return TopShot.resolveContractView(resourceType: nil, viewType: Type<CrossVMMetadataViews.EVMPointer>())
+                case Type<MetadataViews.EVMBridgedMetadata>():
+                    // Project-defined ERC721 EVM contract stores baseURI, name, and symbol in its own contract storage
+                    // Name, symbol, and baseURI below are only used for legacy bridge-deployed ERC721 contract
+                    return MetadataViews.EVMBridgedMetadata(
+                        name: "NBA Top Shot",
+                        symbol: "NBAT",
+                        uri: MetadataViews.URI(
+                            baseURI: ${EVMBASEURI},
+                            value: self.id.toString()
+                        )
+                    )
                 case Type<MetadataViews.Traits>():
                     return self.resolveTraitsView()
                 case Type<MetadataViews.Medias>():
@@ -1673,11 +1690,16 @@ access(all) contract TopShot: NonFungibleToken {
 
     // getContractViews returns the metadata view types available for this contract
     access(all) view fun getContractViews(resourceType: Type?): [Type] {
-        return [Type<MetadataViews.NFTCollectionData>(), Type<MetadataViews.NFTCollectionDisplay>(), Type<MetadataViews.Royalties>()]
+        return [
+            Type<MetadataViews.NFTCollectionData>(),
+            Type<MetadataViews.NFTCollectionDisplay>(),
+            Type<CrossVMMetadataViews.EVMPointer>(),
+            Type<MetadataViews.Royalties>()
+        ]
     }
 
     // resolveContractView resolves this contract's metadata views
-    access(all) view fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
+    access(all) fun resolveContractView(resourceType: Type?, viewType: Type): AnyStruct? {
         post {
             result == nil || result!.getType() == viewType: "The returned view must be of the given type or nil"
         }
@@ -1706,7 +1728,7 @@ access(all) contract TopShot: NonFungibleToken {
                     mediaType: "image/svg+xml"
                 )
                 return MetadataViews.NFTCollectionDisplay(
-                    name: "NBA-Top-Shot",
+                    name: "NBA Top Shot",
                     description: "NBA Top Shot is your chance to own, sell, and trade official digital collectibles of the NBA and WNBA's greatest plays and players",
                     externalURL: MetadataViews.ExternalURL("https://nbatopshot.com"),
                     squareImage: squareImage,
@@ -1717,18 +1739,25 @@ access(all) contract TopShot: NonFungibleToken {
                         "instagram": MetadataViews.ExternalURL("https://www.instagram.com/nbatopshot")
                     }
                 )
-                case Type<MetadataViews.Royalties>():
-                    let royaltyReceiver: Capability<&{FungibleToken.Receiver}> =
-                        getAccount(TopShot.RoyaltyAddress()).capabilities.get<&{FungibleToken.Receiver}>(MetadataViews.getRoyaltyReceiverPublicPath())!
-                    return MetadataViews.Royalties(
-                        [
-                            MetadataViews.Royalty(
-                                receiver: royaltyReceiver,
-                                cut: 0.05,
-                                description: "NBATopShot marketplace royalty"
-                            )
-                        ]
-                    )
+            case Type<MetadataViews.Royalties>():
+                let royaltyReceiver: Capability<&{FungibleToken.Receiver}> =
+                    getAccount(TopShot.RoyaltyAddress()).capabilities.get<&{FungibleToken.Receiver}>(MetadataViews.getRoyaltyReceiverPublicPath())!
+                return MetadataViews.Royalties(
+                    [
+                        MetadataViews.Royalty(
+                            receiver: royaltyReceiver,
+                            cut: 0.05,
+                            description: "NBATopShot marketplace royalty"
+                        )
+                    ]
+                )
+            case Type<CrossVMMetadataViews.EVMPointer>():
+                return CrossVMMetadataViews.EVMPointer(
+                    cadenceType: Type<@TopShot.NFT>(),
+                    cadenceContractAddress: self.account.address,
+                    evmContractAddress: EVM.addressFromString(${EVMCONTRACTADDRESS}),
+                    nativeVM: CrossVMMetadataViews.VM.Cadence
+                )
         }
         return nil
     }
