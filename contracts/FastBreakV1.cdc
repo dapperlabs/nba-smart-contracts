@@ -189,7 +189,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
     access(all) struct FastBreakGame {
         access(all) let id: String /// The off-chain uuid of the Fast Break
         access(all) let name: String /// The name of the Fast Break (eg FB0, FB1, FB2)
-        access(all) let submissionDeadline: UInt64 /// The block timestamp restricting submission to the Fast Break
+        access(all) var submissionDeadline: UInt64 /// The block timestamp restricting submission to the Fast Break
         access(all) let numPlayers: UInt64 /// The number of top shots a player should submit to the Fast Break
         access(all) var status: FastBreakV1.GameStatus /// The game status
         access(all) var winner: UInt64 /// The playerId of the winner of Fast Break
@@ -237,6 +237,12 @@ access(all) contract FastBreakV1: NonFungibleToken {
         ///
         access(contract) fun addStat(stat: FastBreakV1.FastBreakStat) {
             self.stats.append(stat)
+        }
+
+        /// Set the submission deadline for a Fast Break
+        ///
+        access(contract) fun setSubmissionDeadline(deadline: UInt64) {
+            self.submissionDeadline = deadline
         }
 
         /// Update status and winner of a Fast Break
@@ -835,6 +841,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
         access(Update) fun updateFastBreakGame(id: String, status: UInt8, winner: UInt64)
         access(Update) fun updateFastBreakScore(fastBreakGameID: String, playerId: UInt64, points: UInt64, win: Bool)
         access(Update) fun addStatToFastBreakGame(fastBreakGameID: String, name: String, rawType: UInt8, valueNeeded: UInt64)
+        access(Update) fun setSubmissionDeadline(fastBreakGameID: String, deadline: UInt64)
     }
 
     /// Fast Break Daemon game oracle implementation
@@ -925,6 +932,15 @@ access(all) contract FastBreakV1: NonFungibleToken {
                 valueNeeded: fastBreakStat.valueNeeded
             )
 
+        }
+
+        /// Set the submission deadline for a Fast Break
+        ///
+        access(Update) fun setSubmissionDeadline(fastBreakGameID: String, deadline: UInt64) {
+            let fastBreakGame: &FastBreakV1.FastBreakGame = (&FastBreakV1.fastBreakGameByID[fastBreakGameID] as &FastBreakV1.FastBreakGame?)
+                ?? panic("Fast break does not exist with Id: ".concat(fastBreakGameID))
+
+            fastBreakGame.setSubmissionDeadline(deadline: deadline)
         }
 
         /// Update the status of a Fast Break
