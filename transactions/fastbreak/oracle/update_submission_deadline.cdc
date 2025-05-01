@@ -1,4 +1,4 @@
-import FastBreakV1 from 0xFASTBREAKADDRESS
+import FastBreakV1 from 0x0b2a3299cc857e29
 
 transaction(fastBreakGameID: String, submissionDeadline: UInt64) {
 
@@ -11,9 +11,9 @@ transaction(fastBreakGameID: String, submissionDeadline: UInt64) {
 
     execute {
 
-        self.oracleRef.updateSubmissionDeadline(
+        self.oracleRef.setSubmissionDeadline(
             fastBreakGameID: fastBreakGameID,
-            submissionDeadline: submissionDeadline
+            deadline: submissionDeadline
         )
     }
 }
