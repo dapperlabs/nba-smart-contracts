@@ -1,6 +1,7 @@
 package events
 
 import (
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -55,4 +56,16 @@ func TestCadenceEvents_PlayCreated(t *testing.T) {
 		playerKey: playerValue,
 		teamKey:   teamValue,
 	}, decodedPlayCreatedEventType.MetaData())
+
+	for k, v := range decodedPlayCreatedEventType.MetaData() {
+		if k == playerKey {
+			log.Println("playerKey", k, v)
+			assert.Equal(t, playerValue, v.(string))
+		} else if k == teamKey {
+			log.Println("teamKey", k, v)
+			assert.Equal(t, teamValue, v.(string))
+		} else {
+			assert.Fail(t, "unexpected key", k)
+		}
+	}
 }
