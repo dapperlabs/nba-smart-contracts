@@ -2,12 +2,13 @@ package events
 
 import (
 	"fmt"
+
 	"github.com/dapperlabs/nba-smart-contracts/lib/go/events/decoder"
 )
 
 const (
 	GenericNFTEventDeposit = "NonFungibleToken.Deposited"
-	EventDeposit = "TopShot.Deposit"
+	TopShotEventDeposit    = "TopShot.Deposit"
 )
 
 type DepositEvent interface {
@@ -46,6 +47,9 @@ func DecodeDepositEvent(b []byte) (DepositEvent, error) {
 		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
 	}
 	eventMap, err := decoder.ConvertEvent(cadenceValue)
+	if err != nil {
+		return nil, err
+	}
 	event := depositEvent(eventMap)
 	return event, nil
 }
