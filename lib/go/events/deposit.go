@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	// This variable specifies that there is a Deposit Event on a TopShot Contract located at address 0x04
+	GenericNFTEventDeposit = "NonFungibleToken.Deposited"
 	EventDeposit = "TopShot.Deposit"
 )
 
@@ -42,7 +42,7 @@ func DecodeDepositEvent(b []byte) (DepositEvent, error) {
 	if err != nil {
 		return nil, err
 	}
-	if cadenceValue.EventType.QualifiedIdentifier != EventDeposit {
+	if id := cadenceValue.EventType.QualifiedIdentifier; id != GenericNFTEventDeposit && id != TopShotEventDeposit {
 		return nil, fmt.Errorf("unexpected event type: %s", cadenceValue.EventType.QualifiedIdentifier)
 	}
 	eventMap, err := decoder.ConvertEvent(cadenceValue)
