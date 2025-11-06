@@ -122,12 +122,135 @@ access(all) contract FastBreakV1: NonFungibleToken {
     }
 
     /// Metadata Dictionaries
+    /// Player mappings remain in contract storage (bounded by number of users)
+    /// Old dictionaries kept for existing data (pre-upgrade)
     ///
-    access(self) let fastBreakRunByID:      {String: FastBreakRun}
-    access(self) let fastBreakGameByID:     {String: FastBreakGame}
+    access(self) let fastBreakRunByID:      {String: FastBreakRun}  // Legacy: existing data
+    access(self) let fastBreakGameByID:     {String: FastBreakGame}  // Legacy: existing data
     access(self) let fastBreakPlayerByID:   {UInt64: PlayerData}
     access(self) let playerAccountMapping:  {UInt64: Address}
     access(self) let accountPlayerMapping:  {Address: UInt64}
+
+    /// Storage resources for year-based organization
+    /// Each year's games/runs stored in separate resources in account storage
+    ///
+    access(all) resource YearGameStorage {
+        access(self) var games: {String: FastBreakGame}
+        
+        init() {
+            self.games = {}
+        }
+    }
+
+    access(all) resource YearRunStorage {
+        access(self) var runs: {String: FastBreakRun}
+        
+        init() {
+            self.runs = {}
+        }
+    }
+
+    /// Helper function to extract year number from timestamp
+    /// Returns year as UInt64 (e.g., 2024)
+    ///
+    access(self) fun getYearFromTimestamp(timestamp: UInt64): UInt64 {
+        // Convert timestamp to date and extract year
+        // Unix timestamp: seconds since Jan 1, 1970
+        // Approximate: 31536000 seconds per year
+        let secondsPerYear: UInt64 = 31536000
+        let year1970: UInt64 = 1970
+        return year1970 + (timestamp / secondsPerYear)
+    }
+
+    /// Generate storage path for game storage based on year
+    /// Creates path like "FastBreakGames2024" for year 2024
+    ///
+    access(self) fun generateGameStoragePathByYear(year: String): StoragePath {
+        return StoragePath(identifier: "FastBreakGames".concat(year))!
+    }
+
+    /// Generate storage path for run storage based on year
+    /// Creates path like "FastBreakRuns2024" for year 2024
+    ///
+    access(self) fun generateRunStoragePathByYear(year: String): StoragePath {
+        return StoragePath(identifier: "FastBreakRuns".concat(year))!
+    }
+
+    /// Get or create year's game storage resource from year
+    /// If storage doesn't exist for the year, creates and saves it
+    /// Returns a reference to the storage resource
+    ///
+    access(self) fun getOrCreateYearGameStorage(year: String): &YearGameStorage {
+        let path = FastBreakV1.generateGameStoragePathByYear(year: year)
+        if let storage = self.account.storage.borrow<&YearGameStorage>(from: path) {
+            return storage
+        }
+        // Create and save new storage for this year
+        let storage <- create YearGameStorage()
+        self.account.storage.save(<-storage, to: path)
+        return self.account.storage.borrow<&YearGameStorage>(from: path)!
+    }
+
+    /// Get or create year's run storage resource from year
+    /// If storage doesn't exist for the year, creates and saves it
+    /// Returns a reference to the storage resource
+    ///
+    access(self) fun getOrCreateYearRunStorage(year: String): &YearRunStorage {
+        let path = FastBreakV1.generateRunStoragePathByYear(year: year)
+        if let storage = self.account.storage.borrow<&YearRunStorage>(from: path) {
+            return storage
+        }
+        // Create and save new storage for this year
+        let storage <- create YearRunStorage()
+        self.account.storage.save(<-storage, to: path)
+        return self.account.storage.borrow<&YearRunStorage>(from: path)!
+    }
+
+    /// Get year's game storage from year string (returns nil if doesn't exist)
+    ///
+    access(self) fun getYearGameStorageByYear(year: String): &YearGameStorage? {
+        let path = FastBreakV1.generateGameStoragePathByYear(year: year)
+        return self.account.storage.borrow<&YearGameStorage>(from: path)
+    }
+
+    /// Get year's run storage from year string (returns nil if doesn't exist)
+    ///
+    access(self) fun getYearRunStorageByYear(year: String): &YearRunStorage? {
+        let path = FastBreakV1.generateRunStoragePathByYear(year: year)
+        return self.account.storage.borrow<&YearRunStorage>(from: path)
+    }
+
+    /// Helper to update a game in storage after mutation
+    /// Checks if it's in legacy dict first, otherwise updates year-based storage
+    /// Requires year parameter to determine correct storage location
+    ///
+    access(self) fun updateGameInStorage(game: &FastBreakGame, gameID: String, year: String) {
+        // Check if it's in legacy dictionary
+        if FastBreakV1.fastBreakGameByID[gameID] != nil {
+            FastBreakV1.fastBreakGameByID[gameID] = *game
+        } else {
+            // Update in year-based storage
+            if let yearStorage = FastBreakV1.getYearGameStorageByYear(year: year) {
+                yearStorage.games[gameID] = *game
+            }
+        }
+    }
+
+    /// Helper to update a run in storage after mutation
+    /// Checks if it's in legacy dict first, otherwise updates year-based storage
+    /// Requires year parameter to determine correct storage location
+    ///
+    access(self) fun updateRunInStorage(run: &FastBreakRun, runID: String, year: String) {
+        // Check if it's in legacy dictionary
+        if FastBreakV1.fastBreakRunByID[runID] != nil {
+            FastBreakV1.fastBreakRunByID[runID] = *run
+        } else {
+            // Update in year-based storage
+            if let yearStorage = FastBreakV1.getYearRunStorageByYear(year: year) {
+                yearStorage.runs[runID] = *run
+            }
+        }
+    }
 
     /// A top-level Fast Break Run, the container for Fast Break Games
     /// A Fast Break Run contains many Fast Break games & is a mini-season.
@@ -144,23 +267,28 @@ access(all) contract FastBreakV1: NonFungibleToken {
         access(all) let fatigueModeOn: Bool /// Fatigue mode is a game rule limiting usage of top shots by tier
 
         init (id: String, name: String, runStart: UInt64, runEnd: UInt64, fatigueModeOn: Bool) {
-            if let fastBreakRun = FastBreakV1.fastBreakRunByID[id] {
-                self.id = fastBreakRun.id
-                self.name = fastBreakRun.name
-                self.status = fastBreakRun.status
-                self.runStart = fastBreakRun.runStart
-                self.runEnd = fastBreakRun.runEnd
-                self.runWinCount = fastBreakRun.runWinCount
-                self.fatigueModeOn = fastBreakRun.fatigueModeOn
-            } else {
-                self.id = id
-                self.name = name
-                self.status = FastBreakV1.RunStatus.SCHEDULED
-                self.runStart = runStart
-                self.runEnd = runEnd
-                self.runWinCount = {}
-                self.fatigueModeOn = fatigueModeOn
+            // Check if run already exists in account storage
+            let year = FastBreakV1.getYearFromTimestamp(timestamp: runStart).toString()
+            if let yearStorage = FastBreakV1.getYearRunStorageByYear(year: year) {
+                if let existingRun = yearStorage.runs[id] {
+                    self.id = existingRun.id
+                    self.name = existingRun.name
+                    self.status = existingRun.status
+                    self.runStart = existingRun.runStart
+                    self.runEnd = existingRun.runEnd
+                    self.runWinCount = existingRun.runWinCount
+                    self.fatigueModeOn = existingRun.fatigueModeOn
+                    return
+                }
             }
+            // Create new run
+            self.id = id
+            self.name = name
+            self.status = FastBreakV1.RunStatus.SCHEDULED
+            self.runStart = runStart
+            self.runEnd = runEnd
+            self.runWinCount = {}
+            self.fatigueModeOn = fatigueModeOn
         }
 
         /// Update status of the Fast Break Run
@@ -175,8 +303,26 @@ access(all) contract FastBreakV1: NonFungibleToken {
     }
 
     /// Get a Fast Break Run by Id
+    /// ONLY checks legacy dictionary (for existing data before upgrade)
+    /// For new data, use getFastBreakRunByYear with the year parameter
     ///
     access(all) view fun getFastBreakRun(id: String): FastBreakV1.FastBreakRun? {
+        // Only check legacy dictionary (existing data before upgrade)
+        return FastBreakV1.fastBreakRunByID[id]
+    }
+
+    /// Get a Fast Break Run by Id and Year (direct access - O(1))
+    /// Checks year-based storage first, then falls back to legacy dictionary
+    ///
+    access(all) view fun getFastBreakRunByYear(id: String, year: String): FastBreakV1.FastBreakRun? {
+        // First check year-based storage using year (direct access)
+        if let yearStorage = FastBreakV1.getYearRunStorageByYear(year: year) {
+            if let run = yearStorage.runs[id] {
+                return run
+            }
+        }
+        
+        // Fallback to legacy dictionary (existing data before upgrade)
         return FastBreakV1.fastBreakRunByID[id]
     }
 
@@ -204,27 +350,32 @@ access(all) contract FastBreakV1: NonFungibleToken {
             submissionDeadline: UInt64,
             numPlayers: UInt64
         ) {
-            if let fb = FastBreakV1.fastBreakGameByID[id] {
-                self.id = fb.id
-                self.name = fb.name
-                self.submissionDeadline = fb.submissionDeadline
-                self.numPlayers = fb.numPlayers
-                self.status = fb.status
-                self.winner = fb.winner
-                self.submissions = fb.submissions
-                self.fastBreakRunID = fb.fastBreakRunID
-                self.stats = fb.stats
-            } else {
-                self.id = id
-                self.name = name
-                self.submissionDeadline = submissionDeadline
-                self.numPlayers = numPlayers
-                self.status = FastBreakV1.GameStatus.SCHEDULED
-                self.submissions = {}
-                self.fastBreakRunID = fastBreakRunID
-                self.stats = []
-                self.winner = 0
+            // Check if game already exists in account storage
+            let year = FastBreakV1.getYearFromTimestamp(timestamp: submissionDeadline).toString()
+            if let yearStorage = FastBreakV1.getYearGameStorageByYear(year: year) {
+                if let existingGame = yearStorage.games[id] {
+                    self.id = existingGame.id
+                    self.name = existingGame.name
+                    self.submissionDeadline = existingGame.submissionDeadline
+                    self.numPlayers = existingGame.numPlayers
+                    self.status = existingGame.status
+                    self.winner = existingGame.winner
+                    self.submissions = existingGame.submissions
+                    self.fastBreakRunID = existingGame.fastBreakRunID
+                    self.stats = existingGame.stats
+                    return
+                }
             }
+            // Create new game
+            self.id = id
+            self.name = name
+            self.submissionDeadline = submissionDeadline
+            self.numPlayers = numPlayers
+            self.status = FastBreakV1.GameStatus.SCHEDULED
+            self.submissions = {}
+            self.fastBreakRunID = fastBreakRunID
+            self.stats = []
+            self.winner = 0
         }
 
         /// Get a account's active Fast Break Submission
@@ -301,10 +452,96 @@ access(all) contract FastBreakV1: NonFungibleToken {
         return submissionDeadline > UInt64(getCurrentBlock().timestamp) + 60
     }
 
+    /// Internal helper to get a game by ID
+    /// Searches current year first, then previous year, then legacy (for oracle functions)
+    /// Oracle functions operate in same year, so prioritize new year-based storage
+    ///
+    access(self) fun getFastBreakGameInternal(id: String): &FastBreakV1.FastBreakGame? {
+        let currentTimestamp = UInt64(getCurrentBlock().timestamp)
+        let currentYearNum = FastBreakV1.getYearFromTimestamp(timestamp: currentTimestamp)
+        
+        // Check current year first (most likely - oracle functions operate in same year)
+        let currentYearString = currentYearNum.toString()
+        if let yearStorage = FastBreakV1.getYearGameStorageByYear(year: currentYearString) {
+            if let game = yearStorage.games[id] {
+                return &game as &FastBreakV1.FastBreakGame
+            }
+        }
+        
+        // Then check previous year
+        if currentYearNum > 1970 {
+            let previousYearString = (currentYearNum - 1).toString()
+            if let yearStorage = FastBreakV1.getYearGameStorageByYear(year: previousYearString) {
+                if let game = yearStorage.games[id] {
+                    return &game as &FastBreakV1.FastBreakGame
+                }
+            }
+        }
+        
+        // Finally check legacy dictionary (existing data before upgrade)
+        if let game = FastBreakV1.fastBreakGameByID[id] {
+            return &game as &FastBreakV1.FastBreakGame
+        }
+        
+        return nil
+    }
+
     /// Get a Fast Break Game by Id
+    /// ONLY checks legacy dictionary (for existing data before upgrade)
+    /// For new data, use getFastBreakGameByYear with the year parameter
     ///
     access(all) view fun getFastBreakGame(id: String): FastBreakV1.FastBreakGame? {
+        // Only check legacy dictionary (existing data before upgrade)
         return FastBreakV1.fastBreakGameByID[id]
+    }
+
+    /// Get a Fast Break Game by Id and Year (direct access - O(1))
+    /// Checks year-based storage first, then falls back to legacy dictionary
+    ///
+    access(all) view fun getFastBreakGameByYear(id: String, year: String): FastBreakV1.FastBreakGame? {
+        // First check year-based storage using year (direct access)
+        if let yearStorage = FastBreakV1.getYearGameStorageByYear(year: year) {
+            if let game = yearStorage.games[id] {
+                return game
+            }
+        }
+        
+        // Fallback to legacy dictionary (existing data before upgrade)
+        return FastBreakV1.fastBreakGameByID[id]
+    }
+
+    /// Internal helper to get a run by ID
+    /// Searches current year first, then previous year, then legacy (for oracle functions)
+    /// Oracle functions operate in same year, so prioritize new year-based storage
+    ///
+    access(self) fun getFastBreakRunInternal(id: String): &FastBreakV1.FastBreakRun? {
+        let currentTimestamp = UInt64(getCurrentBlock().timestamp)
+        let currentYearNum = FastBreakV1.getYearFromTimestamp(timestamp: currentTimestamp)
+        
+        // Check current year first (most likely - oracle functions operate in same year)
+        let currentYearString = currentYearNum.toString()
+        if let yearStorage = FastBreakV1.getYearRunStorageByYear(year: currentYearString) {
+            if let run = yearStorage.runs[id] {
+                return &run as &FastBreakV1.FastBreakRun
+            }
+        }
+        
+        // Then check previous year
+        if currentYearNum > 1970 {
+            let previousYearString = (currentYearNum - 1).toString()
+            if let yearStorage = FastBreakV1.getYearRunStorageByYear(year: previousYearString) {
+                if let run = yearStorage.runs[id] {
+                    return &run as &FastBreakV1.FastBreakRun
+                }
+            }
+        }
+        
+        // Finally check legacy dictionary (existing data before upgrade)
+        if let run = FastBreakV1.fastBreakRunByID[id] {
+            return &run as &FastBreakV1.FastBreakRun
+        }
+        
+        return nil
     }
 
     /// Get the game stats of a Fast Break
@@ -406,7 +643,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
             topShots: [UInt64]
         ): @FastBreakV1.NFT {
             pre {
-                FastBreakV1.fastBreakGameByID.containsKey(fastBreakGameID): "No such fast break game with gameId: ".concat(fastBreakGameID)
+                FastBreakV1.getFastBreakGameInternal(id: fastBreakGameID) != nil: "No such fast break game with gameId: ".concat(fastBreakGameID)
             }
 
             /// Update player address mapping
@@ -436,7 +673,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
                 }
             }
 
-            let fastBreakGame = (&FastBreakV1.fastBreakGameByID[fastBreakGameID] as &FastBreakV1.FastBreakGame?)
+            let fastBreakGame = FastBreakV1.getFastBreakGameInternal(id: fastBreakGameID)
                  ?? panic("Fast break does not exist with gameId: ".concat(fastBreakGameID))
 
             /// Cannot mint two tokens for the same Fast Break
@@ -452,6 +689,10 @@ access(all) contract FastBreakV1: NonFungibleToken {
             )
 
             fastBreakGame.submitFastBreak(submission: fastBreakSubmission)
+            
+            // Update game in account storage after mutation
+            let year = FastBreakV1.getYearFromTimestamp(timestamp: fastBreakGame.submissionDeadline).toString()
+            FastBreakV1.updateGameInStorage(game: fastBreakGame, gameID: fastBreakGameID, year: year)
 
             let fastBreakNFT <- create NFT(
                 fastBreakGameID: fastBreakGameID,
@@ -484,7 +725,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
             topShots: [UInt64]
         ) {
             pre {
-                FastBreakV1.fastBreakGameByID.containsKey(fastBreakGameID): "No such fast break game with gameId: ".concat(fastBreakGameID)
+                FastBreakV1.getFastBreakGameInternal(id: fastBreakGameID) != nil: "No such fast break game with gameId: ".concat(fastBreakGameID)
             }
 
             /// Update player address mapping
@@ -514,7 +755,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
                 }
             }
 
-            let fastBreakGame = (&FastBreakV1.fastBreakGameByID[fastBreakGameID] as &FastBreakV1.FastBreakGame?)
+            let fastBreakGame = FastBreakV1.getFastBreakGameInternal(id: fastBreakGameID)
                 ?? panic("Fast break does not exist with gameId: ".concat(fastBreakGameID))
 
             /// Check that the user has a submission for Fast Break game we can update
@@ -523,6 +764,10 @@ access(all) contract FastBreakV1: NonFungibleToken {
                     .concat(" has not played FastBreak with ID: ".concat(fastBreakGameID)))
 
             fastBreakGame.updateFastBreakTopshots(playerId: self.id, topshotMoments: topShots)
+            
+            // Update game in account storage after mutation
+            let year = FastBreakV1.getYearFromTimestamp(timestamp: fastBreakGame.submissionDeadline).toString()
+            FastBreakV1.updateGameInStorage(game: fastBreakGame, gameID: fastBreakGameID, year: year)
 
             // Get the updated submission with new topshot moment Ids
             let updatedSubmission = fastBreakGame.getFastBreakSubmissionByPlayerId(playerId: self.id)
@@ -613,7 +858,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
             mintedTo: UInt64,
         ) {
             pre {
-                FastBreakV1.fastBreakGameByID[fastBreakGameID] != nil: "No such fast break with gameId: ".concat(fastBreakGameID)
+                FastBreakV1.getFastBreakGameInternal(id: fastBreakGameID) != nil: "No such fast break with gameId: ".concat(fastBreakGameID)
             }
 
             self.id = self.uuid
@@ -625,7 +870,8 @@ access(all) contract FastBreakV1: NonFungibleToken {
         }
 
         access(all) view fun isWinner(): Bool {
-            if let fastBreak = FastBreakV1.fastBreakGameByID[self.fastBreakGameID] {
+            // Check game submissions (searches current year → previous year → legacy)
+            if let fastBreak = FastBreakV1.getFastBreakGameInternal(id: self.fastBreakGameID) {
                 if let submission = fastBreak.submissions[self.mintedTo] {
                     return submission.win
                 }
@@ -634,7 +880,8 @@ access(all) contract FastBreakV1: NonFungibleToken {
         }
 
         access(all) view fun points(): UInt64 {
-            if let fastBreak = FastBreakV1.fastBreakGameByID[self.fastBreakGameID] {
+            // Check game submissions (searches current year → previous year → legacy)
+            if let fastBreak = FastBreakV1.getFastBreakGameInternal(id: self.fastBreakGameID) {
                 if let submission = fastBreak.submissions[self.mintedTo] {
                     return submission.points
                 }
@@ -858,7 +1105,10 @@ access(all) contract FastBreakV1: NonFungibleToken {
                 runEnd: runEnd,
                 fatigueModeOn: fatigueModeOn
             )
-            FastBreakV1.fastBreakRunByID[fastBreakRun.id] = fastBreakRun
+            // Store in year-based account storage
+            let year = FastBreakV1.getYearFromTimestamp(timestamp: runStart).toString()
+            let yearStorage = FastBreakV1.getOrCreateYearRunStorage(year: year)
+            yearStorage.runs[fastBreakRun.id] = fastBreakRun
             emit FastBreakRunCreated(
                 id: fastBreakRun.id,
                 name: fastBreakRun.name,
@@ -869,17 +1119,24 @@ access(all) contract FastBreakV1: NonFungibleToken {
         }
 
         /// Update the status of a Fast Break Run
+        /// Works with both legacy data (pre-upgrade) and new year-based storage
+        /// Searches current year first, then previous year, then legacy
         ///
         access(Update) fun updateFastBreakRunStatus(id: String, status: UInt8) {
-            let fastBreakRun = (&FastBreakV1.fastBreakRunByID[id] as &FastBreakV1.FastBreakRun?)
-                ?? panic("Fast break run does not exist with Id: ".concat(id))
+            // Search current year first, then previous year, then legacy
+            let fastBreakRun = FastBreakV1.getFastBreakRunInternal(id: id)
+            let run = fastBreakRun ?? panic("Fast break run does not exist with Id: ".concat(id))
 
             let runStatus: FastBreakV1.RunStatus = FastBreakV1.RunStatus(rawValue: status)
                 ?? panic("Run status does not exist with rawValue: ".concat(status.toString()))
 
-            fastBreakRun.updateStatus(status: runStatus)
+            run.updateStatus(status: runStatus)
+            
+            // Update in appropriate storage (updateRunInStorage handles legacy vs year-based)
+            let year = FastBreakV1.getYearFromTimestamp(timestamp: run.runStart).toString()
+            FastBreakV1.updateRunInStorage(run: run, runID: id, year: year)
 
-            emit FastBreakRunStatusChange(id: fastBreakRun.id, newRawStatus: fastBreakRun.status.rawValue)
+            emit FastBreakRunStatusChange(id: run.id, newRawStatus: run.status.rawValue)
         }
 
         /// Create a game of Fast Break
@@ -898,7 +1155,10 @@ access(all) contract FastBreakV1: NonFungibleToken {
                 submissionDeadline: submissionDeadline,
                 numPlayers: numPlayers
             )
-            FastBreakV1.fastBreakGameByID[fastBreakGame.id] = fastBreakGame
+            // Store in year-based account storage
+            let year = FastBreakV1.getYearFromTimestamp(timestamp: submissionDeadline).toString()
+            let yearStorage = FastBreakV1.getOrCreateYearGameStorage(year: year)
+            yearStorage.games[fastBreakGame.id] = fastBreakGame
             emit FastBreakGameCreated(
                 id: fastBreakGame.id,
                 name: fastBreakGame.name,
@@ -912,7 +1172,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
         ///
          access(Update) fun addStatToFastBreakGame(fastBreakGameID: String, name: String, rawType: UInt8, valueNeeded: UInt64) {
 
-            let fastBreakGame: &FastBreakV1.FastBreakGame = (&FastBreakV1.fastBreakGameByID[fastBreakGameID] as &FastBreakV1.FastBreakGame?)
+            let fastBreakGame = FastBreakV1.getFastBreakGameInternal(id: fastBreakGameID)
                 ?? panic("Fast break does not exist with Id: ".concat(fastBreakGameID))
 
             let statType: FastBreakV1.StatisticType = FastBreakV1.StatisticType(rawValue: rawType)
@@ -925,6 +1185,11 @@ access(all) contract FastBreakV1: NonFungibleToken {
             )
 
             fastBreakGame.addStat(stat: fastBreakStat)
+            
+            // Update game in account storage after mutation
+            let year = FastBreakV1.getYearFromTimestamp(timestamp: fastBreakGame.submissionDeadline).toString()
+            FastBreakV1.updateGameInStorage(game: fastBreakGame, gameID: fastBreakGameID, year: year)
+            
             emit FastBreakGameStatAdded(
                 fastBreakGameID: fastBreakGame.id,
                 name: fastBreakStat.name,
@@ -937,23 +1202,31 @@ access(all) contract FastBreakV1: NonFungibleToken {
         /// Set the submission deadline for a Fast Break
         ///
         access(Update) fun setSubmissionDeadline(fastBreakGameID: String, deadline: UInt64) {
-            let fastBreakGame: &FastBreakV1.FastBreakGame = (&FastBreakV1.fastBreakGameByID[fastBreakGameID] as &FastBreakV1.FastBreakGame?)
+            let fastBreakGame = FastBreakV1.getFastBreakGameInternal(id: fastBreakGameID)
                 ?? panic("Fast break does not exist with Id: ".concat(fastBreakGameID))
 
             fastBreakGame.setSubmissionDeadline(deadline: deadline)
+            
+            // Update game in account storage after mutation
+            let year = FastBreakV1.getYearFromTimestamp(timestamp: fastBreakGame.submissionDeadline).toString()
+            FastBreakV1.updateGameInStorage(game: fastBreakGame, gameID: fastBreakGameID, year: year)
         }
 
         /// Update the status of a Fast Break
         ///
          access(Update) fun updateFastBreakGame(id: String, status: UInt8, winner: UInt64) {
 
-            let fastBreakGame: &FastBreakV1.FastBreakGame = (&FastBreakV1.fastBreakGameByID[id] as &FastBreakV1.FastBreakGame?)
+            let fastBreakGame = FastBreakV1.getFastBreakGameInternal(id: id)
                 ?? panic("Fast break does not exist with Id: ".concat(id))
 
             let fastBreakStatus: FastBreakV1.GameStatus = FastBreakV1.GameStatus(rawValue: status)
                 ?? panic("Fast break status does not exist with rawValue: ".concat(status.toString()))
 
             fastBreakGame.update(status: fastBreakStatus, winner: winner)
+            
+            // Update game in account storage after mutation
+            let year = FastBreakV1.getYearFromTimestamp(timestamp: fastBreakGame.submissionDeadline).toString()
+            FastBreakV1.updateGameInStorage(game: fastBreakGame, gameID: id, year: year)
 
             emit FastBreakGameStatusChange(id: fastBreakGame.id, newRawStatus: fastBreakGame.status.rawValue)
 
@@ -962,17 +1235,26 @@ access(all) contract FastBreakV1: NonFungibleToken {
         /// Updates the submission scores of a Fast Break
         ///
         access(Update) fun updateFastBreakScore(fastBreakGameID: String, playerId: UInt64, points: UInt64, win: Bool) {
-            let fastBreakGame: &FastBreakV1.FastBreakGame = (&FastBreakV1.fastBreakGameByID[fastBreakGameID] as &FastBreakV1.FastBreakGame?)
+            let fastBreakGame = FastBreakV1.getFastBreakGameInternal(id: fastBreakGameID)
                 ?? panic("Fast break does not exist with Id: ".concat(fastBreakGameID))
 
             let isNewWin = fastBreakGame.updateScore(playerId: playerId, points: points, win: win)
+            
+            // Update game in account storage after mutation
+            let year = FastBreakV1.getYearFromTimestamp(timestamp: fastBreakGame.submissionDeadline).toString()
+            FastBreakV1.updateGameInStorage(game: fastBreakGame, gameID: fastBreakGameID, year: year)
 
             if isNewWin {
-                let fastBreakRun = (&FastBreakV1.fastBreakRunByID[fastBreakGame.fastBreakRunID] as &FastBreakV1.FastBreakRun?)
-                    ?? panic("Could not obtain reference to fast break run with Id: ".concat(fastBreakGame.fastBreakRunID))
+                // Find run - searches current year first, then previous year, then legacy
+                let fastBreakRun = FastBreakV1.getFastBreakRunInternal(id: fastBreakGame.fastBreakRunID)
+                let run = fastBreakRun ?? panic("Could not obtain reference to fast break run with Id: ".concat(fastBreakGame.fastBreakRunID))
 
-                fastBreakRun.incrementRunWinCount(playerId: playerId)
-
+                run.incrementRunWinCount(playerId: playerId)
+                
+                // Update run in appropriate storage (updateRunInStorage handles legacy vs year-based)
+                let runYear = FastBreakV1.getYearFromTimestamp(timestamp: run.runStart).toString()
+                FastBreakV1.updateRunInStorage(run: run, runID: fastBreakGame.fastBreakRunID, year: runYear)
+                
                 let submission = fastBreakGame.submissions[playerId]!
 
                 emit FastBreakGameWinner(
