@@ -170,7 +170,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
     /// Returns read-only reference - avoids copying large structs
     ///
     access(all) view fun getFastBreakRun(id: String): &FastBreakV1.FastBreakRun? {
-        return &FastBreakV1.fastBreakRunByID[id] as &FastBreakV1.FastBreakRun?
+        return &FastBreakV1.fastBreakRunByID[id]
     }
 
     /// A single Game of Fast Break
@@ -211,7 +211,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
         /// Get a account's active Fast Break Submission (returns reference to avoid copying)
         ///
         access(all) view fun getFastBreakSubmissionByPlayerId(playerId: UInt64): &FastBreakV1.FastBreakSubmission? {
-            return &self.submissions[playerId] as &FastBreakV1.FastBreakSubmission?
+            return &self.submissions[playerId]
         }
 
         /// Add a statistic to the Fast Break during game creation
@@ -250,7 +250,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
                 FastBreakV1.isValidSubmission(submissionDeadline: self.submissionDeadline) : "Submission update missed deadline"
             }
 
-            let submission = &self.submissions[playerId] as &FastBreakV1.FastBreakSubmission?
+            let submission = &self.submissions[playerId]
                 ?? panic("Could not find submission for playerId: ".concat(playerId.toString()))
 
             submission.updateTopshots(topshotMomentIds: topshotMoments)
@@ -286,7 +286,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
     /// Returns read-only reference - avoids copying 1MB+ game structs with many submissions
     ///
     access(all) view fun getFastBreakGame(id: String): &FastBreakV1.FastBreakGame? {
-        return &FastBreakV1.fastBreakGameByID[id] as &FastBreakV1.FastBreakGame?
+        return &FastBreakV1.fastBreakGameByID[id]
     }
 
     /// Get the game stats of a Fast Break (returns reference to avoid copying)
