@@ -278,12 +278,12 @@ access(all) contract FastBreakV1: NonFungibleToken {
     }
 
     /// Get a Fast Break Run by Id (returns reference to avoid copying)
-    /// DEPRECATED: Only checks legacy dictionary (for existing data before upgrade)
-    /// For new data, use getFastBreakRunByYear with the year parameter
+    /// Automatically searches: current year → previous year → legacy dictionary
+    /// For direct year access, use getFastBreakRunByYear with the year parameter
     ///
     access(all) view fun getFastBreakRun(id: String): &FastBreakV1.FastBreakRun? {
-        // Only check legacy dictionary (existing data before upgrade)
-        return &FastBreakV1.fastBreakRunByID[id] as &FastBreakV1.FastBreakRun?
+        // Use internal helper which does smart search (current year → previous year → legacy)
+        return FastBreakV1.getFastBreakRunInternal(id: id)
     }
 
     /// Get a Fast Break Run by Id and Year (returns reference to avoid copying)
@@ -411,8 +411,8 @@ access(all) contract FastBreakV1: NonFungibleToken {
     }
 
     /// Internal helper to get a game by ID (returns reference to avoid copying)
-    /// Searches current year first, then previous year, then legacy (for oracle functions)
-    /// Oracle functions operate in same year, so prioritize new year-based storage
+    /// Searches current year first, then previous year, then legacy
+    /// Used by both oracle functions and public getFastBreakGame
     ///
     access(self) view fun getFastBreakGameInternal(id: String): &FastBreakV1.FastBreakGame? {
         let currentTimestamp = UInt64(getCurrentBlock().timestamp)
@@ -441,13 +441,13 @@ access(all) contract FastBreakV1: NonFungibleToken {
     }
 
     /// Get a Fast Break Game by Id (returns reference to avoid copying large structs)
-    /// DEPRECATED: Only checks legacy dictionary (for existing data before upgrade)
-    /// For new data, use getFastBreakGameByYear with the year parameter
+    /// Automatically searches: current year → previous year → legacy dictionary
+    /// For direct year access, use getFastBreakGameByYear with the year parameter
     /// Returns read-only reference - avoids copying 1MB+ game structs with many submissions
     ///
     access(all) view fun getFastBreakGame(id: String): &FastBreakV1.FastBreakGame? {
-        // Only check legacy dictionary (existing data before upgrade)
-        return &FastBreakV1.fastBreakGameByID[id] as &FastBreakV1.FastBreakGame?
+        // Use internal helper which does smart search (current year → previous year → legacy)
+        return FastBreakV1.getFastBreakGameInternal(id: id)
     }
 
     /// Get a Fast Break Game by Id and Year (returns reference to avoid copying large structs)
@@ -467,10 +467,10 @@ access(all) contract FastBreakV1: NonFungibleToken {
     }
 
     /// Internal helper to get a run by ID (returns reference to avoid copying)
-    /// Searches current year first, then previous year, then legacy (for oracle functions)
-    /// Oracle functions operate in same year, so prioritize new year-based storage
+    /// Searches current year first, then previous year, then legacy
+    /// Used by both oracle functions and public getFastBreakRun
     ///
-    access(self) fun getFastBreakRunInternal(id: String): &FastBreakV1.FastBreakRun? {
+    access(self) view fun getFastBreakRunInternal(id: String): &FastBreakV1.FastBreakRun? {
         let currentTimestamp = UInt64(getCurrentBlock().timestamp)
         let currentYearNum = FastBreakV1.getYearFromTimestamp(timestamp: currentTimestamp)
         
@@ -500,31 +500,10 @@ access(all) contract FastBreakV1: NonFungibleToken {
     /// Checks year-based storage first, then falls back to legacy
     ///
     access(all) view fun getFastBreakGameStats(id: String): &[FastBreakV1.FastBreakStat]? {
-        // Check current year first
-        let currentTimestamp = UInt64(getCurrentBlock().timestamp)
-        let currentYearNum = FastBreakV1.getYearFromTimestamp(timestamp: currentTimestamp)
-        let currentYearString = currentYearNum.toString()
-        
-        if let yearStorage = FastBreakV1.getYearGameStorageByYear(year: currentYearString) {
-            if let gameRef = yearStorage.getGame(id: id) {
-                // gameRef.stats is already a reference when accessed through a reference
-                return gameRef.stats
-            }
-        }
-        
-        // Check previous year
-        if currentYearNum > 1970 {
-            let previousYearString = (currentYearNum - 1).toString()
-            if let yearStorage = FastBreakV1.getYearGameStorageByYear(year: previousYearString) {
-                if let gameRef = yearStorage.getGame(id: id) {
-                    return gameRef.stats
-                }
-            }
-        }
-        
-        // Fallback to legacy (deprecated)
-        if let fastBreak = FastBreakV1.getFastBreakGame(id: id) {
-            return fastBreak.stats
+        // Use getFastBreakGame which automatically searches: current year → previous year → legacy
+        if let gameRef = FastBreakV1.getFastBreakGame(id: id) {
+            // gameRef.stats is already a reference when accessed through a reference
+            return gameRef.stats
         }
         return nil
     }
