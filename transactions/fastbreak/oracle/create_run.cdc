@@ -15,6 +15,7 @@ transaction(id: String, name: String, runStart: UInt64, runEnd: UInt64, fatigueM
     }
 
     post {
-        FastBreakV1.getFastBreakRun(id: id)?.name! == name: "could not find fast break run"
+        // New runs are stored in year-based storage, use getFastBreakRunByYear
+        FastBreakV1.getFastBreakRunByYear(id: id, year: FastBreakV1.getYearFromTimestamp(timestamp: runStart).toString())?.name! == name: "could not find fast break run"
     }
 }
