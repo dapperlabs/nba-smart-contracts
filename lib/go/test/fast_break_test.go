@@ -2,7 +2,6 @@ package test
 
 import (
 	"context"
-	"strconv"
 	"testing"
 	"time"
 
@@ -322,12 +321,7 @@ func TestFastBreak(t *testing.T) {
 		)
 
 		// Check that that main contract fields were initialized correctly
-		// New games are stored in year-based storage, so use the year-based query
-		yearFromDeadline := 1970 + (submissionDeadline / 31536000)
-		yearString := strconv.FormatInt(yearFromDeadline, 10)
-		yearCadence, _ := cadence.NewString(yearString)
-
-		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(yearCadence)})
+		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakScript(env), [][]byte{jsoncdc.MustEncode(cdcId)})
 		assert.NotNil(t, result)
 
 		// Handle optional result - now returns reference type, but Go SDK deserializes as struct
@@ -560,289 +554,6 @@ func TestFastBreak(t *testing.T) {
 		assert.Equal(t, cadence.NewUInt64(1), result)
 	})
 
-	t.Run("should reuse year-based storage when creating multiple games in same year", func(t *testing.T) {
-		// Test storage reuse by creating two games in the same year
-		// Both games should be stored in the same YearGameStorage resource
-		firstGameID := "storage-test-1"
-		firstGameName := "fb-storage-1"
-		secondGameID := "storage-test-2"
-		secondGameName := "fb-storage-2"
-
-		// Create first game
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateGameScript(env), fastBreakAddr)
-		cdcId1, _ := cadence.NewString(firstGameID)
-		cdcName1, _ := cadence.NewString(firstGameName)
-		cdcFbrId, _ := cadence.NewString(fastBreakRunId)
-
-		tx.AddArgument(cdcId1)
-		tx.AddArgument(cdcName1)
-		tx.AddArgument(cdcFbrId)
-		tx.AddArgument(cadence.NewUInt64(uint64(submissionDeadline)))
-		tx.AddArgument(cadence.NewUInt64(numPlayers))
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, fastBreakSigner},
-			false,
-		)
-
-		// Calculate the year from submissionDeadline
-		yearFromDeadline := 1970 + (submissionDeadline / 31536000)
-		yearString := strconv.FormatInt(yearFromDeadline, 10)
-		yearCadence, _ := cadence.NewString(yearString)
-
-		// Verify first game can be retrieved using getFastBreakGameByYear
-		// This tests that getFastBreakGameByYear works for year-based storage
-		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId1), jsoncdc.MustEncode(yearCadence)})
-		assert.NotNil(t, result, "First game should be retrievable via getFastBreakGameByYear")
-		optionalResult := result.(cadence.Optional)
-		assert.NotNil(t, optionalResult.Value, "First game should exist in year-based storage")
-		gameStruct, ok := optionalResult.Value.(cadence.Struct)
-		require.True(t, ok)
-		resultId := cadence.SearchFieldByName(gameStruct, "id")
-		assert.Equal(t, cadence.String(firstGameID), resultId)
-		resultName := cadence.SearchFieldByName(gameStruct, "name")
-		assert.Equal(t, cadence.String(firstGameName), resultName)
-
-		// Now create a second game in the same year (should reuse the same storage)
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateGameScript(env), fastBreakAddr)
-		cdcId2, _ := cadence.NewString(secondGameID)
-		cdcName2, _ := cadence.NewString(secondGameName)
-
-		tx.AddArgument(cdcId2)
-		tx.AddArgument(cdcName2)
-		tx.AddArgument(cdcFbrId)
-		tx.AddArgument(cadence.NewUInt64(uint64(submissionDeadline))) // Same year as first game
-		tx.AddArgument(cadence.NewUInt64(numPlayers))
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, fastBreakSigner},
-			false,
-		)
-
-		// Verify second game is also in the same year storage
-		result = executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId2), jsoncdc.MustEncode(yearCadence)})
-		assert.NotNil(t, result, "Second game should be retrievable via getFastBreakGameByYear")
-		optionalResult = result.(cadence.Optional)
-		assert.NotNil(t, optionalResult.Value, "Second game should exist in year-based storage")
-		gameStruct, ok = optionalResult.Value.(cadence.Struct)
-		require.True(t, ok)
-		resultId = cadence.SearchFieldByName(gameStruct, "id")
-		assert.Equal(t, cadence.String(secondGameID), resultId)
-		resultName = cadence.SearchFieldByName(gameStruct, "name")
-		assert.Equal(t, cadence.String(secondGameName), resultName)
-
-		// Verify first game still exists (proves storage reuse - both in same storage)
-		result = executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId1), jsoncdc.MustEncode(yearCadence)})
-		assert.NotNil(t, result, "First game should still be retrievable after second game creation")
-		optionalResult = result.(cadence.Optional)
-		assert.NotNil(t, optionalResult.Value, "First game should still exist after second game creation")
-
-		// Both games exist in the same year storage, which proves storage reuse is working
-		// (if storage wasn't reused, the second game would be in a different storage instance)
-		// Also proves that getFastBreakGameByYear correctly finds games in year-based storage
-		// and falls back to legacy storage if needed (contract line 466)
-	})
-
-	t.Run("should fallback to legacy storage when game not found in year-based storage", func(t *testing.T) {
-		// Test that getFastBreakGameByYear correctly falls back to legacy storage
-		// when a game is not found in year-based storage for the given year
-
-		// First, create a game in year-based storage for testing
-		testGameID := "legacy-fallback-test-game"
-		testGameName := "fb-legacy-test"
-
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateGameScript(env), fastBreakAddr)
-		cdcId, _ := cadence.NewString(testGameID)
-		cdcName, _ := cadence.NewString(testGameName)
-		cdcFbrId, _ := cadence.NewString(fastBreakRunId)
-
-		tx.AddArgument(cdcId)
-		tx.AddArgument(cdcName)
-		tx.AddArgument(cdcFbrId)
-		tx.AddArgument(cadence.NewUInt64(uint64(submissionDeadline)))
-		tx.AddArgument(cadence.NewUInt64(numPlayers))
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, fastBreakSigner},
-			false,
-		)
-
-		// Calculate the year from submissionDeadline
-		yearFromDeadline := 1970 + (submissionDeadline / 31536000)
-		yearString := strconv.FormatInt(yearFromDeadline, 10)
-		yearCadence, _ := cadence.NewString(yearString)
-
-		// Query for a non-existent game ID - should check year-based first, then legacy
-		nonExistentGameID := "legacy-fallback-test-999"
-		gameIdCadence, _ := cadence.NewString(nonExistentGameID)
-
-		// Query using getFastBreakGameByYear - should check year-based first, then legacy
-		// Since game doesn't exist in either, should return nil
-		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(gameIdCadence), jsoncdc.MustEncode(yearCadence)})
-		assert.NotNil(t, result, "Result should not be nil (should be Optional with nil value)")
-		optionalResult := result.(cadence.Optional)
-		assert.Nil(t, optionalResult.Value, "Non-existent game should return nil (proves fallback checked both year-based and legacy)")
-
-		// Also verify that getFastBreakGame (legacy-only) returns nil for non-existent game
-		result = executeScriptAndCheck(t, b, templates.GenerateGetFastBreakScript(env), [][]byte{jsoncdc.MustEncode(gameIdCadence)})
-		assert.NotNil(t, result, "Legacy getFastBreakGame result should not be nil")
-		optionalResult = result.(cadence.Optional)
-		assert.Nil(t, optionalResult.Value, "Non-existent game should return nil from legacy function")
-
-		// Now test with the game we just created in year-based storage
-		// Query it with getFastBreakGameByYear - should find it in year-based storage
-		result = executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(yearCadence)})
-		assert.NotNil(t, result, "Existing game should be retrievable")
-		optionalResult = result.(cadence.Optional)
-		assert.NotNil(t, optionalResult.Value, "Existing game should be found in year-based storage")
-		gameStruct, ok := optionalResult.Value.(cadence.Struct)
-		require.True(t, ok)
-		resultId := cadence.SearchFieldByName(gameStruct, "id")
-		assert.Equal(t, cadence.String(testGameID), resultId)
-		resultName := cadence.SearchFieldByName(gameStruct, "name")
-		assert.Equal(t, cadence.String(testGameName), resultName)
-
-		// Query the same game with a different year (should not find in year-based for that year)
-		// Should fall back to legacy, but game is in year-based, not legacy, so should return nil
-		differentYear := strconv.FormatInt(yearFromDeadline+1, 10) // Next year
-		differentYearCadence, _ := cadence.NewString(differentYear)
-		result = executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(differentYearCadence)})
-		assert.NotNil(t, result, "Result should not be nil")
-		optionalResult = result.(cadence.Optional)
-		// Should be nil because:
-		// 1. Year-based storage for different year doesn't have the game
-		// 2. Legacy storage doesn't have the game (it's in year-based storage)
-		assert.Nil(t, optionalResult.Value, "Game in year-based storage should not be found when querying different year (proves fallback to legacy works)")
-	})
-
-	t.Run("should store games in different years in separate storage", func(t *testing.T) {
-		// Test that games in different years are stored in separate YearGameStorage resources
-		year1GameID := "year1-game"
-		year1GameName := "fb-year1"
-		year2GameID := "year2-game"
-		year2GameName := "fb-year2"
-
-		// Create game in current year
-		year1Deadline := submissionDeadline
-		year1 := 1970 + (year1Deadline / 31536000)
-
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateGameScript(env), fastBreakAddr)
-		cdcId1, _ := cadence.NewString(year1GameID)
-		cdcName1, _ := cadence.NewString(year1GameName)
-		cdcFbrId, _ := cadence.NewString(fastBreakRunId)
-
-		tx.AddArgument(cdcId1)
-		tx.AddArgument(cdcName1)
-		tx.AddArgument(cdcFbrId)
-		tx.AddArgument(cadence.NewUInt64(uint64(year1Deadline)))
-		tx.AddArgument(cadence.NewUInt64(numPlayers))
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, fastBreakSigner},
-			false,
-		)
-
-		// Create game in next year (add 1 year worth of seconds)
-		year2Deadline := year1Deadline + 31536000
-		year2 := 1970 + (year2Deadline / 31536000)
-
-		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateGameScript(env), fastBreakAddr)
-		cdcId2, _ := cadence.NewString(year2GameID)
-		cdcName2, _ := cadence.NewString(year2GameName)
-
-		tx.AddArgument(cdcId2)
-		tx.AddArgument(cdcName2)
-		tx.AddArgument(cdcFbrId)
-		tx.AddArgument(cadence.NewUInt64(uint64(year2Deadline)))
-		tx.AddArgument(cadence.NewUInt64(numPlayers))
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, fastBreakSigner},
-			false,
-		)
-
-		// Verify games are in their respective year storages
-		year1String := strconv.FormatInt(year1, 10)
-		year2String := strconv.FormatInt(year2, 10)
-		year1Cadence, _ := cadence.NewString(year1String)
-		year2Cadence, _ := cadence.NewString(year2String)
-
-		// Year 1 game should be in year 1 storage
-		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId1), jsoncdc.MustEncode(year1Cadence)})
-		assert.NotNil(t, result)
-		optionalResult := result.(cadence.Optional)
-		assert.NotNil(t, optionalResult.Value, "Year 1 game should be in year 1 storage")
-		gameStruct, ok := optionalResult.Value.(cadence.Struct)
-		require.True(t, ok)
-		assert.Equal(t, cadence.String(year1GameID), cadence.SearchFieldByName(gameStruct, "id"))
-
-		// Year 2 game should be in year 2 storage
-		result = executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId2), jsoncdc.MustEncode(year2Cadence)})
-		assert.NotNil(t, result)
-		optionalResult = result.(cadence.Optional)
-		assert.NotNil(t, optionalResult.Value, "Year 2 game should be in year 2 storage")
-		gameStruct, ok = optionalResult.Value.(cadence.Struct)
-		require.True(t, ok)
-		assert.Equal(t, cadence.String(year2GameID), cadence.SearchFieldByName(gameStruct, "id"))
-
-		// Year 1 game should NOT be in year 2 storage
-		result = executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId1), jsoncdc.MustEncode(year2Cadence)})
-		assert.NotNil(t, result)
-		optionalResult = result.(cadence.Optional)
-		assert.Nil(t, optionalResult.Value, "Year 1 game should NOT be in year 2 storage")
-
-		// Year 2 game should NOT be in year 1 storage
-		result = executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId2), jsoncdc.MustEncode(year1Cadence)})
-		assert.NotNil(t, result)
-		optionalResult = result.(cadence.Optional)
-		assert.Nil(t, optionalResult.Value, "Year 2 game should NOT be in year 1 storage")
-	})
-
-	t.Run("should verify getFastBreakRunByYear works", func(t *testing.T) {
-		// Test that getFastBreakRunByYear correctly retrieves runs from year-based storage
-		testRunID := "run-by-year-test"
-		testRunName := "R-year-test"
-
-		// Create a run
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateRunScript(env), fastBreakAddr)
-		cdcId, _ := cadence.NewString(testRunID)
-		cdcName, _ := cadence.NewString(testRunName)
-
-		tx.AddArgument(cdcId)
-		tx.AddArgument(cdcName)
-		tx.AddArgument(cadence.NewUInt64(uint64(runStart)))
-		tx.AddArgument(cadence.NewUInt64(uint64(runEnd)))
-		tx.AddArgument(cadence.NewBool(fatigueModeOn))
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, fastBreakSigner},
-			false,
-		)
-
-		// Calculate year from runStart
-		yearFromRunStart := 1970 + (runStart / 31536000)
-		yearString := strconv.FormatInt(yearFromRunStart, 10)
-		yearCadence, _ := cadence.NewString(yearString)
-
-		// Verify run can be retrieved using getFastBreakRunByYear
-		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakRunByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(yearCadence)})
-		assert.NotNil(t, result, "Run should be retrievable via getFastBreakRunByYear")
-		optionalResult := result.(cadence.Optional)
-		assert.NotNil(t, optionalResult.Value, "Run should exist in year-based storage")
-		runStruct, ok := optionalResult.Value.(cadence.Struct)
-		require.True(t, ok)
-		resultId := cadence.SearchFieldByName(runStruct, "id")
-		assert.Equal(t, cadence.String(testRunID), resultId)
-		resultName := cadence.SearchFieldByName(runStruct, "name")
-		assert.Equal(t, cadence.String(testRunName), resultName)
-	})
-
 	t.Run("should verify getFastBreakGameStats returns reference", func(t *testing.T) {
 		// Test that getFastBreakGameStats returns a reference to the stats array
 		// Use a game that we know has stats (the one we added stats to earlier)
@@ -874,76 +585,18 @@ func TestFastBreak(t *testing.T) {
 		// This requires a game with a submission, so we'll use the game from earlier tests
 		// and verify we can get a submission reference
 
-		// First, verify the game exists and has a submission
-		// New games are stored in year-based storage, so use the year-based query
+		// First, verify the game exists
 		gameIdCadence, _ := cadence.NewString(fastBreakID)
-		yearFromDeadline := 1970 + (submissionDeadline / 31536000)
-		yearString := strconv.FormatInt(yearFromDeadline, 10)
-		yearCadence, _ := cadence.NewString(yearString)
-
-		gameResult := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(gameIdCadence), jsoncdc.MustEncode(yearCadence)})
+		gameResult := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakScript(env), [][]byte{jsoncdc.MustEncode(gameIdCadence)})
 		assert.NotNil(t, gameResult)
 		gameOptional := gameResult.(cadence.Optional)
 		require.NotNil(t, gameOptional.Value, "Game should exist")
 
 		// The submission would be accessed through the game reference
 		// Since we can't directly test getFastBreakSubmissionByPlayerId from Go (it's a method on FastBreakGame),
-		// we verify that the game exists and can be queried by year
-		// The fact that we can get the game reference proves the year-based storage is working
+		// we verify that the game exists and can be queried
 		// Note: This test runs early in the suite before players have submitted, so we just verify the game exists
 		// The actual submission reference functionality is tested indirectly through the play() and updateFastBreakScore() functions
-	})
-
-	t.Run("should fallback to previous year when game not found in current year", func(t *testing.T) {
-		// Test that getFastBreakGameInternal and getFastBreakGameStats check previous year
-		// Create a game in previous year (subtract 1 year from current deadline)
-		previousYearGameID := "previous-year-game"
-		previousYearGameName := "fb-prev-year"
-
-		// Calculate previous year deadline
-		currentYearDeadline := submissionDeadline
-		previousYearDeadline := currentYearDeadline - 31536000 // 1 year ago
-		previousYear := 1970 + (previousYearDeadline / 31536000)
-
-		// Create game in previous year
-		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateGameScript(env), fastBreakAddr)
-		cdcId, _ := cadence.NewString(previousYearGameID)
-		cdcName, _ := cadence.NewString(previousYearGameName)
-		cdcFbrId, _ := cadence.NewString(fastBreakRunId)
-
-		tx.AddArgument(cdcId)
-		tx.AddArgument(cdcName)
-		tx.AddArgument(cdcFbrId)
-		tx.AddArgument(cadence.NewUInt64(uint64(previousYearDeadline)))
-		tx.AddArgument(cadence.NewUInt64(numPlayers))
-
-		signAndSubmit(
-			t, b, tx,
-			[]flow.Address{b.ServiceKey().Address, fastBreakAddr}, []crypto.Signer{serviceKeySigner, fastBreakSigner},
-			false,
-		)
-
-		// Verify game can be found in previous year storage directly
-		previousYearString := strconv.FormatInt(previousYear, 10)
-		previousYearCadence, _ := cadence.NewString(previousYearString)
-		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(previousYearCadence)})
-		assert.NotNil(t, result)
-		optionalResult := result.(cadence.Optional)
-		assert.NotNil(t, optionalResult.Value, "Game should exist in previous year storage")
-		gameStruct, ok := optionalResult.Value.(cadence.Struct)
-		require.True(t, ok)
-		assert.Equal(t, cadence.String(previousYearGameID), cadence.SearchFieldByName(gameStruct, "id"))
-
-		// Verify getFastBreakGameStats can find it (uses getFastBreakGameInternal which checks previous year)
-		// This tests the cross-year fallback in getFastBreakGameStats
-		result = executeScriptAndCheck(t, b, templates.GenerateGetFastBreakStatsScript(env), [][]byte{jsoncdc.MustEncode(cdcId)})
-		assert.NotNil(t, result, "getFastBreakGameStats should find game in previous year")
-		optionalResult = result.(cadence.Optional)
-		// Stats might be empty array, but the function should return something (not nil)
-		// If it's nil, it means the game wasn't found, which would be a bug
-		if optionalResult.Value == nil {
-			t.Log("Note: Game stats are nil (empty stats array), but game was found - this is expected for new games")
-		}
 	})
 
 	t.Run("should persist mutations made through references", func(t *testing.T) {
@@ -969,13 +622,8 @@ func TestFastBreak(t *testing.T) {
 			false,
 		)
 
-		// Calculate year for querying
-		yearFromDeadline := 1970 + (submissionDeadline / 31536000)
-		yearString := strconv.FormatInt(yearFromDeadline, 10)
-		yearCadence, _ := cadence.NewString(yearString)
-
-		// Verify initial status is SCHEDULED (0) using year-based query
-		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(yearCadence)})
+		// Verify initial status is SCHEDULED (0) using regular query
+		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakScript(env), [][]byte{jsoncdc.MustEncode(cdcId)})
 		assert.NotNil(t, result)
 		optionalResult := result.(cadence.Optional)
 		require.NotNil(t, optionalResult.Value, "Game should exist before mutation")
@@ -988,7 +636,7 @@ func TestFastBreak(t *testing.T) {
 		statusRawValue := cadence.SearchFieldByName(statusEnum, "rawValue")
 		assert.Equal(t, cadence.NewUInt8(0), statusRawValue, "Initial status should be SCHEDULED (0)")
 
-		// Update game status through updateFastBreakGame (uses getFastBreakGameInternal which returns a reference)
+		// Update game status through updateFastBreakGame (uses getFastBreakGame which returns a reference)
 		// This should persist automatically
 		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateUpdateFastBreakGameScript(env), fastBreakAddr)
 		tx.AddArgument(cdcId)
@@ -1002,7 +650,7 @@ func TestFastBreak(t *testing.T) {
 		)
 
 		// Verify the mutation persisted - status should now be STARTED (1)
-		result = executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(yearCadence)})
+		result = executeScriptAndCheck(t, b, templates.GenerateGetFastBreakScript(env), [][]byte{jsoncdc.MustEncode(cdcId)})
 		assert.NotNil(t, result)
 		optionalResult = result.(cadence.Optional)
 		require.NotNil(t, optionalResult.Value, "Game should exist after mutation")
@@ -1021,7 +669,7 @@ func TestFastBreak(t *testing.T) {
 
 	t.Run("should persist game winner updates made through references", func(t *testing.T) {
 		// Test that updating game winner through references persists
-		// Create a fresh game for this test to ensure it exists in year-based storage
+		// Create a fresh game for this test
 		winnerTestGameID := "winner-test-game"
 		winnerTestGameName := "fb-winner-test"
 
@@ -1042,13 +690,8 @@ func TestFastBreak(t *testing.T) {
 			false,
 		)
 
-		// Calculate year for querying
-		yearFromDeadline := 1970 + (submissionDeadline / 31536000)
-		yearString := strconv.FormatInt(yearFromDeadline, 10)
-		yearCadence, _ := cadence.NewString(yearString)
-
 		// Verify initial winner is 0
-		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(yearCadence)})
+		result := executeScriptAndCheck(t, b, templates.GenerateGetFastBreakScript(env), [][]byte{jsoncdc.MustEncode(cdcId)})
 		assert.NotNil(t, result)
 		optionalResult := result.(cadence.Optional)
 		require.NotNil(t, optionalResult.Value, "Game should exist after creation")
@@ -1057,7 +700,7 @@ func TestFastBreak(t *testing.T) {
 		initialWinner := cadence.SearchFieldByName(gameStruct, "winner")
 		assert.Equal(t, cadence.NewUInt64(0), initialWinner, "Initial winner should be 0")
 
-		// Update game winner through updateFastBreakGame (uses getFastBreakGameInternal which returns a reference)
+		// Update game winner through updateFastBreakGame (uses getFastBreakGame which returns a reference)
 		// This should persist automatically
 		newWinner := playerId // Use existing playerId
 		tx = createTxWithTemplateAndAuthorizer(b, templates.GenerateUpdateFastBreakGameScript(env), fastBreakAddr)
@@ -1072,7 +715,7 @@ func TestFastBreak(t *testing.T) {
 		)
 
 		// Verify the mutation persisted - winner should now be playerId
-		result = executeScriptAndCheck(t, b, templates.GenerateGetFastBreakByYearScript(env), [][]byte{jsoncdc.MustEncode(cdcId), jsoncdc.MustEncode(yearCadence)})
+		result = executeScriptAndCheck(t, b, templates.GenerateGetFastBreakScript(env), [][]byte{jsoncdc.MustEncode(cdcId)})
 		assert.NotNil(t, result)
 		optionalResult = result.(cadence.Optional)
 		require.NotNil(t, optionalResult.Value, "Game should exist after mutation")
@@ -1090,11 +733,8 @@ func TestFastBreak(t *testing.T) {
 	})
 
 	// Note: updateFastBreakScore is tested at line 517 ("oracle should be to score a submission to fast break")
-	// Both updateFastBreakGame and updateFastBreakScore use getFastBreakGameInternal which searches:
-	// 1. Current year-based storage
-	// 2. Previous year-based storage
-	// 3. Legacy dictionary (fallback)
-	// The mutation persistence tests above (lines 941, 1023) verify that mutations through references work correctly
+	// Both updateFastBreakGame and updateFastBreakScore use getFastBreakGame which returns references
+	// The mutation persistence tests above verify that mutations through references work correctly
 	// for both functions, so we have complete coverage.
 
 }

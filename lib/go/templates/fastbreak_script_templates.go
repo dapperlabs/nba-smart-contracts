@@ -8,8 +8,6 @@ const (
 	fastBreakScriptsPath = "../../../transactions/fastbreak/scripts/"
 
 	getFastBreakByIdFilename        = "get_fast_break.cdc"
-	getFastBreakByYearFilename      = "get_fast_break_by_year.cdc"
-	getFastBreakRunByYearFilename   = "get_fast_break_run_by_year.cdc"
 	getFastBreakTokenCountFilename  = "get_token_count.cdc"
 	getScoreByPlayerFilename        = "get_player_score.cdc"
 	getFastBreakStatsFilename       = "get_fast_break_stats.cdc"
@@ -19,18 +17,6 @@ const (
 
 func GenerateGetFastBreakScript(env Environment) []byte {
 	code := assets.MustAssetString(fastBreakScriptsPath + getFastBreakByIdFilename)
-
-	return []byte(replaceAddresses(code, env))
-}
-
-func GenerateGetFastBreakByYearScript(env Environment) []byte {
-	code := assets.MustAssetString(fastBreakScriptsPath + getFastBreakByYearFilename)
-
-	return []byte(replaceAddresses(code, env))
-}
-
-func GenerateGetFastBreakRunByYearScript(env Environment) []byte {
-	code := assets.MustAssetString(fastBreakScriptsPath + getFastBreakRunByYearFilename)
 
 	return []byte(replaceAddresses(code, env))
 }
