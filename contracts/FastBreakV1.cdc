@@ -10,10 +10,10 @@
 
 */
 
-import NonFungibleToken from 0xNFTADDRESS
-import TopShot from 0xTOPSHOTADDRESS
-import MetadataViews from 0xMETADATAVIEWSADDRESS
-import TopShotMarketV3, Market from 0xMARKETV3ADDRESS
+import NonFungibleToken from 0x631e88ae7f1d7c20
+import TopShot from 0x877931736ee77cff
+import MetadataViews from 0x631e88ae7f1d7c20
+import TopShotMarketV3, Market from 0x547f177b243b4d80
 
 /// Game & Oracle Contract for Fast Break V1
 ///
@@ -250,7 +250,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
                 FastBreakV1.isValidSubmission(submissionDeadline: self.submissionDeadline) : "Submission update missed deadline"
             }
 
-            let submission = &self.submissions[playerId]
+            let submission = &self.submissions[playerId] as &FastBreakV1.FastBreakSubmission?
                 ?? panic("Could not find submission for playerId: ".concat(playerId.toString()))
 
             submission.updateTopshots(topshotMomentIds: topshotMoments)
