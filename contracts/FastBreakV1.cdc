@@ -389,7 +389,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
             topShots: [UInt64]
         ): @FastBreakV1.NFT {
             pre {
-                FastBreakV1.getFastBreakGame(id: fastBreakGameID) != nil: "No such fast break game with gameId: ".concat(fastBreakGameID)
+                FastBreakV1.fastBreakGameByID.containsKey(fastBreakGameID): "No such fast break game with gameId: ".concat(fastBreakGameID)
             }
 
             /// Update player address mapping
@@ -467,7 +467,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
             topShots: [UInt64]
         ) {
             pre {
-                FastBreakV1.getFastBreakGame(id: fastBreakGameID) != nil: "No such fast break game with gameId: ".concat(fastBreakGameID)
+                FastBreakV1.fastBreakGameByID.containsKey(fastBreakGameID): "No such fast break game with gameId: ".concat(fastBreakGameID)
             }
 
             /// Update player address mapping
@@ -596,7 +596,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
             mintedTo: UInt64,
         ) {
             pre {
-                FastBreakV1.getFastBreakGame(id: fastBreakGameID) != nil: "No such fast break with gameId: ".concat(fastBreakGameID)
+                FastBreakV1.fastBreakGameByID.containsKey(fastBreakGameID): "No such fast break with gameId: ".concat(fastBreakGameID)
             }
 
             self.id = self.uuid
@@ -608,7 +608,6 @@ access(all) contract FastBreakV1: NonFungibleToken {
         }
 
         access(all) view fun isWinner(): Bool {
-            // Check game submissions (searches current year → previous year → legacy)
             if let fastBreak = FastBreakV1.getFastBreakGame(id: self.fastBreakGameID) {
                 if let submission = fastBreak.submissions[self.mintedTo] {
                     return submission.win
@@ -618,7 +617,6 @@ access(all) contract FastBreakV1: NonFungibleToken {
         }
 
         access(all) view fun points(): UInt64 {
-            // Check game submissions (searches current year → previous year → legacy)
             if let fastBreak = FastBreakV1.getFastBreakGame(id: self.fastBreakGameID) {
                 if let submission = fastBreak.submissions[self.mintedTo] {
                     return submission.points
@@ -954,7 +952,6 @@ access(all) contract FastBreakV1: NonFungibleToken {
             let isNewWin = fastBreakGame.updateScore(playerId: playerId, points: points, win: win)
             
             if isNewWin {
-                // Find run - searches current year first, then previous year, then legacy
                 let fastBreakRun = FastBreakV1.getFastBreakRun(id: fastBreakGame.fastBreakRunID)
                 let run = fastBreakRun ?? panic("Could not obtain reference to fast break run with Id: ".concat(fastBreakGame.fastBreakRunID))
 
