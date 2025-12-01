@@ -1270,8 +1270,6 @@ access(all) contract TopShot: NonFungibleToken {
                 // does nothing if the moment is not locked
                 topShotLockingAdmin.unlockByID(id: id)
 
-                // Remove the nft from the Collection
-
                 Burner.burn(<-self.withdraw(withdrawID: id))
             }
         }
