@@ -50,6 +50,7 @@ import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 import ViewResolver from 0xVIEWRESOLVERADDRESS
 import CrossVMMetadataViews from 0xCROSSVMMETADATAVIEWSADDRESS
 import EVM from 0xEVMADDRESS
+import Burner from 0xBURNERADDRESS
 
 access(all) contract TopShot: NonFungibleToken {
     // -----------------------------------------------------------------------
@@ -1266,18 +1267,12 @@ access(all) contract TopShot: NonFungibleToken {
                 ?? panic("No TopShotLocking admin resource in storage")
 
             for id in ids {
-                // Remove the nft from the Collection
-                let token <- self.ownedNFTs.remove(key: id)
-                    ?? panic("Cannot destroy: Moment does not exist in collection: ".concat(id.toString()))
-
-                // Emit a withdraw event here so that platforms do not have to understand TopShot-specific events to see ownership change
-                // A withdraw without a corresponding deposit means the NFT in question has no owner address
-                emit Withdraw(id: id, from: self.owner?.address)
-
                 // does nothing if the moment is not locked
                 topShotLockingAdmin.unlockByID(id: id)
 
-                destroy token
+                // Remove the nft from the Collection
+
+                Burner.burn(<-self.withdraw(withdrawID: id))
             }
         }
 

@@ -1,6 +1,6 @@
 .PHONY: test
 test:
-	go test ./...
+	CGO_ENABLED=0 go test -tags=no_cgo ./...
 
 .PHONY: generate
 generate:

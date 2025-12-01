@@ -29,6 +29,7 @@ const (
 	defaultTopShotRoyaltyAddress       = "TOPSHOTROYALTYADDRESS"
 	defaultViewResolverAddress         = "VIEWRESOLVERADDRESS"
 	defaultEVMAddress                  = "EVMADDRESS"
+	defaultBurnerAddress               = "BURNERADDRESS"
 	defaultCrossVMMetadataViewsAddress = "CROSSVMMETADATAVIEWSADDRESS"
 	defaultNetwork                     = "${NETWORK}"
 	defaultEVMContractAddress          = "${EVMCONTRACTADDRESS}"
@@ -51,7 +52,9 @@ func GenerateTopShotContract(ftAddr, nftAddr, metadataViewsAddr, viewResolverAdd
 
 	codewWithEvmAddr := strings.ReplaceAll(codeWithCrossVMMetadataViewsAddr, defaultEVMAddress, evmAddr)
 
-	codeWithMetadataViewsAddr := strings.ReplaceAll(codewWithEvmAddr, defaultViewResolverAddress, viewResolverAddr)
+	codewWithBurnerAddr := strings.ReplaceAll(codewWithEvmAddr, defaultBurnerAddress, nftAddr)
+
+	codeWithMetadataViewsAddr := strings.ReplaceAll(codewWithBurnerAddr, defaultViewResolverAddress, viewResolverAddr)
 
 	codeWithViewResolverAddr := strings.ReplaceAll(codeWithMetadataViewsAddr, defaultMetadataviewsAddress, metadataViewsAddr)
 
