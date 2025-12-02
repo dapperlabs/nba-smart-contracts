@@ -1180,16 +1180,13 @@ access(all) contract TopShot: NonFungibleToken {
             let id = token.id
 
             // Add the new token to the dictionary
-            let oldToken <- self.ownedNFTs[id] <- token
+            self.ownedNFTs[id] <-! token
 
             // Only emit a deposit event if the Collection
             // is in an account's storage
             if self.owner?.address != nil {
                 emit Deposit(id: id, to: self.owner?.address)
             }
-
-            // Destroy the empty old token that was "removed"
-            destroy oldToken
         }
 
         // batchDeposit takes a Collection object as an argument
@@ -1204,7 +1201,7 @@ access(all) contract TopShot: NonFungibleToken {
             }
 
             // Destroy the empty Collection
-            destroy tokens
+            Burner.burn(<-tokens)
         }
 
         // lock takes a token id and a duration in seconds and locks
@@ -1218,9 +1215,7 @@ access(all) contract TopShot: NonFungibleToken {
 
             // pass the token to the locking contract
             // store it again after it comes back
-            let oldToken <- self.ownedNFTs[id] <- TopShotLocking.lockNFT(nft: <- token, duration: duration)
-
-            destroy oldToken
+            self.ownedNFTs[id] <-! TopShotLocking.lockNFT(nft: <- token, duration: duration)
         }
 
         // batchLock takes an array of token ids and a duration in seconds
@@ -1243,9 +1238,7 @@ access(all) contract TopShot: NonFungibleToken {
 
             // Pass the token to the TopShotLocking contract then get it back
             // Store it back to the ownedNFTs dictionary
-            let oldToken <- self.ownedNFTs[id] <- TopShotLocking.unlockNFT(nft: <- token)
-
-            destroy oldToken
+            self.ownedNFTs[id] <-! TopShotLocking.unlockNFT(nft: <- token)
         }
 
         // batchUnlock takes an array of token ids
