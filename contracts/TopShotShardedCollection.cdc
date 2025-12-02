@@ -38,6 +38,7 @@
 import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 import ViewResolver   from 0xVIEWRESOLVERADDRESS
+import Burner from 0xBURNERADDRESS
 
 access(all) contract TopShotShardedCollection {
 
@@ -126,7 +127,7 @@ access(all) contract TopShotShardedCollection {
             for key in keys {
                 self.deposit(token: <-tokens.withdraw(withdrawID: key))
             }
-            destroy tokens
+            Burner.burn(<-tokens)
         }
 
         // getIDs returns an array of the IDs that are in the Collection

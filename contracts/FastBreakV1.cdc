@@ -14,6 +14,7 @@ import NonFungibleToken from 0xNFTADDRESS
 import TopShot from 0xTOPSHOTADDRESS
 import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotMarketV3, Market from 0xMARKETV3ADDRESS
+import Burner from 0xBURNERADDRESS
 
 /// Game & Oracle Contract for Fast Break V1
 ///
@@ -688,9 +689,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
             let token <- token as! @FastBreakV1.NFT
             let id: UInt64 = token.id
 
-            let oldToken <- self.ownedNFTs[id] <- token
-
-            destroy oldToken
+            self.ownedNFTs[id] <-! token
         }
 
         access(all) fun batchDeposit(tokens: @{NonFungibleToken.Collection}) {
@@ -700,7 +699,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
                 self.deposit(token: <-tokens.withdraw(withdrawID: key))
             }
 
-            destroy tokens
+            Burner.burn(<-tokens)
         }
 
         access(all) view fun getIDs(): [UInt64] {

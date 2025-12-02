@@ -29,6 +29,7 @@ const (
 	defaultTopShotRoyaltyAddress       = "TOPSHOTROYALTYADDRESS"
 	defaultViewResolverAddress         = "VIEWRESOLVERADDRESS"
 	defaultEVMAddress                  = "EVMADDRESS"
+	defaultBurnerAddress               = "BURNERADDRESS"
 	defaultCrossVMMetadataViewsAddress = "CROSSVMMETADATAVIEWSADDRESS"
 	defaultNetwork                     = "${NETWORK}"
 	defaultEVMContractAddress          = "${EVMCONTRACTADDRESS}"
@@ -51,7 +52,9 @@ func GenerateTopShotContract(ftAddr, nftAddr, metadataViewsAddr, viewResolverAdd
 
 	codewWithEvmAddr := strings.ReplaceAll(codeWithCrossVMMetadataViewsAddr, defaultEVMAddress, evmAddr)
 
-	codeWithMetadataViewsAddr := strings.ReplaceAll(codewWithEvmAddr, defaultViewResolverAddress, viewResolverAddr)
+	codewWithBurnerAddr := strings.ReplaceAll(codewWithEvmAddr, defaultBurnerAddress, nftAddr)
+
+	codeWithMetadataViewsAddr := strings.ReplaceAll(codewWithBurnerAddr, defaultViewResolverAddress, viewResolverAddr)
 
 	codeWithViewResolverAddr := strings.ReplaceAll(codeWithMetadataViewsAddr, defaultMetadataviewsAddress, metadataViewsAddr)
 
@@ -76,8 +79,9 @@ func GenerateTopShotShardedCollectionContract(nftAddr, topshotAddr string, viewR
 	codeWithNFTAddr := strings.ReplaceAll(shardedCode, defaultNonFungibleTokenAddress, nftAddr)
 	codeWithTopshotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 	codeWithViewResolverAddr := strings.ReplaceAll(codeWithTopshotAddr, defaultViewResolverAddress, viewResolverAddr)
+	codeWithBurnerAddr := strings.ReplaceAll(codeWithViewResolverAddr, defaultBurnerAddress, nftAddr)
 
-	return []byte(codeWithViewResolverAddr)
+	return []byte(codeWithBurnerAddr)
 }
 
 // GenerateTopshotAdminReceiverContract returns a copy
@@ -147,7 +151,8 @@ func GenerateFastBreakContract(nftAddr string, topshotAddr string, metadataViews
 	codeWithNFTAddr := strings.ReplaceAll(fastBreakCode, defaultNonFungibleTokenAddress, nftAddr)
 	codeWithTopShotAddr := strings.ReplaceAll(codeWithNFTAddr, defaultTopshotAddress, topshotAddr)
 	codeWithMetadataViewsAddr := strings.ReplaceAll(codeWithTopShotAddr, defaultMetadataviewsAddress, metadataViewsAddr)
-	code := strings.ReplaceAll(codeWithMetadataViewsAddr, defaultMarketV3Address, marketV3Address)
+	codeWithBurnerAddr := strings.ReplaceAll(codeWithMetadataViewsAddr, defaultBurnerAddress, nftAddr)
+	code := strings.ReplaceAll(codeWithBurnerAddr, defaultMarketV3Address, marketV3Address)
 
 	return []byte(code)
 }

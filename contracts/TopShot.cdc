@@ -50,6 +50,7 @@ import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 import ViewResolver from 0xVIEWRESOLVERADDRESS
 import CrossVMMetadataViews from 0xCROSSVMMETADATAVIEWSADDRESS
 import EVM from 0xEVMADDRESS
+import Burner from 0xBURNERADDRESS
 
 access(all) contract TopShot: NonFungibleToken {
     // -----------------------------------------------------------------------
@@ -1179,16 +1180,13 @@ access(all) contract TopShot: NonFungibleToken {
             let id = token.id
 
             // Add the new token to the dictionary
-            let oldToken <- self.ownedNFTs[id] <- token
+            self.ownedNFTs[id] <-! token
 
             // Only emit a deposit event if the Collection
             // is in an account's storage
             if self.owner?.address != nil {
                 emit Deposit(id: id, to: self.owner?.address)
             }
-
-            // Destroy the empty old token that was "removed"
-            destroy oldToken
         }
 
         // batchDeposit takes a Collection object as an argument
@@ -1203,7 +1201,7 @@ access(all) contract TopShot: NonFungibleToken {
             }
 
             // Destroy the empty Collection
-            destroy tokens
+            Burner.burn(<-tokens)
         }
 
         // lock takes a token id and a duration in seconds and locks
@@ -1217,9 +1215,7 @@ access(all) contract TopShot: NonFungibleToken {
 
             // pass the token to the locking contract
             // store it again after it comes back
-            let oldToken <- self.ownedNFTs[id] <- TopShotLocking.lockNFT(nft: <- token, duration: duration)
-
-            destroy oldToken
+            self.ownedNFTs[id] <-! TopShotLocking.lockNFT(nft: <- token, duration: duration)
         }
 
         // batchLock takes an array of token ids and a duration in seconds
@@ -1242,9 +1238,7 @@ access(all) contract TopShot: NonFungibleToken {
 
             // Pass the token to the TopShotLocking contract then get it back
             // Store it back to the ownedNFTs dictionary
-            let oldToken <- self.ownedNFTs[id] <- TopShotLocking.unlockNFT(nft: <- token)
-
-            destroy oldToken
+            self.ownedNFTs[id] <-! TopShotLocking.unlockNFT(nft: <- token)
         }
 
         // batchUnlock takes an array of token ids
@@ -1266,18 +1260,10 @@ access(all) contract TopShot: NonFungibleToken {
                 ?? panic("No TopShotLocking admin resource in storage")
 
             for id in ids {
-                // Remove the nft from the Collection
-                let token <- self.ownedNFTs.remove(key: id)
-                    ?? panic("Cannot destroy: Moment does not exist in collection: ".concat(id.toString()))
-
-                // Emit a withdraw event here so that platforms do not have to understand TopShot-specific events to see ownership change
-                // A withdraw without a corresponding deposit means the NFT in question has no owner address
-                emit Withdraw(id: id, from: self.owner?.address)
-
                 // does nothing if the moment is not locked
                 topShotLockingAdmin.unlockByID(id: id)
 
-                destroy token
+                Burner.burn(<-self.withdraw(withdrawID: id))
             }
         }
 
