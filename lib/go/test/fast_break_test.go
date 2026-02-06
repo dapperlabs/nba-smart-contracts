@@ -143,7 +143,7 @@ func TestFastBreak(t *testing.T) {
 		},
 	)
 	tx1.
-		SetComputeLimit(100).
+		SetComputeLimit(200).
 		SetProposalKey(b.ServiceKey().Address, b.ServiceKey().Index, b.ServiceKey().SequenceNumber).
 		SetPayer(b.ServiceKey().Address)
 
