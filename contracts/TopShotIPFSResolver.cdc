@@ -7,7 +7,7 @@ access(all) contract TopShotIPFSResolver {
     access(all) let numBuckets: UInt64
 
     // Sharded storage: bucket index -> composite key -> { mediaType: CID }
-    // Let's us store 32 * 100 k= 3,200 CID entries
+    // Let's us store 32 * 100k = 32M CID entries
     access(contract) let shards: {UInt64: {String: {String: String}}}
 
     // IPFS gateway base URL (e.g., "https://ipfs.dapperlabs.com/ipfs/")
