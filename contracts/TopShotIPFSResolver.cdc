@@ -53,7 +53,7 @@ access(all) contract TopShotIPFSResolver {
     }
 
     init() {
-        self.numBuckets = 10
+        self.numBuckets = 32
         self.shards = {}
         self.gateway = "https://ipfs.dapperlabs.com/ipfs/"
         self.AdminStoragePath = /storage/TopShotIPFSResolverAdmin
