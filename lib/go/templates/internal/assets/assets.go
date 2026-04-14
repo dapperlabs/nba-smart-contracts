@@ -18,6 +18,7 @@
 // ../../../transactions/admin/retireAll_plays_from_set.cdc (779B)
 // ../../../transactions/admin/retire_all.cdc (830B)
 // ../../../transactions/admin/retire_play_from_set.cdc (1.043kB)
+// ../../../transactions/admin/set_ipfs_cids.cdc (1.086kB)
 // ../../../transactions/admin/set_nft_subedition.cdc (792B)
 // ../../../transactions/admin/set_nfts_lock_expiry.cdc (569B)
 // ../../../transactions/admin/start_new_series.cdc (786B)
@@ -85,6 +86,7 @@
 // ../../../transactions/scripts/get_currentSeries.cdc (278B)
 // ../../../transactions/scripts/get_nft_metadata.cdc (3.855kB)
 // ../../../transactions/scripts/get_topshot_metadata.cdc (604B)
+// ../../../transactions/scripts/get_topshot_nft_media_views.cdc (706B)
 // ../../../transactions/scripts/get_totalSupply.cdc (315B)
 // ../../../transactions/scripts/plays/get_all_plays.cdc (279B)
 // ../../../transactions/scripts/plays/get_nextPlayID.cdc (308B)
@@ -547,6 +549,26 @@ func TransactionsAdminRetire_play_from_setCdc() (*asset, error) {
 
 	info := bindataFileInfo{name: "../../../transactions/admin/retire_play_from_set.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x40, 0x9c, 0xa8, 0x19, 0xe4, 0x24, 0xb7, 0x49, 0xa, 0xc4, 0x1b, 0xcf, 0xfa, 0xb3, 0xe8, 0x46, 0xb4, 0x87, 0x76, 0xef, 0xab, 0xf7, 0x2a, 0x6c, 0xcf, 0x7d, 0xa0, 0x6f, 0x67, 0xc2, 0xa7, 0x48}}
+	return a, nil
+}
+
+var _TransactionsAdminSet_ipfs_cidsCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x92\x4d\x6f\xdb\x3c\x10\x84\xef\xfa\x15\x03\x1d\x0c\x09\xef\x0b\xa1\x1f\x37\x22\x6c\xe0\x26\x28\xe0\x5b\x50\xa7\xbd\x18\x39\xd0\xd2\xc6\x22\x40\x91\x02\xb9\x4a\x6a\x04\xfe\xef\x85\x3e\xac\x4a\x29\xcb\x9b\x76\x76\x76\xc5\x67\xa8\x9b\xd6\x79\xc6\xa3\x6b\xf7\xb5\xe3\xdd\xc3\xb7\xfd\x77\x0a\xce\xbc\x90\xc7\xb3\x77\x0d\xd2\x88\x92\x26\x09\x7b\x65\x83\x2a\x59\x3b\x9b\x25\x00\x10\x88\x77\xf7\x41\xe0\xf0\x63\x67\xf9\xf3\xa7\xa7\xff\x87\x6a\x6b\xd4\x39\x52\x0e\xdd\x91\x2a\xdd\x9b\x23\x62\x43\x95\x56\x8f\xe7\x96\x7a\x65\xcf\x5e\xdb\xd3\xa4\x94\xba\x5a\xd4\x92\x1c\x6f\xc9\x50\x37\xc4\x50\x55\xa3\xad\xc0\x26\xf2\xbb\xc5\xb6\xd7\xc6\xd6\xd6\x53\xab\x3c\x65\x41\x9f\x2c\x79\x01\xd5\x71\x9d\x7d\x75\xde\xbb\xd7\x9f\xca\x74\x94\x63\xb3\x2d\x4b\xd7\x59\xee\xa7\x63\x3a\x81\xcc\x73\x31\x6c\x80\xc4\x68\x2d\x02\x3b\xaf\x4e\x54\x1c\x07\xf3\xcd\xbf\x17\x7f\xc9\xe6\x39\xfd\xe9\xa9\x8a\x18\xef\xb1\x7b\x3f\x8e\x7d\x50\x5c\xcf\xb6\x1c\xb7\xb7\x68\x95\xd5\x65\x96\xde\xb9\xce\x54\xb0\x8e\x31\x2e\xc6\xe0\x82\xa7\xe0\x3a\x5f\xd2\x18\xda\xf4\x6f\x69\x3e\x8c\xb8\xcc\x57\x5f\x5d\xa9\xcf\xab\x30\x64\x4f\x5c\x43\xca\x6b\x54\xd7\xca\x66\x33\xb7\xbe\x53\xa4\x5c\xe7\x17\x71\x44\x75\x29\x17\xd1\x46\x4c\x7f\x8b\x52\x0e\x91\x4f\x9f\x62\x85\x31\xdd\x1a\x03\x6d\xdb\x8e\xa1\xbc\x57\xe7\x80\xa6\x0b\x8c\x23\x81\x6b\x42\x50\x0d\x61\xb4\xa5\x4b\x06\xf4\x8b\xca\x8e\x97\x1c\x5e\x94\x87\x86\xc4\x87\xb9\xf2\x5a\x6b\x43\xd0\xb8\x79\xc7\xe8\x6d\xb5\xff\xcf\x93\x28\x02\xf1\xdd\xee\x7e\x9d\xf2\x8c\x58\x4c\x53\x0e\x7a\x7a\xc4\xcb\x33\x92\x15\x57\xc2\xd1\x9e\x25\x4b\xb1\x26\x1b\xed\x9f\x31\x8a\x05\xd1\x68\x67\xa9\x2b\x31\x00\x3e\xe8\xa7\x95\x98\xaf\xbe\x7a\x3a\x1a\xff\xe1\xe3\x5c\xbd\x4c\x48\x2f\xc9\xef\x00\x00\x00\xff\xff\x0d\xe9\x83\x21\x3e\x04\x00\x00"
+
+func TransactionsAdminSet_ipfs_cidsCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsAdminSet_ipfs_cidsCdc,
+		"../../../transactions/admin/set_ipfs_cids.cdc",
+	)
+}
+
+func TransactionsAdminSet_ipfs_cidsCdc() (*asset, error) {
+	bytes, err := TransactionsAdminSet_ipfs_cidsCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/admin/set_ipfs_cids.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x1d, 0x14, 0x15, 0x9c, 0x55, 0x3f, 0xe7, 0xfa, 0xab, 0x6a, 0x9, 0xd8, 0xf2, 0xd5, 0xf4, 0xbc, 0x2f, 0x83, 0x58, 0x81, 0xd3, 0x84, 0x42, 0xe0, 0x6c, 0xb1, 0xb6, 0x20, 0x6b, 0x5a, 0xde, 0xa2}}
 	return a, nil
 }
 
@@ -1890,6 +1912,26 @@ func TransactionsScriptsGet_topshot_metadataCdc() (*asset, error) {
 	return a, nil
 }
 
+var _TransactionsScriptsGet_topshot_nft_media_viewsCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x8c\x52\x4b\x6b\xdb\x40\x10\xbe\xef\xaf\xf8\xa2\x43\x91\x20\xc8\x97\xd2\x83\xc9\x83\xe0\x10\xf0\xc1\x25\x38\x6e\xef\xab\xd5\x28\x1a\x58\xed\x8a\xdd\x91\x45\x09\xf9\xef\x45\x0f\x8b\xba\xe8\x10\x9d\x66\xa4\xef\x35\x33\xe2\xa6\xf5\x41\x70\xf2\xed\x5b\xed\x05\x55\xf0\x0d\x92\xb9\x4b\xd4\xfc\xf5\x40\xa2\x4b\x2d\xfa\x37\x53\x1f\x67\xcc\xd5\xbb\x44\xa9\xcd\x06\x47\x92\x2e\xb8\x08\xa9\xe9\x9a\x92\x1f\xa8\x64\x1d\x51\xf9\x00\x8d\x77\x3e\x93\x5b\x1c\x1b\xdf\x90\x13\xfc\x7c\x39\xdd\x0e\x1a\x7d\xcd\xa6\x06\x3b\x63\xbb\x92\x22\xf6\xaf\x2f\x6f\x68\x06\x36\xc8\x49\x60\x8a\xe8\x6b\x72\xd8\xed\x9f\x23\x6a\x7d\x26\x14\x44\x0e\x91\x04\xbc\x68\x0e\xa4\x23\x45\x6f\xcf\x14\x72\xa5\xb4\x31\x14\x63\xaa\xad\xcd\x50\x75\x0e\x8d\x66\x97\xea\xb2\x0c\x14\xe3\x16\x4f\x53\x71\x3b\x07\xd9\x3f\x6f\xf1\x6b\xef\xe4\xc7\xf7\x6c\xbb\x3e\xc4\x87\x02\x00\x4b\x02\x6d\x8c\xef\x9c\xe0\x1e\xef\x24\x4f\x53\x73\x11\xce\xd4\x02\x33\xde\x5a\x32\xc2\xde\x1d\xa9\xc2\xfd\x85\x96\x1b\xdd\xea\x82\x2d\x0b\x53\xcc\x0b\x1f\x82\xef\xef\xbe\x7d\xcc\x33\xe4\x87\x31\xce\x6e\xe1\xbe\x76\x85\x65\xf3\xf9\x90\x6e\xda\xb1\xda\xfc\x0f\xc8\x46\xc3\xe1\x79\x7c\x44\xab\x1d\x9b\x34\xd9\xf9\xce\x96\x70\x5e\x30\xe9\x63\x5d\x35\xf9\x27\xad\xab\x86\x81\xae\x32\xcf\xe1\x26\x6e\xca\xe5\x76\xd9\xd5\x97\x3c\x27\xf0\xc5\x23\x8c\x3f\xc9\x60\x93\x87\xe9\x46\xc3\x76\xd3\xd3\x9f\x96\xee\xd6\xf6\xfd\x90\x66\xd9\x0d\x74\xbc\x59\xbd\x86\xfa\x54\x7f\x03\x00\x00\xff\xff\xa4\xd2\x4f\x26\xc2\x02\x00\x00"
+
+func TransactionsScriptsGet_topshot_nft_media_viewsCdcBytes() ([]byte, error) {
+	return bindataRead(
+		_TransactionsScriptsGet_topshot_nft_media_viewsCdc,
+		"../../../transactions/scripts/get_topshot_nft_media_views.cdc",
+	)
+}
+
+func TransactionsScriptsGet_topshot_nft_media_viewsCdc() (*asset, error) {
+	bytes, err := TransactionsScriptsGet_topshot_nft_media_viewsCdcBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "../../../transactions/scripts/get_topshot_nft_media_views.cdc", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info, digest: [32]uint8{0x68, 0xc0, 0xc6, 0xb2, 0x5a, 0x77, 0x16, 0xc2, 0x2d, 0x3c, 0xdb, 0x6e, 0xf8, 0x8d, 0xad, 0x2a, 0x52, 0x62, 0x10, 0xf4, 0x82, 0xe7, 0x62, 0x33, 0xbe, 0xcb, 0x75, 0xbd, 0xb2, 0xa4, 0x53, 0xc7}}
+	return a, nil
+}
+
 var _TransactionsScriptsGet_totalsupplyCdc = "\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x64\xce\x31\x4f\xc3\x30\x10\x05\xe0\xdd\xbf\xe2\x8d\xed\x42\x19\x10\x03\x1b\x52\x91\x60\xa1\xa8\x09\x3f\xe0\xea\x5c\x14\x4b\xf6\xd9\x3a\x9f\x11\x08\xf1\xdf\x51\x9a\x64\x81\xd5\xbe\xf7\xbe\x17\x52\xc9\x6a\xe8\x73\xe9\xa6\x6c\x18\x35\x27\xdc\x7e\xf6\xa7\xb7\xee\xf9\xd4\x3f\x1e\x8f\xe7\xa7\xae\x73\xee\x70\x40\x3f\x85\x8a\xea\x35\x14\x83\x32\x0d\x15\x36\x31\x7c\x53\x65\x31\x48\x4b\x17\x56\xe4\x11\x29\x27\x16\x9b\x7f\xc9\x30\xd1\x07\xe3\xc2\x2c\x48\x41\x8c\x87\xb9\xe8\x4a\xcc\xd9\xcd\xf4\x59\x4c\xc9\x1b\x48\x06\x28\x5b\x53\x59\xe3\x6b\xab\xe5\xc5\xa2\x18\x59\xaf\x63\xce\xcb\xd5\x03\xde\x5f\xc4\xee\xef\xe6\xa7\xd7\x7f\x0b\x16\x72\xf1\xfe\x5a\xce\x91\xf7\x5c\xeb\x8e\x62\xdc\x63\x6c\x82\x44\x41\x76\xfb\xad\x11\xdf\xce\x01\x58\xe7\x6c\xf1\x1b\xcb\x46\xb1\x6b\xa5\xc4\x2f\xf7\xf3\x1b\x00\x00\xff\xff\xbc\x68\x13\xd6\x3b\x01\x00\x00"
 
 func TransactionsScriptsGet_totalsupplyCdcBytes() ([]byte, error) {
@@ -2719,6 +2761,7 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/admin/retireAll_plays_from_set.cdc":                       TransactionsAdminRetireall_plays_from_setCdc,
 	"../../../transactions/admin/retire_all.cdc":                                     TransactionsAdminRetire_allCdc,
 	"../../../transactions/admin/retire_play_from_set.cdc":                           TransactionsAdminRetire_play_from_setCdc,
+	"../../../transactions/admin/set_ipfs_cids.cdc":                                  TransactionsAdminSet_ipfs_cidsCdc,
 	"../../../transactions/admin/set_nft_subedition.cdc":                             TransactionsAdminSet_nft_subeditionCdc,
 	"../../../transactions/admin/set_nfts_lock_expiry.cdc":                           TransactionsAdminSet_nfts_lock_expiryCdc,
 	"../../../transactions/admin/start_new_series.cdc":                               TransactionsAdminStart_new_seriesCdc,
@@ -2786,6 +2829,7 @@ var _bindata = map[string]func() (*asset, error){
 	"../../../transactions/scripts/get_currentSeries.cdc":                            TransactionsScriptsGet_currentseriesCdc,
 	"../../../transactions/scripts/get_nft_metadata.cdc":                             TransactionsScriptsGet_nft_metadataCdc,
 	"../../../transactions/scripts/get_topshot_metadata.cdc":                         TransactionsScriptsGet_topshot_metadataCdc,
+	"../../../transactions/scripts/get_topshot_nft_media_views.cdc":                  TransactionsScriptsGet_topshot_nft_media_viewsCdc,
 	"../../../transactions/scripts/get_totalSupply.cdc":                              TransactionsScriptsGet_totalsupplyCdc,
 	"../../../transactions/scripts/plays/get_all_plays.cdc":                          TransactionsScriptsPlaysGet_all_playsCdc,
 	"../../../transactions/scripts/plays/get_nextPlayID.cdc":                         TransactionsScriptsPlaysGet_nextplayidCdc,
@@ -2891,6 +2935,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 						"retireAll_plays_from_set.cdc": {TransactionsAdminRetireall_plays_from_setCdc, map[string]*bintree{}},
 						"retire_all.cdc": {TransactionsAdminRetire_allCdc, map[string]*bintree{}},
 						"retire_play_from_set.cdc": {TransactionsAdminRetire_play_from_setCdc, map[string]*bintree{}},
+						"set_ipfs_cids.cdc": {TransactionsAdminSet_ipfs_cidsCdc, map[string]*bintree{}},
 						"set_nft_subedition.cdc": {TransactionsAdminSet_nft_subeditionCdc, map[string]*bintree{}},
 						"set_nfts_lock_expiry.cdc": {TransactionsAdminSet_nfts_lock_expiryCdc, map[string]*bintree{}},
 						"start_new_series.cdc": {TransactionsAdminStart_new_seriesCdc, map[string]*bintree{}},
@@ -2978,6 +3023,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 						"get_currentSeries.cdc": {TransactionsScriptsGet_currentseriesCdc, map[string]*bintree{}},
 						"get_nft_metadata.cdc": {TransactionsScriptsGet_nft_metadataCdc, map[string]*bintree{}},
 						"get_topshot_metadata.cdc": {TransactionsScriptsGet_topshot_metadataCdc, map[string]*bintree{}},
+						"get_topshot_nft_media_views.cdc": {TransactionsScriptsGet_topshot_nft_media_viewsCdc, map[string]*bintree{}},
 						"get_totalSupply.cdc": {TransactionsScriptsGet_totalsupplyCdc, map[string]*bintree{}},
 						"plays": {nil, map[string]*bintree{
 							"get_all_plays.cdc": {TransactionsScriptsPlaysGet_all_playsCdc, map[string]*bintree{}},
