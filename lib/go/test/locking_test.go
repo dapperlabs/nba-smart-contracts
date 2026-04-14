@@ -465,6 +465,7 @@ func TestTopShotLocking(t *testing.T) {
 			Network,
 			FlowEvmContractAddr,
 			EvmBaseURI,
+			env.TopShotIPFSResolverAddress,
 		)
 		fakeTopshotAccountKey, fakeTopshotSigner := accountKeys.NewWithSigner()
 		fakeTopshotAddress, _ := adapter.CreateAccount(context.Background(), []*flow.AccountKey{fakeTopshotAccountKey}, []sdktemplates.Contract{

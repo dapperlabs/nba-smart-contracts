@@ -132,6 +132,17 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 	_, err = b.CommitBlock()
 	require.NoError(t, err)
 
+	// Deploy the IPFS resolver contract
+	ipfsResolverCode := contracts.GenerateTopShotIPFSResolverContract()
+	ipfsResolverAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotIPFSResolver",
+			Source: string(ipfsResolverCode),
+		},
+	})
+	require.NoError(t, err)
+	env.TopShotIPFSResolverAddress = ipfsResolverAddr.String()
+
 	// Deploy the topshot contract
 	topshotCode := contracts.GenerateTopShotContract(
 		emulatorFTAddress,
@@ -145,6 +156,7 @@ func NewTopShotTestBlockchain(t *testing.T) topshotTestBlockchain {
 		Network,
 		FlowEvmContractAddr,
 		EvmBaseURI,
+		ipfsResolverAddr.String(),
 	)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, err := adapter.CreateAccount(context.Background(), []*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
@@ -412,6 +424,16 @@ func TestMintNFTs(t *testing.T) {
 		result = executeScriptAndCheck(t, b, templates.GenerateGetMomentSetScript(env), [][]byte{jsoncdc.MustEncode(cadence.Address(topshotAddr)), jsoncdc.MustEncode(cadence.UInt64(1))})
 		assert.Equal(t, cadence.NewUInt32(1), result)
 
+	})
+
+	t.Run("Should be able to create subedition admin resource", func(t *testing.T) {
+		tx := createTxWithTemplateAndAuthorizer(b, templates.GenerateCreateNewSubeditionAdminResourceScript(env), topshotAddr)
+		signAndSubmit(
+			t, b, tx,
+			[]flow.Address{b.ServiceKey().Address, topshotAddr},
+			[]crypto.Signer{serviceKeySigner, topshotSigner},
+			false,
+		)
 	})
 
 	t.Run("Should be able to get moments metadata", func(t *testing.T) {
@@ -814,6 +836,17 @@ func TestTransferAdmin(t *testing.T) {
 
 	env.TopShotLockingAddress = topShotLockingAddr.String()
 
+	// Deploy the IPFS resolver contract
+	ipfsResolverCode := contracts.GenerateTopShotIPFSResolverContract()
+	ipfsResolverAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotIPFSResolver",
+			Source: string(ipfsResolverCode),
+		},
+	})
+	assert.NoError(t, err)
+	env.TopShotIPFSResolverAddress = ipfsResolverAddr.String()
+
 	// First, deploy the topshot contract
 	topshotCode := contracts.GenerateTopShotContract(
 		emulatorFTAddress,
@@ -827,6 +860,7 @@ func TestTransferAdmin(t *testing.T) {
 		Network,
 		FlowEvmContractAddr,
 		EvmBaseURI,
+		ipfsResolverAddr.String(),
 	)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, _ := adapter.CreateAccount(context.Background(), []*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
