@@ -46,6 +46,7 @@ type Environment struct {
 	ViewResolverAddress               string
 	CrossVMMetadataViewsAddress       string
 	EVMAddress                        string
+	TopShotIPFSResolverAddress        string
 }
 
 func uint32ToCadenceArr(nums []uint32) []byte {

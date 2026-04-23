@@ -20,7 +20,7 @@ var flowEvmContractAddr = "0x1234565789012345657890123456578901234565"
 var evmBaseURI = "https://base.uri/moment/"
 
 func TestTopShotContract(t *testing.T) {
-	contract := contracts.GenerateTopShotContract(addrA, addrA, addrA, addrA, addrA, addrA, addrA, addrA, network, flowEvmContractAddr, evmBaseURI)
+	contract := contracts.GenerateTopShotContract(addrA, addrA, addrA, addrA, addrA, addrA, addrA, addrA, network, flowEvmContractAddr, evmBaseURI, addrA)
 	assert.NotNil(t, contract)
 }
 

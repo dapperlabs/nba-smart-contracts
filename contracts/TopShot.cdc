@@ -49,6 +49,7 @@ import MetadataViews from 0xMETADATAVIEWSADDRESS
 import TopShotLocking from 0xTOPSHOTLOCKINGADDRESS
 import ViewResolver from 0xVIEWRESOLVERADDRESS
 import CrossVMMetadataViews from 0xCROSSVMMETADATAVIEWSADDRESS
+import TopShotIPFSResolver from 0xTOPSHOTIPFSRESOLVERADDRESS
 import EVM from 0xEVMADDRESS
 
 access(all) contract TopShot: NonFungibleToken {
@@ -816,22 +817,44 @@ access(all) contract TopShot: NonFungibleToken {
                 case Type<MetadataViews.Traits>():
                     return self.resolveTraitsView()
                 case Type<MetadataViews.Medias>():
-                    return MetadataViews.Medias(
-                        [
-                            MetadataViews.Media(
-                                file: MetadataViews.HTTPFile(
-                                    url: self.mediumimage()
-                                ),
-                                mediaType: "image/jpeg"
+                    var items = [
+                        MetadataViews.Media(
+                            file: MetadataViews.HTTPFile(
+                                url: self.mediumimage()
                             ),
-                            MetadataViews.Media(
-                                file: MetadataViews.HTTPFile(
-                                    url: self.video()
-                                ),
-                                mediaType: "video/mp4"
+                            mediaType: "image/jpeg"
+                        ),
+                        MetadataViews.Media(
+                            file: MetadataViews.HTTPFile(
+                                url: self.video()
+                            ),
+                            mediaType: "video/mp4"
+                        )
+                    ]
+                    let subeditionID = TopShot.getMomentsSubedition(nftID: self.id) ?? 0
+                    if let ipfsCIDs = TopShotIPFSResolver.getCIDs(setID: self.data.setID, playID: self.data.playID, subeditionID: subeditionID) {
+                        for mediaType in ipfsCIDs.keys {
+                            let cid = ipfsCIDs[mediaType]!
+                            items.append(
+                                MetadataViews.Media(
+                                    file: MetadataViews.IPFSFile(
+                                        cid: cid,
+                                        path: nil
+                                    ),
+                                    mediaType: mediaType
+                                )
                             )
-                        ]
-                    )
+                            items.append(
+                                MetadataViews.Media(
+                                    file: MetadataViews.HTTPFile(
+                                        url: TopShotIPFSResolver.gateway.concat(cid)
+                                    ),
+                                    mediaType: mediaType
+                                )
+                            )
+                        }
+                    }
+                    return MetadataViews.Medias(items)
             }
             return nil
         }

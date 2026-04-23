@@ -73,6 +73,17 @@ func TestFastBreak(t *testing.T) {
 	topShotRoyaltyAddr := flow.HexToAddress("ee82856bf20e2aa6")
 	env.FTSwitchboardAddress = topShotRoyaltyAddr.String()
 
+	// Deploy the IPFS resolver contract
+	ipfsResolverCode := contracts.GenerateTopShotIPFSResolverContract()
+	ipfsResolverAddr, err := adapter.CreateAccount(context.Background(), nil, []sdktemplates.Contract{
+		{
+			Name:   "TopShotIPFSResolver",
+			Source: string(ipfsResolverCode),
+		},
+	})
+	assert.Nil(t, err)
+	env.TopShotIPFSResolverAddress = ipfsResolverAddr.String()
+
 	// Deploy the topshot contract
 	topshotCode := contracts.GenerateTopShotContract(
 		defaultfungibleTokenAddr,
@@ -86,6 +97,7 @@ func TestFastBreak(t *testing.T) {
 		Network,
 		FlowEvmContractAddr,
 		EvmBaseURI,
+		ipfsResolverAddr.String(),
 	)
 	topshotAccountKey, topshotSigner := accountKeys.NewWithSigner()
 	topshotAddr, topshotAddrErr := adapter.CreateAccount(context.Background(), []*flow.AccountKey{topshotAccountKey}, []sdktemplates.Contract{
