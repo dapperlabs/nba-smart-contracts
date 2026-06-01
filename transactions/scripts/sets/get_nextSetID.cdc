@@ -8,7 +8,7 @@ import TopShot from 0xTOPSHOTADDRESS
 
 access(all) fun main(): UInt32 {
 
-    log(TopShot.getNextSetID())
+    log(TopShot.nextSetID)
 
-    return TopShot.getNextSetID()
+    return TopShot.nextSetID
 }

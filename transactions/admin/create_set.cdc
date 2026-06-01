@@ -18,7 +18,7 @@ transaction(setName: String) {
         // borrow a reference to the Admin resource in storage
         self.adminRef = acct.storage.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("Could not borrow a reference to the Admin resource")
-        self.currSetID = TopShot.getNextSetID();
+        self.currSetID = TopShot.nextSetID;
     }
 
     execute {

@@ -8,5 +8,5 @@ import TopShot from 0xTOPSHOTADDRESS
 
 access(all) fun main(): UInt32 {
 
-    return TopShot.getCurrentSeries()
+    return TopShot.currentSeries
 }

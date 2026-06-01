@@ -94,9 +94,6 @@ access(all) contract FastBreakV1: NonFungibleToken {
     access(contract) var totalSupply:        UInt64
     access(contract) var nextPlayerId:        UInt64
 
-    access(all) view fun getTotalSupply(): UInt64  { return self.totalSupply }
-    access(all) view fun getNextPlayerId(): UInt64 { return self.nextPlayerId }
-
     /// Game Enums
     ///
 
