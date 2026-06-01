@@ -8,5 +8,5 @@ import TopShot from 0xTOPSHOTADDRESS
 
 access(all) fun main(): UInt64 {
 
-    return TopShot.totalSupply
+    return TopShot.getTotalSupply()
 }

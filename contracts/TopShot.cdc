@@ -139,6 +139,11 @@ access(all) contract TopShot: NonFungibleToken {
     // have been minted to date. Also used as global moment IDs for minting.
     access(contract) var totalSupply: UInt64
 
+    access(all) view fun getCurrentSeries(): UInt32 { return self.currentSeries }
+    access(all) view fun getNextPlayID(): UInt32     { return self.nextPlayID }
+    access(all) view fun getNextSetID(): UInt32      { return self.nextSetID }
+    access(all) view fun getTotalSupply(): UInt64    { return self.totalSupply }
+
     // -----------------------------------------------------------------------
     // TopShot contract-level Composite Type definitions
     // -----------------------------------------------------------------------

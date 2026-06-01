@@ -18,7 +18,7 @@ transaction(metadata: {String: String}) {
     prepare(acct: auth(BorrowValue) &Account) {
 
         // borrow a reference to the admin resource
-        self.currPlayID = TopShot.nextPlayID;
+        self.currPlayID = TopShot.getNextPlayID();
         self.adminRef = acct.storage.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("No admin resource in storage")
     }

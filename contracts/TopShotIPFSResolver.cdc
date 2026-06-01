@@ -24,6 +24,8 @@ access(all) contract TopShotIPFSResolver {
     // IPFS gateway base URL (e.g., "https://ipfs.dapperlabs.com/ipfs/")
     access(contract) var gateway: String
 
+    access(all) view fun getGateway(): String { return self.gateway }
+
     access(all) let AdminStoragePath: StoragePath
 
     access(all) resource Admin {
