@@ -29,7 +29,7 @@ transaction(tokenReceiverPath: PublicPath, beneficiaryAccount: Address, cutPerce
         acct.storage.save(<-collection, to: TopShotMarketV3.marketStoragePath)
 
         acct.capabilities.publish(
-            acct.capabilities.storage.issue<&TopShotMarketV3.SaleCollection>(TopShotMarketV3.marketStoragePath),
+            acct.capabilities.storage.issue<&{Market.SalePublic}>(TopShotMarketV3.marketStoragePath),
             at: TopShotMarketV3.marketPublicPath
         )
     }

@@ -113,7 +113,7 @@ access(all) contract TopShot: NonFungibleToken {
     // Series that this Set belongs to.
     // Series is a concept that indicates a group of Sets through time.
     // Many Sets can exist at a time, but only one series.
-    access(all) var currentSeries: UInt32
+    access(contract) var currentSeries: UInt32
 
     // Variable size dictionary of Play structs
     access(self) var playDatas: {UInt32: Play}
@@ -127,17 +127,22 @@ access(all) contract TopShot: NonFungibleToken {
     // The ID that is used to create Plays.
     // Every time a Play is created, playID is assigned
     // to the new Play's ID and then is incremented by 1.
-    access(all) var nextPlayID: UInt32
+    access(contract) var nextPlayID: UInt32
 
     // The ID that is used to create Sets. Every time a Set is created
     // setID is assigned to the new set's ID and then is incremented by 1.
-    access(all) var nextSetID: UInt32
+    access(contract) var nextSetID: UInt32
 
     // The total number of Top shot Moment NFTs that have been created
     // Because NFTs can be destroyed, it doesn't necessarily mean that this
     // reflects the total number of NFTs in existence, just the number that
     // have been minted to date. Also used as global moment IDs for minting.
-    access(all) var totalSupply: UInt64
+    access(contract) var totalSupply: UInt64
+
+    access(all) view fun getCurrentSeries(): UInt32 { return self.currentSeries }
+    access(all) view fun getNextPlayID(): UInt32     { return self.nextPlayID }
+    access(all) view fun getNextSetID(): UInt32      { return self.nextSetID }
+    access(all) view fun getTotalSupply(): UInt64    { return self.totalSupply }
 
     // -----------------------------------------------------------------------
     // TopShot contract-level Composite Type definitions

@@ -102,7 +102,14 @@ access(all) contract TopShotMarketV3 {
 
         /// The percentage that is taken from every purchase for the beneficiary
         /// For example, if the percentage is 15%, cutPercentage = 0.15
-        access(all) var cutPercentage: UFix64
+        access(self) var cutPercentage: UFix64
+
+        access(all) view fun getCutPercentage(): UFix64 { return self.cutPercentage }
+
+        access(TopShotMarketV3.Update) fun changeCutPercentage(newPercentage: UFix64) {
+            pre { newPercentage <= 1.0: "Cut percentage cannot exceed 100%" }
+            self.cutPercentage = newPercentage
+        }
 
         init (ownerCollection: Capability<auth(NonFungibleToken.Withdraw, NonFungibleToken.Update) &TopShot.Collection>,
               ownerCapability: Capability<&{FungibleToken.Receiver}>,

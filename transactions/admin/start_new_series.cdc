@@ -14,7 +14,7 @@ transaction {
         self.adminRef = acct.storage.borrow<&TopShot.Admin>(from: /storage/TopShotAdmin)
             ?? panic("No admin resource in storage")
 
-        self.currentSeries = TopShot.currentSeries
+        self.currentSeries = TopShot.getCurrentSeries()
     }
 
     execute {
@@ -25,7 +25,7 @@ transaction {
 
     post {
     
-        TopShot.currentSeries == self.currentSeries + 1 as UInt32:
+        TopShot.getCurrentSeries() == self.currentSeries + 1 as UInt32:
             "new series not started"
     }
 }

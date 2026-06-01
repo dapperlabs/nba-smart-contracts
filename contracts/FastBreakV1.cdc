@@ -91,8 +91,11 @@ access(all) contract FastBreakV1: NonFungibleToken {
 
     /// Contract variables
     ///
-    access(all) var totalSupply:        UInt64
-    access(all) var nextPlayerId:        UInt64
+    access(contract) var totalSupply:        UInt64
+    access(contract) var nextPlayerId:        UInt64
+
+    access(all) view fun getTotalSupply(): UInt64  { return self.totalSupply }
+    access(all) view fun getNextPlayerId(): UInt64 { return self.nextPlayerId }
 
     /// Game Enums
     ///
@@ -139,7 +142,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
     access(all) struct FastBreakRun {
         access(all) let id: String /// The off-chain uuid of the Fast Break Run
         access(all) let name: String /// The name of the Run (R0, R1, etc)
-        access(all) var status: FastBreakV1.RunStatus /// The status of the run
+        access(contract) var status: FastBreakV1.RunStatus /// The status of the run
         access(all) let runStart: UInt64 /// The block timestamp starting the run
         access(all) let runEnd: UInt64 /// The block timestamp ending the run
         access(all) let runWinCount: {UInt64: UInt64} /// win count by playerId
@@ -182,13 +185,13 @@ access(all) contract FastBreakV1: NonFungibleToken {
     access(all) struct FastBreakGame {
         access(all) let id: String /// The off-chain uuid of the Fast Break
         access(all) let name: String /// The name of the Fast Break (eg FB0, FB1, FB2)
-        access(all) var submissionDeadline: UInt64 /// The block timestamp restricting submission to the Fast Break
+        access(contract) var submissionDeadline: UInt64 /// The block timestamp restricting submission to the Fast Break
         access(all) let numPlayers: UInt64 /// The number of top shots a player should submit to the Fast Break
-        access(all) var status: FastBreakV1.GameStatus /// The game status
-        access(all) var winner: UInt64 /// The playerId of the winner of Fast Break
-        access(all) var submissions: {UInt64: FastBreakV1.FastBreakSubmission} /// Map of player submission to the Fast Break
+        access(contract) var status: FastBreakV1.GameStatus /// The game status
+        access(contract) var winner: UInt64 /// The playerId of the winner of Fast Break
+        access(contract) var submissions: {UInt64: FastBreakV1.FastBreakSubmission} /// Map of player submission to the Fast Break
         access(all) let fastBreakRunID: String /// The off-chain uuid of the Fast Break Run containing this Fast Break
-        access(all) var stats: [FastBreakStat] /// The NBA statistical requirements for this Fast Break
+        access(contract) var stats: [FastBreakStat] /// The NBA statistical requirements for this Fast Break
 
         init (
             id: String,
@@ -330,11 +333,11 @@ access(all) contract FastBreakV1: NonFungibleToken {
     ///
     access(all) struct FastBreakSubmission {
         access(all) let playerId: UInt64
-        access(all) var submittedAt: UInt64
+        access(contract) var submittedAt: UInt64
         access(all) let fastBreakGameID: String
-        access(all) var topShots: [UInt64]
-        access(all) var points: UInt64
-        access(all) var win: Bool
+        access(contract) var topShots: [UInt64]
+        access(contract) var points: UInt64
+        access(contract) var win: Bool
 
         init (
             playerId: UInt64,
