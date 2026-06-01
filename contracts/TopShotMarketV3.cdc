@@ -102,7 +102,7 @@ access(all) contract TopShotMarketV3 {
 
         /// The percentage that is taken from every purchase for the beneficiary
         /// For example, if the percentage is 15%, cutPercentage = 0.15
-        access(self) var cutPercentage: UFix64
+        access(contract) var cutPercentage: UFix64
 
         access(all) view fun getCutPercentage(): UFix64 { return self.cutPercentage }
 
