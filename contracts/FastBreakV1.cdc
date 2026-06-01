@@ -186,9 +186,9 @@ access(all) contract FastBreakV1: NonFungibleToken {
         access(all) let numPlayers: UInt64 /// The number of top shots a player should submit to the Fast Break
         access(all) var status: FastBreakV1.GameStatus /// The game status
         access(all) var winner: UInt64 /// The playerId of the winner of Fast Break
-        access(all) var submissions: {UInt64: FastBreakV1.FastBreakSubmission} /// Map of player submission to the Fast Break
+        access(contract) var submissions: {UInt64: FastBreakV1.FastBreakSubmission} /// Map of player submission to the Fast Break
         access(all) let fastBreakRunID: String /// The off-chain uuid of the Fast Break Run containing this Fast Break
-        access(all) var stats: [FastBreakStat] /// The NBA statistical requirements for this Fast Break
+        access(contract) var stats: [FastBreakStat] /// The NBA statistical requirements for this Fast Break
 
         init (
             id: String,
@@ -332,7 +332,7 @@ access(all) contract FastBreakV1: NonFungibleToken {
         access(all) let playerId: UInt64
         access(all) var submittedAt: UInt64
         access(all) let fastBreakGameID: String
-        access(all) var topShots: [UInt64]
+        access(contract) var topShots: [UInt64]
         access(all) var points: UInt64
         access(all) var win: Bool
 
