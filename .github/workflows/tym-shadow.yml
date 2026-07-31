@@ -1,0 +1,116 @@
+# tym-shadow.yml — TestYourMight shadow review workflow (handover PROMPT 5).
+# Drop into a pilot repo at .github/workflows/tym-shadow.yml.
+#
+# SHADOW IS THE ONLY MODE HERE: reviews every PR, writes findings to the run
+# artifact, posts NOTHING to the PR. Zero-PR-comments is not a hope — there is
+# no comment/post step in this file, and the final step asserts it.
+#
+# Promotion path lives in tym-promote.yml (separate file, per-repo flag,
+# proven on the scratch repo first).
+name: tym-shadow
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+concurrency:
+  group: tym-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    name: TYM shadow review
+    runs-on: [self-hosted, managed-peak-money]
+    steps:
+      - name: Mint app token (read-only)
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.AI_REVIEW_APP_ID }}
+          private-key: ${{ secrets.AI_REVIEW_APP_PRIVATE_KEY }}
+
+      - name: Checkout gauntlet harness
+        uses: actions/checkout@v4
+        with:
+          repository: dapperlabs/agi-knowledge
+          ref: gauntlet-phase-1
+          path: gauntlet
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install harness deps
+        run: python -m pip install --quiet requests pyyaml
+
+      - name: Prove permissions read-only
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} \
+            --jq '.number' > /dev/null
+          echo "read-only 200 OK — no write performed, ever"
+
+      - name: Resolve Fireworks key (GSM-first, repo-secret fallback)
+        run: |
+          echo '::add-mask::x' >/dev/null  # keep shellcheck calm
+          if [ -n "${FIREWORKS_API_KEY:-}" ]; then
+            echo "key source: runner env (GSM-hydrated)"
+          elif command -v gcloud >/dev/null 2>&1 && gcloud secrets versions access latest --secret=magic-fireworks-api-key --project=dl-ai-pantheon >/dev/null 2>&1; then
+            KEY=$(gcloud secrets versions access latest --secret=magic-fireworks-api-key --project=dl-ai-pantheon)
+            echo "::add-mask::$KEY"
+            echo "FIREWORKS_API_KEY=$KEY" >> "$GITHUB_ENV"
+            echo "key source: GSM magic-fireworks-api-key"
+          else
+            echo "::add-mask::${{ secrets.FIREWORKS_API_KEY }}"
+            echo "FIREWORKS_API_KEY=${{ secrets.FIREWORKS_API_KEY }}" >> "$GITHUB_ENV"
+            echo "key source: repo secret (fallback — prefer GSM when available)"
+          fi
+
+      - name: Run TYM (ocrev on deepseek-v4-flash)
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+          GAUNTLET_DATA_DIR: ${{ github.workspace }}/gauntlet-data
+        run: |
+          python gauntlet/tools/gauntlet/run_arm.py \
+            --pipeline ocrev \
+            --composition s2-ocrev-winner \
+            --frame as-is --live \
+            ${{ github.event.repository.name }}#${{ github.event.pull_request.number }} \
+            > findings.json
+          python - <<'EOF'
+          import json
+          d = json.load(open('findings.json'))
+          print(f"TYM findings: {len(d['findings'])}")
+          for f in d['findings']:
+              print(f"::warning file={f['file']},line={f['line_start']},"
+                    f"title=TYM {f['severity']} {f['category']}::{f['suggested_direction'][:200]}")
+          EOF
+
+      - name: Upload findings artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tym-findings-pr-${{ github.event.pull_request.number }}
+          path: |
+            findings.json
+            gauntlet-data/calls.jsonl
+          retention-days: 30
+
+      - name: Assert zero PR comments by TYM
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          comments=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            --jq '[.[] | select(.user.login | contains("tym") or contains("TestYourMight"))] | length')
+          reviews=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews" \
+            --jq '[.[] | select(.user.login | contains("tym") or contains("TestYourMight"))] | length')
+          if [ "$comments" != "0" ] || [ "$reviews" != "0" ]; then
+            echo "SHADOW VIOLATION: TYM posted to the PR (comments=$comments reviews=$reviews)"
+            exit 1
+          fi
+          echo "shadow clean: TYM posted nothing to the PR"
