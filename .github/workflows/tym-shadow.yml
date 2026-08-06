@@ -42,6 +42,12 @@ jobs:
     # Instant kill switch: set the repo variable TYM_KILL=true to stop all
     # shadow runs within one job-scheduling cycle. Default (unset) = run.
     if: vars.TYM_KILL != 'true'
+    env:
+      # The ocrev engine talks to the local meter proxy, which holds the
+      # provider key; the proxy inherits this job env (2026-08-05: 'check
+      # your LLM configuration and API key' without it).
+      FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
     steps:
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -50,7 +56,7 @@ jobs:
 
       - name: Run TYM (ocrev on deepseek-v4-flash, read-only)
         id: tym
-        uses: dapperlabs/actions/tym-review@tym-review/v0.1.6
+        uses: dapperlabs/actions/tym-review@tym-review/v0.1.0
         with:
           pr-ref: ${{ github.event.repository.name }}#${{ github.event.pull_request.number }}  # repo-name only by design: run_arm prefixes dapperlabs (TYM FP note 2026-08-05)
 
