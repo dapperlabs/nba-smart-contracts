@@ -48,6 +48,10 @@ jobs:
           repository: dapperlabs/agi-knowledge
           ref: gauntlet-phase-1
           path: gauntlet
+          # agi-knowledge is private; the repo's GITHUB_TOKEN cannot fetch it.
+          # The minted AI_REVIEW app token reads org-wide — same token every
+          # other step uses (fatal: repository not found, 2026-08-05, peak).
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
