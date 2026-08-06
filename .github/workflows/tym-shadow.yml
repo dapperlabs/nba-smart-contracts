@@ -1,0 +1,88 @@
+# tym-shadow.yml — TestYourMight shadow review workflow (v2, 2026-08-05).
+# Drop into a pilot repo at .github/workflows/tym-shadow.yml.
+#
+# SHADOW IS THE ONLY MODE HERE: reviews every PR, writes findings to the run
+# artifact, posts NOTHING to the PR. Zero-PR-comments is not a hope — the job
+# permissions are read-only (contents/pull-requests/issues read) so the token
+# physically cannot post, and the final step asserts it.
+#
+# v2: the review logic moved into dapperlabs/actions/tym-review (composite
+# action, runtime mirrored from agi-knowledge via tools/gauntlet/sync-action.sh).
+# No GitHub App token needed — only the caller's read-only GITHUB_TOKEN. The
+# app-based design (ai-review plumbing) is retained for the PROMOTED posting
+# path only (tym-promote.yml).
+#
+# Promotion path lives in tym-promote.yml (separate file, per-repo flag,
+# proven on the scratch repo first).
+name: tym-shadow
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+concurrency:
+  group: tym-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+  issues: read
+
+jobs:
+  review:
+    name: TYM shadow review
+    # Bare label string (not [self-hosted, <label>]): the managed-peak-money
+    # pool does not carry the self-hosted label; the array form never matched.
+    # ai-review.yaml uses the bare string and is the proven pairing.
+    runs-on: managed-peak-money
+    # Measured appetite p50 36 / p95 198 calls per review — 5 minutes would
+    # kill the tail. 30 keeps the p95 loop alive while capping runaway cost.
+    timeout-minutes: 30
+    # Instant kill switch: set the repo variable TYM_KILL=true to stop all
+    # shadow runs within one job-scheduling cycle. Default (unset) = run.
+    if: vars.TYM_KILL != 'true'
+    env:
+      # The ocrev engine talks to the local meter proxy, which holds the
+      # provider key; the proxy inherits this job env (2026-08-05: 'check
+      # your LLM configuration and API key' without it).
+      FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run TYM (ocrev on deepseek-v4-flash, read-only)
+        id: tym
+        uses: dapperlabs/actions/tym-review@tym-review/v0.1.10
+        with:
+          pr-ref: ${{ github.event.repository.name }}#${{ github.event.pull_request.number }}  # repo-name only by design: run_arm prefixes dapperlabs (TYM FP note 2026-08-05)
+
+      - name: Upload findings artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tym-findings-pr-${{ github.event.pull_request.number }}
+          path: |
+            ${{ steps.tym.outputs.findings-path }}
+            ${{ steps.tym.outputs.data-dir }}/calls.jsonl
+          retention-days: 30
+
+      - name: Assert zero PR comments by TYM
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          comments=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
+            --jq '[.[] | select(.user.login as $l | $l == "tym[bot]" or $l == "TestYourMight[bot]")] | length')
+          reviews=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews" \
+            --jq '[.[] | select(.user.login as $l | $l == "tym[bot]" or $l == "TestYourMight[bot]")] | length')
+          if [ "$comments" != "0" ] || [ "$reviews" != "0" ]; then
+            # Shadow never blocks the merge path (Kajetan review, 2026-08-05):
+            # a violation is an annotation + artifact evidence, not a red X.
+            echo "::error::SHADOW VIOLATION: TYM posted to the PR (comments=$comments reviews=$reviews)"
+            echo "TYM VIOLATION: $comments comments, $reviews reviews — see run annotations"
+          else
+            echo "shadow clean: TYM posted nothing to the PR"
+          fi
+          echo "shadow clean: TYM posted nothing to the PR"
