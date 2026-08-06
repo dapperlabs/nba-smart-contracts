@@ -1,9 +1,16 @@
-# tym-shadow.yml — TestYourMight shadow review workflow (handover PROMPT 5).
+# tym-shadow.yml — TestYourMight shadow review workflow (v2, 2026-08-05).
 # Drop into a pilot repo at .github/workflows/tym-shadow.yml.
 #
 # SHADOW IS THE ONLY MODE HERE: reviews every PR, writes findings to the run
-# artifact, posts NOTHING to the PR. Zero-PR-comments is not a hope — there is
-# no comment/post step in this file, and the final step asserts it.
+# artifact, posts NOTHING to the PR. Zero-PR-comments is not a hope — the job
+# permissions are read-only (contents/pull-requests/issues read) so the token
+# physically cannot post, and the final step asserts it.
+#
+# v2: the review logic moved into dapperlabs/actions/tym-review (composite
+# action, runtime mirrored from agi-knowledge via tools/gauntlet/sync-action.sh).
+# No GitHub App token needed — only the caller's read-only GITHUB_TOKEN. The
+# app-based design (ai-review plumbing) is retained for the PROMOTED posting
+# path only (tym-promote.yml).
 #
 # Promotion path lives in tym-promote.yml (separate file, per-repo flag,
 # proven on the scratch repo first).
@@ -19,13 +26,14 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
+  issues: read
 
 jobs:
   review:
     name: TYM shadow review
-    # String form, not the [self-hosted, managed-peak-money] array: this runner
-    # pool does not carry the self-hosted label, so the array never matched and
-    # every run sat queued until cancelled (2026-07-31, all four pilots).
+    # Bare label string (not [self-hosted, <label>]): the managed-peak-money
+    # pool does not carry the self-hosted label; the array form never matched.
     # ai-review.yaml uses the bare string and is the proven pairing.
     runs-on: managed-peak-money
     # Measured appetite p50 36 / p95 198 calls per review — 5 minutes would
@@ -35,89 +43,29 @@ jobs:
     # shadow runs within one job-scheduling cycle. Default (unset) = run.
     if: vars.TYM_KILL != 'true'
     steps:
-      - name: Mint app token (read-only)
-        id: app-token
-        uses: actions/create-github-app-token@v2.2.1
-        with:
-          app-id: ${{ secrets.AI_REVIEW_APP_ID }}
-          private-key: ${{ secrets.AI_REVIEW_APP_PRIVATE_KEY }}
-
-      - name: Checkout gauntlet harness
-        uses: actions/checkout@v6
-        with:
-          repository: dapperlabs/agi-knowledge
-          ref: gauntlet-phase-1
-          path: gauntlet
-          # agi-knowledge is private; the repo's GITHUB_TOKEN cannot fetch it.
-          # The minted AI_REVIEW app token reads org-wide — same token every
-          # other step uses (fatal: repository not found, 2026-08-05, peak).
-          token: ${{ steps.app-token.outputs.token }}
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install harness deps
-        run: python -m pip install --quiet requests pyyaml
-
-      - name: Prove permissions read-only
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-        run: |
-          gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }} \
-            --jq '.number' > /dev/null
-          echo "read-only 200 OK — no write performed, ever"
-
-      - name: Resolve Fireworks key (GSM-first, repo-secret fallback)
-        run: |
-          echo '::add-mask::x' >/dev/null  # keep shellcheck calm
-          if [ -n "${FIREWORKS_API_KEY:-}" ]; then
-            echo "key source: runner env (GSM-hydrated)"
-          elif command -v gcloud >/dev/null 2>&1 && gcloud secrets versions access latest --secret=magic-fireworks-api-key --project=dl-ai-pantheon >/dev/null 2>&1; then
-            KEY=$(gcloud secrets versions access latest --secret=magic-fireworks-api-key --project=dl-ai-pantheon)
-            echo "::add-mask::$KEY"
-            echo "FIREWORKS_API_KEY=$KEY" >> "$GITHUB_ENV"
-            echo "key source: GSM magic-fireworks-api-key"
-          else
-            echo "::add-mask::${{ secrets.FIREWORKS_API_KEY }}"
-            echo "FIREWORKS_API_KEY=${{ secrets.FIREWORKS_API_KEY }}" >> "$GITHUB_ENV"
-            echo "key source: repo secret (fallback — prefer GSM when available)"
-          fi
-
-      - name: Run TYM (ocrev on deepseek-v4-flash)
-        env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
-          GAUNTLET_DATA_DIR: ${{ github.workspace }}/gauntlet-data
-        run: |
-          python gauntlet/tools/gauntlet/run_arm.py \
-            --pipeline ocrev \
-            --composition s2-ocrev-winner \
-            --frame as-is --live \
-            ${{ github.event.repository.name }}#${{ github.event.pull_request.number }} \
-            > findings.json
-          python - <<'EOF'
-          import json
-          d = json.load(open('findings.json'))
-          print(f"TYM findings: {len(d['findings'])}")
-          for f in d['findings']:
-              print(f"::warning file={f['file']},line={f['line_start']},"
-                    f"title=TYM {f['severity']} {f['category']}::{f['suggested_direction'][:200]}")
-          EOF
+      - name: Run TYM (ocrev on deepseek-v4-flash, read-only)
+        id: tym
+        uses: dapperlabs/actions/tym-review@tym-review/v0.1.0
+        with:
+          pr-ref: ${{ github.event.repository.name }}#${{ github.event.pull_request.number }}
 
       - name: Upload findings artifact
         uses: actions/upload-artifact@v4
         with:
           name: tym-findings-pr-${{ github.event.pull_request.number }}
           path: |
-            findings.json
-            gauntlet-data/calls.jsonl
+            ${{ steps.tym.outputs.findings-path }}
+            ${{ steps.tym.outputs.data-dir }}/calls.jsonl
           retention-days: 30
 
       - name: Assert zero PR comments by TYM
         env:
-          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           comments=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
             --jq '[.[] | select(.user.login | contains("tym") or contains("TestYourMight"))] | length')
