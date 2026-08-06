@@ -23,17 +23,27 @@ permissions:
 jobs:
   review:
     name: TYM shadow review
-    runs-on: [self-hosted, managed-peak-money]
+    # String form, not the [self-hosted, managed-peak-money] array: this runner
+    # pool does not carry the self-hosted label, so the array never matched and
+    # every run sat queued until cancelled (2026-07-31, all four pilots).
+    # ai-review.yaml uses the bare string and is the proven pairing.
+    runs-on: managed-peak-money
+    # Measured appetite p50 36 / p95 198 calls per review — 5 minutes would
+    # kill the tail. 30 keeps the p95 loop alive while capping runaway cost.
+    timeout-minutes: 30
+    # Instant kill switch: set the repo variable TYM_KILL=true to stop all
+    # shadow runs within one job-scheduling cycle. Default (unset) = run.
+    if: vars.TYM_KILL != 'true'
     steps:
       - name: Mint app token (read-only)
         id: app-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2.2.1
         with:
           app-id: ${{ secrets.AI_REVIEW_APP_ID }}
           private-key: ${{ secrets.AI_REVIEW_APP_PRIVATE_KEY }}
 
       - name: Checkout gauntlet harness
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: dapperlabs/agi-knowledge
           ref: gauntlet-phase-1
