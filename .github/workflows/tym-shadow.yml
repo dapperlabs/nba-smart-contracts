@@ -50,9 +50,9 @@ jobs:
 
       - name: Run TYM (ocrev on deepseek-v4-flash, read-only)
         id: tym
-        uses: dapperlabs/actions/tym-review@tym-review/v0.1.2
+        uses: dapperlabs/actions/tym-review@tym-review/v0.1.3
         with:
-          pr-ref: ${{ github.event.repository.name }}#${{ github.event.pull_request.number }}
+          pr-ref: ${{ github.event.repository.name }}#${{ github.event.pull_request.number }}  # repo-name only by design: run_arm prefixes dapperlabs (TYM FP note 2026-08-05)
 
       - name: Upload findings artifact
         uses: actions/upload-artifact@v4
@@ -68,9 +68,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           comments=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" \
-            --jq '[.[] | select(.user.login | contains("tym") or contains("TestYourMight"))] | length')
+            --jq '[.[] | select(.user.login as $l | $l == "tym[bot]" or $l == "TestYourMight[bot]")] | length')
           reviews=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews" \
-            --jq '[.[] | select(.user.login | contains("tym") or contains("TestYourMight"))] | length')
+            --jq '[.[] | select(.user.login as $l | $l == "tym[bot]" or $l == "TestYourMight[bot]")] | length')
           if [ "$comments" != "0" ] || [ "$reviews" != "0" ]; then
             echo "SHADOW VIOLATION: TYM posted to the PR (comments=$comments reviews=$reviews)"
             exit 1
