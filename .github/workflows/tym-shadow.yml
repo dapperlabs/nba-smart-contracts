@@ -56,7 +56,7 @@ jobs:
 
       - name: Run TYM (ocrev on deepseek-v4-flash, read-only)
         id: tym
-        uses: dapperlabs/actions/tym-review@tym-review/v0.1.8
+        uses: dapperlabs/actions/tym-review@tym-review/v0.1.9
         with:
           pr-ref: ${{ github.event.repository.name }}#${{ github.event.pull_request.number }}  # repo-name only by design: run_arm prefixes dapperlabs (TYM FP note 2026-08-05)
 
