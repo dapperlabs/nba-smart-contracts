@@ -78,7 +78,11 @@ jobs:
           reviews=$(gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews" \
             --jq '[.[] | select(.user.login as $l | $l == "tym[bot]" or $l == "TestYourMight[bot]")] | length')
           if [ "$comments" != "0" ] || [ "$reviews" != "0" ]; then
-            echo "SHADOW VIOLATION: TYM posted to the PR (comments=$comments reviews=$reviews)"
-            exit 1
+            # Shadow never blocks the merge path (Kajetan review, 2026-08-05):
+            # a violation is an annotation + artifact evidence, not a red X.
+            echo "::error::SHADOW VIOLATION: TYM posted to the PR (comments=$comments reviews=$reviews)"
+            echo "TYM VIOLATION: $comments comments, $reviews reviews — see run annotations"
+          else
+            echo "shadow clean: TYM posted nothing to the PR"
           fi
           echo "shadow clean: TYM posted nothing to the PR"
