@@ -10,6 +10,7 @@ const (
 	addStatToFastBreakGameFilename   = "fastbreak/oracle/add_stat_to_game.cdc"
 	updateFastBreakGameFilename      = "fastbreak/oracle/update_fast_break_game.cdc"
 	scoreFastBreakSubmissionFilename = "fastbreak/oracle/score_fast_break_submission.cdc"
+	updateSubmissionDeadlineFilename = "fastbreak/oracle/update_submission_deadline.cdc"
 )
 
 func GenerateCreateRunScript(env Environment) []byte {
@@ -38,6 +39,12 @@ func GenerateUpdateFastBreakGameScript(env Environment) []byte {
 
 func GenerateScoreFastBreakSubmissionScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + scoreFastBreakSubmissionFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+func GenerateUpdateSubmissionDeadlineScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + updateSubmissionDeadlineFilename)
 
 	return []byte(replaceAddresses(code, env))
 }

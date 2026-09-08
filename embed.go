@@ -86,6 +86,9 @@ var (
 	//go:embed transactions/admin/unlock_all_moments.cdc
 	AdminUnlockAllMoments []byte
 
+	//go:embed transactions/admin/set_ipfs_cids.cdc
+	AdminSetIpfsCids []byte
+
 	// marketV3
 	//go:embed transactions/marketV3/purchase_both_markets.cdc
 	Marketv3PurchaseBothMarkets []byte
@@ -304,6 +307,9 @@ var (
 
 	//go:embed transactions/fastbreak/oracle/create_run.cdc
 	FastbreakOracleCreateRun []byte
+
+	//go:embed transactions/fastbreak/oracle/update_submission_deadline.cdc
+	FastbreakOracleUpdateSubmissionDeadline []byte
 
 	// fastbreak/scripts
 	//go:embed transactions/fastbreak/scripts/get_fast_break_stats.cdc
