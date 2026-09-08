@@ -27,7 +27,15 @@ const (
 	createNewSubeditionAdminResourceFilename = "admin/create_new_subedition_admin_resource.cdc"
 	createSubeditionFilename                 = "admin/create_subedition.cdc"
 	setNFTsubedition                         = "admin/set_nft_subedition.cdc"
+	setIpfsCidsFilename                      = "admin/set_ipfs_cids.cdc"
 )
+
+// GenerateSetIpfsCidsScript batches IPFS CIDs for (setID, playID, subeditionID, mediaType) tuples
+func GenerateSetIpfsCidsScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + setIpfsCidsFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
 
 // GenerateMintPlayScript creates a new play data struct
 // and initializes it with metadata

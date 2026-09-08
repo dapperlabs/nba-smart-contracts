@@ -165,7 +165,7 @@ contract BridgedTopShotMoments is
             || interfaceId == type(IERC721Enumerable).interfaceId || interfaceId == type(ERC721BurnableUpgradeable).interfaceId
             || interfaceId == type(OwnableUpgradeable).interfaceId || interfaceId == type(ICrossVM).interfaceId
             || interfaceId == type(ICreatorToken).interfaceId || interfaceId == type(ILegacyCreatorToken).interfaceId
-            || interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
+            || interfaceId == type(IERC2981).interfaceId || interfaceId == type(IERC4906).interfaceId || super.supportsInterface(interfaceId);
     }
 
     function _setSymbol(string memory newSymbol) internal {

@@ -54,8 +54,9 @@ the core functionality of the NFT.
 
 > **Note**: Bridged Top Shot Moments are available on Flow EVM. See the [EVM Bridging README](evm-bridging/README.md) for contract addresses and details.
 
-`MarketTopShot.cdc`: This is the top shot marketplace contract that allows users
-to buy and sell their NFTs.
+`TopShotMarketV3.cdc`: This is the operative Top Shot marketplace contract (V3; the
+original `Market.cdc` is legacy — see "Different Versions of the Market Contract" below)
+that allows users to buy and sell their NFTs.
 
 | Network | Contract Address     |
 |---------|----------------------|
@@ -70,6 +71,10 @@ please familiarize yourself with the Flow NFT standard before starting and make 
 in your project in order to be interoperable with other tokens and contracts that implement the standard.
 
 ### Top Shot Marketplace contract
+
+This section describes the original `Market.cdc` (V1). The operative contract
+is `TopShotMarketV3.cdc` (V3), which implements the capability-based best
+practice described below.
 
 The top shot marketplace contract was designed in the very early days of Cadence, and therefore
 uses some language features that are NOT RECOMMENDED to use by newer projects.
@@ -398,26 +403,30 @@ and if they sent the correct amount, they get the Moment back.
 
 ### Different Versions of the Market Contract
 
-There are two versions of the Top Shot Market Contract.
-`TopShotMarket.cdc` is the original version of the contract that was used
+There are three versions of the Top Shot Market Contract.
+`Market.cdc` is the original version of the contract that was used
 for the first set of sales in the p2p marketplace, but we made improvements
 to it which are now in `TopShotMarketV3.cdc`.
 
-There is also a V2 version that was deployed to mainnet, but will never be used.
+There is also a V2 version (`TopShotMarketV2.cdc`) that was deployed to
+mainnet but is unused — it must never be consumed.
 
-Both versions define a `SaleCollection` resource that users store in their account.
-The resource manages the logic of the sale like listings, de-listing, prices, and 
-purchases. The first version actually stores the moments that are for sale, but 
+Both the original and V3 define a `SaleCollection` resource that users store in their account.
+The resource manages the logic of the sale like listings, de-listing, prices, and
+purchases. The first version actually stores the moments that are for sale, but
 we realized that this causes issues if other contracts need to access a user's
 main collection to see what they own. We created the second version to simply
-store a capability to the owner's moment collection so that the moments 
+store a capability to the owner's moment collection so that the moments
 that are for sale do not need to be removed from the main collection to be
 put up for sale. In this version, when a moment is purchased, the sale collection
-uses the capability to withdraw the moment from the main collection and 
+uses the capability to withdraw the moment from the main collection and
 returns it to the buyer.
 
-The new version of the market contract is currently NOT DEPLOYED to mainnet,
-but it will be deployed and utilized in the near future.
+**`TopShotMarketV3.cdc` is the operative market contract.** It is deployed
+on Mainnet (`0xc1e4f4f4c4257510`) and Testnet (`0x547f177b243b4d80`) — see
+the address table above. V3 holds a capability to the seller's Moment
+collection (no custody), and it falls back to the original sale surface for
+legacy V1 listings.
 
 ## TopShot contract improvement
 Some improvements were made to the Topshot contract to reflect some cadence best practices and fix a bug.
