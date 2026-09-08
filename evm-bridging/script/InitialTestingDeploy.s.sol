@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
+// ⚠️ TEST-ONLY — DO NOT USE FOR ANY REAL DEPLOYMENT.
+// This script hardcodes placeholder values: underlying=0x12345,
+// vmBridge=0x67890, a cryptokitties token URI, and dummy Cadence identifiers.
+// Any production deployment must supply the real underlying contract address,
+// the real VM bridge address, and correct metadata. Reviewed 2026-09-08.
+
 import {Script} from "forge-std/Script.sol";
 import "forge-std/console.sol";
 import {Upgrades} from "openzeppelin-foundry-upgrades/src/Upgrades.sol";
