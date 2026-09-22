@@ -301,6 +301,26 @@ func TestMintNFTs(t *testing.T) {
 		assert.Equal(t, CadenceString("lorem ipsum"), result)
 	})
 
+	t.Run("Should be able to set a metadata field on an existing Play without touching the others", func(t *testing.T) {
+		tb.UpdatePlayMetadata(t, 1, []cadence.KeyValuePair{{Key: CadenceString("Team"), Value: CadenceString("Lakers")}}, false)
+		result := executeScriptAndCheck(t, b, templates.GenerateGetPlayMetadataFieldScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.String("Team"))})
+		assert.Equal(t, CadenceString("Lakers"), result)
+		result = executeScriptAndCheck(t, b, templates.GenerateGetPlayMetadataFieldScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.String("FullName"))})
+		assert.Equal(t, CadenceString("Lebron"), result)
+
+		tb.UpdatePlayMetadata(t, 1, []cadence.KeyValuePair{{Key: CadenceString("Team"), Value: CadenceString("Cavaliers")}}, false)
+		result = executeScriptAndCheck(t, b, templates.GenerateGetPlayMetadataFieldScript(env), [][]byte{jsoncdc.MustEncode(cadence.UInt32(1)), jsoncdc.MustEncode(cadence.String("Team"))})
+		assert.Equal(t, CadenceString("Cavaliers"), result)
+	})
+
+	t.Run("Should not be able to set metadata on a Play that does not exist", func(t *testing.T) {
+		tb.UpdatePlayMetadata(t, 99, []cadence.KeyValuePair{{Key: CadenceString("Team"), Value: CadenceString("Lakers")}}, true)
+	})
+
+	t.Run("Should not be able to set a metadata field with an empty key", func(t *testing.T) {
+		tb.UpdatePlayMetadata(t, 1, []cadence.KeyValuePair{{Key: CadenceString(""), Value: CadenceString("Lakers")}}, true)
+	})
+
 	// Admin sends transactions to create multiple plays
 	t.Run("Should be able to create multiple new Plays", func(t *testing.T) {
 		metadatas := [][]cadence.KeyValuePair{
@@ -449,7 +469,7 @@ func TestMintNFTs(t *testing.T) {
 		expectedCollectionSquareImage := "https://nbatopshot.com/static/favicon/favicon.svg"
 		expectedCollectionBannerImage := "https://nbatopshot.com/static/img/top-shot-logo-horizontal-white.svg"
 		expectedRoyaltyReceiversCount := 1
-		expectedTraitsCount := 9
+		expectedTraitsCount := 10 // play 1 gained a Team field in the metadata update test above
 		expectedVideoURL := "https://assets.nbatopshot.com/media/1/video"
 
 		mvs := getTopShotMetadata(t, b, env, topshotAddr, 1)
@@ -709,6 +729,18 @@ func TestMintNFTs(t *testing.T) {
 	result = executeScriptAndCheck(t, b, templates.GenerateGetSupplyScript(env), nil)
 	assert.Equal(t, cadence.NewUInt64(11), result)
 
+}
+
+func (b *topshotTestBlockchain) UpdatePlayMetadata(t *testing.T, playID uint32, metadata []cadence.KeyValuePair, shouldRevert bool) {
+	tx := createTxWithTemplateAndAuthorizer(b.Blockchain, templates.GenerateUpdatePlayMetadataScript(b.env), b.topshotAdminAddr)
+	_ = tx.AddArgument(cadence.NewUInt32(playID))
+	_ = tx.AddArgument(cadence.NewDictionary(metadata))
+
+	signAndSubmit(
+		t, b.Blockchain, tx,
+		[]flow.Address{b.ServiceKey().Address, b.topshotAdminAddr}, []crypto.Signer{b.serviceKeySigner, b.topshotAdminSigner},
+		shouldRevert,
+	)
 }
 
 func (b *topshotTestBlockchain) CreatePlay(t *testing.T, metadata []cadence.KeyValuePair) {
