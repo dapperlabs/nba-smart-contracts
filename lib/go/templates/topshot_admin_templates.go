@@ -5,20 +5,21 @@ import (
 )
 
 const (
-	transactionsPath         = "../../../transactions/"
-	createPlayFilename       = "admin/create_play.cdc"
-	updateTaglineFilename    = "admin/update_tagline.cdc"
-	createSetFilename        = "admin/create_set.cdc"
-	addPlayFilename          = "admin/add_play_to_set.cdc"
-	addPlaysFilename         = "admin/add_plays_to_set.cdc"
-	lockSetFilename          = "admin/lock_set.cdc"
-	retirePlayFilename       = "admin/retire_play_from_set.cdc"
-	retireAllFilename        = "admin/retire_all.cdc"
-	newSeriesFilename        = "admin/start_new_series.cdc"
-	mintMomentFilename       = "admin/mint_moment.cdc"
-	batchMintMomentFilename  = "admin/batch_mint_moment.cdc"
-	fulfillPackFilename      = "admin/fulfill_pack.cdc"
-	createSetAndPlayFilename = "admin/create_set_and_play_struct.cdc"
+	transactionsPath           = "../../../transactions/"
+	createPlayFilename         = "admin/create_play.cdc"
+	updateTaglineFilename      = "admin/update_tagline.cdc"
+	updatePlayMetadataFilename = "admin/update_play_metadata.cdc"
+	createSetFilename          = "admin/create_set.cdc"
+	addPlayFilename            = "admin/add_play_to_set.cdc"
+	addPlaysFilename           = "admin/add_plays_to_set.cdc"
+	lockSetFilename            = "admin/lock_set.cdc"
+	retirePlayFilename         = "admin/retire_play_from_set.cdc"
+	retireAllFilename          = "admin/retire_all.cdc"
+	newSeriesFilename          = "admin/start_new_series.cdc"
+	mintMomentFilename         = "admin/mint_moment.cdc"
+	batchMintMomentFilename    = "admin/batch_mint_moment.cdc"
+	fulfillPackFilename        = "admin/fulfill_pack.cdc"
+	createSetAndPlayFilename   = "admin/create_set_and_play_struct.cdc"
 
 	transferAdminFilename = "admin/transfer_admin.cdc"
 
@@ -41,6 +42,13 @@ func GenerateMintPlayScript(env Environment) []byte {
 // and initializes it with metadata
 func GenerateUpdateTaglineScript(env Environment) []byte {
 	code := assets.MustAssetString(transactionsPath + updateTaglineFilename)
+
+	return []byte(replaceAddresses(code, env))
+}
+
+// GenerateUpdatePlayMetadataScript sets metadata fields on an existing play
+func GenerateUpdatePlayMetadataScript(env Environment) []byte {
+	code := assets.MustAssetString(transactionsPath + updatePlayMetadataFilename)
 
 	return []byte(replaceAddresses(code, env))
 }

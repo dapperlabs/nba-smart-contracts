@@ -73,6 +73,8 @@ access(all) contract TopShot: NonFungibleToken {
 
     // Emitted when a new Play struct is created
     access(all) event PlayCreated(id: UInt32, metadata: {String: String})
+    // Emitted when an admin sets one metadata field of an existing Play
+    access(all) event PlayMetadataUpdated(id: UInt32, key: String, value: String)
     // Emitted when a new series has been triggered by an admin
     access(all) event NewSeriesStarted(newCurrentSeries: UInt32)
 
@@ -183,6 +185,15 @@ access(all) contract TopShot: NonFungibleToken {
 
             TopShot.playDatas[self.playID] = self
             return self.playID
+        }
+
+        /// Sets one metadata field and writes the Play back into the contract's
+        /// play store. Moments read their metadata through the Play, so the change
+        /// applies to every Moment minted from it.
+        access(contract) fun updateMetadataField(key: String, value: String) {
+            self.metadata[key] = value
+
+            TopShot.playDatas[self.playID] = self
         }
     }
 
@@ -987,6 +998,25 @@ access(all) contract TopShot: NonFungibleToken {
             tmpPlay.updateTagline(tagline: tagline)
 
             // Return the play's ID
+            return playID
+        }
+
+        /// Sets one metadata field of an existing Play
+        /// Parameters: playID: The ID of the play to update
+        ///             key: The metadata field to set
+        ///             value: The new value for the field
+        /// Returns: The ID of the play
+        access(all) fun updatePlayMetadata(playID: UInt32, key: String, value: String): UInt32 {
+            pre {
+                key.length != 0: "Metadata key cannot be empty"
+            }
+            let tmpPlay = TopShot.playDatas[playID]
+                ?? panic("playID does not exist")
+
+            tmpPlay.updateMetadataField(key: key, value: value)
+
+            emit PlayMetadataUpdated(id: playID, key: key, value: value)
+
             return playID
         }
 
